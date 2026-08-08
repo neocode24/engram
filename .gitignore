@@ -1,0 +1,5 @@
+.DS_Store
+
+# Go (향후 binary/ 산물)
+binary/bin/
+*.test
