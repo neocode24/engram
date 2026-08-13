@@ -4,7 +4,7 @@
 
 ## 즉시 다음
 
-1. **GitHub remote 생성** — `neocode24/llm-wiki-edu` (ssh-over-443: `ssh://git@ssh.github.com:443/neocode24/llm-wiki-edu.git`). 2대 PC 동기화용.
+1. ~~GitHub remote 생성~~ — 완료. `neocode24/engram` (ssh-over-443: `ssh://git@ssh.github.com:443/neocode24/engram.git`), 기본 브랜치 `main`.
 2. **하위 repo 구성 결정** — `binary/`, `wiki/`, `curriculum/`을 mono-repo 서브디렉토리로 둘지, 각각 별도 git repo로 빼고 이 디렉토리는 org 폴더로 쓸지.
 3. **Go 프로젝트 init** — `binary/`에 `cmd/`, `internal/`, `go.mod`. 모듈명 결정.
 
