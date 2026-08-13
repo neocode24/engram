@@ -35,6 +35,8 @@ engram = 기억이 뇌에 남기는 물리적 흔적. second brain을 표방하�
 
 ## 문서 둘러보기
 
+- [docs/handoff.md](docs/handoff.md) — **세션 인계 노트. 작업 재개 시 가장 먼저 읽는다**
+- [AGENTS.md](AGENTS.md) — 에이전트 작업 계약
 - [docs/design.md](docs/design.md) — 아키텍처, 커맨드 체계, 스키마 매핑, 마일스톤
 - [docs/decisions/](docs/decisions/) — 의사결정 기록
 - [docs/curriculum.md](docs/curriculum.md) — 교육 커리큘럼 뼈대
