@@ -19,6 +19,7 @@
 | 경로 | 역할 |
 |---|---|
 | `docs/handoff.md` | 세션 인계 노트. 가장 먼저 읽는다 |
+| `docs/architecture.md` | 동작 구조 전체. mermaid 도식 10종 |
 | `docs/decisions/` | ADR. 번호순, 소급 수정 금지 |
 | `docs/design.md` | 아키텍처와 커맨드 체계 |
 | `docs/journeys.md` | 사용자 여정과 마일스톤 매핑 |
