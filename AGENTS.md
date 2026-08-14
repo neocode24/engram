@@ -23,9 +23,10 @@
 | `docs/design.md` | 아키텍처와 커맨드 체계 |
 | `docs/journeys.md` | 사용자 여정과 마일스톤 매핑 |
 | `docs/curriculum.md` | 교육 커리큘럼 |
-| `binary/` | Go 바이너리 (placeholder) |
-| `wiki/` | 교육용 데모 위키 (placeholder) |
-| `curriculum/` | 강의 자료 (placeholder) |
+| `docs/course/` | 강의 자료. 공개 자산이며 사내 사례를 담지 않는다 (placeholder) |
+| `cmd/engram/`, `internal/` | Go 구현. 저장소 루트가 모듈 루트 (미생성) |
+| `harness/` | upstream 계약 스냅샷, 골든 픽스처, parity (미생성) |
+| `examples/` | 데모 위키. `init`의 생성물이므로 손으로 고치지 않는다 (placeholder) |
 
 ## 작업 규칙
 
