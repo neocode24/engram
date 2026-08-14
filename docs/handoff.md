@@ -11,7 +11,7 @@ ADR 0005~0008은 완료했다(커밋 `390535b`). 남은 산출물은 아래다.
 
 1. `0009-schema-presets-and-thresholds.md` — 9축 프리셋(personal/team/education) 확정, topics 개방집합과 forms 폐쇄집합 구분, `min_wikilinks`/`stale_days`/`max_lines` 등 임계값의 기본값. 근거 데이터는 이 문서의 "설정 스키마와 게이트 임계값" 절에 있다.
 2. `0010-storage-index-and-korean-search.md` — 마크다운 진실원 + 파생 캐시 여부, 캐시 위치와 무효화, **한국어 토크나이징 방식**(n-gram 색인 대 경량 사전 내장). 0007이 코어를 순수 Go로 고정했으므로 한국어 검색 품질이 무너지면 0.2가 무의미해진다. 현재 최대 기술 리스크다.
-3. `0011-repo-layout-and-module-name.md` — mono 대 분리, Go 모듈명, 설정 파일명. 코드 착수의 실제 블로커다. 원본 논의의 근거는 "리포 경계가 곧 공개 경계가 되게 한다"(ADR 0004의 IP gating과 연결)였으나, 그것은 바이너리만 분리하던 시절의 안이므로 재검토가 필요하다.
+3. ~~`0011-repo-layout-and-module-name.md`~~ — 완료. 단일 저장소 유지, 저장소 루트가 Go 모듈 루트, 모듈명 `github.com/neocode24/engram`. `binary/` 폐지, `wiki/`는 `examples/`로 생성물 지정, `curriculum/`은 `docs/course/`로 이동하여 공개 자산으로 확정. 사내 한정 자료가 생기면 `private/` 한 곳에 모은다(현재 없음).
 
 **문서 산출물**
 

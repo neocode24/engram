@@ -5,13 +5,13 @@
 ## 즉시 다음
 
 1. ~~GitHub remote 생성~~ — 완료. `neocode24/engram` (ssh-over-443: `ssh://git@ssh.github.com:443/neocode24/engram.git`), 기본 브랜치 `main`.
-2. **하위 repo 구성 결정** — `binary/`, `wiki/`, `curriculum/`을 mono-repo 서브디렉토리로 둘지, 각각 별도 git repo로 빼고 이 디렉토리는 org 폴더로 쓸지.
-3. **Go 프로젝트 init** — `binary/`에 `cmd/`, `internal/`, `go.mod`. 모듈명 결정.
+2. ~~하위 repo 구성 결정~~ — 완료. 단일 저장소 유지, 저장소 루트가 Go 모듈 루트. [ADR 0011](decisions/0011-repo-layout-and-module-name.md).
+3. **Go 프로젝트 init** — 루트에 `go.mod`(모듈명 `github.com/neocode24/engram`), `cmd/engram/`, `internal/`.
 
 ## 설계 미결정
 
 - 스키마 보편화 범위 → [design.md](design.md) 스키마 매핑
-- 교육용 데모 위키 내용 → `wiki/`
+- 교육용 데모 위키 내용 → `examples/`
 - 강의 일정/대상/평가 → [curriculum.md](curriculum.md)
 - 사내 Enterprise 레포 명/위치 → [0004](decisions/0004-ip-and-distribution-path.md)
 

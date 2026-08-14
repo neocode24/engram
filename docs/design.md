@@ -56,7 +56,7 @@ llm-wiki: `type, status, scope, sensitivity, source_channel, trigger_mode, workf
 
 ## 미결정
 
-- 하위 repo 구성 (mono vs binary/wiki/curriculum 각각 별도 repo)
-- GitHub remote 생성 시점
+- ~~하위 repo 구성~~ 완료. [ADR 0011](decisions/0011-repo-layout-and-module-name.md)
+- ~~GitHub remote 생성 시점~~ 완료
 - 스키마 보편화 범위
 - 교육용 데모 위키 내용
