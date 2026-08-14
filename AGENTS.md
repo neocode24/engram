@@ -4,7 +4,7 @@
 
 ## 첫 번째로 읽을 문서
 
-**`docs/handoff.md`** — 직전 세션에서 확정된 설계 결정과 다음 할 일이 전부 들어 있다. 작업 시작 전 반드시 읽는다.
+**`docs/architecture.md`** — engram이 무엇을 하고 무엇을 하지 않는지, 어떤 순서로 도는지가 도식과 함께 들어 있다. 그다음 `docs/design.md`(커맨드 체계와 설정), `docs/decisions/README.md`(결정 이력과 개정 관계) 순으로 읽는다.
 
 ## 이 프로젝트가 무엇인가
 
@@ -18,10 +18,9 @@
 
 | 경로 | 역할 |
 |---|---|
-| `docs/handoff.md` | 세션 인계 노트. 가장 먼저 읽는다 |
 | `docs/architecture.md` | 동작 구조 전체. mermaid 도식 10종 |
-| `docs/decisions/` | ADR. 번호순, 소급 수정 금지 |
-| `docs/design.md` | 아키텍처와 커맨드 체계 |
+| `docs/decisions/` | ADR. 번호순, 소급 수정 금지. `README.md`가 색인 |
+| `docs/design.md` | 커맨드 체계, 설정, 마일스톤 |
 | `docs/journeys.md` | 사용자 여정과 마일스톤 매핑 |
 | `docs/curriculum.md` | 교육 커리큘럼 |
 | `docs/course/` | 강의 자료. 공개 자산이며 사내 사례를 담지 않는다 (placeholder) |

@@ -1,62 +1,188 @@
-# 설계 개요 (초안)
+# 설계
 
-> 2026-08-08 초기 논의 기반. 구체화는 다음 세션부터.
+> 동작 구조와 데이터 흐름은 [architecture.md](architecture.md)에 있다. 이 문서는 **커맨드 체계, 설정, 마일스톤**을 다룬다. 결정의 근거는 [ADR 색인](decisions/README.md)을 따른다.
 
 ## 정체성
 
-"**판단은 사람이, 불변식은 코드가**" — llm-wiki 운영 철학을 단일 Go 바이너리가 강제한다. 다른 PKM/위키 도구와의 차별점은 **inbox → sources → context 승급 파이프라인을 코드가 강제**한다는 점이다.
+"판단은 사람이, 불변식은 코드가." 운영 중인 위키 체계를 단일 Go 바이너리가 강제한다. 다른 PKM 도구와의 유일한 차별점은 **inbox에서 sources를 거쳐 context로 가는 승급을 코드가 강제**한다는 점이다. 검색도 재발견도 웹 UI도 보편적 기능이며, 게이트만이 이 프로젝트 고유의 것이다.
 
-## 형태 (단일 Go 바이너리)
+## 설계 원칙
 
-구현 형태:
+이 다섯 가지가 커맨드 하나하나를 판정하는 기준이다.
 
-- 단일 Go 바이너리, XDG Base Directory 준수
-- 위키 내 스키마 파일(`*.toml`)
-- 쓰기 명령 = 스키마 검증 게이트
-- BM25 + bge-m3 ONNX 하이브리드 검색 (완전 로컬)
-- resurface / bridge / recall / digest 루프
-- `serve` 웹 UI
-- `skills install` 에이전트 연동
-- Homebrew tap 배포
+1. **결정론.** 같은 입력에 같은 출력이 나온다. 예외는 상태 파일을 읽는 `resurface` 하나이며 `--now`로 고정한다.
+2. **재료 반환.** 커맨드는 완성된 산문이 아니라 재료를 준다. 요약과 판단은 호출자의 몫이다. ([0014](decisions/0014-llm-boundary-agent-drives-binary.md))
+3. **JSON 1급.** 모든 조회 커맨드가 `--json`을 지원한다. 부가 기능이 아니라 에이전트용 주 경로다.
+4. **거절은 최소.** 게이트에서 거절하는 조건은 하나뿐이고 나머지는 경고다. 거절이 많으면 사용자가 우회로를 찾는다. ([0009](decisions/0009-schema-presets-and-thresholds.md))
+5. **자격증명 없음.** LLM 프로바이더 설정, API key, OAuth 토큰을 보관하지 않는다.
 
-## 핵심 diff: 승급 파이프라인
+## 커맨드 체계
 
-llm-wiki의 3단계 계층을 명령으로 노출한다:
+### 승급 파이프라인
 
-- `capture` (inbox): 처리 대기 입력
-- `source`: 원본·출처 보존 (append-only)
-- `promote`: 검수된 지식을 context로 승급 (스키마 검증 게이트)
+| 명령 | 하는 일 | 도착지 |
+|---|---|---|
+| `capture` | 러프 입력을 그대로 받는다. 검증하지 않는다 | `inbox/` |
+| `source` | 원본을 보존 형태로 확정한다. append-only | `sources/` |
+| `new` | 개념 노드를 처음부터 작성한다. 게이트를 지난다 | `context/` |
+| `promote` | 기존 문서를 context로 올린다. 게이트를 지난다 | `context/` |
+| `archive` | 수명이 끝난 문서를 걷어낸다 | `archive/` |
+| `demote` | 잘못 올린 문서를 되돌린다 | `inbox/` 또는 `sources/` |
 
-## 커맨드 체계 초안
+`new`와 `capture`와 `source`의 경계가 오래 모호했다. 기준은 **도착지와 검증 여부** 둘이다.
 
-| 분류 | 명령 |
+- `capture`는 검증 없이 `inbox/`에 넣는다. 회의 중에 쓰는 명령이라 마찰이 있으면 안 된다.
+- `source`는 `sources/`에 넣고 원본 필드를 확정한다. 이후 본문을 고치지 않는 것이 계약이므로 `updated` 필드를 쓰지 않는다.
+- `new`는 `context/`에 직접 쓰며 `promote`와 같은 게이트를 지난다. 승급 경로를 우회하는 것이 아니라, 처음부터 검수된 지식으로 쓰는 동선이다.
+
+`demote`는 `promote`의 역동작이다. 게이트를 강제하는 제품일수록 되돌리기가 신뢰를 만든다.
+
+### 쓰기
+
+| 명령 | 하는 일 |
 |---|---|
-| 초기화 | `init`, `lint`, `status` |
-| 승급 | `capture`, `source`, `promote`, `archive` |
-| 쓰기 (context) | `new`, `update`, `mv`, `rm` (스키마 강제) |
-| 검색 | `search` (hybrid/keyword/semantic), `recall`, `backlinks` |
-| 재발견 | `resurface`, `bridge`, `digest` |
-| 운영 | `serve`, `sync`, `reindex`, `skills install` |
+| `update` | 본문 또는 프론트매터 갱신. 스키마 검증 |
+| `mv` | 이름 변경. 백링크를 함께 갱신 |
+| `rm` | 삭제. 백링크가 남으면 경고 |
 
-## 스키마 매핑 (llm-wiki 9축 → 교육 오픈소스)
+`mv`가 백링크를 따라가지 않으면 링크 무결성이 즉시 깨진다. 이는 선택 기능이 아니라 정의상 필수다.
 
-llm-wiki: `type, status, scope, sensitivity, source_channel, trigger_mode, workflow, artifact_stage, indexable`
+### 조회
 
-- **핵심 보존**: `type, status, artifact_stage, source_channel, tags, indexable`
-- **보편화 검토**: `scope, sensitivity, trigger_mode, workflow` — 회사 특수성이 강함. 교육용으로는 핵심 subset + 확장 가능 축으로 재설계. **미결정(다음 설계 세션).**
+| 명령 | 반환하는 것 | 주 사용자 |
+|---|---|---|
+| `search` | 페이지 순위 | 사람 |
+| `recall` | 청크 원문과 출처 슬러그 | 에이전트 |
+| `backlinks` | 들어오는 링크 목록 | 양쪽 |
+| `show` | 문서 원문과 메타 | 양쪽 |
+| `list` | 조건별 문서 목록 | 양쪽 |
+| `tags` | 태그 분포와 감사 결과 | 양쪽 |
 
-## 마일스톤 (접근법 B, 단계적 출하)
+`search`와 `recall`의 분리가 원칙 2의 구현이다. `search`는 사람이 열어 볼 목록을 주고, `recall`은 에이전트가 컨텍스트에 넣고 `[[슬러그]]`로 인용할 원문 조각을 준다. **둘 다 요약하지 않는다.**
 
-| 버전 | 범위 |
+### 재발견
+
+세 커맨드의 경계가 그동안 불분명했다. 축은 **시간이냐 관계냐**, 그리고 **개별이냐 집합이냐**다.
+
+| 명령 | 축 | 반환 단위 | 상태 기록 |
+|---|---|---|---|
+| `resurface` | 시간 (오래 안 봄) | 문서 하나씩 | 제시 이력 |
+| `bridge` | 관계 (유사하나 링크 없음) | 문서 쌍 | 기각 쌍 |
+| `digest` | 기간 (창 안의 변화) | 집계 | 없음 |
+
+- `resurface`는 `stale_days`를 넘긴 문서 중 최근에 보여주지 않은 것을 고른다. 상태 파일 때문에 실행마다 결과가 달라지므로 `--now`가 필수다.
+- `bridge`는 유사도가 높은데 링크가 없는 쌍을 찾는다. 사용자가 "이 둘은 관계없다"고 기각하면 영구 기록하여 다시 제시하지 않는다.
+- `digest`는 기간을 받아 신규, 승급, 노후, 고아 문서를 집계한다. 고아의 정의는 **링크 0개**다. 상태를 남기지 않으므로 몇 번을 돌려도 같은 결과가 나온다.
+
+셋 다 후보와 근거만 반환하고 문장을 만들지 않는다.
+
+### 검증과 운영
+
+| 명령 | 하는 일 |
 |---|---|
-| 0.1 | init, capture/source/promote, 스키마 강제, lint, status |
-| 0.2 | keyword/hybrid 검색, reindex |
-| 0.3 | resurface/bridge/recall |
-| 1.0 | serve 웹 UI, skills install, Homebrew 배포 |
+| `lint` | 스키마와 링크 무결성 검사 |
+| `status` | 위키 현황과 inbox 적체 압력 |
+| `doctor` | 환경 점검. 실패마다 복구 명령 제시 |
+| `reindex` | 인덱스 재구축 |
+| `migrate` | 스키마 변경을 기존 문서에 적용. `--dry-run` 기본 |
+| `sync` | git 기반 동기화. 프론트매터 병합 |
+| `config` | 설정 조회와 편집 |
+| `init` | 새 위키 생성 마법사 |
 
-## 미결정
+`doctor`는 사내 배포에서 필수다. git 버전, autocrlf 설정, 파일시스템 대소문자 구분, 콘솔 인코딩, 프록시 도달성, 스키마 유효성, 인덱스 신선도, 권한을 점검한다. 점검 실패를 나열만 하면 지원 요청이 그대로 들어오므로, 각 항목에 복구 명령을 함께 출력한다.
 
-- ~~하위 repo 구성~~ 완료. [ADR 0011](decisions/0011-repo-layout-and-module-name.md)
-- ~~GitHub remote 생성 시점~~ 완료
-- 스키마 보편화 범위
-- 교육용 데모 위키 내용
+### 확장
+
+| 명령 | 하는 일 | 비고 |
+|---|---|---|
+| `eject` | 내장 규칙을 파일로 풀어 사용자에게 넘긴다 | 단방향 ([0013](decisions/0013-eject-redefined-seal-removed.md)) |
+| `rules show` | eject 없이 내장 규칙을 읽기 전용 출력 | |
+| `skills install` | 에이전트 스킬 문서를 설치 | LLM 통합의 전부 ([0014](decisions/0014-llm-boundary-agent-drives-binary.md)) |
+| `serve` | 웹 UI | |
+| `model pull` | 시맨틱 검색용 모델 내려받기 | 선택 층 ([0007](decisions/0007-platform-and-distribution.md)) |
+| `self-update` | 릴리스 체크섬 검증 후 갱신 | |
+| `pack` | 배포와 공유용 번들 | 예약. 여정 14, 15 |
+
+`attach`와 `seal`은 커맨드로 두지 않는다. `attach`는 위키 루트에 `.engram/`이 있으면 자동으로 일어나는 기본 동작이고, `seal`은 폐기했다.
+
+## 설정
+
+2단 구조에 우선순위는 전역, 위키, 환경변수와 플래그 순이다.
+
+- **사용자 전역** (`~/.config/engram`, Windows는 `%APPDATA%`): 관리 중인 위키 목록, 기본 에디터, 업데이트 채널, 모델 경로. 머신 고유이며 커밋 대상이 아니다.
+- **위키별** (위키 홈의 설정 파일): 스키마 축, 임계값, 디렉토리 매핑. git에 커밋되어 팀이 공유한다.
+
+`config list --origin`이 값의 출처를 함께 보여준다. 사내 지원에서 "왜 이 값이 이렇게 나오는가"가 가장 흔한 질문이다.
+
+### 위키별 설정 키
+
+| 키 | 성격 | 기본값 |
+|---|---|---|
+| `types` | 문서 종류 | 위키별 |
+| `topics` | 주제 facet. 개방 집합 | 프리셋 |
+| `forms` | 문서 형태 facet. 폐쇄 집합, 동결 | 프리셋 |
+| `page_dirs` | 문서가 놓이는 디렉토리 | 프리셋 |
+| `root_files` | 루트에 있어야 하는 파일 | `index.md` |
+| `min_wikilinks` | 승급 게이트. 미만이면 거절 | 2 |
+| `stale_days` | 재발견 판정 | 90 |
+| `max_lines` | 문서 길이 상한. 경고 | 1000 |
+| `broad_topic_pct` | 광범위 주제 비율 상한. 경고 | 25 |
+| `[embedding]` | 시맨틱 검색 선택 층 | 모델, 차원, 청크 크기 |
+
+`topics`는 열려 있고 `forms`는 닫혀 있다. lint는 `forms` 위반을 오류로, `topics` 신규 값을 경고로 다룬다. 이 구분이 없으면 taxonomy가 몇 달 만에 관리 불능이 된다.
+
+### 스키마 프리셋
+
+`personal`이 `education`에 포함되고 `education`이 `team`에 포함된다. 기본값은 `education`이다. 포함 관계를 유지하면 프리셋 상향이 필드 추가만으로 끝나 `migrate`가 단순해진다. 상세는 [0009](decisions/0009-schema-presets-and-thresholds.md)에 있다.
+
+### 날짜 필드
+
+세 개로 나눈다.
+
+| 필드 | 의미 | 누가 쓰는가 |
+|---|---|---|
+| `created` | 원본이 작성된 날 | 사람 |
+| `sourced_at` | 위키에 편입된 날 | 사람. git 최초 커밋일이 진실원 |
+| `updated` | 마지막 갱신 | 도구가 git 이력에서 채운다 |
+
+`sources/`에는 `updated`를 쓰지 않는다. 오타 하나 고친 것이 신선도를 오해하게 만들기 때문이다.
+
+## 저장과 검색
+
+마크다운이 진실원이고 캐시는 위키 루트의 `.engram/`에 둔다. 사용자 전역이 아니라 위키 옆에 두는 이유는, 위키를 복사했을 때 캐시가 따라오지 않아 생기는 혼란을 막기 위해서다. `.engram/`은 gitignore 대상이다.
+
+한국어 검색은 **문자 bigram과 직접 구현한 BM25**로 간다. 형태소 사전을 내장하지 않는다. 라틴 문자와 숫자 구간은 통상 분할하는데, `min_wikilinks` 같은 식별자가 bigram으로 쪼개지면 검색이 무너지기 때문이다.
+
+외부 검색 라이브러리를 쓰지 않는 이유는 랭킹을 소유해야 [0005](decisions/0005-upstream-contract-and-harness.md)의 parity 비교에 검색 순위를 넣을 수 있어서다. 재검토 조건은 숫자로 못 박았다. 문서 2000개 또는 인덱스가 원문의 5배. 현재 upstream이 358개다.
+
+## 배포
+
+개인 Homebrew tap 단일 체계다. 태그를 밀면 릴리스 워크플로가 tap 저장소를 갱신한다. 상세는 [0012](decisions/0012-distribution-via-personal-homebrew-tap.md)에 있다.
+
+빌드는 여섯 플랫폼이고 tier 1은 windows/amd64와 darwin/arm64다. 릴리스 차단은 tier 1 실패에만 적용한다. 코어는 순수 Go에 `CGO_ENABLED=0`이며, 시맨틱 검색은 런타임에 내려받는 사이드카다. **시맨틱 층의 부재는 기능 결손이 아니라 성능 저하로 나타나야 한다.** 이 원칙이 깨지면 모델 다운로드가 사실상 필수가 되어 층 분리가 무의미해진다.
+
+## 마일스톤
+
+| 버전 | 범위 | 여정 |
+|---|---|---|
+| 0.1 | `init`, `capture`, `source`, `promote`, `new`, 게이트, `lint`, `status`, `doctor` | 0, 3, 5, 6, 18 |
+| 0.2 | `search`, `backlinks`, `reindex`, `demote`, `mv`, `update` | 1, 19, 22 |
+| 0.3 | `resurface`, `bridge`, `digest`, `recall`, `archive` | 9, 10, 11, 20 |
+| 0.4 | `eject`, `rules show`, `migrate`, `sync` | 12, 13, 16 |
+| 1.0 | `serve`, `skills install`, `pack`, MCP, 배포 | 8, 14, 15, 17, 21, 23 |
+
+여정 2(음성)는 외부 전사기 의존이라 별도 트랙이다. 바이너리는 "외부 전사 결과를 수용하는 인터페이스"만 정의하고 전사 자체를 내장하지 않는다.
+
+`--now` 플래그는 `resurface`가 나오는 0.3이 아니라 **처음부터** 넣는다. 나중에 넣으면 그 전까지 측정한 parity 수치가 전부 무의미해진다.
+
+## 열린 항목
+
+- 교육용 데모 위키의 내용. `engram init --preset education`으로 재생성 가능해야 하며 결과가 다르면 회귀로 본다.
+- `serve` 웹 UI의 쓰기 범위. 웹에서 직접 파일을 쓰지 않고 제안으로 접수하는 방식을 검토 중이다.
+- MCP 노출 시 도구 단위 분해. 쓰기가 `inbox`까지라는 경계는 확정이다.
+
+## 관련
+
+- [architecture.md](architecture.md) 동작 구조와 도식
+- [ADR 색인](decisions/README.md)
+- [journeys.md](journeys.md) 사용자 여정 24개

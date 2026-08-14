@@ -32,20 +32,23 @@ engram = 기억이 뇌에 남기는 물리적 흔적. second brain을 표방하�
 
 | 명령 | 동작 |
 |---|---|
-| `engram eject` | 내장 규칙을 실제 파일로 풀어놓는다 (easy mode에서 hard mode로) |
-| `engram seal` | 풀어놓은 파일을 거두고 내장 규칙으로 복귀한다 |
-| `engram attach` | 기존 hard mode 위키에 바이너리를 붙인다 |
-| `engram pack` | 배포/공유용 번들을 만든다 (후순위) |
+| `engram eject` | 내장 규칙을 실제 파일로 풀어 사용자에게 넘긴다. 단방향 |
+| `engram rules show` | eject 없이 내장 규칙을 읽기 전용으로 출력한다 |
+| `engram skills install` | LLM 에이전트에 스킬 문서를 설치한다 |
+| `engram pack` | 배포와 공유용 번들을 만든다 (후순위) |
+
+`attach`는 별도 커맨드가 아니라 기본 동작이다. 위키 루트에 `.engram/`이 있으면 자동으로 붙는다.
 
 ## 문서 둘러보기
 
-- [docs/handoff.md](docs/handoff.md) — **세션 인계 노트. 작업 재개 시 가장 먼저 읽는다**
+- [docs/architecture.md](docs/architecture.md) — **동작 구조와 역할 경계. 가장 먼저 읽는다**
 - [AGENTS.md](AGENTS.md) — 에이전트 작업 계약
-- [docs/design.md](docs/design.md) — 아키텍처, 커맨드 체계, 스키마 매핑, 마일스톤
-- [docs/decisions/](docs/decisions/) — 의사결정 기록
+- [docs/design.md](docs/design.md) — 커맨드 체계, 설정, 마일스톤
+- [docs/journeys.md](docs/journeys.md) — 사용자 여정 24개
+- [docs/decisions/README.md](docs/decisions/README.md) — 의사결정 색인과 개정 관계
 - [docs/curriculum.md](docs/curriculum.md) — 교육 커리큘럼 뼈대
 - [docs/course/](docs/course/) — 강의 자료
-- [docs/next-steps.md](docs/next-steps.md) — 다음 스텝과 미결정 사항
+- [docs/roadmap.md](docs/roadmap.md) — 로드맵과 미결정 사항
 
 ## 원천 참조
 
