@@ -2,7 +2,7 @@
 number: 0003
 title: 접근법 B — 풀스펙 바이너리에 승급 파이프라인을 더한다
 date: 2026-08-08
-status: accepted
+status: amended
 ---
 
 # 0003 접근법 B: 풀스펙 + 승급 파이프라인

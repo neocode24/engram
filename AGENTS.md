@@ -32,8 +32,10 @@
 
 ### ADR
 
-- 결정은 `docs/decisions/NNNN-kebab-title.md`에 남긴다. frontmatter는 `number, title, date, status`.
-- **기존 ADR의 본문을 소급 수정하지 않는다.** 결정이 바뀌면 새 ADR을 쓰고 이전 것의 `status`만 바꾼다. 명칭 변경 같은 표기 갱신은 "당시 명칭 X" 병기로 처리한다.
+- 결정은 `docs/decisions/NNNN-kebab-title.md`에 남긴다. frontmatter는 `number, title, date, status` 네 키만 쓴다.
+- `status`는 `accepted`, `amended`, `superseded`, `proposed` 넷 중 하나다. 어휘 정의는 ADR 0015에 있다.
+- **기존 ADR의 본문을 소급 수정하지 않는다.** 결정이 바뀌면 새 ADR을 쓰고, `docs/decisions/README.md`의 개정 그래프에 행을 추가한 뒤 대상 ADR의 `status`만 바꾼다. 명칭 변경 같은 표기 갱신은 "당시 명칭 X" 병기로 처리한다.
+- 새 ADR을 추가하거나 상태를 바꿀 때 `docs/decisions/README.md` 색인을 함께 갱신한다. 색인이 개정 관계의 단일 진실원이다.
 
 ### git
 

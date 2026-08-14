@@ -2,7 +2,7 @@
 number: 0006
 title: easy/hard 듀얼 모드와 eject, seal, attach
 date: 2026-08-13
-status: accepted
+status: amended
 ---
 
 # 0006 듀얼 모드와 모드 전환 커맨드

@@ -2,7 +2,7 @@
 number: 0007
 title: 플랫폼과 배포, 코어와 시맨틱 층 분리
 date: 2026-08-13
-status: accepted
+status: amended
 ---
 
 # 0007 플랫폼, 배포, 업그레이드

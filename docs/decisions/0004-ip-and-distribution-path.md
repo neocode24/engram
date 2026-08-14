@@ -2,7 +2,7 @@
 number: 0004
 title: IP와 배포 경로
 date: 2026-08-08
-status: accepted
+status: amended
 ---
 
 # 0004 IP와 배포 경로
