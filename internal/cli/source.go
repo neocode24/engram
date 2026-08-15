@@ -27,13 +27,13 @@ const defaultSourceType = "source-summary"
 func newSourceCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "source [내용]",
-		Short: "원본 자료를 sources에 넣고 출처를 확정한다",
-		Long: `원본 자료를 sources에 넣고 원본 필드를 확정한다.
+		Short: "원본 자료를 sources에 넣고 출처를 확정합니다",
+		Long: `원본 자료를 sources에 넣고 원본 필드를 확정합니다.
 
-내용을 인자로 받거나 파이프로 연결된 표준 입력으로 받는다.
---created로 원본이 작성된 날을 준다. 하루(YYYY-MM-DD) 또는 연월(YYYY-MM)
-정밀도를 허용하고 생략하면 전역 --now 기준 날짜를 쓴다.
-이 계층은 원본 보존이 계약이므로 문서를 고치지 않고 updated 필드도 쓰지 않는다.`,
+내용을 인자로 받거나 파이프로 연결된 표준 입력으로 받습니다.
+--created로 원본이 작성된 날을 줍니다. 하루(YYYY-MM-DD) 또는 연월(YYYY-MM)
+정밀도를 허용하고 생략하면 전역 --now 기준 날짜를 씁니다.
+이 계층은 원본 보존이 계약이므로 문서를 고치지 않고 updated 필드도 쓰지 않습니다.`,
 		Args: cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
@@ -65,7 +65,7 @@ func newSourceCmd() *cobra.Command {
 			if created == "" {
 				created = Now(cmd).Format("2006-01-02")
 			} else if !validDatePrecision(created) {
-				return fmt.Errorf("--created 값이 YYYY-MM-DD 또는 YYYY-MM 형식이 아니다: %q", created)
+				return fmt.Errorf("--created 값이 YYYY-MM-DD 또는 YYYY-MM 형식이 아닙니다: %q", created)
 			}
 			docType, err := sourceType(cmd, cfg)
 			if err != nil {
@@ -94,16 +94,16 @@ func newSourceCmd() *cobra.Command {
 				return enc.Encode(res)
 			}
 			printIngested(cmd.OutOrStdout(), res,
-				"정리가 끝나면 이 원본을 인용하는 맥락 문서를 만든다")
+				"정리가 끝나면 이 원본을 인용하는 맥락 문서를 만드세요")
 			return nil
 		},
 	}
-	cmd.Flags().String(flagTitle, "", "문서 제목. 생략하면 본문 첫 줄에서 만든다")
-	cmd.Flags().String(flagSlug, "", "파일명 슬러그. 생략하면 제목에서 만든다")
+	cmd.Flags().String(flagTitle, "", "문서 제목. 생략하면 본문 첫 줄에서 만듭니다")
+	cmd.Flags().String(flagSlug, "", "파일명 슬러그. 생략하면 제목에서 만듭니다")
 	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
 	cmd.Flags().String(flagCreated, "", "원본이 작성된 날(YYYY-MM-DD 또는 YYYY-MM)")
 	cmd.Flags().String(flagChannel, "", "입력 경로. source_channel 축 값")
-	cmd.Flags().StringArray(flagRef, nil, "원본 출처(경로나 URL). 여러 번 쓸 수 있다")
+	cmd.Flags().StringArray(flagRef, nil, "원본 출처(경로나 URL). 여러 번 쓸 수 있습니다")
 	cmd.Flags().String(flagType, defaultSourceType, "문서 종류. 허용값은 위키 설정의 types다")
 	return cmd
 }
@@ -122,7 +122,7 @@ func sourceType(cmd *cobra.Command, cfg config.Config) (string, error) {
 			return v, nil
 		}
 	}
-	return "", fmt.Errorf("--type 값이 허용값 밖이다: %q (허용값: %s)",
+	return "", fmt.Errorf("--type 값이 허용값 밖입니다: %q (허용값: %s)",
 		v, strings.Join(cfg.Schema.Types, ", "))
 }
 
@@ -151,7 +151,7 @@ func applyChannel(cmd *cobra.Command, cfg config.Config, fm map[string]any) erro
 		return nil
 	}
 	fmt.Fprintf(cmd.ErrOrStderr(),
-		"경고: source_channel 축이 꺼져 있어 --channel 값을 무시한다. 켜려면 engram.yaml의 axes에서 source_channel을 true로 둔다\n")
+		"경고: source_channel 축이 꺼져 있어 --channel 값을 무시합니다. 켜려면 engram.yaml의 axes에서 source_channel을 true로 두세요\n")
 	return nil
 }
 
@@ -170,6 +170,6 @@ func applyRefs(cmd *cobra.Command, cfg config.Config, fm map[string]any) error {
 		return nil
 	}
 	fmt.Fprintf(cmd.ErrOrStderr(),
-		"경고: source_refs 축이 꺼져 있어 --ref 값을 무시한다. 켜려면 engram.yaml의 axes에서 source_refs를 true로 둔다\n")
+		"경고: source_refs 축이 꺼져 있어 --ref 값을 무시합니다. 켜려면 engram.yaml의 axes에서 source_refs를 true로 두세요\n")
 	return nil
 }

@@ -18,7 +18,7 @@ import (
 func runDoctor(t *testing.T, args ...string) (string, error) {
 	t.Helper()
 	parent := &cobra.Command{Use: "engram", SilenceUsage: true}
-	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력한다")
+	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력합니다")
 	parent.AddCommand(newDoctorCmd())
 	var out bytes.Buffer
 	parent.SetOut(&out)
@@ -49,10 +49,10 @@ func makeDoctorWiki(t *testing.T, engramYAML string) string {
 }
 
 func TestDoctorCmd(t *testing.T) {
-	t.Run("정상 위키는 종료 코드 0 이고 요약 줄을 낸다", func(t *testing.T) {
+	t.Run("정상 위키는 종료 코드 0 이고 요약 줄을 냅니다", func(t *testing.T) {
 		out, err := runDoctor(t, "doctor", makeDoctorWiki(t, "preset: education\n"))
 		if err != nil {
-			t.Fatalf("fail 이 없으면 에러가 아니어야 한다: %v\n%s", err, out)
+			t.Fatalf("fail 이 없으면 에러가 아니어야 합니다: %v\n%s", err, out)
 		}
 		for _, want := range []string{"[ok] env.git", "항목 11개"} {
 			if !strings.Contains(out, want) {
@@ -61,10 +61,10 @@ func TestDoctorCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("위키가 아닌 디렉토리도 환경 점검은 돈다", func(t *testing.T) {
+	t.Run("위키가 아닌 디렉토리도 환경 점검은 돕니다", func(t *testing.T) {
 		out, err := runDoctor(t, "doctor", t.TempDir())
 		if err != nil {
-			t.Fatalf("환경 점검만으로는 종료 코드 0 이어야 한다: %v\n%s", err, out)
+			t.Fatalf("환경 점검만으로는 종료 코드 0 이어야 합니다: %v\n%s", err, out)
 		}
 		if !strings.Contains(out, "[ok] env.git") {
 			t.Errorf("환경 점검이 없음:\n%s", out)
@@ -74,43 +74,43 @@ func TestDoctorCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("fail 항목이 있으면 종료 코드 1 이다", func(t *testing.T) {
+	t.Run("fail 항목이 있으면 종료 코드 1 입니다", func(t *testing.T) {
 		out, err := runDoctor(t, "doctor", makeDoctorWiki(t, "preset: [깨진\n"))
 		if err == nil {
-			t.Fatal("설정 파싱 실패는 종료 코드 1이어야 한다")
+			t.Fatal("설정 파싱 실패는 종료 코드 1이어야 합니다")
 		}
 		if !strings.Contains(out, "wiki.config") {
 			t.Errorf("설정 실패 항목이 없음:\n%s", out)
 		}
 	})
 
-	t.Run("warn 항목에는 조치가 따라 나온다", func(t *testing.T) {
+	t.Run("warn 항목에는 조치가 따라 나옵니다", func(t *testing.T) {
 		out, err := runDoctor(t, "doctor", makeDoctorWiki(t, "min_wikilinks: 0\n"))
 		if err != nil {
-			t.Fatalf("warn 은 종료 코드 0 이어야 한다: %v\n%s", err, out)
+			t.Fatalf("warn 은 종료 코드 0 이어야 합니다: %v\n%s", err, out)
 		}
 		if !strings.Contains(out, "[warn] wiki.min-wikilinks") || !strings.Contains(out, "조치:") {
 			t.Errorf("warn 과 조치가 없음:\n%s", out)
 		}
 	})
 
-	t.Run("--json 은 항목 배열과 요약을 낸다", func(t *testing.T) {
+	t.Run("--json 은 항목 배열과 요약을 냅니다", func(t *testing.T) {
 		out, err := runDoctor(t, "doctor", "--json", makeDoctorWiki(t, "min_wikilinks: 0\n"))
 		if err != nil {
-			t.Fatalf("warn 은 종료 코드 0 이어야 한다: %v\n%s", err, out)
+			t.Fatalf("warn 은 종료 코드 0 이어야 합니다: %v\n%s", err, out)
 		}
 		var res doctor.Result
 		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
 			t.Fatalf("JSON 파싱 실패: %v\n출력: %s", err, out)
 		}
 		if len(res.Findings) != 11 {
-			t.Errorf("항목은 11개여야 한다, got %d", len(res.Findings))
+			t.Errorf("항목은 11개여야 합니다, got %d", len(res.Findings))
 		}
 		if res.Findings[0].ID != "env.git" || res.Findings[0].Status == "" {
-			t.Errorf("첫 항목이 env.git 이어야 한다: %+v", res.Findings[0])
+			t.Errorf("첫 항목이 env.git 이어야 합니다: %+v", res.Findings[0])
 		}
 		if res.Summary.Items != 11 || res.Summary.Warn < 1 {
-			t.Errorf("요약이 틀리다: %+v", res.Summary)
+			t.Errorf("요약이 틀리입니다: %+v", res.Summary)
 		}
 		for _, f := range res.Findings {
 			if f.ID == "" || f.Detail == "" {

@@ -112,8 +112,8 @@ func checkGit() (Finding, bool) {
 		return Finding{
 			ID:     "env.git",
 			Status: StatusWarn,
-			Detail: "git 을 실행할 수 없다",
-			Fix:    "지금 구현된 커맨드는 git 없이 전부 동작하므로 당장은 문제가 아니다. 이후 sync 와 updated 필드 자동 채움에 필요하니 그 전에 설치한다. macOS 는 xcode-select --install, Windows 는 Git for Windows 설치",
+			Detail: "git을 실행할 수 없습니다",
+			Fix:    "지금 구현된 커맨드는 git 없이 전부 동작하므로 당장은 문제가 아닙니다. 이후 sync와 updated 필드 자동 채움에 필요하니 그 전에 설치하세요. macOS는 xcode-select --install, Windows는 Git for Windows 설치",
 		}, false
 	}
 	return Finding{ID: "env.git", Status: StatusOK, Detail: ver}, true
@@ -130,18 +130,18 @@ func isGitRepo(root string) bool {
 func checkAutoCRLF(root string, hasGit bool) Finding {
 	f := Finding{ID: "env.git-autocrlf"}
 	if !hasGit {
-		f.Status, f.Detail = StatusSkip, "git 이 없어 확인할 수 없다"
+		f.Status, f.Detail = StatusSkip, "git이 없어 확인할 수 없습니다"
 		return f
 	}
 	if !isGitRepo(root) {
-		f.Status, f.Detail = StatusSkip, "대상 경로가 git 저장소가 아니다"
+		f.Status, f.Detail = StatusSkip, "대상 경로가 git 저장소가 아닙니다"
 		return f
 	}
 	val, err := gitOutput("-C", root, "config", "--get", "core.autocrlf")
 	if err != nil && !valueAbsent(err) {
 		// --get 은 값이 없으면 종료 코드 1 을 낸다. 그 외의 실패면 설정을 못 읽은 것이다.
-		f.Status, f.Detail = StatusWarn, "core.autocrlf 값을 읽을 수 없다"
-		f.Fix = "git config core.autocrlf input 으로 직접 확인한다"
+		f.Status, f.Detail = StatusWarn, "core.autocrlf 값을 읽을 수 없습니다"
+		f.Fix = "git config core.autocrlf input으로 직접 확인하세요"
 		return f
 	}
 	if val == "" {
@@ -153,7 +153,7 @@ func checkAutoCRLF(root string, hasGit bool) Finding {
 		} else {
 			f.Status = StatusWarn
 		}
-		f.Detail = "core.autocrlf 가 true 다. 줄바꿈이 자동 변환되어 프론트매터와 골든 비교가 틀어진다"
+		f.Detail = "core.autocrlf가 true입니다. 줄바꿈이 자동 변환되어 프론트매터와 골든 비교가 틀어집니다"
 		f.Fix = "git config core.autocrlf input"
 		return f
 	}
@@ -175,59 +175,78 @@ func checkFSCase() Finding {
 	f := Finding{ID: "env.fs-case"}
 	dir, err := os.MkdirTemp("", "engram-doctor-case-")
 	if err != nil {
-		f.Status, f.Detail = StatusFail, "임시 디렉토리를 만들 수 없어 확인에 실패했다"
-		f.Fix = "TMPDIR 환경변수와 임시 디렉토리 권한을 확인한다"
+		f.Status, f.Detail = StatusFail, "임시 디렉토리를 만들 수 없어 확인에 실패했습니다"
+		f.Fix = "TMPDIR 환경변수와 임시 디렉토리 권한을 확인하세요"
 		return f
 	}
 	defer os.RemoveAll(dir)
 	lower := filepath.Join(dir, "probe")
 	if err := os.WriteFile(lower, []byte("x"), 0o644); err != nil {
-		f.Status, f.Detail = StatusFail, "임시 파일을 만들 수 없어 확인에 실패했다"
-		f.Fix = "임시 디렉토리 쓰기 권한을 확인한다"
+		f.Status, f.Detail = StatusFail, "임시 파일을 만들 수 없어 확인에 실패했습니다"
+		f.Fix = "임시 디렉토리 쓰기 권한을 확인하세요"
 		return f
 	}
 	if _, err := os.Stat(filepath.Join(dir, "Probe")); err == nil {
-		f.Status, f.Detail = StatusWarn, "파일시스템이 대소문자를 무시한다. 대소문자만 다른 슬러그가 서로 겹친다"
-		f.Fix = "슬러그에 대소문자만 다른 이름을 쓰지 않는다"
+		f.Status, f.Detail = StatusWarn, "파일시스템이 대소문자를 무시합니다. 대소문자만 다른 슬러그가 서로 겹칩니다"
+		f.Fix = "슬러그에 대소문자만 다른 이름을 쓰지 마세요"
 		return f
 	}
-	f.Status, f.Detail = StatusOK, "파일시스템이 대소문자를 구분한다"
+	f.Status, f.Detail = StatusOK, "파일시스템이 대소문자를 구분합니다"
 	return f
 }
 
+// consoleState는 프로세스가 붙어 있는 콘솔의 상태다. 출력과 입력
+// 코드페이지는 서로 별개다. 출력이 한국어 메시지 깨짐을 결정하므로
+// 진단은 출력 값을 기준으로 판정한다.
+type consoleState struct {
+	IsConsole bool
+	OutputCP  uint32
+	InputCP   uint32
+}
+
 // checkConsoleEncoding은 콘솔 출력 인코딩을 본다.
-// Windows 에서 UTF-8 이 아니면 한국어 메시지가 깨진다.
+// 예전 구현은 cmd /c chcp 를 돌려 입력 코드페이지를 읽었다. engram 은
+// SetConsoleOutputCP 로 출력만 바꾸므로(ADR 0026) 자기 출력이 멀쩡한데도
+// 경고를 내는 거짓 진단이었다. 이제 출력 코드페이지를 직접 읽는다.
 func checkConsoleEncoding() Finding {
 	f := Finding{ID: "env.console-encoding"}
 	if runtime.GOOS != "windows" {
-		f.Status, f.Detail = StatusOK, "Windows 가 아니므로 콘솔은 UTF-8 을 쓴다"
+		f.Status, f.Detail = StatusOK, "Windows가 아니므로 콘솔은 UTF-8을 씁니다"
 		return f
 	}
-	out, err := exec.Command("cmd", "/c", "chcp").Output()
-	if err != nil {
-		f.Status, f.Detail = StatusWarn, "콘솔 코드페이지를 읽을 수 없다"
-		f.Fix = "콘솔에서 chcp 를 직접 실행해 코드페이지를 확인한다"
+	return consoleFinding(probeConsole())
+}
+
+// consoleFinding은 콘솔 상태로 env.console-encoding 진단을 만든다.
+// 플랫폼 무관한 순수 함수라 macOS 테스트에서 세 상황을 모두 덮는다.
+//
+// 콘솔 직결이면 engram 이 실행 중에 출력 코드페이지를 65001 로 전환한다.
+// doctor 는 전환 뒤에 돌므로 65001 이 정상이고 그렇지 않으면 전환 실패다.
+// stdout 이 콘솔이 아니면(파이프, 리다이렉트) engram 은 UTF-8 바이트를
+// 그대로 낸다. 이쪽에는 결함이 없으므로 warn 이 아니라 ok 에 안내를
+// 담는다. skip 은 두지 않는다. 파이프는 이 도구의 일반적인 쓰임이고
+// 받는 쪽 인코딩 안내가 실제로 필요한 상황이기 때문이다.
+//
+// PowerShell 로 출력을 캡처할 때 깨지는 것은 호스트의
+// [Console]::OutputEncoding 이 949 인 탓이다. doctor 는 자기 프로세스
+// 밖의 호스트 인코딩을 알 수 없어 조건부 진단이 불가능하므로 파이프
+// 상황의 안내 문구에 조치를 실어 보낸다.
+func consoleFinding(st consoleState) Finding {
+	f := Finding{ID: "env.console-encoding"}
+	if !st.IsConsole {
+		f.Status = StatusOK
+		f.Detail = "stdout이 콘솔이 아닙니다. UTF-8 바이트를 그대로 냅니다. 받는 쪽이 UTF-8로 해석해야 합니다"
+		f.Fix = "PowerShell 이라면 [Console]::OutputEncoding = [Text.Encoding]::UTF8를 먼저 실행하세요"
 		return f
 	}
-	text := strings.TrimSpace(string(out))
-	// chcp 출력은 "Active code page: 949" 형태다. 마지막 필드가 코드페이지 숫자다.
-	fields := strings.Fields(text)
-	code := ""
-	if len(fields) > 0 && isDigits(fields[len(fields)-1]) {
-		code = fields[len(fields)-1]
-	}
-	if code == "" {
-		f.Status, f.Detail = StatusWarn, fmt.Sprintf("콘솔 코드페이지를 해석할 수 없다: %q", text)
-		f.Fix = "콘솔에서 chcp 를 직접 실행해 코드페이지를 확인한다"
+	if st.OutputCP == 65001 {
+		f.Status = StatusOK
+		f.Detail = "출력 코드페이지를 65001 (UTF-8) 로 전환했습니다"
 		return f
 	}
-	if code != "65001" {
-		f.Status = StatusWarn
-		f.Detail = fmt.Sprintf("콘솔 코드페이지가 %s 다. 한국어 메시지가 깨질 수 있다", code)
-		f.Fix = "콘솔에서 chcp 65001 을 실행한다"
-		return f
-	}
-	f.Status, f.Detail = StatusOK, "콘솔 코드페이지가 65001 (UTF-8) 이다"
+	f.Status = StatusWarn
+	f.Detail = fmt.Sprintf("출력 코드페이지가 %d 입니다. 콘솔 인코딩 전환에 실패했습니다", st.OutputCP)
+	f.Fix = "콘솔에서 chcp 65001을 실행하세요"
 	return f
 }
 
@@ -263,20 +282,20 @@ func checkWritePerm(root string) Finding {
 	f := Finding{ID: "env.write-perm"}
 	info, err := os.Stat(root)
 	if err != nil {
-		f.Status, f.Detail = StatusSkip, "대상 경로가 없다"
+		f.Status, f.Detail = StatusSkip, "대상 경로가 없습니다"
 		return f
 	}
 	if !info.IsDir() {
-		f.Status, f.Detail = StatusSkip, "대상 경로가 디렉토리가 아니다"
+		f.Status, f.Detail = StatusSkip, "대상 경로가 디렉토리가 아닙니다"
 		return f
 	}
 	if err := probeWrite(root); err != nil {
 		f.Status = StatusFail
-		f.Detail = fmt.Sprintf("위키 루트에 쓸 수 없다: %v", err)
-		f.Fix = fmt.Sprintf("chmod u+w %s 또는 디렉토리 소유자를 확인한다", root)
+		f.Detail = fmt.Sprintf("위키 루트에 쓸 수 없습니다: %v", err)
+		f.Fix = fmt.Sprintf("chmod u+w %s 또는 디렉토리 소유자를 확인하세요", root)
 		return f
 	}
-	f.Status, f.Detail = StatusOK, "위키 루트에 쓸 수 있다"
+	f.Status, f.Detail = StatusOK, "위키 루트에 쓸 수 있습니다"
 	return f
 }
 
@@ -285,23 +304,23 @@ func loadConfig(root string) (config.Config, bool, Finding) {
 	f := Finding{ID: "wiki.config"}
 	path := filepath.Join(root, config.ConfigFileName)
 	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
-		f.Status, f.Detail = StatusSkip, "engram.yaml 이 없어 위키가 아니다. 환경 점검만 진행한다"
+		f.Status, f.Detail = StatusSkip, "engram.yaml이 없어 위키가 아닙니다. 환경 점검만 진행합니다"
 		return config.Config{}, false, f
 	}
 	cfg, err := config.LoadFile(path)
 	if err != nil {
 		f.Status = StatusFail
-		f.Detail = fmt.Sprintf("engram.yaml 을 파싱할 수 없다: %v", err)
-		f.Fix = "engram.yaml 의 YAML 문법을 고친다"
+		f.Detail = fmt.Sprintf("engram.yaml을 파싱할 수 없습니다: %v", err)
+		f.Fix = "engram.yaml의 YAML 문법을 고치세요"
 		return config.Config{}, true, f
 	}
-	f.Status, f.Detail = StatusOK, "engram.yaml 을 읽었다"
+	f.Status, f.Detail = StatusOK, "engram.yaml을 읽었습니다"
 	return cfg, true, f
 }
 
 // skipFinding은 위키가 아닐 때의 항목을 만든다.
 func skipFinding(id string) Finding {
-	return Finding{ID: id, Status: StatusSkip, Detail: "engram.yaml 이 없어 위키가 아니다"}
+	return Finding{ID: id, Status: StatusSkip, Detail: "engram.yaml이 없어 위키가 아닙니다"}
 }
 
 // checkUnknownKeys는 설정의 알 수 없는 키를 본다. 오타를 여기서 잡는다.
@@ -313,10 +332,10 @@ func checkUnknownKeys(cfg config.Config, isWiki bool) Finding {
 	if len(cfg.UnknownKeys) > 0 {
 		f.Status = StatusWarn
 		f.Detail = fmt.Sprintf("알 수 없는 키: %s", strings.Join(cfg.UnknownKeys, ", "))
-		f.Fix = "이 키들을 지우거나 맞는 이름으로 고친다. 지원 키는 engram config list --origin 에서 본다"
+		f.Fix = "이 키들을 지우거나 맞는 이름으로 고치세요. 지원 키는 engram config list --origin에서 봅니다"
 		return f
 	}
-	f.Status, f.Detail = StatusOK, "알 수 없는 키가 없다"
+	f.Status, f.Detail = StatusOK, "알 수 없는 키가 없습니다"
 	return f
 }
 
@@ -329,8 +348,8 @@ func checkMinWikilinks(cfg config.Config, isWiki bool) Finding {
 	f := Finding{ID: "wiki.min-wikilinks"}
 	if cfg.Thresholds.MinWikilinks == 0 {
 		f.Status = StatusWarn
-		f.Detail = "min_wikilinks 가 0 이라 승급 게이트가 꺼져 있다"
-		f.Fix = "engram.yaml 에 min_wikilinks: 2 를 지정한다"
+		f.Detail = "min_wikilinks가 0 이라 승급 게이트가 꺼져 있습니다"
+		f.Fix = "engram.yaml에 min_wikilinks: 2를 지정하세요"
 		return f
 	}
 	f.Status, f.Detail = StatusOK, fmt.Sprintf("min_wikilinks %d", cfg.Thresholds.MinWikilinks)
@@ -355,7 +374,7 @@ func checkPageDirs(root string, cfg config.Config, isWiki bool) Finding {
 		f.Fix = fmt.Sprintf("mkdir %s", strings.Join(missing, " "))
 		return f
 	}
-	f.Status, f.Detail = StatusOK, fmt.Sprintf("page_dirs %d개가 모두 있다", len(cfg.PageDirs))
+	f.Status, f.Detail = StatusOK, fmt.Sprintf("page_dirs %d개가 모두 있습니다", len(cfg.PageDirs))
 	return f
 }
 
@@ -374,10 +393,10 @@ func checkRootFiles(root string, cfg config.Config, isWiki bool) Finding {
 	if len(missing) > 0 {
 		f.Status = StatusFail
 		f.Detail = fmt.Sprintf("없는 루트 파일: %s", strings.Join(missing, ", "))
-		f.Fix = fmt.Sprintf("%s 파일을 위키 루트에 만든다", strings.Join(missing, ", "))
+		f.Fix = fmt.Sprintf("%s 파일을 위키 루트에 만드세요", strings.Join(missing, ", "))
 		return f
 	}
-	f.Status, f.Detail = StatusOK, fmt.Sprintf("root_files %d개가 모두 있다", len(cfg.RootFiles))
+	f.Status, f.Detail = StatusOK, fmt.Sprintf("root_files %d개가 모두 있습니다", len(cfg.RootFiles))
 	return f
 }
 
@@ -389,22 +408,22 @@ func checkEngramGitignore(root string, hasGit, isWiki bool) Finding {
 	}
 	f := Finding{ID: "wiki.engram-gitignore"}
 	if !hasGit {
-		f.Status, f.Detail = StatusSkip, "git 이 없어 확인할 수 없다"
+		f.Status, f.Detail = StatusSkip, "git이 없어 확인할 수 없습니다"
 		return f
 	}
 	if !isGitRepo(root) {
-		f.Status, f.Detail = StatusSkip, "위키가 git 저장소가 아니다"
+		f.Status, f.Detail = StatusSkip, "위키가 git 저장소가 아닙니다"
 		return f
 	}
 	// 캐시 안 파일 경로로 묻는다. ".engram/" 형태의 패턴은 디렉토리에만
 	// 걸리는데 .engram 이 아직 없으면 디렉토리로서 매칭되지 않기 때문이다.
 	err := exec.Command("git", "-C", root, "check-ignore", "-q", filepath.FromSlash(".engram/cache")).Run()
 	if err == nil {
-		f.Status, f.Detail = StatusOK, ".engram 이 gitignore 된다"
+		f.Status, f.Detail = StatusOK, ".engram이 gitignore 됩니다"
 		return f
 	}
 	f.Status = StatusWarn
-	f.Detail = ".engram 캐시 디렉토리가 gitignore 되지 않았다"
-	f.Fix = "위키 루트 .gitignore 에 .engram/ 줄을 추가한다"
+	f.Detail = ".engram 캐시 디렉토리가 gitignore 되지 않았습니다"
+	f.Fix = "위키 루트 .gitignore에 .engram/ 줄을 추가하세요"
 	return f
 }

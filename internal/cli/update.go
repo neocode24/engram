@@ -25,17 +25,17 @@ const (
 func newUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update <경로>",
-		Short: "문서의 프론트매터와 본문을 갱신한다",
-		Long: `문서의 프론트매터 키와 본문을 갱신한다.
+		Short: "문서의 프론트매터와 본문을 갱신합니다",
+		Long: `문서의 프론트매터 키와 본문을 갱신합니다.
 
---set key=value 로 키를 설정한다. 반복할 수 있다. 배열 축은 쉼표로
-여러 값을 준다. 예: --set topics=go,cli
---unset key 로 키를 지운다. 반복할 수 있다.
---body-from <파일> 로 본문을 통째로 바꾼다. - 를 주면 표준 입력을 읽는다.
+--set key=value 로 키를 설정합니다. 반복할 수 있습니다. 배열 축은 쉼표로
+여러 값을 줍니다. 예: --set topics=go,cli
+--unset key 로 키를 지웁니다. 반복할 수 있습니다.
+--body-from <파일> 로 본문을 통째로 바꿉니다. - 를 주면 표준 입력을 읽습니다.
 
-꺼진 축의 키와 허용값 밖의 값은 거절한다. artifact_stage는 여기서
-바꾸지 못한다. 단계 이동은 engram promote와 engram demote의 일이다.
-키 순서는 파싱이 보존한 그대로 유지된다.`,
+꺼진 축의 키와 허용값 밖의 값은 거절합니다. artifact_stage는 여기서
+바꾸지 못합니다. 단계 이동은 engram promote와 engram demote의 일입니다.
+키 순서는 파싱이 보존한 그대로 유지됩니다.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
@@ -59,7 +59,7 @@ func newUpdateCmd() *cobra.Command {
 				return err
 			}
 			if len(sets) == 0 && len(unsets) == 0 && bodyFrom == "" {
-				return fmt.Errorf("갱신할 내용이 없다\n--set key=value, --unset key, --body-from <파일|-> 중 하나를 쓴다")
+				return fmt.Errorf("갱신할 내용이 없습니다\n--set key=value, --unset key, --body-from <파일|-> 중 하나를 쓰세요")
 			}
 
 			raw, err := os.ReadFile(srcPath)
@@ -75,7 +75,7 @@ func newUpdateCmd() *cobra.Command {
 			for _, kv := range sets {
 				key, value, ok := strings.Cut(kv, "=")
 				if !ok {
-					return fmt.Errorf("--set 값이 key=value 형식이 아니다: %q", kv)
+					return fmt.Errorf("--set 값이 key=value 형식이 아닙니다: %q", kv)
 				}
 				f, err := settableField(key, value, cfg)
 				if err != nil {
@@ -85,10 +85,10 @@ func newUpdateCmd() *cobra.Command {
 			}
 			for _, key := range unsets {
 				if key == "artifact_stage" {
-					return fmt.Errorf("artifact_stage는 update로 지울 수 없다. 단계 이동은 engram promote와 engram demote가 한다")
+					return fmt.Errorf("artifact_stage는 update로 지울 수 없습니다. 단계 이동은 engram promote와 engram demote가 합니다")
 				}
 				if axisOff(key, cfg) {
-					return fmt.Errorf("꺼진 축의 키는 지울 것도 없다: %s", key)
+					return fmt.Errorf("꺼진 축의 키는 지울 것도 없습니다: %s", key)
 				}
 				fields = removeField(fields, key)
 			}
@@ -103,7 +103,7 @@ func newUpdateCmd() *cobra.Command {
 				body = content
 				bodyChanged = true
 				if rel := stageOfPath(root, srcPath); rel == "sources" {
-					fmt.Fprintf(cmd.ErrOrStderr(), "경고: sources는 원본 보존 계층이다. 본문을 바꾼 사실을 기억한다\n")
+					fmt.Fprintf(cmd.ErrOrStderr(), "경고: sources는 원본 보존 계층입니다. 본문을 바꾼 사실을 기억해 두세요\n")
 				}
 			}
 
@@ -126,7 +126,7 @@ func newUpdateCmd() *cobra.Command {
 	}
 	cmd.Flags().StringArray(flagSetKey, nil, "프론트매터 키 설정. key=value. 반복 가능")
 	cmd.Flags().StringArray(flagUnsetKey, nil, "프론트매터 키 제거. 반복 가능")
-	cmd.Flags().String(flagBodyFrom, "", "본문을 통째로 바꾼다. 파일 경로 또는 - (표준 입력)")
+	cmd.Flags().String(flagBodyFrom, "", "본문을 통째로 바꿉니다. 파일 경로 또는 - (표준 입력)")
 	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
 	return cmd
 }
@@ -192,10 +192,10 @@ func allowedFor(key string, cfg config.Config) ([]string, bool) {
 // settableField는 --set 하나를 검증해 필드로 만든다.
 func settableField(key, value string, cfg config.Config) (doc.Field, error) {
 	if key == "artifact_stage" {
-		return doc.Field{}, fmt.Errorf("artifact_stage는 update로 바꿀 수 없다. 단계 이동은 engram promote와 engram demote가 한다")
+		return doc.Field{}, fmt.Errorf("artifact_stage는 update로 바꿀 수 없습니다. 단계 이동은 engram promote와 engram demote가 합니다")
 	}
 	if axisOff(key, cfg) {
-		return doc.Field{}, fmt.Errorf("꺼진 축의 키는 설정할 수 없다: %s (프리셋 %s). engram.yaml의 axes에서 켜거나 문서에서 쓰지 않는다", key, cfg.Preset)
+		return doc.Field{}, fmt.Errorf("꺼진 축의 키는 설정할 수 없습니다: %s (프리셋 %s). engram.yaml의 axes에서 켜거나 문서에서 쓰지 않습니다", key, cfg.Preset)
 	}
 	for _, f := range arrayFields() {
 		if f != key {
@@ -206,7 +206,7 @@ func settableField(key, value string, cfg config.Config) (doc.Field, error) {
 			for _, item := range strings.Split(value, ",") {
 				item = strings.TrimSpace(item)
 				if item == "" {
-					return doc.Field{}, fmt.Errorf("--set %s=%s 값에 빈 항목이 있다", key, value)
+					return doc.Field{}, fmt.Errorf("--set %s=%s 값에 빈 항목이 있습니다", key, value)
 				}
 				if key == "related" {
 					item = linkValue(item)
@@ -222,11 +222,11 @@ func settableField(key, value string, cfg config.Config) (doc.Field, error) {
 		case "true", "false":
 			return doc.Field{Key: key, Kind: doc.KindBool, Bool: value == "true"}, nil
 		}
-		return doc.Field{}, fmt.Errorf("--set %s=%s 값이 참/거짓이 아니다 (true 또는 false)", key, value)
+		return doc.Field{}, fmt.Errorf("--set %s=%s 값이 참/거짓이 아닙니다 (true 또는 false)", key, value)
 	}
 	if allowed, ok := allowedFor(key, cfg); ok && value != "" {
 		if !containsString(allowed, value) {
-			return doc.Field{}, fmt.Errorf("--set %s=%s 값이 허용값 밖이다 (허용값: %s)", key, value, strings.Join(allowed, ", "))
+			return doc.Field{}, fmt.Errorf("--set %s=%s 값이 허용값 밖입니다 (허용값: %s)", key, value, strings.Join(allowed, ", "))
 		}
 	}
 	if value == "" {
@@ -275,7 +275,7 @@ func stageOfPath(root, path string) string {
 
 // printUpdated은 갱신 내용과 다음에 할 수 있는 일을 낸다.
 func printUpdated(w io.Writer, res updateOutcome) {
-	fmt.Fprintf(w, "갱신했다: %s\n", res.Path)
+	fmt.Fprintf(w, "갱신했습니다: %s\n", res.Path)
 	for _, kv := range res.Set {
 		fmt.Fprintf(w, "설정: %s\n", kv)
 	}
@@ -285,5 +285,5 @@ func printUpdated(w io.Writer, res updateOutcome) {
 	if res.BodyFrom != "" {
 		fmt.Fprintf(w, "본문 교체: %s\n", res.BodyFrom)
 	}
-	fmt.Fprintf(w, "다음: engram lint로 갱신된 문서의 스키마를 확인한다\n")
+	fmt.Fprintf(w, "다음: engram lint로 갱신된 문서의 스키마를 확인하세요\n")
 }

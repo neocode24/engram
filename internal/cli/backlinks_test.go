@@ -35,7 +35,7 @@ func backlinksWiki(t *testing.T) string {
 			"type: concept\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
 			"source_channel: manual\nderived_context: []\n" +
-			"---\n\n# 중심 문서\n\n본문에서 [[게이트웨이]] 를 가리킨다.",
+			"---\n\n# 중심 문서\n\n본문에서 [[게이트웨이]] 를 가리킵니다.",
 		"context/peer.md": "---\n" +
 			"type: concept\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nsource_refs: []\nderived_from: []\n" +
@@ -66,7 +66,7 @@ func backlinksWiki(t *testing.T) string {
 }
 
 func TestBacklinksCmd(t *testing.T) {
-	t.Run("링크 종류를 구분해 낸다", func(t *testing.T) {
+	t.Run("링크 종류를 구분해 냅니다", func(t *testing.T) {
 		dir := backlinksWiki(t)
 		out, err := runBacklinksRoot(t, "backlinks", "--wiki", dir, "게이트웨이")
 		if err != nil {
@@ -81,7 +81,7 @@ func TestBacklinksCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("경로 형태 질의도 정규화해 잡는다", func(t *testing.T) {
+	t.Run("경로 형태 질의도 정규화해 잡습니다", func(t *testing.T) {
 		dir := backlinksWiki(t)
 		out, err := runBacklinksRoot(t, "backlinks", "--wiki", dir, "sources/2026-01-08-게이트웨이.md")
 		if err != nil {
@@ -92,7 +92,7 @@ func TestBacklinksCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("문서가 없으면 깨진 링크임을 알린다", func(t *testing.T) {
+	t.Run("문서가 없으면 깨진 링크임을 알립니다", func(t *testing.T) {
 		dir := backlinksWiki(t)
 		// 위키에는 없는 슬러그를 hub 본문에서 가리키게 만든다.
 		hub := filepath.Join(dir, "context", "hub.md")
@@ -105,25 +105,25 @@ func TestBacklinksCmd(t *testing.T) {
 		}
 		out, err := runBacklinksRoot(t, "backlinks", "--wiki", dir, "없는문서")
 		if err != nil {
-			t.Fatalf("조회는 판정이 아니다: %v", err)
+			t.Fatalf("조회는 판정이 아닙니다: %v", err)
 		}
-		if !strings.Contains(out, "문서가 위키에 없다") || !strings.Contains(out, "context/hub.md") {
+		if !strings.Contains(out, "문서가 위키에 없습니다") || !strings.Contains(out, "context/hub.md") {
 			t.Errorf("깨진 링크 안내가 없음:\n%s", out)
 		}
 	})
 
-	t.Run("백링크가 없으면 고아 가능성을 알린다", func(t *testing.T) {
+	t.Run("백링크가 없으면 고아 가능성을 알립니다", func(t *testing.T) {
 		dir := backlinksWiki(t)
 		out, err := runBacklinksRoot(t, "backlinks", "--wiki", dir, "nobody-links-this")
 		if err != nil {
 			t.Fatalf("결과 없음은 종료 코드 0이어야 함: %v", err)
 		}
-		if !strings.Contains(out, "백링크가 없다") || !strings.Contains(out, "고아 문서") {
+		if !strings.Contains(out, "백링크가 없습니다") || !strings.Contains(out, "고아 문서") {
 			t.Errorf("고아 안내가 없음:\n%s", out)
 		}
 	})
 
-	t.Run("--json은 종류와 줄과 원본 값을 낸다", func(t *testing.T) {
+	t.Run("--json은 종류와 줄과 원본 값을 냅니다", func(t *testing.T) {
 		dir := backlinksWiki(t)
 		out, err := runBacklinksRoot(t, "backlinks", "--json", "--wiki", dir, "게이트웨이")
 		if err != nil {
@@ -144,7 +144,7 @@ func TestBacklinksCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("위키가 아닌 디렉토리에서는 init을 안내한다", func(t *testing.T) {
+	t.Run("위키가 아닌 디렉토리에서는 init을 안내합니다", func(t *testing.T) {
 		_, err := runBacklinksRoot(t, "backlinks", "--wiki", t.TempDir(), "x")
 		if err == nil || !strings.Contains(err.Error(), "engram init") {
 			t.Fatalf("거절되어야 함: %v", err)

@@ -27,11 +27,11 @@ type reindexResult struct {
 func newReindexCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reindex [경로]",
-		Short: "검색 색인을 만든다",
-		Long: `위키를 순회해 검색 색인을 만들고 .engram/index.json에 쓴다.
+		Short: "검색 색인을 만듭니다",
+		Long: `위키를 순회해 검색 색인을 만들고 .engram/index.json에 씁니다.
 
-reindex가 인덱스를 만드는 유일한 커맨드다. 조회 커맨드는 색인 파일을
-갱신하지 않는다. 경로를 생략하면 현재 디렉토리다.`,
+reindex가 인덱스를 만드는 유일한 커맨드입니다. 조회 커맨드는 색인 파일을
+갱신하지 않습니다. 경로를 생략하면 현재 디렉토리입니다.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root := "."
@@ -69,7 +69,7 @@ reindex가 인덱스를 만드는 유일한 커맨드다. 조회 커맨드는 �
 				enc.SetIndent("", "  ")
 				return enc.Encode(res)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "색인을 만들었다: %s\n", res.Path)
+			fmt.Fprintf(cmd.OutOrStdout(), "색인을 만들었습니다: %s\n", res.Path)
 			fmt.Fprintf(cmd.OutOrStdout(), "문서 %d개, 토큰 %d개, 크기 %d 바이트\n",
 				res.Docs, res.Tokens, res.IndexBytes)
 			return nil
@@ -83,7 +83,7 @@ reindex가 인덱스를 만드는 유일한 커맨드다. 조회 커맨드는 �
 func loadWikiAt(root string) (config.Config, error) {
 	if _, err := os.Stat(filepath.Join(root, config.ConfigFileName)); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return config.Config{}, fmt.Errorf("위키가 아닌 디렉토리다: %s\n먼저 engram init을 실행한다", root)
+			return config.Config{}, fmt.Errorf("위키가 아닌 디렉토리입니다: %s\n먼저 engram init을 실행하세요", root)
 		}
 		return config.Config{}, fmt.Errorf("대상 경로를 확인할 수 없음: %w", err)
 	}

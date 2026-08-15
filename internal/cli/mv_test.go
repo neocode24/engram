@@ -17,7 +17,7 @@ import (
 func runMv(t *testing.T, args ...string) (string, error) {
 	t.Helper()
 	parent := &cobra.Command{Use: "engram", SilenceUsage: true}
-	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력한다")
+	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력합니다")
 	parent.PersistentFlags().String(flagNow, "", "기준 시각(RFC3339)")
 	parent.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		raw, err := cmd.Flags().GetString(flagNow)
@@ -58,9 +58,9 @@ func linkyWiki(t *testing.T) string {
 		"context/body.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
 			"source_channel: manual\nderived_context: []\n" +
-			"---\n\n[[old]] 를 본다. [[old|옛 문서]] 도 본다. [[old#절]] 도 본다.\n" +
-			"```\n[[old]] 는 코드 펜스 안이다\n```\n" +
-			"인라인 `[[old]]` 도 코드다.\n",
+			"---\n\n[[old]] 를 봅니다. [[old|옛 문서]] 도 봅니다. [[old#절]] 도 봅니다.\n" +
+			"```\n[[old]] 는 코드 펜스 안입니다\n```\n" +
+			"인라인 `[[old]]` 도 코드입니다.\n",
 		// related 필드 링크.
 		"context/related.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nsource_refs: []\nderived_from: []\n" +
@@ -98,7 +98,7 @@ func lintHasBroken(res lint.Result) bool {
 }
 
 func TestMvCmd(t *testing.T) {
-	t.Run("모든 종류의 링크를 고치고 접두사를 유지한다", func(t *testing.T) {
+	t.Run("모든 종류의 링크를 고치고 접두사를 유지합니다", func(t *testing.T) {
 		root := linkyWiki(t)
 		out, err := runMv(t, "mv", "--wiki", root, "old", "renamed")
 		if err != nil {
@@ -106,22 +106,22 @@ func TestMvCmd(t *testing.T) {
 		}
 		// 파일이 옮겨졌는지.
 		if _, err := os.Stat(filepath.Join(root, "context", "renamed.md")); err != nil {
-			t.Fatalf("옮겨진 문서가 없다: %v", err)
+			t.Fatalf("옮겨진 문서가 없습니다: %v", err)
 		}
 		if _, err := os.Stat(filepath.Join(root, "context", "old.md")); !os.IsNotExist(err) {
-			t.Error("옛 문서가 남아 있다")
+			t.Error("옛 문서가 남아 있습니다")
 		}
 		// 본문 세 형태. 표시 문자열과 헤딩 보존.
 		body := readWiki(t, root, "context/body.md")
-		for _, want := range []string{"[[renamed]] 를 본다", "[[renamed|옛 문서]] 도 본다", "[[renamed#절]] 도 본다"} {
+		for _, want := range []string{"[[renamed]] 를 봅니다", "[[renamed|옛 문서]] 도 봅니다", "[[renamed#절]] 도 봅니다"} {
 			if !strings.Contains(body, want) {
 				t.Errorf("본문에 %q 없음:\n%s", want, body)
 			}
 		}
 		// 코드 펜스와 인라인 코드는 그대로.
-		for _, want := range []string{"[[old]] 는 코드 펜스 안이다", "`[[old]]`"} {
+		for _, want := range []string{"[[old]] 는 코드 펜스 안입니다", "`[[old]]`"} {
 			if !strings.Contains(body, want) {
-				t.Errorf("코드 안 링크가 바뀌었다: %q 없음:\n%s", want, body)
+				t.Errorf("코드 안 링크가 바뀌었습니다: %q 없음:\n%s", want, body)
 			}
 		}
 		// related 갱신.
@@ -138,7 +138,7 @@ func TestMvCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("mv 뒤 lint 가 깨진 링크를 보고하지 않는다", func(t *testing.T) {
+	t.Run("mv 뒤 lint 가 깨진 링크를 보고하지 않습니다", func(t *testing.T) {
 		root := linkyWiki(t)
 		if _, err := runMv(t, "mv", "--wiki", root, "old", "renamed"); err != nil {
 			t.Fatal(err)
@@ -160,21 +160,21 @@ func TestMvCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("링크 없는 문서는 파일만 옮긴다", func(t *testing.T) {
+	t.Run("링크 없는 문서는 파일만 옮깁니다", func(t *testing.T) {
 		root := linkyWiki(t)
 		out, err := runMv(t, "mv", "--wiki", root, "alone", "solitary")
 		if err != nil {
 			t.Fatalf("mv 실패: %v\n%s", err, out)
 		}
-		if !strings.Contains(out, "고칠 링크가 없다") {
+		if !strings.Contains(out, "고칠 링크가 없습니다") {
 			t.Errorf("링크 없음 안내가 없음:\n%s", out)
 		}
 		if _, err := os.Stat(filepath.Join(root, "context", "solitary.md")); err != nil {
-			t.Fatalf("옮겨진 문서가 없다: %v", err)
+			t.Fatalf("옮겨진 문서가 없습니다: %v", err)
 		}
 	})
 
-	t.Run("--dry-run 은 아무것도 쓰지 않는다", func(t *testing.T) {
+	t.Run("--dry-run 은 아무것도 쓰지 않습니다", func(t *testing.T) {
 		root := linkyWiki(t)
 		before := readWiki(t, root, "context/body.md")
 		out, err := runMv(t, "mv", "--dry-run", "--wiki", root, "old", "renamed")
@@ -187,37 +187,37 @@ func TestMvCmd(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(root, "context", "old.md")); err != nil {
 			t.Error("dry-run 이 파일을 옮겼다")
 		}
-		if !strings.Contains(out, "바꿀 예정") || !strings.Contains(out, "아무것도 쓰지 않았다") {
+		if !strings.Contains(out, "바꿀 예정") || !strings.Contains(out, "아무것도 쓰지 않았습니다") {
 			t.Errorf("dry-run 안내가 없음:\n%s", out)
 		}
 	})
 
-	t.Run("옛 슬러그가 없으면 거절한다", func(t *testing.T) {
+	t.Run("옛 슬러그가 없으면 거절합니다", func(t *testing.T) {
 		root := linkyWiki(t)
 		out, err := runMv(t, "mv", "--wiki", root, "no-such-doc", "x")
 		if err == nil {
-			t.Fatal("거절이어야 한다")
+			t.Fatal("거절이어야 합니다")
 		}
-		if !strings.Contains(out, "문서가 없다") {
+		if !strings.Contains(out, "문서가 없습니다") {
 			t.Errorf("거절 안내가 없음: %s", out)
 		}
 	})
 
-	t.Run("새 슬러그가 이미 있으면 거절한다", func(t *testing.T) {
+	t.Run("새 슬러그가 이미 있으면 거절합니다", func(t *testing.T) {
 		root := linkyWiki(t)
 		out, err := runMv(t, "mv", "--wiki", root, "old", "alone")
 		if err == nil {
-			t.Fatal("거절이어야 한다")
+			t.Fatal("거절이어야 합니다")
 		}
-		if !strings.Contains(out, "이미 쓰이고 있다") {
+		if !strings.Contains(out, "이미 쓰이고 있습니다") {
 			t.Errorf("거절 안내가 없음: %s", out)
 		}
 		if _, err := os.Stat(filepath.Join(root, "context", "old.md")); err != nil {
-			t.Error("거절했는데 원본이 사라졌다")
+			t.Error("거절했는데 원본이 사라졌습니다")
 		}
 	})
 
-	t.Run("--json 은 결과를 구조화해 낸다", func(t *testing.T) {
+	t.Run("--json 은 결과를 구조화해 냅니다", func(t *testing.T) {
 		root := linkyWiki(t)
 		out, err := runMv(t, "mv", "--json", "--wiki", root, "old", "renamed")
 		if err != nil {
@@ -228,7 +228,7 @@ func TestMvCmd(t *testing.T) {
 			t.Fatalf("JSON 파싱 실패: %v\n%s", err, out)
 		}
 		if res.Slug != "renamed" || !strings.HasSuffix(res.To, "renamed.md") {
-			t.Errorf("결과가 틀리다: %+v", res)
+			t.Errorf("결과가 틀리입니다: %+v", res)
 		}
 		total := 0
 		for _, u := range res.Updated {
@@ -240,10 +240,10 @@ func TestMvCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("위키가 아니면 거절한다", func(t *testing.T) {
+	t.Run("위키가 아니면 거절합니다", func(t *testing.T) {
 		out, err := runMv(t, "mv", "--wiki", t.TempDir(), "a", "b")
 		if err == nil {
-			t.Fatal("거절이어야 한다")
+			t.Fatal("거절이어야 합니다")
 		}
 		if !strings.Contains(out, "engram init") {
 			t.Errorf("init 안내가 없음: %s", out)
@@ -252,17 +252,17 @@ func TestMvCmd(t *testing.T) {
 }
 
 func TestMvCmdPrefix(t *testing.T) {
-	t.Run("inbox 문서를 옮기면 날짜 접두사를 유지한다", func(t *testing.T) {
+	t.Run("inbox 문서를 옮기면 날짜 접두사를 유지합니다", func(t *testing.T) {
 		root := linkyWiki(t)
 		out, err := runMv(t, "mv", "--wiki", root, "prefixdoc", "newname")
 		if err != nil {
 			t.Fatalf("mv 실패: %v\n%s", err, out)
 		}
 		if _, err := os.Stat(filepath.Join(root, "inbox", "2026-02-20-newname.md")); err != nil {
-			t.Fatalf("접두사가 유지된 파일이 없다: %v", err)
+			t.Fatalf("접두사가 유지된 파일이 없습니다: %v", err)
 		}
 		if _, err := os.Stat(filepath.Join(root, "inbox", "2026-02-20-prefixdoc.md")); !os.IsNotExist(err) {
-			t.Error("옛 문서가 남아 있다")
+			t.Error("옛 문서가 남아 있습니다")
 		}
 	})
 }

@@ -42,6 +42,16 @@ function Invoke-Engram {
     return $LASTEXITCODE
 }
 
+# Invoke-EngramDirect 는 출력을 캡처하지 않고 콘솔에 직접 출력한다.
+# 파이프나 리다이렉트를 걸면 자식 stdout 이 콘솔이 아니게 되어
+# ADR 0026 의 코드페이지 전환 조건 자체가 성립하지 않는다.
+# 콘솔 직결 동작은 이 경로로만 검증된다.
+function Invoke-EngramDirect {
+    param([string[]]$Arguments)
+    & $script:EngramPath @Arguments
+    return $LASTEXITCODE
+}
+
 function Show-Output {
     Write-Output "----- 실행 출력 -----"
     Write-Output $script:LastOutput
@@ -102,14 +112,25 @@ if ($code -ne 0 -or $hangulFile -eq $null) {
 }
 
 # 5. 한글 본문 출력. 화면에 기대 문자열을 함께 찍어 대조한다.
+# 이 항목은 파이프로 캡처한 출력이다. 자식 stdout 이 콘솔이 아니므로
+# 콘솔 코드페이지 전환 대상이 아니다.
 $code = Invoke-Engram @("status", $WikiA)
 if ($code -ne 0) {
     $KeepWork = $true
-    Add-Result "한글 출력" "FAIL" ("status 종료 코드 " + $code)
+    Add-Result "한글 출력(파이프)" "FAIL" ("status 종료 코드 " + $code)
 } else {
     Write-Output "기대 문자열 (스크립트가 직접 출력): 현황 / 적체 압력 / 다음 행동"
     Show-Output
-    Add-Result "한글 출력" "확인필요" "위의 기대 문자열과 실행 출력의 한글이 같은 글자로 보이는지 눈으로 비교한다. 깨짐이 있으면 코드페이지와 콘솔 종류를 결과에 적는다."
+    Add-Result "한글 출력(파이프)" "확인필요" "위의 기대 문자열과 실행 출력의 한글이 같은 글자로 보이는지 눈으로 비교한다. 깨지면 호스트 인코딩 문제다. [Console]::OutputEncoding = [Text.Encoding]::UTF8 를 실행한 뒤 다시 돌려본다."
+}
+
+# 5-1. 같은 커맨드를 콘솔에 직접 출력한다. 파이프도 리다이렉트도 걸지 않는다.
+$codeDirect = Invoke-EngramDirect @("status", $WikiA)
+if ($codeDirect -ne 0) {
+    $KeepWork = $true
+    Add-Result "한글 출력(콘솔 직결)" "FAIL" ("status 종료 코드 " + $codeDirect)
+} else {
+    Add-Result "한글 출력(콘솔 직결)" "확인필요" "기대: 현황, 적체 압력, 다음 행동 문장이 한글로 온전히 보인다. 5번(파이프)과 나란히 비교한다. 직결은 온전한데 파이프가 깨지면 정상이다. ADR 0026 의 콘솔 전환이 동작하는 것이다. 직결까지 깨지면 발견이다."
 }
 
 # 6. 긴 제목 capture. 한글 120자 이상. 슬러그를 따로 주지 않아 제목이

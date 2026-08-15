@@ -106,8 +106,8 @@ func Run(wikiRoot string, cfg config.Config) (Result, error) {
 		if !w.Parsed.HasFrontmatter {
 			violations = append(violations, Violation{
 				Rule: "frontmatter.missing", Severity: SevError, Path: w.Rel, Line: 1,
-				Message: "프론트매터가 없다",
-				Fix:     "문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫는다",
+				Message: "프론트매터가 없습니다",
+				Fix:     "문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫으세요",
 			})
 			continue
 		}
@@ -154,14 +154,14 @@ func parseViolations(w walk.Doc) []Violation {
 		return []Violation{{
 			Rule: "frontmatter.unclosed", Severity: SevError, Path: w.Rel, Line: 1,
 			Message: "프론트매터가 닫는 --- 구분자 없이 끝났다",
-			Fix:     "프론트매터 끝에 --- 줄을 추가한다",
+			Fix:     "프론트매터 끝에 --- 줄을 추가하세요",
 		}}
 	}
 	return []Violation{{
 		Rule: "frontmatter.yaml", Severity: SevError, Path: w.Rel,
 		Line:    yamlErrorLine(w.Err.Error()),
 		Message: "프론트매터 YAML 파싱 실패: " + w.Err.Error(),
-		Fix:     "프론트매터의 YAML 문법을 고친다",
+		Fix:     "프론트매터의 YAML 문법을 고치세요",
 	}}
 }
 
@@ -269,8 +269,8 @@ func (s *scannedDoc) checkRequiredFields(cfg config.Config, add func(Severity, s
 	for _, f := range requiredFields(s.stage, cfg) {
 		if _, ok := s.fields[f]; !ok {
 			add(SevError, "frontmatter.missing-field", lineOfKey(s.content, "artifact_stage"),
-				fmt.Sprintf("단계 %s의 필수 필드 %s가 없다", s.stage, f),
-				fmt.Sprintf("프론트매터에 %s 필드를 추가한다", f))
+				fmt.Sprintf("단계 %s의 필수 필드 %s가 없습니다", s.stage, f),
+				fmt.Sprintf("프론트매터에 %s 필드를 추가하세요", f))
 		}
 	}
 }
@@ -311,8 +311,8 @@ func (s *scannedDoc) checkAllowedValues(cfg config.Config, add func(Severity, st
 		allowed := vf.set(cfg)
 		if !contains(allowed, f.Str) {
 			add(SevError, "schema.allowed-value", lineOfKey(s.content, vf.key),
-				fmt.Sprintf("%s 값이 허용값 밖이다: %q (허용값: %s)", vf.key, f.Str, strings.Join(allowed, ", ")),
-				fmt.Sprintf("%s 값을 허용값 중 하나로 바꾼다", vf.key))
+				fmt.Sprintf("%s 값이 허용값 밖입니다: %q (허용값: %s)", vf.key, f.Str, strings.Join(allowed, ", ")),
+				fmt.Sprintf("%s 값을 허용값 중 하나로 바꿉니다", vf.key))
 		}
 	}
 }
@@ -325,8 +325,8 @@ func (s *scannedDoc) checkAxisOff(cfg config.Config, add func(Severity, string, 
 		}
 		if _, ok := s.fields[string(ax)]; ok {
 			add(SevError, "schema.axis-off", lineOfKey(s.content, string(ax)),
-				fmt.Sprintf("설정에서 꺼진 축의 필드가 문서에 있다: %s (프리셋 %s)", ax, cfg.Preset),
-				fmt.Sprintf("engram.yaml의 axes에서 %s를 켜거나 문서에서 %s 필드를 지운다", ax, ax))
+				fmt.Sprintf("설정에서 꺼진 축의 필드가 문서에 있습니다: %s (프리셋 %s)", ax, cfg.Preset),
+				fmt.Sprintf("engram.yaml의 axes에서 %s를 켜거나 문서에서 %s 필드를 지웁니다", ax, ax))
 		}
 	}
 }
@@ -337,8 +337,8 @@ func (s *scannedDoc) checkTaxonomy(cfg config.Config, add func(Severity, string,
 		forms := cfg.Schema.Taxonomy.Forms.Values
 		if len(forms) > 0 && !contains(forms, f.Str) {
 			add(SevError, "taxonomy.forms", lineOfKey(s.content, "form"),
-				fmt.Sprintf("form 값이 forms 폐쇄 집합에 없다: %q (허용값: %s)", f.Str, strings.Join(forms, ", ")),
-				"form 값을 허용값 중 하나로 바꾼다")
+				fmt.Sprintf("form 값이 forms 폐쇄 집합에 없습니다: %q (허용값: %s)", f.Str, strings.Join(forms, ", ")),
+				"form 값을 허용값 중 하나로 바꿉니다")
 		}
 	}
 	if f, ok := s.fields["topics"]; ok && (f.Kind == doc.KindStringList) {
@@ -346,8 +346,8 @@ func (s *scannedDoc) checkTaxonomy(cfg config.Config, add func(Severity, string,
 		for _, v := range f.List {
 			if !contains(topics, v) {
 				add(SevWarn, "taxonomy.topics", lineOfKey(s.content, "topics"),
-					fmt.Sprintf("topics 값이 설정에 정의되지 않았다: %q (topics는 개방 집합이다)", v),
-					fmt.Sprintf("engram.yaml의 topics 목록에 %q를 추가한다", v))
+					fmt.Sprintf("topics 값이 설정에 정의되지 않았습니다: %q (topics는 개방 집합입니다)", v),
+					fmt.Sprintf("engram.yaml의 topics 목록에 %q를 추가하세요", v))
 			}
 		}
 	}
@@ -360,8 +360,8 @@ func (s *scannedDoc) checkSourcesUpdated(add func(Severity, string, int, string,
 	}
 	if s.rel == sourcesDirName || strings.HasPrefix(s.rel, sourcesDirName+"/") {
 		add(SevWarn, "sources.updated", lineOfKey(s.content, "updated"),
-			"sources 계층 문서에 updated 필드가 있다",
-			"updated 필드를 지운다. sources는 원본 보존 계층이라 갱신하지 않는다")
+			"sources 계층 문서에 updated 필드가 있습니다",
+			"updated 필드를 지우세요. sources는 원본 보존 계층이라 갱신하지 않습니다")
 	}
 }
 
@@ -369,8 +369,8 @@ func (s *scannedDoc) checkSourcesUpdated(add func(Severity, string, int, string,
 func (s *scannedDoc) checkMaxLines(cfg config.Config, add func(Severity, string, int, string, string)) {
 	if n := lineCount(s.content); n > cfg.Thresholds.MaxLines {
 		add(SevWarn, "body.max-lines", lineOfKey(s.content, "artifact_stage"),
-			fmt.Sprintf("문서가 %d줄로 max_lines %d줄을 넘는다", n, cfg.Thresholds.MaxLines),
-			"문서를 나눈다. 상한은 engram.yaml의 max_lines로 조정한다")
+			fmt.Sprintf("문서가 %d줄로 max_lines %d줄을 넘습니다", n, cfg.Thresholds.MaxLines),
+			"문서를 나누세요. 상한은 engram.yaml의 max_lines로 조정하세요")
 	}
 }
 
@@ -477,8 +477,8 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 			}
 			if _, ok := bySlug[l.Slug]; !ok {
 				add(SevWarn, "link.broken", s.rel, l.Line,
-					fmt.Sprintf("깨진 위키링크: [[%s]]에 해당하는 문서가 없다", l.Slug),
-					fmt.Sprintf("슬러그를 고치거나 [[%s]] 문서를 만든다", l.Slug))
+					fmt.Sprintf("깨진 위키링크: [[%s]]에 해당하는 문서가 없습니다", l.Slug),
+					fmt.Sprintf("슬러그를 고치거나 [[%s]] 문서를 만드세요", l.Slug))
 			}
 		}
 		for _, v := range relationValues(s) {
@@ -512,8 +512,8 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 		related := len(relationValues(s)) > 0
 		if len(outgoing) == 0 && !related && incoming[relationSlug(s.rel)] == 0 {
 			add(SevWarn, "graph.orphan", s.rel, 1,
-				"들어오는 관계와 나가는 관계가 모두 없다",
-				fmt.Sprintf("다른 문서의 related나 본문에서 [[%s]]로 연결하거나 관계 필드로 잇는다", slug))
+				"들어오는 관계와 나가는 관계가 모두 없습니다",
+				fmt.Sprintf("다른 문서의 related나 본문에서 [[%s]]로 연결하거나 관계 필드로 잇으세요", slug))
 		}
 		if s.stage == "context" && cfg.Thresholds.MinWikilinks > 0 {
 			n := len(outgoing)
@@ -522,14 +522,14 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 			// 링크가 기준을 채운 문서는 유예와 무관하게 스스로 통과한다.
 			if g.Deferred && n < cfg.Thresholds.MinWikilinks {
 				add(SevWarn, "gate.deferred", s.rel, lineOfKey(s.content, "related"),
-					fmt.Sprintf("링크 가능한 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예한다. 대상 문서가 %d개가 되면 게이트가 동작한다", g.Targets, g.Min, g.Min),
-					fmt.Sprintf("연결할 문서를 만들어 대상을 늘린다. 기준은 engram.yaml 의 min_wikilinks 로 조정한다"))
+					fmt.Sprintf("링크 가능한 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예합니다. 대상 문서가 %d개가 되면 게이트가 동작합니다", g.Targets, g.Min, g.Min),
+					fmt.Sprintf("연결할 문서를 만들어 대상을 늘리세요. 기준은 engram.yaml의 min_wikilinks로 조정하세요"))
 				continue
 			}
 			if !g.Passed {
 				add(SevReject, "gate.min-wikilinks", s.rel, lineOfKey(s.content, "related"),
-					fmt.Sprintf("위키링크가 %d개로 min_wikilinks %d개에 못 미친다", n, cfg.Thresholds.MinWikilinks),
-					fmt.Sprintf("related 필드나 본문에 위키링크를 %d개 더 추가한다", cfg.Thresholds.MinWikilinks-n))
+					fmt.Sprintf("위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다", n, cfg.Thresholds.MinWikilinks),
+					fmt.Sprintf("related 필드나 본문에 위키링크를 %d개 더 추가하세요", cfg.Thresholds.MinWikilinks-n))
 			}
 		}
 	}
@@ -577,7 +577,7 @@ func broadTopicFindings(docs []scannedDoc, cfg config.Config) []WikiFinding {
 			Threshold: cfg.Thresholds.BroadTopicPct,
 			Total:     total,
 			Paths:     paths[topic],
-			Fix:       "주제를 더 세분한다. 기준은 engram.yaml의 broad_topic_pct로 조정한다",
+			Fix:       "주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요",
 		})
 	}
 	sort.Slice(out, func(i, j int) bool {

@@ -16,12 +16,12 @@ import (
 func newLintCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "lint [경로]",
-		Short: "위키의 스키마와 링크 무결성을 검사한다",
-		Long: `지정한 경로의 위키를 순회하며 스키마와 링크 무결성을 검사한다.
-경로를 생략하면 현재 디렉토리다.
+		Short: "위키의 스키마와 링크 무결성을 검사합니다",
+		Long: `지정한 경로의 위키를 순회하며 스키마와 링크 무결성을 검사합니다.
+경로를 생략하면 현재 디렉토리입니다.
 
-등급은 error, warn, reject 셋이다. error와 reject는 승급을 막아
-종료 코드 1로 끝나고 warn은 통과시키되 알린다.`,
+등급은 error, warn, reject 셋입니다. error와 reject는 승급을 막아
+종료 코드 1로 끝나고 warn은 통과시키되 알립니다.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root := "."
@@ -49,7 +49,7 @@ func newLintCmd() *cobra.Command {
 				// 위반은 이미 보고했으므로 에러 문자열은 다시 인쇄하지 않는다.
 				// 종료 코드 1만 내는 것이 목적이다.
 				cmd.SilenceErrors = true
-				return errors.New("승급을 막는 위반이 있다")
+				return errors.New("승급을 막는 위반이 있습니다")
 			}
 			return nil
 		},
@@ -77,7 +77,7 @@ func printLintText(w io.Writer, res lint.Result) {
 		fmt.Fprintln(w, "위키 진단:")
 		for _, f := range res.WikiFindings {
 			fmt.Fprintf(w, "  [%s] %s 주제 %q\n", f.Severity, f.Rule, f.Topic)
-			fmt.Fprintf(w, "    사용 비율이 %d%%(%d/%d 문서)로 broad_topic_pct %d를 넘는다\n",
+			fmt.Fprintf(w, "    사용 비율이 %d%%(%d/%d 문서)로 broad_topic_pct %d를 넘습니다\n",
 				f.Percent, len(f.Paths), f.Total, f.Threshold)
 			fmt.Fprintf(w, "    해당 문서: %s\n", previewPaths(f.Paths))
 			fmt.Fprintf(w, "    고치는 법: %s\n", f.Fix)

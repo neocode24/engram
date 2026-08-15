@@ -60,7 +60,7 @@ func addContextDocs(t *testing.T, dir string) {
 }
 
 func TestPromote(t *testing.T) {
-	t.Run("inbox 문서는 이동한다. 원본이 남지 않는다", func(t *testing.T) {
+	t.Run("inbox 문서는 이동합니다. 원본이 남지 않습니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir)
 		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel)
@@ -85,7 +85,7 @@ func TestPromote(t *testing.T) {
 		}
 	})
 
-	t.Run("sources 문서는 파생을 만들고 양방향으로 기록한다", func(t *testing.T) {
+	t.Run("sources 문서는 파생을 만들고 양방향으로 기록합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		if _, err := runPromoteRoot(t, "source", "--wiki", dir,
 			"--now", "2026-01-01T00:00:00Z", "--slug", "talk", "--created", "2025-11-08", "원본 내용"); err != nil {
@@ -114,7 +114,7 @@ func TestPromote(t *testing.T) {
 		}
 	})
 
-	t.Run("derived_context 축이 꺼진 프리셋에서는 역방향을 생략한다", func(t *testing.T) {
+	t.Run("derived_context 축이 꺼진 프리셋에서는 역방향을 생략합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		if _, err := runPromoteRoot(t, "source", "--wiki", dir,
 			"--now", "2026-01-01T00:00:00Z", "--slug", "talk", "--created", "2025-11-08", "원본 내용"); err != nil {
@@ -135,7 +135,7 @@ func TestPromote(t *testing.T) {
 		}
 	})
 
-	t.Run("링크가 부족하면 부족분과 채우는 법을 낸다", func(t *testing.T) {
+	t.Run("링크가 부족하면 부족분과 채우는 법을 냅니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir)
 		addContextDocs(t, dir) // 대상이 충분하므로 게이트가 엄격해진다
@@ -150,7 +150,7 @@ func TestPromote(t *testing.T) {
 		}
 	})
 
-	t.Run("--related로 부족한 링크를 이 자리에서 채운다", func(t *testing.T) {
+	t.Run("--related로 부족한 링크를 이 자리에서 채웁니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir)
 		addContextDocs(t, dir)
@@ -165,21 +165,21 @@ func TestPromote(t *testing.T) {
 		}
 	})
 
-	t.Run("존재하지 않는 --related 슬러그는 경고하되 막지 않는다", func(t *testing.T) {
+	t.Run("존재하지 않는 --related 슬러그는 경고하되 막지 않습니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir)
 		addContextDocs(t, dir)
 		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel,
 			"--related", "a-doc", "--related", "없는문서")
 		if err != nil {
-			t.Fatalf("경고는 거절이 아니다: %v", err)
+			t.Fatalf("경고는 거절이 아닙니다: %v", err)
 		}
 		if !strings.Contains(out, "경고: --related 슬러그") {
 			t.Errorf("경고가 없음:\n%s", out)
 		}
 	})
 
-	t.Run("이미 context 단계인 문서는 거절한다", func(t *testing.T) {
+	t.Run("이미 context 단계인 문서는 거절합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		addContextDocs(t, dir)
 		_, err := runPromoteRoot(t, "promote", "--wiki", dir, "context/a-doc.md")
@@ -188,7 +188,7 @@ func TestPromote(t *testing.T) {
 		}
 	})
 
-	t.Run("원본 파일명의 날짜 접두사를 뗀다", func(t *testing.T) {
+	t.Run("원본 파일명의 날짜 접두사를 뗍니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir) // inbox/2026-01-01-memo.md
 		if _, err := runPromoteRoot(t, "promote", "--wiki", dir, rel); err != nil {
@@ -199,7 +199,7 @@ func TestPromote(t *testing.T) {
 		}
 	})
 
-	t.Run("도착지에 같은 이름이 있으면 거절한다", func(t *testing.T) {
+	t.Run("도착지에 같은 이름이 있으면 거절합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		addContextDocs(t, dir)
 		dest := filepath.Join(dir, "context", "memo.md")
@@ -208,12 +208,12 @@ func TestPromote(t *testing.T) {
 		}
 		rel := captureMemo(t, dir)
 		_, err := runPromoteRoot(t, "promote", "--wiki", dir, rel, "--related", "a-doc", "--related", "b-doc")
-		if err == nil || !strings.Contains(err.Error(), "도착지에 이미 문서가 있다") {
+		if err == nil || !strings.Contains(err.Error(), "도착지에 이미 문서가 있습니다") {
 			t.Fatalf("도착지 중복 거절이어야 함: %v", err)
 		}
 	})
 
-	t.Run("위키가 아닌 디렉토리에서는 init을 안내한다", func(t *testing.T) {
+	t.Run("위키가 아닌 디렉토리에서는 init을 안내합니다", func(t *testing.T) {
 		_, err := runPromoteRoot(t, "promote", "--wiki", t.TempDir(), "inbox/x.md")
 		if err == nil || !strings.Contains(err.Error(), "engram init") {
 			t.Fatalf("거절되어야 함: %v", err)
@@ -222,7 +222,7 @@ func TestPromote(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	t.Run("허용값 밖의 type과 form은 목록과 함께 거절한다", func(t *testing.T) {
+	t.Run("허용값 밖의 type과 form은 목록과 함께 거절합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		if err := os.WriteFile(filepath.Join(dir, "engram.yaml"),
 			[]byte("forms: [note]\n"), 0o644); err != nil {
@@ -238,7 +238,7 @@ func TestNew(t *testing.T) {
 		}
 	})
 
-	t.Run("본문은 승급 문서의 절 골격을 담는다", func(t *testing.T) {
+	t.Run("본문은 승급 문서의 절 골격을 담습니다", func(t *testing.T) {
 		dir := initWiki(t)
 		if err := os.WriteFile(filepath.Join(dir, "engram.yaml"),
 			[]byte("forms: [note]\n"), 0o644); err != nil {
@@ -262,7 +262,7 @@ func TestNew(t *testing.T) {
 		}
 	})
 
-	t.Run("--json은 경로와 슬러그와 게이트 판정을 낸다", func(t *testing.T) {
+	t.Run("--json은 경로와 슬러그와 게이트 판정을 냅니다", func(t *testing.T) {
 		dir := initWiki(t)
 		out, err := runPromoteRoot(t, "new", "--json", "--wiki", dir,
 			"--now", "2026-01-01T00:00:00Z", "--slug", "json-doc", "제목")
@@ -283,7 +283,7 @@ func TestNew(t *testing.T) {
 		}
 	})
 
-	t.Run("--now를 고정하면 두 번 실행 결과가 바이트까지 같다", func(t *testing.T) {
+	t.Run("--now를 고정하면 두 번 실행 결과가 바이트까지 같습니다", func(t *testing.T) {
 		a, b := initWiki(t), initWiki(t)
 		args := []string{"new", "--wiki", a, "--now", "2026-01-01T00:00:00Z",
 			"--slug", "same", "--type", "concept", "제목"}
@@ -324,7 +324,7 @@ func lintMissingField(t *testing.T, dir string) []lint.Violation {
 }
 
 func TestPromoteFillsContextFields(t *testing.T) {
-	t.Run("promote 후 문서는 context 필수 필드를 모두 갖는다", func(t *testing.T) {
+	t.Run("promote 후 문서는 context 필수 필드를 모두 갖습니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir)
 		if _, err := runPromoteRoot(t, "promote", "--wiki", dir, rel); err != nil {
@@ -344,7 +344,7 @@ func TestPromoteFillsContextFields(t *testing.T) {
 		}
 	})
 
-	t.Run("이미 값이 있는 필드는 보존한다", func(t *testing.T) {
+	t.Run("이미 값이 있는 필드는 보존합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		p := filepath.Join(dir, "inbox", "2026-01-01-rich.md")
 		content := "---\n" +
@@ -366,7 +366,7 @@ func TestPromoteFillsContextFields(t *testing.T) {
 		}
 	})
 
-	t.Run("꺼진 축의 필드는 추가하지 않는다", func(t *testing.T) {
+	t.Run("꺼진 축의 필드는 추가하지 않습니다", func(t *testing.T) {
 		dir := initWiki(t)
 		if err := os.WriteFile(filepath.Join(dir, "engram.yaml"),
 			[]byte("preset: personal\n"), 0o644); err != nil {
@@ -391,7 +391,7 @@ func TestPromoteFillsContextFields(t *testing.T) {
 		}
 	})
 
-	t.Run("sources 파생 문서도 context 필수 필드를 갖는다", func(t *testing.T) {
+	t.Run("sources 파생 문서도 context 필수 필드를 갖습니다", func(t *testing.T) {
 		dir := initWiki(t)
 		if _, err := runPromoteRoot(t, "source", "--wiki", dir,
 			"--now", "2026-01-01T00:00:00Z", "--slug", "talk", "--created", "2025-11-08", "원본"); err != nil {
@@ -411,7 +411,7 @@ func TestPromoteFillsContextFields(t *testing.T) {
 		}
 	})
 
-	t.Run("new 산출물도 frontmatter.missing-field가 없다", func(t *testing.T) {
+	t.Run("new 산출물도 frontmatter.missing-field가 없습니다", func(t *testing.T) {
 		dir := initWiki(t)
 		if _, err := runPromoteRoot(t, "new", "--wiki", dir,
 			"--now", "2026-01-01T00:00:00Z", "--slug", "born", "제목"); err != nil {
@@ -424,7 +424,7 @@ func TestPromoteFillsContextFields(t *testing.T) {
 }
 
 func TestPromoteType(t *testing.T) {
-	t.Run("--type로 지정한 문서 종류를 반영한다", func(t *testing.T) {
+	t.Run("--type로 지정한 문서 종류를 반영합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir)
 		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel, "--type", "concept")
@@ -440,7 +440,7 @@ func TestPromoteType(t *testing.T) {
 		}
 	})
 
-	t.Run("허용값 밖의 --type은 목록과 함께 거절한다", func(t *testing.T) {
+	t.Run("허용값 밖의 --type은 목록과 함께 거절합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir)
 		_, err := runPromoteRoot(t, "promote", "--wiki", dir, rel, "--type", "diary")
@@ -452,12 +452,12 @@ func TestPromoteType(t *testing.T) {
 		}
 	})
 
-	t.Run("미지정이고 기존 값이 inbox-note면 경고한다", func(t *testing.T) {
+	t.Run("미지정이고 기존 값이 inbox-note면 경고합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir) // capture는 type을 inbox-note로 만든다
 		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel)
 		if err != nil {
-			t.Fatalf("경고는 거절이 아니다: %v", err)
+			t.Fatalf("경고는 거절이 아닙니다: %v", err)
 		}
 		for _, want := range []string{"경고: 문서 종류가", "inbox-note", "--type"} {
 			if !strings.Contains(out, want) {
@@ -466,7 +466,7 @@ func TestPromoteType(t *testing.T) {
 		}
 	})
 
-	t.Run("미지정이고 기존 값이 적절하면 경고하지 않는다", func(t *testing.T) {
+	t.Run("미지정이고 기존 값이 적절하면 경고하지 않습니다", func(t *testing.T) {
 		dir := initWiki(t)
 		p := filepath.Join(dir, "inbox", "2026-01-01-typed.md")
 		content := "---\ntype: procedure\nartifact_stage: inbox\nstatus: inbox\nindexable: false\n---\n\n본문\n"
@@ -489,7 +489,7 @@ func TestPromoteType(t *testing.T) {
 		}
 	})
 
-	t.Run("sources 파생 경로에서도 같은 규칙을 적용한다", func(t *testing.T) {
+	t.Run("sources 파생 경로에서도 같은 규칙을 적용합니다", func(t *testing.T) {
 		dir := initWiki(t)
 		if _, err := runPromoteRoot(t, "source", "--wiki", dir,
 			"--now", "2026-01-01T00:00:00Z", "--slug", "talk", "--created", "2025-11-08", "원본"); err != nil {
@@ -497,7 +497,7 @@ func TestPromoteType(t *testing.T) {
 		}
 		out, err := runPromoteRoot(t, "promote", "--wiki", dir, "sources/2025-11-08-talk.md")
 		if err != nil {
-			t.Fatalf("경고는 거절이 아니다: %v", err)
+			t.Fatalf("경고는 거절이 아닙니다: %v", err)
 		}
 		if !strings.Contains(out, "source-summary") {
 			t.Errorf("source 단계 기본값 경고가 없음:\n%s", out)
@@ -521,7 +521,7 @@ func TestPromoteType(t *testing.T) {
 		}
 	})
 
-	t.Run("--json에 문서 종류가 반영된다", func(t *testing.T) {
+	t.Run("--json에 문서 종류가 반영됩니다", func(t *testing.T) {
 		dir := initWiki(t)
 		rel := captureMemo(t, dir)
 		out, err := runPromoteRoot(t, "promote", "--json", "--wiki", dir, rel, "--type", "concept")

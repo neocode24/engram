@@ -54,10 +54,10 @@ func Slug(title string) (string, error) {
 	}
 	s = strings.Trim(s, "-")
 	if s == "" {
-		return "", fmt.Errorf("제목 %q에서 슬러그를 만들 수 없다. 제목 대신 슬러그를 직접 지정한다", title)
+		return "", fmt.Errorf("제목 %q에서 슬러그를 만들 수 없습니다. 제목 대신 슬러그를 직접 지정하세요", title)
 	}
 	if isReservedName(s) {
-		return "", fmt.Errorf("슬러그 %q가 Windows 예약 파일명이다. 슬러그를 직접 지정한다", s)
+		return "", fmt.Errorf("슬러그 %q가 Windows 예약 파일명입니다. 슬러그를 직접 지정하세요", s)
 	}
 	return s, nil
 }
@@ -112,7 +112,7 @@ func dirFor(cfg config.Config, stage Stage) (string, error) {
 			return d, nil
 		}
 	}
-	return "", fmt.Errorf("설정의 page_dirs에 %s 단계 디렉토리가 없다: %q\nengram.yaml의 page_dirs에 %q를 추가한다",
+	return "", fmt.Errorf("설정의 page_dirs에 %s 단계 디렉토리가 없습니다: %q\nengram.yaml의 page_dirs에 %q를 추가하세요",
 		stage, want, want)
 }
 
@@ -124,7 +124,7 @@ func validDate(date string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("날짜 %q가 YYYY-MM-DD 또는 YYYY-MM 형식이 아니다", date)
+	return fmt.Errorf("날짜 %q가 YYYY-MM-DD 또는 YYYY-MM 형식이 아닙니다", date)
 }
 
 // Create는 위키 루트 아래 단계에 맞는 자리에 문서를 만들고 만든 파일
@@ -141,7 +141,7 @@ func Create(wikiRoot string, cfg config.Config, stage Stage, date, slug string, 
 	}
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if errors.Is(err, fs.ErrExist) {
-		return "", fmt.Errorf("이미 문서가 있다: %s\n기존 문서를 덮어쓰지 않는다. 슬러그를 다르게 지정하거나 기존 문서를 손으로 고친다", path)
+		return "", fmt.Errorf("이미 문서가 있습니다: %s\n기존 문서를 덮어쓰지 않습니다. 슬러그를 다르게 지정하거나 기존 문서를 손으로 고치세요", path)
 	}
 	if err != nil {
 		return "", fmt.Errorf("문서를 만들 수 없음: %s: %w", path, err)

@@ -42,12 +42,12 @@ type searchResponse struct {
 func newSearchCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "search <질의>",
-		Short: "위키를 검색한다",
-		Long: `검색 색인으로 위키를 검색한다.
+		Short: "위키를 검색합니다",
+		Long: `검색 색인으로 위키를 검색합니다.
 
-색인이 신선하면 색인으로 검색한다. 낡았으면 낡은 색인 그대로 검색하되
-경고를 낸다. 색인이 없거나 깨졌으면 이번 실행에서만 문서를 읽어 검색한다.
-어느 쪽이든 색인 파일을 쓰지 않는다. 색인을 만드는 것은 reindex뿐이다.`,
+색인이 신선하면 색인으로 검색합니다. 낡았으면 낡은 색인 그대로 검색하되
+경고를 냅니다. 색인이 없거나 깨졌으면 이번 실행에서만 문서를 읽어 검색합니다.
+어느 쪽이든 색인 파일을 쓰지 않습니다. 색인을 만드는 것은 reindex뿐입니다.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			query := args[0]
@@ -73,7 +73,7 @@ func newSearchCmd() *cobra.Command {
 				} else {
 					status = indexStale
 					fmt.Fprintf(cmd.ErrOrStderr(),
-						"경고: 색인이 낡았다. 낡은 색인으로 검색한다. engram reindex로 갱신한다\n")
+						"경고: 색인이 낡았습니다. 낡은 색인으로 검색합니다. engram reindex로 갱신하세요\n")
 				}
 			}
 			if ix == nil {
@@ -86,7 +86,7 @@ func newSearchCmd() *cobra.Command {
 					return fmt.Errorf("즉석 색인을 만들 수 없음: %w", err)
 				}
 				fmt.Fprintf(cmd.ErrOrStderr(),
-					"안내: 색인이 없어 이번 실행에서만 문서를 읽었다. engram reindex를 한 번 돌리면 검색이 빨라진다\n")
+					"안내: 색인이 없어 이번 실행에서만 문서를 읽었습니다. engram reindex를 한 번 돌리면 검색이 빨라집니다\n")
 			}
 
 			results := ix.Search(query, limit)
@@ -115,8 +115,8 @@ func newSearchCmd() *cobra.Command {
 func printSearch(w io.Writer, query string, results []index.SearchResult) {
 	if len(results) == 0 {
 		tokens := index.Tokenize(query)
-		fmt.Fprintf(w, "결과가 없다\n")
-		fmt.Fprintf(w, "질의 %q는 다음 토큰으로 검색했다: %s\n",
+		fmt.Fprintf(w, "결과가 없습니다\n")
+		fmt.Fprintf(w, "질의 %q는 다음 토큰으로 검색했습니다: %s\n",
 			query, strings.Join(tokens, ", "))
 		return
 	}

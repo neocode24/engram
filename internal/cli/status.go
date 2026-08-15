@@ -15,13 +15,13 @@ import (
 func newStatusCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status [경로]",
-		Short: "위키 현황과 inbox 적체 압력을 보여준다",
-		Long: `대상 경로의 위키 현황과 inbox 적체 압력을 보여준다. 경로를 생략하면 현재 디렉토리다.
+		Short: "위키 현황과 inbox 적체 압력을 보여줍니다",
+		Long: `대상 경로의 위키 현황과 inbox 적체 압력을 보여줍니다. 경로를 생략하면 현재 디렉토리입니다.
 
-현황, 적체 압력, 다음 행동 세 구획으로 나눠 낸다.
+현황, 적체 압력, 다음 행동 세 구획으로 나눠 냅니다.
 나이 계산의 기준 시각은 전역 --now 다.
 
-위키가 아닌 디렉토리에서는 거절하고 engram init 을 안내한다.`,
+위키가 아닌 디렉토리에서는 거절하고 engram init 을 안내합니다.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root := "."
@@ -68,7 +68,7 @@ func printStatusText(w io.Writer, res status.Result, now time.Time) {
 		fmt.Fprintf(w, "  날짜를 알 수 없는 inbox 문서 %d개\n", b.UnknownAge)
 	}
 	if b.Stale > 0 {
-		fmt.Fprintf(w, "  stale_days 를 넘긴 context 문서 %d개\n", b.Stale)
+		fmt.Fprintf(w, "  stale_days를 넘긴 context 문서 %d개\n", b.Stale)
 	}
 	fmt.Fprintf(w, "  지금 승급할 수 있는 문서 %d개\n", b.Promotable)
 

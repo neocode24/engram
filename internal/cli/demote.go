@@ -23,18 +23,18 @@ const flagTo = "to"
 func newDemoteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "demote <경로>",
-		Short: "context 문서를 inbox나 sources로 되돌린다",
-		Long: `context 단계 문서를 inbox 또는 sources로 내린다.
+		Short: "context 문서를 inbox나 sources로 되돌립니다",
+		Long: `context 단계 문서를 inbox 또는 sources로 내립니다.
 
 도착 단계의 기본값은 inbox다. inbox가 임시 계층이라 되돌리기의
-도착지로 안전하다.
+도착지로 안전하입니다.
 
-문서를 내리면 파일명에 날짜 접두사가 붙어 슬러그가 바뀐다. 그 문서를
-가리키던 위키링크는 전부 깨지므로 실행 전에 목록을 경고로 낸다.
-되돌리기를 막지는 않는다. 깨진 링크는 engram mv로 고친다.
+문서를 내리면 파일명에 날짜 접두사가 붙어 슬러그가 바뀝니다. 그 문서를
+가리키던 위키링크는 전부 깨지므로 실행 전에 목록을 경고로 냅니다.
+되돌리기를 막지는 않습니다. 깨진 링크는 engram mv로 고치세요.
 
-파생 문서라면 원본 sources 문서의 derived_context도 어긋난다.
-원본 되돌리기는 이 커맨드의 범위가 아니므로 경고로만 알린다.`,
+파생 문서라면 원본 sources 문서의 derived_context도 어긋납니다.
+원본 되돌리기는 이 커맨드의 범위가 아니므로 경고로만 알립니다.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
@@ -54,7 +54,7 @@ func newDemoteCmd() *cobra.Command {
 				return fmt.Errorf("문서를 파싱할 수 없음: %s: %w", srcPath, err)
 			}
 			if stage := fieldString(d, "artifact_stage"); stage != "context" {
-				return fmt.Errorf("context 단계 문서만 되돌린다: %s의 artifact_stage 값이 %q다", srcPath, stage)
+				return fmt.Errorf("context 단계 문서만 되돌립니다: %s의 artifact_stage 값이 %q다", srcPath, stage)
 			}
 
 			toFlag, err := stringFlag(cmd, flagTo)
@@ -70,7 +70,7 @@ func newDemoteCmd() *cobra.Command {
 			case "sources":
 				stage = wiki.StageSource
 			default:
-				return fmt.Errorf("--to 값이 허용값 밖이다: %q (허용값: inbox, sources)", toFlag)
+				return fmt.Errorf("--to 값이 허용값 밖입니다: %q (허용값: inbox, sources)", toFlag)
 			}
 
 			rel, err := filepath.Rel(root, srcPath)
@@ -95,12 +95,12 @@ func newDemoteCmd() *cobra.Command {
 			}
 			broken := brokenLinks(walked, slug, rel)
 			for _, b := range broken {
-				fmt.Fprintf(cmd.ErrOrStderr(), "경고: 깨질 위키링크: %s %d줄이 [[%s]]를 가리킨다. engram mv로 링크를 고친다\n",
+				fmt.Fprintf(cmd.ErrOrStderr(), "경고: 깨질 위키링크: %s %d줄이 [[%s]]를 가리킵니다. engram mv로 링크를 고치세요\n",
 					b.Path, b.Line, slug)
 			}
 			derived := listFieldValues(d, "derived_from")
 			for _, src := range derived {
-				fmt.Fprintf(cmd.ErrOrStderr(), "경고: 이 문서는 원본 %s에서 파생되었다. 원본의 derived_context 갱신은 이 커맨드가 하지 않는다. engram update로 직접 고친다\n", src)
+				fmt.Fprintf(cmd.ErrOrStderr(), "경고: 이 문서는 원본 %s에서 파생되었습니다. 원본의 derived_context 갱신은 이 커맨드가 하지 않습니다. engram update로 직접 고치세요\n", src)
 			}
 
 			destRel, err := wiki.FilePath(cfg, stage, date, slug)
@@ -109,7 +109,7 @@ func newDemoteCmd() *cobra.Command {
 			}
 			destPath := filepath.Join(root, filepath.FromSlash(destRel))
 			if _, err := os.Stat(destPath); err == nil {
-				return fmt.Errorf("도착지에 이미 문서가 있다: %s\n기존 문서를 덮어쓰지 않는다. 슬러그를 다르게 지정한다", destPath)
+				return fmt.Errorf("도착지에 이미 문서가 있습니다: %s\n기존 문서를 덮어쓰지 않습니다. 슬러그를 다르게 지정하세요", destPath)
 			}
 
 			fields := demoteFields(d.Fields, stage, cfg)
@@ -211,13 +211,13 @@ func listFieldValues(d doc.Doc, key string) []string {
 
 // printDemoted은 내린 경로와 다음에 할 수 있는 일을 낸다.
 func printDemoted(w io.Writer, res demoteOutcome) {
-	fmt.Fprintf(w, "%s로 내렸다: %s\n", res.Stage, res.Path)
+	fmt.Fprintf(w, "%s로 내렸습니다: %s\n", res.Stage, res.Path)
 	fmt.Fprintf(w, "날짜 접두사: %s, 슬러그: %s\n", res.Date, res.Slug)
 	if len(res.BrokenLinks) > 0 {
-		fmt.Fprintf(w, "깨질 링크 %d건. engram mv로 고친다\n", len(res.BrokenLinks))
+		fmt.Fprintf(w, "깨질 링크 %d건. engram mv로 고치세요\n", len(res.BrokenLinks))
 	}
 	if len(res.DerivedFrom) > 0 {
-		fmt.Fprintf(w, "파생 원본 %d건의 derived_context가 어긋났다\n", len(res.DerivedFrom))
+		fmt.Fprintf(w, "파생 원본 %d건의 derived_context가 어긋났습니다\n", len(res.DerivedFrom))
 	}
-	fmt.Fprintf(w, "다음: 정리가 끝나면 engram promote로 다시 올린다\n")
+	fmt.Fprintf(w, "다음: 정리가 끝나면 engram promote로 다시 올리세요\n")
 }

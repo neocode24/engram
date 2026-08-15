@@ -35,7 +35,7 @@ func searchWiki(t *testing.T) string {
 		"type: concept\nartifact_stage: context\nstatus: promoted\n" +
 		"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
 		"source_channel: manual\nderived_context: []\n" +
-		"---\n\n# LLM 게이트웨이 조사\n\n게이트웨이가 프롬프트를 중계한다. min_wikilinks 규칙도 다룬다."
+		"---\n\n# LLM 게이트웨이 조사\n\n게이트웨이가 프롬프트를 중계합니다. min_wikilinks 규칙도 다룹니다."
 	p := filepath.Join(dir, "context", "gateway.md")
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
 		t.Fatal(err)
@@ -47,7 +47,7 @@ func searchWiki(t *testing.T) string {
 }
 
 func TestReindexCmd(t *testing.T) {
-	t.Run("색인 파일을 만들고 두 번 돌리면 바이트까지 같다", func(t *testing.T) {
+	t.Run("색인 파일을 만들고 두 번 돌리면 바이트까지 같습니다", func(t *testing.T) {
 		dir := searchWiki(t)
 		out, err := runSearchRoot(t, "reindex", dir)
 		if err != nil {
@@ -69,7 +69,7 @@ func TestReindexCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("--json은 문서 수와 토큰 수와 크기를 낸다", func(t *testing.T) {
+	t.Run("--json은 문서 수와 토큰 수와 크기를 냅니다", func(t *testing.T) {
 		dir := searchWiki(t)
 		out, err := runSearchRoot(t, "reindex", "--json", dir)
 		if err != nil {
@@ -84,7 +84,7 @@ func TestReindexCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("위키가 아닌 디렉토리에서는 init을 안내한다", func(t *testing.T) {
+	t.Run("위키가 아닌 디렉토리에서는 init을 안내합니다", func(t *testing.T) {
 		_, err := runSearchRoot(t, "reindex", t.TempDir())
 		if err == nil || !strings.Contains(err.Error(), "engram init") {
 			t.Fatalf("거절되어야 함: %v", err)
@@ -93,7 +93,7 @@ func TestReindexCmd(t *testing.T) {
 }
 
 func TestSearchCmd(t *testing.T) {
-	t.Run("신선한 색인으로 조용히 검색한다", func(t *testing.T) {
+	t.Run("신선한 색인으로 조용히 검색합니다", func(t *testing.T) {
 		dir := searchWiki(t)
 		if _, err := runSearchRoot(t, "reindex", dir); err != nil {
 			t.Fatal(err)
@@ -112,7 +112,7 @@ func TestSearchCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("낡은 색인은 경고하고 낡은 결과를 그대로 쓴다", func(t *testing.T) {
+	t.Run("낡은 색인은 경고하고 낡은 결과를 그대로 씁니다", func(t *testing.T) {
 		dir := searchWiki(t)
 		if _, err := runSearchRoot(t, "reindex", dir); err != nil {
 			t.Fatal(err)
@@ -122,14 +122,14 @@ func TestSearchCmd(t *testing.T) {
 		if err := os.WriteFile(extra, []byte(
 			"---\ntype: concept\nartifact_stage: context\nstatus: promoted\n"+
 				"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n"+
-				"source_channel: manual\nderived_context: []\n---\n\n# 새 문서\n\n게이트웨이 이야기를 덧붙인다"), 0o644); err != nil {
+				"source_channel: manual\nderived_context: []\n---\n\n# 새 문서\n\n게이트웨이 이야기를 덧붙입니다"), 0o644); err != nil {
 			t.Fatal(err)
 		}
 		out, err := runSearchRoot(t, "search", "--wiki", dir, "게이트웨이")
 		if err != nil {
-			t.Fatalf("경고는 거절이 아니다: %v", err)
+			t.Fatalf("경고는 거절이 아닙니다: %v", err)
 		}
-		if !strings.Contains(out, "경고: 색인이 낡았다") || !strings.Contains(out, "engram reindex") {
+		if !strings.Contains(out, "경고: 색인이 낡았습니다") || !strings.Contains(out, "engram reindex") {
 			t.Errorf("낡음 경고가 없음:\n%s", out)
 		}
 		// 낡은 색인은 extra 문서를 모른다. 재색인 없이 낡은 결과를 낸다.
@@ -148,7 +148,7 @@ func TestSearchCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("색인이 없으면 즉석 색인으로 결과를 내고 파일을 만들지 않는다", func(t *testing.T) {
+	t.Run("색인이 없으면 즉석 색인으로 결과를 내고 파일을 만들지 않습니다", func(t *testing.T) {
 		dir := searchWiki(t)
 		out, err := runSearchRoot(t, "search", "--wiki", dir, "게이트웨이")
 		if err != nil {
@@ -166,7 +166,7 @@ func TestSearchCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("--limit로 상한을 정한다", func(t *testing.T) {
+	t.Run("--limit로 상한을 정합니다", func(t *testing.T) {
 		dir := searchWiki(t)
 		// 문서를 여러 개 만들어 질의에 여러 건이 걸리게 한다.
 		for _, name := range []string{"b", "a", "c"} {
@@ -190,7 +190,7 @@ func TestSearchCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("결과가 없으면 토큰화를 보여준다", func(t *testing.T) {
+	t.Run("결과가 없으면 토큰화를 보여줍니다", func(t *testing.T) {
 		dir := searchWiki(t)
 		if _, err := runSearchRoot(t, "reindex", dir); err != nil {
 			t.Fatal(err)
@@ -199,14 +199,14 @@ func TestSearchCmd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("결과 없음은 종료 코드 0이어야 함: %v", err)
 		}
-		for _, want := range []string{"결과가 없다", "토큰으로 검색했다", "없는", "는단", "는단어"} {
+		for _, want := range []string{"결과가 없습니다", "토큰으로 검색했습니다", "없는", "는단", "는단어"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("출력에 %q 없음:\n%s", want, out)
 			}
 		}
 	})
 
-	t.Run("--json은 순위와 점수와 인덱스 상태를 낸다", func(t *testing.T) {
+	t.Run("--json은 순위와 점수와 인덱스 상태를 냅니다", func(t *testing.T) {
 		dir := searchWiki(t)
 		if _, err := runSearchRoot(t, "reindex", dir); err != nil {
 			t.Fatal(err)
@@ -229,7 +229,7 @@ func TestSearchCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("위키가 아닌 디렉토리에서는 init을 안내한다", func(t *testing.T) {
+	t.Run("위키가 아닌 디렉토리에서는 init을 안내합니다", func(t *testing.T) {
 		_, err := runSearchRoot(t, "search", "--wiki", t.TempDir(), "질의")
 		if err == nil || !strings.Contains(err.Error(), "engram init") {
 			t.Fatalf("거절되어야 함: %v", err)

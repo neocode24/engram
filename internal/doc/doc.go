@@ -73,7 +73,7 @@ func Parse(path string, content []byte) (Doc, error) {
 			}
 		}
 		if close < 0 {
-			return Doc{}, fmt.Errorf("%s: 프론트매터가 %d줄에서 시작하지만 닫는 --- 가 없다", path, 1)
+			return Doc{}, fmt.Errorf("%s: 프론트매터가 %d줄에서 시작하지만 닫는 ---가 없습니다", path, 1)
 		}
 		d.HasFrontmatter = true
 		d.fmLines = lines[1:close]
@@ -99,7 +99,7 @@ func parseFields(d *Doc, fmText string) error {
 	for _, item := range ms {
 		key, ok := item.Key.(string)
 		if !ok {
-			return fmt.Errorf("%s: 프론트매터 키 %v가 문자열이 아니다", d.Path, item.Key)
+			return fmt.Errorf("%s: 프론트매터 키 %v가 문자열이 아닙니다", d.Path, item.Key)
 		}
 		d.Fields = append(d.Fields, toField(key, item.Value))
 	}

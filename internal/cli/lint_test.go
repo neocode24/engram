@@ -44,7 +44,7 @@ func makeWiki(t *testing.T) string {
 }
 
 func TestLintCmd(t *testing.T) {
-	t.Run("텍스트 출력은 파일별 묶음과 요약 줄을 낸다", func(t *testing.T) {
+	t.Run("텍스트 출력은 파일별 묶음과 요약 줄을 냅니다", func(t *testing.T) {
 		dir := makeWiki(t)
 		out, err := runRoot(t, "lint", dir)
 		if err == nil {
@@ -60,7 +60,7 @@ func TestLintCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("--json은 위반 배열과 요약 카운트를 낸다", func(t *testing.T) {
+	t.Run("--json은 위반 배열과 요약 카운트를 냅니다", func(t *testing.T) {
 		dir := makeWiki(t)
 		out, err := runRoot(t, "lint", "--json", dir)
 		if err == nil {
@@ -92,7 +92,7 @@ func TestLintCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("같은 위키를 두 번 검사하면 --json 출력이 바이트까지 같다", func(t *testing.T) {
+	t.Run("같은 위키를 두 번 검사하면 --json 출력이 바이트까지 같습니다", func(t *testing.T) {
 		dir := makeWiki(t)
 		first, err1 := runRoot(t, "lint", "--json", dir)
 		second, err2 := runRoot(t, "lint", "--json", dir)
@@ -104,7 +104,7 @@ func TestLintCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("깨끗한 위키는 종료 코드 0이다", func(t *testing.T) {
+	t.Run("깨끗한 위키는 종료 코드 0입니다", func(t *testing.T) {
 		dir := t.TempDir()
 		if err := os.MkdirAll(filepath.Join(dir, "context"), 0o755); err != nil {
 			t.Fatal(err)

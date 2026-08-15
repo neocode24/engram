@@ -20,7 +20,7 @@ import (
 func runStatus(t *testing.T, args ...string) (string, error) {
 	t.Helper()
 	parent := &cobra.Command{Use: "engram", SilenceUsage: true}
-	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력한다")
+	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력합니다")
 	parent.PersistentFlags().String(flagNow, "", "기준 시각(RFC3339)")
 	parent.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		raw, err := cmd.Flags().GetString(flagNow)
@@ -50,7 +50,7 @@ func makeStatusWiki(t *testing.T) string {
 	files := map[string]string{
 		"engram.yaml": "preset: education\n",
 		"inbox/2026-07-15-ready.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
-			"indexable: false\nsource_channel: manual\ncreated: 2026-07-15\nrelated:\n  - \"[[hub]]\"\n---\n\n[[peer]] 도 본다\n",
+			"indexable: false\nsource_channel: manual\ncreated: 2026-07-15\nrelated:\n  - \"[[hub]]\"\n---\n\n[[peer]] 도 봅니다\n",
 		"inbox/peer.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\nsource_channel: manual\n---\n\n메모\n",
 		"context/hub.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\nindexable: true\n" +
 			"source_refs: []\nderived_from: []\nrelated:\n  - \"[[peer]]\"\nsource_channel: manual\nderived_context: []\n" +
@@ -69,10 +69,10 @@ func makeStatusWiki(t *testing.T) string {
 }
 
 func TestStatusCmd(t *testing.T) {
-	t.Run("텍스트 출력은 세 구획과 다음 행동을 낸다", func(t *testing.T) {
+	t.Run("텍스트 출력은 세 구획과 다음 행동을 냅니다", func(t *testing.T) {
 		out, err := runStatus(t, "status", "--now", "2026-08-15T12:00:00Z", makeStatusWiki(t))
 		if err != nil {
-			t.Fatalf("status 는 항상 종료 코드 0 이어야 한다: %v\n%s", err, out)
+			t.Fatalf("status 는 항상 종료 코드 0 이어야 합니다: %v\n%s", err, out)
 		}
 		for _, want := range []string{"현황", "적체 압력 (기준 2026-08-15)", "다음 행동", "engram promote inbox/2026-07-15-ready.md"} {
 			if !strings.Contains(out, want) {
@@ -80,14 +80,14 @@ func TestStatusCmd(t *testing.T) {
 			}
 		}
 		if strings.Contains(out, "\x1b[") {
-			t.Error("색상 이스케이프 코드가 있다")
+			t.Error("색상 이스케이프 코드가 있습니다")
 		}
 	})
 
-	t.Run("--json 은 지표와 제안을 구조화해 낸다", func(t *testing.T) {
+	t.Run("--json 은 지표와 제안을 구조화해 냅니다", func(t *testing.T) {
 		out, err := runStatus(t, "status", "--json", "--now", "2026-08-15T12:00:00Z", makeStatusWiki(t))
 		if err != nil {
-			t.Fatalf("status 는 항상 종료 코드 0 이어야 한다: %v\n%s", err, out)
+			t.Fatalf("status 는 항상 종료 코드 0 이어야 합니다: %v\n%s", err, out)
 		}
 		var res status.Result
 		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
@@ -104,17 +104,17 @@ func TestStatusCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("위키가 아니면 거절하고 init 을 안내한다", func(t *testing.T) {
+	t.Run("위키가 아니면 거절하고 init 을 안내합니다", func(t *testing.T) {
 		out, err := runStatus(t, "status", t.TempDir())
 		if err == nil {
-			t.Fatal("위키가 아니면 에러여야 한다")
+			t.Fatal("위키가 아니면 에러여야 합니다")
 		}
 		if !strings.Contains(out, "engram init") {
-			t.Errorf("안내에 engram init 이 없다: %s", out)
+			t.Errorf("안내에 engram init 이 없습니다: %s", out)
 		}
 	})
 
-	t.Run("--now 를 고정하면 두 번 실행에 출력이 같다", func(t *testing.T) {
+	t.Run("--now 를 고정하면 두 번 실행에 출력이 같습니다", func(t *testing.T) {
 		wiki := makeStatusWiki(t)
 		first, err1 := runStatus(t, "status", "--json", "--now", "2026-08-15T12:00:00Z", wiki)
 		second, err2 := runStatus(t, "status", "--json", "--now", "2026-08-15T12:00:00Z", wiki)
@@ -122,7 +122,7 @@ func TestStatusCmd(t *testing.T) {
 			t.Fatalf("실행 에러: %v %v", err1, err2)
 		}
 		if first != second {
-			t.Fatalf("두 실행의 출력이 다르다:\n%s\n===\n%s", first, second)
+			t.Fatalf("두 실행의 출력이 다릅니다:\n%s\n===\n%s", first, second)
 		}
 	})
 }

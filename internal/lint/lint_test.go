@@ -396,7 +396,7 @@ func TestRun(t *testing.T) {
 			if v.Severity != SevWarn {
 				t.Errorf("유예는 warn 이어야 함: %+v", v)
 			}
-			if !strings.Contains(v.Message, "유예") || !strings.Contains(v.Message, "동작한다") {
+			if !strings.Contains(v.Message, "유예") || !strings.Contains(v.Message, "동작합니다") {
 				t.Errorf("유예 메시지는 원인과 게이트 동작 시점을 알려야 함: %s", v.Message)
 			}
 		}

@@ -34,13 +34,13 @@ func readWikiFile(t *testing.T, root, name string) string {
 }
 
 func TestInit(t *testing.T) {
-	t.Run("빈 디렉토리에 위키를 만든다", func(t *testing.T) {
+	t.Run("빈 디렉토리에 위키를 만듭니다", func(t *testing.T) {
 		dir := filepath.Join(t.TempDir(), "wiki")
 		out, err := runRoot(t, "init", dir)
 		if err != nil {
 			t.Fatalf("init 실패: %v", err)
 		}
-		if !strings.Contains(out, "위키를 초기화했다") {
+		if !strings.Contains(out, "위키를 초기화했습니다") {
 			t.Errorf("온보딩 문구가 없음: %q", out)
 		}
 		for _, name := range []string{"inbox", "sources", "context", "archive"} {
@@ -58,7 +58,7 @@ func TestInit(t *testing.T) {
 		}
 	})
 
-	t.Run("프리셋별로 index.md 프론트매터 축이 달라진다", func(t *testing.T) {
+	t.Run("프리셋별로 index.md 프론트매터 축이 달라집니다", func(t *testing.T) {
 		base := t.TempDir()
 		for _, preset := range []string{"personal", "education", "team"} {
 			dir := filepath.Join(base, preset)
@@ -92,7 +92,7 @@ func TestInit(t *testing.T) {
 		}
 	})
 
-	t.Run("이미 engram.yaml이 있으면 거절한다", func(t *testing.T) {
+	t.Run("이미 engram.yaml이 있으면 거절합니다", func(t *testing.T) {
 		dir := t.TempDir()
 		if _, err := runRoot(t, "init", dir); err != nil {
 			t.Fatalf("첫 init 실패: %v", err)
@@ -108,7 +108,7 @@ func TestInit(t *testing.T) {
 		}
 	})
 
-	t.Run("기존 파일을 덮어쓰지 않고 없는 것만 채운다", func(t *testing.T) {
+	t.Run("기존 파일을 덮어쓰지 않고 없는 것만 채웁니다", func(t *testing.T) {
 		dir := t.TempDir()
 		if err := os.MkdirAll(filepath.Join(dir, "inbox"), 0o755); err != nil {
 			t.Fatal(err)
@@ -140,7 +140,7 @@ func TestInit(t *testing.T) {
 		}
 	})
 
-	t.Run("고정된 --now로 두 번 실행하면 결과가 바이트까지 같다", func(t *testing.T) {
+	t.Run("고정된 --now로 두 번 실행하면 결과가 바이트까지 같습니다", func(t *testing.T) {
 		base := t.TempDir()
 		a := filepath.Join(base, "a")
 		b := filepath.Join(base, "b")
@@ -164,7 +164,7 @@ func TestInit(t *testing.T) {
 		}
 	})
 
-	t.Run("--json은 경로 목록과 프리셋을 낸다", func(t *testing.T) {
+	t.Run("--json은 경로 목록과 프리셋을 냅니다", func(t *testing.T) {
 		dir := filepath.Join(t.TempDir(), "wiki")
 		out, err := runRoot(t, "init", "--json", dir, "--preset", "team")
 		if err != nil {
@@ -185,7 +185,7 @@ func TestInit(t *testing.T) {
 		}
 	})
 
-	t.Run("잘못된 프리셋은 허용값과 함께 거절한다", func(t *testing.T) {
+	t.Run("잘못된 프리셋은 허용값과 함께 거절합니다", func(t *testing.T) {
 		_, err := runRoot(t, "init", t.TempDir(), "--preset", "hobby")
 		if err == nil {
 			t.Fatal("거절되어야 함")

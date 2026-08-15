@@ -130,7 +130,7 @@ func TestCreate(t *testing.T) {
 		if err == nil {
 			t.Fatal("같은 경로의 재생성은 거절되어야 함")
 		}
-		for _, want := range []string{"이미 문서가 있다", "덮어쓰지 않는다"} {
+		for _, want := range []string{"이미 문서가 있습니다", "덮어쓰지 않습니다"} {
 			if !strings.Contains(err.Error(), want) {
 				t.Errorf("거절 메시지에 %q 없음: %v", want, err)
 			}

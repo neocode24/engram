@@ -31,12 +31,12 @@ type backlinksResponse struct {
 func newBacklinksCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "backlinks <슬러그>",
-		Short: "슬러그를 가리키는 링크를 조회한다",
-		Long: `슬러그를 가리키는 링크를 조회한다.
+		Short: "슬러그를 가리키는 링크를 조회합니다",
+		Long: `슬러그를 가리키는 링크를 조회합니다.
 
 본문 링크와 related 필드와 관계 필드(derived_from, derived_context,
-source_refs)를 종류별로 구분해 보여준다. 슬러그에 해당하는 문서가
-위키에 없어도 동작한다. 깨진 링크를 찾는 것이 이 커맨드의 용도 중 하나다.`,
+source_refs)를 종류별로 구분해 보여줍니다. 슬러그에 해당하는 문서가
+위키에 없어도 동작합니다. 깨진 링크를 찾는 것이 이 커맨드의 용도 중 하나입니다.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			slug := args[0]
@@ -76,10 +76,10 @@ source_refs)를 종류별로 구분해 보여준다. 슬러그에 해당하는 �
 // printBacklinks는 사람용 백링크 목록을 인쇄한다.
 func printBacklinks(w io.Writer, res backlinksResponse) {
 	if !res.Exists {
-		fmt.Fprintf(w, "알림: 슬러그 %q에 해당하는 문서가 위키에 없다. 아래는 깨진 링크다\n", res.Slug)
+		fmt.Fprintf(w, "알림: 슬러그 %q에 해당하는 문서가 위키에 없습니다. 아래는 깨진 링크입니다\n", res.Slug)
 	}
 	if len(res.Backlinks) == 0 {
-		fmt.Fprintf(w, "백링크가 없다. 고아 문서일 수 있다\n")
+		fmt.Fprintf(w, "백링크가 없습니다. 고아 문서일 수 있습니다\n")
 		return
 	}
 	for _, b := range res.Backlinks {

@@ -89,14 +89,14 @@ func knownSlugs(walked []walk.Doc) map[string]bool {
 // 채우는지를 함께 낸다. 거절 메시지 품질이 제품 품질이다.
 func gateRejectError(g lint.GateResult) error {
 	need := g.Min - g.Links
-	return fmt.Errorf("승급 게이트를 넘지 못했다: 위키링크가 %d개로 min_wikilinks %d개에 못 미친다\n"+
-		"related 필드나 본문에 위키링크를 %d개 더 추가한다. 이 자리에서 채우려면 --related <슬러그>를 반복해 준다",
+	return fmt.Errorf("승급 게이트를 넘지 못했습니다: 위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다\n"+
+		"related 필드나 본문에 위키링크를 %d개 더 추가하세요.이 자리에서 채우려면 --related <슬러그>를 반복해 주세요",
 		g.Links, g.Min, need)
 }
 
 // warnDeferred는 게이트 유예 사실을 경고로 알린다. ADR 0021.
 func warnDeferred(w io.Writer, g lint.GateResult) {
-	fmt.Fprintf(w, "경고: 링크 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예했다. 위키가 자라면 게이트가 다시 적용된다\n",
+	fmt.Fprintf(w, "경고: 링크 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예했습니다. 위키가 자라면 게이트가 다시 적용됩니다\n",
 		g.Targets, g.Min)
 }
 
@@ -105,7 +105,7 @@ func warnDeferred(w io.Writer, g lint.GateResult) {
 func warnUnknownRelated(w io.Writer, related []string, known map[string]bool) {
 	for _, s := range related {
 		if !known[s] {
-			fmt.Fprintf(w, "경고: --related 슬러그 %q에 해당하는 문서가 위키에 없다. 곧 만들 문서일 수 있다\n", s)
+			fmt.Fprintf(w, "경고: --related 슬러그 %q에 해당하는 문서가 위키에 없습니다. 곧 만들 문서일 수 있습니다\n", s)
 		}
 	}
 }
@@ -118,7 +118,7 @@ func createDocFile(path string, content []byte) error {
 	}
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if errors.Is(err, fs.ErrExist) {
-		return fmt.Errorf("도착지에 이미 문서가 있다: %s\n기존 문서를 덮어쓰지 않는다. 슬러그를 다르게 지정한다", path)
+		return fmt.Errorf("도착지에 이미 문서가 있습니다: %s\n기존 문서를 덮어쓰지 않습니다. 슬러그를 다르게 지정하세요", path)
 	}
 	if err != nil {
 		return fmt.Errorf("문서를 만들 수 없음: %s: %w", path, err)

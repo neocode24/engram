@@ -35,12 +35,12 @@ type ingestResult struct {
 func newCaptureCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "capture [내용]",
-		Short: "새 메모를 검증 없이 inbox에 넣는다",
-		Long: `새 메모를 inbox에 넣는다. 스키마 검증을 하지 않는다.
+		Short: "새 메모를 검증 없이 inbox에 넣습니다",
+		Long: `새 메모를 inbox에 넣습니다. 스키마 검증을 하지 않습니다.
 
-내용을 인자로 받거나 파이프로 연결된 표준 입력으로 받는다.
-제목은 --title으로 주고, 생략하면 본문 첫 줄에서 만든다.
-파일명은 <날짜>-<슬러그>.md이고 날짜는 전역 --now 기준이다.`,
+내용을 인자로 받거나 파이프로 연결된 표준 입력으로 받습니다.
+제목은 --title으로 주고, 생략하면 본문 첫 줄에서 만듭니다.
+파일명은 <날짜>-<슬러그>.md이고 날짜는 전역 --now 기준입니다.`,
 		Args: cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
@@ -76,12 +76,12 @@ func newCaptureCmd() *cobra.Command {
 				enc.SetIndent("", "  ")
 				return enc.Encode(res)
 			}
-			printIngested(cmd.OutOrStdout(), res, "문서를 정리한 뒤 승급한다. 지금은 engram lint로 위키 상태를 본다")
+			printIngested(cmd.OutOrStdout(), res, "문서를 정리한 뒤 승급하세요. 지금은 engram lint로 위키 상태를 볼 수 있습니다")
 			return nil
 		},
 	}
-	cmd.Flags().String(flagTitle, "", "문서 제목. 생략하면 본문 첫 줄에서 만든다")
-	cmd.Flags().String(flagSlug, "", "파일명 슬러그. 생략하면 제목에서 만든다")
+	cmd.Flags().String(flagTitle, "", "문서 제목. 생략하면 본문 첫 줄에서 만듭니다")
+	cmd.Flags().String(flagSlug, "", "파일명 슬러그. 생략하면 제목에서 만듭니다")
 	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
 	return cmd
 }
@@ -95,7 +95,7 @@ func ingestTarget(cmd *cobra.Command) (string, config.Config, error) {
 	}
 	if _, err := os.Stat(filepath.Join(root, config.ConfigFileName)); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return "", config.Config{}, fmt.Errorf("위키가 아닌 디렉토리다: %s\n먼저 engram init을 실행한다", root)
+			return "", config.Config{}, fmt.Errorf("위키가 아닌 디렉토리입니다: %s\n먼저 engram init을 실행하세요", root)
 		}
 		return "", config.Config{}, fmt.Errorf("대상 경로를 확인할 수 없음: %w", err)
 	}
@@ -140,7 +140,7 @@ func readContent(cmd *cobra.Command, args []string) (string, error) {
 			return s, nil
 		}
 	}
-	return "", fmt.Errorf("내용을 받지 못했다\n인자로 내용을 주거나 파이프로 표준 입력을 넘긴다. 예: engram capture \"메모 내용\"")
+	return "", fmt.Errorf("내용을 받지 못했습니다\n인자로 내용을 주거나 파이프로 표준 입력을 넘기세요. 예: engram capture \"메모 내용\"")
 }
 
 // deriveTitle은 제목 플래그가 비었으면 본문 첫 줄에서 제목을 만든다.
@@ -163,7 +163,7 @@ func deriveTitle(flagValue, content string) string {
 func resolveSlug(flagValue, title string) (string, error) {
 	if flagValue != "" {
 		if strings.ContainsAny(flagValue, `/\`) {
-			return "", fmt.Errorf("슬러그에 경로 구분자가 들어 있다: %q", flagValue)
+			return "", fmt.Errorf("슬러그에 경로 구분자가 들어 있습니다: %q", flagValue)
 		}
 		return flagValue, nil
 	}
@@ -172,6 +172,6 @@ func resolveSlug(flagValue, title string) (string, error) {
 
 // printIngested는 만들어진 경로와 다음에 할 수 있는 일을 낸다.
 func printIngested(w io.Writer, res ingestResult, next string) {
-	fmt.Fprintf(w, "%s에 넣었다: %s\n", res.Stage, res.Path)
+	fmt.Fprintf(w, "%s에 넣었습니다: %s\n", res.Stage, res.Path)
 	fmt.Fprintf(w, "다음: %s\n", next)
 }

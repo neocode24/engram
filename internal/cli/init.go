@@ -33,11 +33,11 @@ type initResult struct {
 func newInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init [경로]",
-		Short: "새 위키를 만든다",
-		Long: `지정한 경로에 새 위키를 만든다. 경로를 생략하면 현재 디렉토리다.
+		Short: "새 위키를 만듭니다",
+		Long: `지정한 경로에 새 위키를 만듭니다. 경로를 생략하면 현재 디렉토리입니다.
 
-디렉토리 구성, engram.yaml 설정, 첫 문서 index.md, .gitignore를 만든다.
-이미 engram.yaml이 있으면 기존 위키를 보존하기 위해 거절한다.`,
+디렉토리 구성, engram.yaml 설정, 첫 문서 index.md, .gitignore를 만듭니다.
+이미 engram.yaml이 있으면 기존 위키를 보존하기 위해 거절합니다.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dir := "."
@@ -86,7 +86,7 @@ func runInit(dir string, preset config.Preset, now time.Time) (initResult, error
 	root := filepath.Clean(dir)
 	cfgPath := filepath.Join(root, config.ConfigFileName)
 	if _, err := os.Stat(cfgPath); err == nil {
-		return initResult{}, fmt.Errorf("대상이 이미 engram 위키다: %s\n기존 위키를 덮어쓰지 않는다. 다른 경로를 지정하거나 기존 %s을 손으로 고친다",
+		return initResult{}, fmt.Errorf("대상이 이미 engram 위키입니다: %s\n기존 위키를 덮어쓰지 않습니다. 다른 경로를 지정하거나 기존 %s을 손으로 고치세요",
 			cfgPath, config.ConfigFileName)
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return initResult{}, fmt.Errorf("대상 경로를 확인할 수 없음: %w", err)
@@ -177,27 +177,27 @@ func hasLine(data []byte, line string) bool {
 // configYAML은 init이 쓰는 engram.yaml 본문이다. 주석이 무엇을 고칠 수
 // 있는지를 알려준다. 임계값과 디렉토리는 기본값을 그대로 박는다.
 func configYAML(preset config.Preset) string {
-	return fmt.Sprintf(`# engram 위키 설정. 스키마 축, 임계값, 디렉토리 매핑을 정의한다.
+	return fmt.Sprintf(`# engram 위키 설정. 스키마 축, 임계값, 디렉토리 매핑을 정의합니다.
 preset: %s
 
 # 스키마 축. 프리셋(personal < education < team)이 시작점이며
-# 개별 축을 아래에서 따로 켜고 끌 수 있다.
+# 개별 축을 아래에서 따로 켜고 끌 수 있습니다.
 # 사용 가능한 축: type, artifact_stage, status, indexable, tags, source_refs,
 # derived_from, related, source_channel, derived_context, scope, sensitivity,
 # trigger_mode, workflow
 # axes:
 #   scope: true
 
-# 문서 종류(type 축의 허용값). 위키에 맞게 추가한다.
+# 문서 종류(type 축의 허용값). 위키에 맞게 추가합니다.
 # types: [concept, project, system, decision, procedure, incident,
 #   meeting-summary, agent-workflow, source-summary, inbox-note]
 
-# taxonomy. topics는 개방 집합이고 forms는 폐쇄 집합이다.
+# taxonomy. topics는 개방 집합이고 forms는 폐쇄 집합입니다.
 # topics: [go, cli]
 # forms: [memo, report]
 
-# 임계값. min_wikilinks만 승급 거절 사유이고 나머지는 경고에 쓰인다.
-min_wikilinks: 2    # promote 게이트. 0으로 두면 게이트가 꺼진다
+# 임계값. min_wikilinks만 승급 거절 사유이고 나머지는 경고에 쓰입니다.
+min_wikilinks: 2    # promote 게이트. 0으로 두면 게이트가 꺼집니다
 stale_days: 90      # 재발견 대상 판정 기준 일수
 max_lines: 1000     # 문서 길이 경고 상한
 broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
@@ -252,11 +252,11 @@ func indexMD(cfg config.Config, now time.Time) string {
 	fmt.Fprintf(&b, "updated: %s\n", date)
 	b.WriteString("---\n\n")
 	b.WriteString("# engram 위키\n\n")
-	b.WriteString("이 문서는 위키의 첫 문서다. 위키를 소개하는 안내로 바꾼다.\n\n")
+	b.WriteString("이 문서는 위키의 첫 문서입니다. 위키를 소개하는 안내로 바꿉니다.\n\n")
 	for _, d := range cfg.PageDirs {
 		fmt.Fprintf(&b, "- %s/\n", d)
 	}
-	b.WriteString("\n새 자료는 inbox에 넣고 승급 파이프라인을 따라 context로 옮긴다.\n")
+	b.WriteString("\n새 자료는 inbox에 넣고 승급 파이프라인을 따라 context로 옮깁니다.\n")
 	return b.String()
 }
 
@@ -269,11 +269,11 @@ func printOnboarding(w io.Writer, res initResult) {
 		"archive": "승급에서 물러난 문서가 가는 곳",
 	}
 	fileGuide := map[string]string{
-		config.ConfigFileName: "위키 설정. 축과 임계값을 여기서 조정한다",
-		"index.md":            "첫 문서. 위키 소개로 채운다",
-		".gitignore":          ".engram/ 캐시 디렉토리를 git에서 제외한다",
+		config.ConfigFileName: "위키 설정. 축과 임계값을 여기서 조정하세요",
+		"index.md":            "첫 문서. 위키 소개로 채우세요",
+		".gitignore":          ".engram/ 캐시 디렉토리를 git에서 제외합니다",
 	}
-	fmt.Fprintf(w, "위키를 초기화했다: %s (프리셋: %s)\n\n", res.Root, res.Preset)
+	fmt.Fprintf(w, "위키를 초기화했습니다: %s (프리셋: %s)\n\n", res.Root, res.Preset)
 	fmt.Fprintln(w, "디렉토리:")
 	for _, d := range res.Dirs {
 		guide, ok := dirGuide[d]
@@ -287,7 +287,7 @@ func printOnboarding(w io.Writer, res initResult) {
 		fmt.Fprintf(w, "  %-12s %s\n", f, fileGuide[f])
 	}
 	fmt.Fprintln(w, "\n다음 단계:")
-	fmt.Fprintln(w, "  1. inbox에 첫 자료를 넣는다")
-	fmt.Fprintf(w, "  2. %s을 열어 축과 임계값을 위키에 맞게 조정한다\n", config.ConfigFileName)
-	fmt.Fprintln(w, "  3. index.md를 위키 소개로 채운다")
+	fmt.Fprintln(w, "  1. inbox에 첫 자료를 넣으세요")
+	fmt.Fprintf(w, "  2. %s을 열어 축과 임계값을 위키에 맞게 조정하세요\n", config.ConfigFileName)
+	fmt.Fprintln(w, "  3. index.md를 위키 소개로 채우세요")
 }

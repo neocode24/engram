@@ -248,3 +248,43 @@ func TestGitMissingIsWarn(t *testing.T) {
 		t.Errorf("조치 문구에 현재는 문제없다는 사실이 없음: %s", f.Fix)
 	}
 }
+
+// TestConsoleFinding은 콘솔 인코딩 진단의 세 상황을 플랫폼 무관하게 덮는다.
+// probeConsole 의 Windows 구현 자체는 macOS 에서 돌릴 수 없으므로
+// 순수 함수인 consoleFinding 만 검증한다. 실제 콘솔에서의 판정은
+// docs/windows-verification.md 절차로 사람이 확인한다.
+func TestConsoleFinding(t *testing.T) {
+	t.Run("콘솔 직결이고 출력 코드페이지가 65001 이면 ok", func(t *testing.T) {
+		f := consoleFinding(consoleState{IsConsole: true, OutputCP: 65001, InputCP: 949})
+		if f.Status != StatusOK {
+			t.Fatalf("상태가 %s 입니다, ok 여야 합니다", f.Status)
+		}
+		if !strings.Contains(f.Detail, "전환") {
+			t.Errorf("전환 사실을 알려야 합니다: %s", f.Detail)
+		}
+		// 입력 코드페이지가 949 여도 경고가 아니라는 것이 이번 수정의 핵심이다.
+	})
+
+	t.Run("콘솔 직결인데 65001 이 아니면 전환 실패 경고", func(t *testing.T) {
+		f := consoleFinding(consoleState{IsConsole: true, OutputCP: 949})
+		if f.Status != StatusWarn {
+			t.Fatalf("상태가 %s 입니다, warn 이어야 합니다", f.Status)
+		}
+		if !strings.Contains(f.Detail, "출력 코드페이지") || !strings.Contains(f.Fix, "chcp 65001") {
+			t.Errorf("경고 문구가 잘못되었습니다: %+v", f)
+		}
+	})
+
+	t.Run("stdout 이 콘솔이 아니면 UTF-8 안내를 낸다", func(t *testing.T) {
+		f := consoleFinding(consoleState{IsConsole: false})
+		if f.Status != StatusOK {
+			t.Fatalf("상태가 %s 입니다, 파이프는 이쪽 결함이 아니므로 ok 여야 합니다", f.Status)
+		}
+		if !strings.Contains(f.Detail, "UTF-8 바이트") {
+			t.Errorf("안내가 잘못되었습니다: %s", f.Detail)
+		}
+		if !strings.Contains(f.Fix, "OutputEncoding") {
+			t.Errorf("PowerShell 조치가 없습니다: %s", f.Fix)
+		}
+	})
+}

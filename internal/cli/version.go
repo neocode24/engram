@@ -50,7 +50,7 @@ func collectVersionInfo() versionInfo {
 func newVersionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
-		Short: "버전과 빌드 정보를 출력한다",
+		Short: "버전과 빌드 정보를 출력합니다",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			info := collectVersionInfo()

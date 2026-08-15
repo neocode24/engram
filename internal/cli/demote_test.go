@@ -17,7 +17,7 @@ import (
 func runDemoteUpdate(t *testing.T, args ...string) (string, error) {
 	t.Helper()
 	parent := &cobra.Command{Use: "engram", SilenceUsage: true}
-	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력한다")
+	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력합니다")
 	parent.PersistentFlags().String(flagNow, "", "기준 시각(RFC3339)")
 	parent.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		raw, err := cmd.Flags().GetString(flagNow)
@@ -87,7 +87,7 @@ func readWiki(t *testing.T, root, name string) string {
 }
 
 func TestDemoteCmd(t *testing.T) {
-	t.Run("기본 도착지는 inbox 다. created 날짜 접두사를 붙인다", func(t *testing.T) {
+	t.Run("기본 도착지는 inbox 다. created 날짜 접두사를 붙입니다", func(t *testing.T) {
 		root := makeDemoteWiki(t)
 		out, err := runDemoteUpdate(t, "demote", "--wiki", root, "context/note.md")
 		if err != nil {
@@ -100,14 +100,14 @@ func TestDemoteCmd(t *testing.T) {
 			}
 		}
 		if _, err := os.Stat(filepath.Join(root, "context", "note.md")); !os.IsNotExist(err) {
-			t.Error("원본 context 문서가 남아 있다")
+			t.Error("원본 context 문서가 남아 있습니다")
 		}
-		if !strings.Contains(out, "inbox로 내렸다") {
+		if !strings.Contains(out, "inbox로 내렸습니다") {
 			t.Errorf("출력에 안내 없음:\n%s", out)
 		}
 	})
 
-	t.Run("--to sources 로 내린다", func(t *testing.T) {
+	t.Run("--to sources 로 내립니다", func(t *testing.T) {
 		root := makeDemoteWiki(t)
 		out, err := runDemoteUpdate(t, "demote", "--wiki", root, "--to", "sources", "context/note.md")
 		if err != nil {
@@ -121,7 +121,7 @@ func TestDemoteCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("created 가 없으면 기준 시각 날짜를 쓴다", func(t *testing.T) {
+	t.Run("created 가 없으면 기준 시각 날짜를 씁니다", func(t *testing.T) {
 		root := t.TempDir()
 		files := map[string]string{
 			"engram.yaml":       "preset: education\n",
@@ -143,7 +143,7 @@ func TestDemoteCmd(t *testing.T) {
 		readWiki(t, root, "inbox/2026-08-15-nodate.md")
 	})
 
-	t.Run("context 아닌 문서는 거절한다", func(t *testing.T) {
+	t.Run("context 아닌 문서는 거절합니다", func(t *testing.T) {
 		root := t.TempDir()
 		inbox := "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\nsource_channel: manual\n---\n\n메모\n"
 		if err := os.MkdirAll(filepath.Join(root, "inbox"), 0o755); err != nil {
@@ -157,25 +157,25 @@ func TestDemoteCmd(t *testing.T) {
 		}
 		out, err := runDemoteUpdate(t, "demote", "--wiki", root, "inbox/memo.md")
 		if err == nil {
-			t.Fatal("context 아닌 문서는 거절이어야 한다")
+			t.Fatal("context 아닌 문서는 거절이어야 합니다")
 		}
 		if !strings.Contains(out, "context 단계 문서만") {
 			t.Errorf("거절 안내가 없음: %s", out)
 		}
 	})
 
-	t.Run("깨질 링크를 출처와 줄 번호로 경고한다", func(t *testing.T) {
+	t.Run("깨질 링크를 출처와 줄 번호로 경고합니다", func(t *testing.T) {
 		root := makeDemoteWiki(t)
 		// 색인이 note 를 본문에서 가리키게 한다.
 		linked := "---\ntype: system\nartifact_stage: context\nstatus: promoted\nindexable: true\n" +
 			"source_refs: []\nderived_from: []\nrelated: []\nsource_channel: manual\nderived_context: []\n" +
-			"---\n\n# 색인\n\n[[note]] 문서를 본다\n"
+			"---\n\n# 색인\n\n[[note]] 문서를 봅니다\n"
 		if err := os.WriteFile(filepath.Join(root, "index.md"), []byte(linked), 0o644); err != nil {
 			t.Fatal(err)
 		}
 		out, err := runDemoteUpdate(t, "demote", "--wiki", root, "context/note.md")
 		if err != nil {
-			t.Fatalf("경고는 진행을 막지 않는다: %v\n%s", err, out)
+			t.Fatalf("경고는 진행을 막지 않습니다: %v\n%s", err, out)
 		}
 		if !strings.Contains(out, "깨질 위키링크") || !strings.Contains(out, "index.md") {
 			t.Errorf("깨질 링크 경고에 출처가 없음:\n%s", out)
@@ -185,7 +185,7 @@ func TestDemoteCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("derived_from 이 있으면 원본을 경고로 알린다", func(t *testing.T) {
+	t.Run("derived_from 이 있으면 원본을 경고로 알립니다", func(t *testing.T) {
 		root := makeDemoteWiki(t)
 		derived := strings.Replace(contextDocFM("2026-01-15", ""),
 			"derived_from: []", "derived_from:\n  - sources/2026-01-10-note.md", 1)
@@ -194,14 +194,14 @@ func TestDemoteCmd(t *testing.T) {
 		}
 		out, err := runDemoteUpdate(t, "demote", "--wiki", root, "context/note.md")
 		if err != nil {
-			t.Fatalf("경고는 진행을 막지 않는다: %v\n%s", err, out)
+			t.Fatalf("경고는 진행을 막지 않습니다: %v\n%s", err, out)
 		}
 		if !strings.Contains(out, "sources/2026-01-10-note.md") || !strings.Contains(out, "derived_context") {
 			t.Errorf("파생 원본 경고가 없음:\n%s", out)
 		}
 	})
 
-	t.Run("--json 은 결과를 구조화해 낸다", func(t *testing.T) {
+	t.Run("--json 은 결과를 구조화해 냅니다", func(t *testing.T) {
 		root := makeDemoteWiki(t)
 		out, err := runDemoteUpdate(t, "demote", "--json", "--wiki", root, "context/note.md")
 		if err != nil {
@@ -212,14 +212,14 @@ func TestDemoteCmd(t *testing.T) {
 			t.Fatalf("JSON 파싱 실패: %v\n출력: %s", err, out)
 		}
 		if res.Slug != "note" || res.Stage != "inbox" || res.Date != "2026-01-15" {
-			t.Errorf("결과가 틀리다: %+v", res)
+			t.Errorf("결과가 틀리입니다: %+v", res)
 		}
 	})
 
-	t.Run("위키가 아니면 거절한다", func(t *testing.T) {
+	t.Run("위키가 아니면 거절합니다", func(t *testing.T) {
 		out, err := runDemoteUpdate(t, "demote", "--wiki", t.TempDir(), "context/x.md")
 		if err == nil {
-			t.Fatal("거절이어야 한다")
+			t.Fatal("거절이어야 합니다")
 		}
 		if !strings.Contains(out, "engram init") {
 			t.Errorf("init 안내가 없음: %s", out)

@@ -56,7 +56,7 @@ func TestGateTargetAgreement(t *testing.T) {
 		t.Errorf("cli 대상 수 = %d, want 3", got)
 	}
 	if got := lint.LinkableTargets(walked, ""); got != countTargets(walked, "", "") {
-		t.Errorf("lint 대상 수 %d 와 cli 대상 수 %d 가 다르다", got, countTargets(walked, "", ""))
+		t.Errorf("lint 대상 수 %d 와 cli 대상 수 %d 가 다릅니다", got, countTargets(walked, "", ""))
 	}
 	// 판정 대상 문서 자신은 대상 수에서 빠진다.
 	if got := lint.LinkableTargets(walked, "context/a.md"); got != 2 {
