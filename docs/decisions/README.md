@@ -34,6 +34,10 @@
 | [0017](0017-yaml-for-config-and-frontmatter.md) | 설정과 프론트매터를 모두 YAML로 하고 파서를 하나만 둔다 | 2026-08-15 | accepted |
 | [0018](0018-taxonomy-field-names.md) | taxonomy 두 facet의 문서 필드명을 topics와 form으로 확정한다 | 2026-08-15 | accepted |
 | [0019](0019-index-documents-outside-the-gate.md) | 색인 문서를 승급 게이트와 고아 판정 대상에서 제외한다 | 2026-08-15 | accepted |
+| [0020](0020-slug-and-filename-rules.md) | 슬러그와 파일명 규칙을 upstream 실물에서 확정한다 | 2026-08-15 | accepted |
+| [0021](0021-gate-deferral-when-targets-are-scarce.md) | 링크 대상이 부족하면 승급 게이트를 유예한다 | 2026-08-15 | amended |
+| [0022](0022-promote-moves-inbox-derives-sources.md) | promote는 inbox를 옮기고 sources에서는 파생을 만든다 | 2026-08-15 | accepted |
+| [0023](0023-gate-targets-exclude-inbox.md) | 게이트의 링크 대상 집계에서 inbox 문서를 제외한다 | 2026-08-15 | accepted |
 
 ## 개정 그래프
 
@@ -47,6 +51,7 @@
 | 0006 | `attach`를 별도 커맨드 후순위로 둔다 | [0013](0013-eject-redefined-seal-removed.md) 기본 동작으로 전환 |
 | 0007 | Windows는 winget과 scoop을 권장 설치 경로로 한다 | [0012](0012-distribution-via-personal-homebrew-tap.md) Homebrew tap 단일화, winget 보류 |
 | 0007 | `ENGRAM_UPDATE_URL`로 Enterprise 미러를 가리킨다 | [0012](0012-distribution-via-personal-homebrew-tap.md) 공개 릴리스를 사내에서도 그대로 받는다 |
+| 0021 | 대상은 `page_dirs` 아래 문서와 `root_files`다 | [0023](0023-gate-targets-exclude-inbox.md) inbox 단계와 단계 불명 문서를 제외 |
 
 ## 근거만 갱신된 경우
 

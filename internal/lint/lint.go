@@ -7,8 +7,6 @@ package lint
 import (
 	"errors"
 	"fmt"
-	"io/fs"
-	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -16,6 +14,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/walk"
 )
 
 // Severity는 위반의 등급이다.
@@ -87,26 +86,36 @@ type scannedDoc struct {
 const sourcesDirName = "sources"
 
 // Run은 위키 루트를 순회해 위반 목록을 반환한다.
-// 순회는 경로 기준 정렬, 파일 안은 줄 번호와 규칙 ID 기준 정렬이므로
-// 같은 위키에 대한 결과는 항상 바이트까지 같다.
+// 순회와 파싱은 internal/walk 가 담당한다. 순회는 경로 기준 정렬,
+// 파일 안은 줄 번호와 규칙 ID 기준 정렬이므로 같은 위키에 대한 결과는
+// 항상 바이트까지 같다.
 func Run(wikiRoot string, cfg config.Config) (Result, error) {
-	rels, err := scanFiles(wikiRoot, cfg)
+	walked, err := walk.Files(wikiRoot, cfg)
 	if err != nil {
 		return Result{}, err
 	}
 	var docs []scannedDoc
 	var violations []Violation
-	for _, rel := range rels {
-		sd, vs, err := scanDoc(wikiRoot, rel, cfg)
-		if err != nil {
-			return Result{}, err
+	for _, w := range walked {
+		if w.Err != nil {
+			violations = append(violations, parseViolations(w)...)
+			continue
 		}
-		if sd != nil {
-			docs = append(docs, *sd)
+		// 프론트매터가 아예 없는 문서는 문서 단위 규칙을 적용할 수 없으므로
+		// 위반만 남기고 그래프 판정 대상에서 빠진다.
+		if !w.Parsed.HasFrontmatter {
+			violations = append(violations, Violation{
+				Rule: "frontmatter.missing", Severity: SevError, Path: w.Rel, Line: 1,
+				Message: "프론트매터가 없다",
+				Fix:     "문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫는다",
+			})
+			continue
 		}
+		sd, vs := scanDoc(w, cfg)
+		docs = append(docs, sd)
 		violations = append(violations, vs...)
 	}
-	violations = append(violations, graphRules(docs, cfg)...)
+	violations = append(violations, graphRules(docs, walked, cfg)...)
 	sortViolations(violations)
 	findings := broadTopicFindings(docs, cfg)
 	res := Result{Violations: violations, WikiFindings: findings}
@@ -118,7 +127,7 @@ func Run(wikiRoot string, cfg config.Config) (Result, error) {
 	}
 	// 검사한 파일 수는 파싱에 실패한 문서도 포함한다. 위반은 있지만
 	// 문서로는 세지 못한 파일이 숨지 않게 하기 위해서다.
-	res.Summary.Files = len(rels)
+	res.Summary.Files = len(walked)
 	for _, v := range res.Violations {
 		switch v.Severity {
 		case SevError:
@@ -138,112 +147,37 @@ func Run(wikiRoot string, cfg config.Config) (Result, error) {
 	return res, nil
 }
 
-// scanFiles는 검사 대상 .md 파일의 상대 경로를 정렬해 반환한다.
-// page_dirs 아래와 루트 파일이 대상이고 숨김 디렉토리는 건너뛴다.
-func scanFiles(wikiRoot string, cfg config.Config) ([]string, error) {
-	seen := map[string]bool{}
-	var rels []string
-	add := func(rel string) {
-		if !seen[rel] {
-			seen[rel] = true
-			rels = append(rels, rel)
-		}
+// parseViolations는 파싱에 실패한 문서 하나의 위반을 만든다.
+// 오류 종류는 walk 의 센티널로 구분한다. 에러 문자열 매칭을 쓰지 않는다.
+func parseViolations(w walk.Doc) []Violation {
+	if errors.Is(w.Err, walk.ErrUnclosed) {
+		return []Violation{{
+			Rule: "frontmatter.unclosed", Severity: SevError, Path: w.Rel, Line: 1,
+			Message: "프론트매터가 닫는 --- 구분자 없이 끝났다",
+			Fix:     "프론트매터 끝에 --- 줄을 추가한다",
+		}}
 	}
-	dirs := append([]string{}, cfg.PageDirs...)
-	sort.Strings(dirs)
-	for _, d := range dirs {
-		if d == ".engram" || strings.HasPrefix(d, ".") {
-			continue
-		}
-		err := filepath.WalkDir(filepath.Join(wikiRoot, d), func(path string, entry fs.DirEntry, err error) error {
-			if err != nil {
-				if errors.Is(err, fs.ErrNotExist) {
-					return nil
-				}
-				return err
-			}
-			if entry.IsDir() {
-				if strings.HasPrefix(entry.Name(), ".") {
-					return filepath.SkipDir
-				}
-				return nil
-			}
-			if strings.HasSuffix(entry.Name(), ".md") {
-				rel, err := filepath.Rel(wikiRoot, path)
-				if err != nil {
-					return err
-				}
-				add(filepath.ToSlash(rel))
-			}
-			return nil
-		})
-		if err != nil {
-			return nil, err
-		}
-	}
-	for _, f := range cfg.RootFiles {
-		if !strings.HasSuffix(f, ".md") {
-			continue
-		}
-		if _, err := os.Stat(filepath.Join(wikiRoot, f)); err == nil {
-			add(filepath.ToSlash(f))
-		}
-	}
-	sort.Strings(rels)
-	return rels, nil
+	return []Violation{{
+		Rule: "frontmatter.yaml", Severity: SevError, Path: w.Rel,
+		Line:    yamlErrorLine(w.Err.Error()),
+		Message: "프론트매터 YAML 파싱 실패: " + w.Err.Error(),
+		Fix:     "프론트매터의 YAML 문법을 고친다",
+	}}
 }
 
-// scanDoc는 문서 하나를 파싱하고 문서 단위 규칙을 적용한다.
-// 파싱 자체가 실패한 문서는 nil 문서와 프론트매터 위반을 반환한다.
-func scanDoc(wikiRoot, rel string, cfg config.Config) (*scannedDoc, []Violation, error) {
-	raw, err := os.ReadFile(filepath.Join(wikiRoot, filepath.FromSlash(rel)))
-	if err != nil {
-		return nil, nil, fmt.Errorf("문서를 읽을 수 없음: %s: %w", rel, err)
-	}
-	text := strings.TrimPrefix(string(raw), "\xEF\xBB\xBF")
-	text = strings.ReplaceAll(text, "\r\n", "\n")
-
+// scanDoc는 파싱된 문서 하나에 문서 단위 규칙을 적용한다.
+// 순회와 파싱은 internal/walk 가 이미 마쳤다.
+func scanDoc(w walk.Doc, cfg config.Config) (scannedDoc, []Violation) {
+	rel := w.Rel
 	var vs []Violation
 	add := func(sev Severity, rule string, line int, msg, fix string) {
 		vs = append(vs, Violation{Rule: rule, Severity: sev, Path: rel, Line: line, Message: msg, Fix: fix})
 	}
 
-	// 닫는 구분자 검사를 doc.Parse 앞에 둔다. 파싱 에러의 종류를
-	// 에러 문자열 매칭 없이 확정하기 위해서다.
-	lines := strings.Split(text, "\n")
-	if strings.TrimRight(lines[0], " \t") == "---" {
-		closed := false
-		for _, l := range lines[1:] {
-			if strings.TrimRight(l, " \t") == "---" {
-				closed = true
-				break
-			}
-		}
-		if !closed {
-			add(SevError, "frontmatter.unclosed", 1,
-				"프론트매터가 닫는 --- 구분자 없이 끝났다",
-				"프론트매터 끝에 --- 줄을 추가한다")
-			return nil, vs, nil
-		}
-	}
-
-	d, err := doc.Parse(rel, []byte(text))
-	if err != nil {
-		add(SevError, "frontmatter.yaml", yamlErrorLine(err.Error()),
-			"프론트매터 YAML 파싱 실패: "+err.Error(),
-			"프론트매터의 YAML 문법을 고친다")
-		return nil, vs, nil
-	}
-	if !d.HasFrontmatter {
-		add(SevError, "frontmatter.missing", 1,
-			"프론트매터가 없다",
-			"문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫는다")
-		return nil, vs, nil
-	}
-
-	sd := &scannedDoc{
+	d := w.Parsed
+	sd := scannedDoc{
 		rel:       rel,
-		content:   text,
+		content:   w.Content,
 		d:         d,
 		fields:    fieldMap(d),
 		related:   d.FrontmatterLinks(),
@@ -259,7 +193,7 @@ func scanDoc(wikiRoot, rel string, cfg config.Config) (*scannedDoc, []Violation,
 	sd.checkTaxonomy(cfg, add)
 	sd.checkSourcesUpdated(add)
 	sd.checkMaxLines(cfg, add)
-	return sd, vs, nil
+	return sd, vs
 }
 
 // fieldMap는 필드 순서 목록을 조회용 맵으로 바꾼다.
@@ -440,9 +374,84 @@ func (s *scannedDoc) checkMaxLines(cfg config.Config, add func(Severity, string,
 	}
 }
 
+// GateResult는 승급 게이트 판정 결과다.
+type GateResult struct {
+	Passed   bool // 게이트를 통과했는가. 유예와 게이트 오프도 통과다
+	Deferred bool // 링크 대상이 부족해 게이트를 적용하지 않았는가 (ADR 0021)
+	Links    int  // 그 문서의 고유 위키링크 수
+	Targets  int  // 자신을 뺀 링크 가능 문서 수
+	Min      int  // min_wikilinks
+}
+
+// EvaluateGate는 문서 하나의 승급 게이트를 판정한다. links 는 그 문서의
+// 고유 위키링크 수, targets 는 자신을 뺀 링크 가능 문서 수다.
+// lint, promote, new 가 같은 판정을 써야 커맨드로 통과한 문서를 lint 가
+// 거절하지 않는다. min_wikilinks 가 0 이면 게이트 자체가 꺼져 있어
+// 유예 표시도 하지 않는다.
+func EvaluateGate(links, targets, minWikilinks int) GateResult {
+	g := GateResult{Links: links, Targets: targets, Min: minWikilinks}
+	switch {
+	case minWikilinks <= 0:
+		g.Passed = true
+	case targets < minWikilinks:
+		// 링크 대상이 물리적으로 없는 상태는 고립이 아니라 시작이다.
+		g.Passed, g.Deferred = true, true
+	default:
+		g.Passed = links >= minWikilinks
+	}
+	return g
+}
+
+// OrphanCount는 lint 결과에서 고아 문서 수를 낸다. status 같은 다른
+// 지표가 graph.orphan 과 같은 판정을 쓰게 하는 통로다. 고아의 정의는
+// graph.orphan 규칙이 단일 진실원이므로 여기서 다시 세지 않는다.
+func OrphanCount(res Result) int {
+	n := 0
+	for _, v := range res.Violations {
+		if v.Rule == "graph.orphan" {
+			n++
+		}
+	}
+	return n
+}
+
+// Linkable은 문서가 게이트의 유효한 연결 대상인지를 판정한다.
+// inbox 단계 문서는 promote 되면 파일이 옮겨지며 슬러그가 날짜 접두사가
+// 떨어진 형태로 바뀌어 가리키던 링크가 깨지므로 뺀다(ADR 0022).
+// 단계를 읽을 수 없는 문서(파싱 실패, 프론트매터 없음, 필드 없음)도
+// 그 자리에 남으리라 보장할 수 없어 뺀다. 색인(root_files)은 승급
+// 대상이 아니라 그 자리에 남으므로 포함한다.
+// EvaluateGate 를 부르는 모든 곳이 이 판정을 공유해야 대상 수가 갈라지지 않는다.
+func Linkable(w walk.Doc) bool {
+	if w.Root {
+		return true
+	}
+	if w.Err != nil || !w.Parsed.HasFrontmatter {
+		return false
+	}
+	for _, f := range w.Parsed.Fields {
+		if f.Key == string(config.AxisArtifactStage) {
+			return f.Kind == doc.KindString && f.Str != "inbox"
+		}
+	}
+	return false
+}
+
+// LinkableTargets는 판정 대상 문서 self 를 뺀 유효 연결 대상 수를 센다.
+func LinkableTargets(walked []walk.Doc, self string) int {
+	n := 0
+	for _, w := range walked {
+		if w.Rel != self && Linkable(w) {
+			n++
+		}
+	}
+	return n
+}
+
 // graphRules는 전체 문서를 모은 뒤에야 판정할 수 있는 규칙을 적용한다.
-// 깨진 링크, 고아 문서, 승급 게이트다.
-func graphRules(docs []scannedDoc, cfg config.Config) []Violation {
+// 깨진 링크, 고아 문서, 승급 게이트다. walked 는 순회 결과 전체로
+// 게이트 유예의 대상 수를 잰다.
+func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Violation {
 	var vs []Violation
 	add := func(sev Severity, rule, rel string, line int, msg, fix string) {
 		vs = append(vs, Violation{Rule: rule, Severity: sev, Path: rel, Line: line, Message: msg, Fix: fix})
@@ -456,17 +465,25 @@ func graphRules(docs []scannedDoc, cfg config.Config) []Violation {
 		}
 	}
 
+	// 고아 판정의 들어오는 관계는 위키링크와 관계 필드를 같은 기준으로 센다.
+	// 키는 날짜 접두사를 뺀 슬러그로 정규화한다. 경로 형태 값과 슬러그 형태
+	// 값이 같은 문서를 가리키도록 하기 위해서다.
 	incoming := map[string]int{}
 	for _, s := range docs {
-		self := strings.TrimSuffix(filepath.Base(s.rel), ".md")
+		self := relationSlug(s.rel)
 		for _, l := range append(append([]doc.Link{}, s.related...), s.bodyLinks...) {
-			if l.Slug != self {
-				incoming[l.Slug]++
+			if key := relationSlug(l.Slug); key != self {
+				incoming[key]++
 			}
 			if _, ok := bySlug[l.Slug]; !ok {
 				add(SevWarn, "link.broken", s.rel, l.Line,
 					fmt.Sprintf("깨진 위키링크: [[%s]]에 해당하는 문서가 없다", l.Slug),
 					fmt.Sprintf("슬러그를 고치거나 [[%s]] 문서를 만든다", l.Slug))
+			}
+		}
+		for _, v := range relationValues(s) {
+			if key := relationSlug(v); key != "" && key != self {
+				incoming[key]++
 			}
 		}
 	}
@@ -481,16 +498,35 @@ func graphRules(docs []scannedDoc, cfg config.Config) []Violation {
 		if isRootFile(s.rel, cfg) {
 			continue
 		}
-		// 고아 여부는 그 문서의 링크 유무로 정해지고 고치는 행위도 그 문서에서
+		// 고아의 정의는 어떤 관계도 없음이다. 관계는 related, 본문 위키링크,
+		// 그리고 derived_from, derived_context, source_refs 다. 관계 필드는
+		// 위키링크가 아니므로 존재만 보고 대상 문서를 해석하지 않는다.
+		// 승급 파이프라인이 양방향 관계를 기록하므로(ADR 0022) 파이프라인의
+		// 산출물을 검사기가 못 보면 안 된다.
+		// 게이트(gate.min-wikilinks)는 이 판정과 달리 위키링크만 센다.
+		// ADR 0009 가 게이트 대상을 위키링크로 규정했고 관계 필드는 도구가
+		// 채우므로 게이트에 포함하면 게이트가 무력해진다.
+		// 고아 여부는 그 문서의 관계 유무로 정해지고 고치는 행위도 그 문서에서
 		// 일어나므로 broad-topic과 달리 파일 단위 위반이 맞다.
 		outgoing := uniqueSlugs(s)
-		if len(outgoing) == 0 && incoming[slug] == 0 {
+		related := len(relationValues(s)) > 0
+		if len(outgoing) == 0 && !related && incoming[relationSlug(s.rel)] == 0 {
 			add(SevWarn, "graph.orphan", s.rel, 1,
-				"들어오는 링크와 나가는 링크가 모두 없다",
-				fmt.Sprintf("다른 문서의 related나 본문에서 [[%s]]로 연결한다", slug))
+				"들어오는 관계와 나가는 관계가 모두 없다",
+				fmt.Sprintf("다른 문서의 related나 본문에서 [[%s]]로 연결하거나 관계 필드로 잇는다", slug))
 		}
 		if s.stage == "context" && cfg.Thresholds.MinWikilinks > 0 {
-			if n := len(outgoing); n < cfg.Thresholds.MinWikilinks {
+			n := len(outgoing)
+			g := EvaluateGate(n, LinkableTargets(walked, s.rel), cfg.Thresholds.MinWikilinks)
+			// 유예는 링크가 부족해 게이트에 걸렸을 문서만 알린다.
+			// 링크가 기준을 채운 문서는 유예와 무관하게 스스로 통과한다.
+			if g.Deferred && n < cfg.Thresholds.MinWikilinks {
+				add(SevWarn, "gate.deferred", s.rel, lineOfKey(s.content, "related"),
+					fmt.Sprintf("링크 가능한 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예한다. 대상 문서가 %d개가 되면 게이트가 동작한다", g.Targets, g.Min, g.Min),
+					fmt.Sprintf("연결할 문서를 만들어 대상을 늘린다. 기준은 engram.yaml 의 min_wikilinks 로 조정한다"))
+				continue
+			}
+			if !g.Passed {
 				add(SevReject, "gate.min-wikilinks", s.rel, lineOfKey(s.content, "related"),
 					fmt.Sprintf("위키링크가 %d개로 min_wikilinks %d개에 못 미친다", n, cfg.Thresholds.MinWikilinks),
 					fmt.Sprintf("related 필드나 본문에 위키링크를 %d개 더 추가한다", cfg.Thresholds.MinWikilinks-n))
@@ -572,6 +608,70 @@ func uniqueSlugs(s scannedDoc) map[string]bool {
 		out[l.Slug] = true
 	}
 	return out
+}
+
+// relationFieldKeys는 고아 판정에서 관계로 세는 관계 필드다.
+// related 와 본문 위키링크는 링크 추출 단계에서 이미 다뤄진다.
+func relationFieldKeys() []string {
+	return []string{"derived_from", "derived_context", "source_refs"}
+}
+
+// relationValues는 문서의 관계 필드 값을 모은다. 값이 경로 형태든
+// 슬러그 형태든 관계가 있다는 사실은 같으므로 존재만 확인한다.
+func relationValues(s scannedDoc) []string {
+	var out []string
+	for _, key := range relationFieldKeys() {
+		f, ok := s.fields[key]
+		if !ok {
+			continue
+		}
+		switch f.Kind {
+		case doc.KindStringList:
+			out = append(out, f.List...)
+		case doc.KindString:
+			if f.Str != "" {
+				out = append(out, f.Str)
+			}
+		}
+	}
+	return out
+}
+
+// relationSlug는 관계 값이나 문서 경로를 고아 판정의 비교 키로 정규화한다.
+// 위키링크 껍데기를 벗기고, 경로면 파일명만 남기고, 확장자와 날짜 접두사
+// (YYYY-MM-DD- 또는 YYYY-MM-)를 뗀다. promote 가 문서를 옮기며 날짜
+// 접두사를 떼기 때문에(ADR 0022) 접두사가 붙은 이름과 떨어진 이름이 같은
+// 문서를 가리킨다.
+func relationSlug(v string) string {
+	v = strings.TrimSuffix(strings.TrimPrefix(v, "[["), "]]")
+	base := strings.TrimSuffix(filepath.Base(v), ".md")
+	if len(base) > 11 && isDayPrefix(base[:11]) {
+		return base[11:]
+	}
+	if len(base) > 8 && isMonthPrefix(base[:8]) {
+		return base[8:]
+	}
+	return base
+}
+
+// isDayPrefix는 앞 11글자가 YYYY-MM-DD- 형태인지 본다.
+func isDayPrefix(s string) bool {
+	return isDigits(s[:4]) && s[4] == '-' && isDigits(s[5:7]) && s[7] == '-' && isDigits(s[8:10]) && s[10] == '-'
+}
+
+// isMonthPrefix는 앞 8글자가 YYYY-MM- 형태인지 본다.
+func isMonthPrefix(s string) bool {
+	return isDigits(s[:4]) && s[4] == '-' && isDigits(s[5:7]) && s[7] == '-'
+}
+
+// isDigits는 문자열이 모두 숫자인지 본다. 호출자가 길이를 보장한다.
+func isDigits(s string) bool {
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // sortViolations는 경로, 줄 번호, 규칙 ID 순으로 위반을 정렬한다.

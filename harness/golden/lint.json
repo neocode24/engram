@@ -53,8 +53,8 @@
       "severity": "warn",
       "path": "inbox/orphan-note.md",
       "line": 1,
-      "message": "들어오는 링크와 나가는 링크가 모두 없다",
-      "fix": "다른 문서의 related나 본문에서 [[orphan-note]]로 연결한다"
+      "message": "들어오는 관계와 나가는 관계가 모두 없다",
+      "fix": "다른 문서의 related나 본문에서 [[orphan-note]]로 연결하거나 관계 필드로 잇는다"
     },
     {
       "rule": "frontmatter.unclosed",
@@ -79,14 +79,6 @@
       "line": 3,
       "message": "artifact_stage 값이 허용값 밖이다: /"draft/" (허용값: inbox, source, context)",
       "fix": "artifact_stage 값을 허용값 중 하나로 바꾼다"
-    },
-    {
-      "rule": "graph.orphan",
-      "severity": "warn",
-      "path": "sources/tech-talk-summary.md",
-      "line": 1,
-      "message": "들어오는 링크와 나가는 링크가 모두 없다",
-      "fix": "다른 문서의 related나 본문에서 [[tech-talk-summary]]로 연결한다"
     }
   ],
   "wikiFindings": [
@@ -123,7 +115,7 @@
   "summary": {
     "files": 13,
     "error": 4,
-    "warn": 7,
+    "warn": 6,
     "reject": 2
   }
 }

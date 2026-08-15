@@ -22,10 +22,14 @@ func makeWiki(t *testing.T) string {
 			"related:\n  - \"[[b]]\"\nsource_channel: manual\nderived_context: []\n" +
 			"form: memo\ntopics:\n  - kubernetes\n" +
 			"---\n\n본문 [[b]] 링크\n",
-		"inbox/b.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
-			"indexable: false\nsource_channel: manual\n---\n\n링크 없는 메모\n",
-		"inbox/c.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
-			"indexable: false\nsource_channel: manual\n---\n\n어디서도 가리키지 않는 메모\n",
+		// b 와 c 를 context 단계로 둬야 게이트의 링크 대상이 2개가 된다.
+		// inbox 문서는 대상 집계에서 빠진다(ADR 0022).
+		"context/b.md": "---\ntype: procedure\nartifact_stage: context\nstatus: promoted\n" +
+			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+			"source_channel: manual\nderived_context: []\n---\n\n링크 없는 메모\n",
+		"context/c.md": "---\ntype: procedure\nartifact_stage: context\nstatus: promoted\n" +
+			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+			"source_channel: manual\nderived_context: []\n---\n\n어디서도 가리키지 않는 메모\n",
 	}
 	for name, content := range files {
 		p := filepath.Join(dir, filepath.FromSlash(name))

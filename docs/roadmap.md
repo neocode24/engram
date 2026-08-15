@@ -4,30 +4,37 @@
 
 ## 현재 상태
 
-Go 구현이 시작되었다. ADR 19건, 동작 구조 도식 10종, 커맨드 체계, 여정 24개가 문서로 있고, 0.1 마일스톤의 커맨드 셋 중 `version`, `init`, `lint` 셋이 동작한다. upstream 쪽 선행 작업인 계약 변경 로그는 1차 구축을 마쳤고 기준 정정만 남았다.
+**0.1 마일스톤의 커맨드가 전부 동작한다.** ADR 23건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 8개다. upstream 쪽 선행 작업인 계약 변경 로그는 1차 구축을 마쳤고 기준 정정만 남았다.
 
 ## 끝난 것
 
-로드맵 착수 항목 넷이 닫혔다.
-
-| 항목 | 산출물 | 관련 ADR |
+| 커맨드 | 하는 일 | 관련 ADR |
 |---|---|---|
-| Go 스캐폴드 | `cmd/engram/`, `internal/cli/`, `version`, 전역 `--json`과 `--now` | [0016](decisions/0016-cli-framework-and-global-flags.md) |
-| `init`과 스키마 로더 | `internal/config/`(프리셋 3종, 축 on/off, 임계값), `internal/cli/init.go` | [0017](decisions/0017-yaml-for-config-and-frontmatter.md), [0018](decisions/0018-taxonomy-field-names.md) |
-| `lint`와 게이트 | `internal/doc/`(프론트매터와 위키링크 파싱), `internal/lint/`(규칙 14종) | [0019](decisions/0019-index-documents-outside-the-gate.md) |
-| harness 골격 | `harness/fixtures/golden-wiki/`(사례 12종), `harness/lint_golden_test.go` | [0005](decisions/0005-upstream-contract-and-harness.md) |
+| `version` | 버전과 빌드 정보 | [0016](decisions/0016-cli-framework-and-global-flags.md) |
+| `init` | 위키 생성. 프리셋 3종 | [0017](decisions/0017-yaml-for-config-and-frontmatter.md), [0018](decisions/0018-taxonomy-field-names.md), [0020](decisions/0020-slug-and-filename-rules.md) |
+| `capture` | 검증 없이 `inbox/`에 받는다 | |
+| `source` | `sources/`에 원본을 확정한다. `updated`를 쓰지 않는다 | [0009](decisions/0009-schema-presets-and-thresholds.md) |
+| `promote` | inbox는 이동, sources는 파생 | [0021](decisions/0021-gate-deferral-when-targets-are-scarce.md), [0022](decisions/0022-promote-moves-inbox-derives-sources.md), [0023](decisions/0023-gate-targets-exclude-inbox.md) |
+| `new` | 처음부터 검수된 지식으로 `context/`에 쓴다 | 상동 |
+| `lint` | 규칙 15종. 스키마와 링크 무결성 | [0019](decisions/0019-index-documents-outside-the-gate.md) |
+| `status` | 현황과 적체 압력, 다음 행동 제안 | |
+| `doctor` | 환경과 위키 점검 11종. 항목마다 복구 조치 | |
 
-`init` 직후 `lint`가 위반 0건에 종료 코드 0을 낸다. 여정 0의 첫 화면이 거절이 아니어야 한다는 요구가 회귀 검사로 고정되었다.
+패키지 구성은 `config`(설정과 프리셋), `doc`(파싱과 직렬화), `walk`(순회), `lint`(규칙과 게이트), `wiki`(문서 쓰기), `status`, `doctor`, `cli`다. 게이트 판정, 링크 대상 집계, 고아 판정은 각각 단일 함수이며 커맨드가 그것을 부른다. 같은 판정이 두 곳에 생기면 커맨드로 통과한 문서를 `lint`가 거절하는 상태가 된다.
+
+**도구가 자기 산출물로 자기 검사를 통과한다.** `init`, `capture`, `source`, `promote`, `new`를 순서대로 돌린 위키에서 `lint`의 `error`와 `warn`이 0이다. 구현 중 세 번 이 원칙을 어겼고 세 번 다 고쳤다. 그 판단들이 ADR 0019, 0021, 0023이다.
 
 ## 즉시 다음
 
-0.1 마일스톤에 남은 커맨드는 다섯이다. 순서는 아래로 한다.
+1. **upstream parity 대조** — 지금 harness가 덮는 것은 자기 출력의 골든 스냅샷뿐이다. ADR 0005가 정한 upstream 스크립트와의 실제 대조는 아직 없다. `docs/parity.md`는 그때 생긴다.
+2. **0.2 커맨드** — `search`, `backlinks`, `reindex`, `demote`, `mv`, `update`. `mv`가 백링크를 따라가지 않으면 링크 무결성이 즉시 깨지므로 `mv`와 `backlinks`를 묶어서 한다.
+3. **CI** — 지금 검증은 로컬 `go test`뿐이다. tier 1 플랫폼(windows/amd64, darwin/arm64) 교차 빌드를 붙인다. Windows 경로 구분자와 CRLF 처리는 코드에 반영했으나 실제 Windows에서 돌려 본 적이 없다.
 
-1. **`capture`와 `source`** — 인테이크 두 경로. `capture`는 검증 없이 `inbox/`에 넣고, `source`는 `sources/`에 넣으며 원본 필드를 확정한다. `sources/`에 `updated`를 쓰지 않는다는 계약을 여기서 강제한다.
-2. **`promote`와 `new`** — 승급 경로. 게이트 판정은 `internal/lint`가 이미 갖고 있으므로 그것을 호출한다. 게이트 로직을 두 벌 만들면 곧 갈라진다.
-3. **`status`** — 위키 현황과 inbox 적체 압력. `lint`의 순회를 재사용한다.
-4. **`doctor`** — 환경 점검. 사내 배포에서 지원 요청을 줄이는 장치이므로 각 항목에 복구 명령을 함께 낸다.
-5. **upstream parity 대조** — 지금 harness가 덮는 것은 자기 출력의 골든 스냅샷뿐이다. ADR 0005가 정한 upstream 스크립트와의 실제 대조는 아직 없다. `docs/parity.md`는 그때 생긴다.
+## 알려진 빈틈
+
+- `page_dirs`는 디렉토리 이름 목록이라 단계와 디렉토리를 다르게 매핑할 수 없다. `inbox` 단계는 `inbox`라는 이름의 디렉토리를 요구한다. design.md는 이 키를 "디렉토리 매핑"이라 불렀으므로 표기가 어긋나 있다. 이름을 바꾸고 싶다는 요구가 실제로 나오면 맵으로 바꾼다.
+- `inbox/`와 `sources/` 문서의 슬러그에는 날짜 접두사가 들어간다. 그 문서를 위키링크로 가리키려면 접두사까지 써야 한다. `context/` 문서는 접두사가 없으므로 실사용에서 걸리는 일은 드물다.
+- `status`의 다음 행동 제안이 `reject`를 계기로 삼지 않는다. 현황 줄에는 `reject` 건수가 나오므로 정보 자체는 있다.
 
 ## upstream 선행 작업
 

@@ -202,8 +202,9 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("주제가 여러 문서에 걸쳐도 진단은 주제당 1건이다", func(t *testing.T) {
+		// 이 테스트의 대상은 주제 진단이므로 게이트는 꺼 둔다.
 		res := runLint(t, map[string]string{
-			"engram.yaml": "topics: [go]\nbroad_topic_pct: 25\n",
+			"engram.yaml": "topics: [go]\nbroad_topic_pct: 25\nmin_wikilinks: 0\n",
 			"context/a.md": "---\n" +
 				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
 				"indexable: true\nsource_refs: []\nderived_from: []\n" +
@@ -318,9 +319,11 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("위키링크가 부족한 context 문서는 reject다", func(t *testing.T) {
+		// 문서가 3개면 대상이 2개로 min_wikilinks 기본값과 같아 게이트가 동작한다.
 		res := runLint(t, map[string]string{
 			"context/thin.md": cleanContextDoc("b", "b"),
 			"context/b.md":    cleanContextDoc("thin", "없는문서"),
+			"context/c.md":    cleanContextDoc("thin", "b"),
 		})
 		vs := findByRule(res, "gate.min-wikilinks")
 		if len(vs) != 1 || vs[0].Severity != SevReject {
@@ -366,8 +369,219 @@ func TestRun(t *testing.T) {
 		if vs := findByRule(res, "gate.min-wikilinks"); len(vs) != 0 {
 			t.Fatalf("게이트가 꺼져 있어야 함: %+v", vs)
 		}
+		// 게이트가 꺼져 있으면 유예 경고도 내지 않는다.
+		if vs := findByRule(res, "gate.deferred"); len(vs) != 0 {
+			t.Fatalf("게이트 오프 상태에서 유예 경고가 나오면 안 됨: %+v", vs)
+		}
 		if res.Summary.Reject != 0 {
 			t.Errorf("reject 수 = %d, want 0", res.Summary.Reject)
+		}
+	})
+
+	t.Run("링크 대상이 부족하면 게이트를 유예하고 경고를 낸다", func(t *testing.T) {
+		// 문서 2개. 대상이 1개뿐이라 min_wikilinks 2 를 채울 수 없다.
+		res := runLint(t, map[string]string{
+			"context/first.md": cleanContextDoc("second", "second"),
+			"context/second.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+				"source_channel: manual\nderived_context: []\n" +
+				"---\n\n링크 없는 문서\n",
+		})
+		vs := findByRule(res, "gate.deferred")
+		if len(vs) != 2 {
+			t.Fatalf("링크가 부족한 문서마다 유예 경고가 나와야 함: %+v", res.Violations)
+		}
+		for _, v := range vs {
+			if v.Severity != SevWarn {
+				t.Errorf("유예는 warn 이어야 함: %+v", v)
+			}
+			if !strings.Contains(v.Message, "유예") || !strings.Contains(v.Message, "동작한다") {
+				t.Errorf("유예 메시지는 원인과 게이트 동작 시점을 알려야 함: %s", v.Message)
+			}
+		}
+		if got := findByRule(res, "gate.min-wikilinks"); len(got) != 0 {
+			t.Fatalf("유예 중에는 reject 가 나오면 안 됨: %+v", got)
+		}
+		if res.HasBlocking() {
+			t.Error("유예는 승급을 막지 않는다")
+		}
+	})
+
+	t.Run("문서가 min_wikilinks 만큼 쌓이면 게이트가 동작한다", func(t *testing.T) {
+		files := map[string]string{
+			"context/thin.md": cleanContextDoc("b", "b"),
+			"context/b.md":    cleanContextDoc("thin", "없는문서"),
+		}
+		// 문서 2개에서는 유예다.
+		before := runLint(t, files)
+		if got := findByRule(before, "gate.deferred"); len(got) == 0 {
+			t.Fatalf("대상 부족 시 유예 경고가 있어야 함: %+v", before.Violations)
+		}
+		// 세 번째 문서가 생기면 대상이 2개가 되어 게이트가 동작한다.
+		files["context/c.md"] = cleanContextDoc("thin", "b")
+		after := runLint(t, files)
+		if got := findByRule(after, "gate.deferred"); len(got) != 0 {
+			t.Fatalf("대상이 충분하면 유예 경고가 남으면 안 됨: %+v", got)
+		}
+		if got := findByRule(after, "gate.min-wikilinks"); len(got) != 1 {
+			t.Fatalf("게이트가 동작해 링크 1개 문서가 reject 여야 함: %+v", after.Violations)
+		}
+	})
+
+	t.Run("inbox 문서만 있는 위키에서는 게이트가 유예된다", func(t *testing.T) {
+		// 문서 3개지만 링크 대상은 0개다. inbox 문서는 promote 되면
+		// 슬러그가 바뀌어 링크가 깨지므로 대상이 아니다(ADR 0022).
+		res := runLint(t, map[string]string{
+			"context/a.md": cleanContextDoc("b", "b"),
+			"inbox/b.md":   "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\nsource_channel: manual\n---\n\n메모\n",
+			"inbox/c.md":   "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\nsource_channel: manual\n---\n\n메모\n",
+		})
+		if got := findByRule(res, "gate.min-wikilinks"); len(got) != 0 {
+			t.Fatalf("inbox 문서를 대상으로 세면 게이트가 동작해 유예가 사라진다: %+v", got)
+		}
+		vs := findByRule(res, "gate.deferred")
+		if len(vs) != 1 || !strings.Contains(vs[0].Message, "대상 문서가 0개") {
+			t.Fatalf("대상 0개로 유예되어야 함: %+v", vs)
+		}
+	})
+
+	t.Run("sources 문서는 링크 대상에 포함된다", func(t *testing.T) {
+		// sources 는 promote 가 옮기지 않고 파생을 만들므로 그 자리에 남는다.
+		source := "---\ntype: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+			"indexable: false\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
+			"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\n---\n\n원본\n"
+		res := runLint(t, map[string]string{
+			"context/a.md":  cleanContextDoc("b", "b"),
+			"sources/s1.md": source,
+			"sources/s2.md": source,
+		})
+		if got := findByRule(res, "gate.deferred"); len(got) != 0 {
+			t.Fatalf("대상이 2개면 유예되면 안 됨: %+v", got)
+		}
+		if got := findByRule(res, "gate.min-wikilinks"); len(got) != 1 {
+			t.Fatalf("대상 2개로 게이트가 동작해 reject 여야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("단계를 읽을 수 없는 문서는 링크 대상에서 빠진다", func(t *testing.T) {
+		// 프론트매터 없는 문서를 포함해서 세면 대상이 2가 되어 게이트가
+		// 동작한다. 대상 1개로 유예되는 것이 올바르다.
+		res := runLint(t, map[string]string{
+			"context/a.md": cleanContextDoc("b", "b"),
+			"sources/s.md": "---\ntype: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+				"indexable: false\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
+				"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\n---\n\n원본\n",
+			"context/plain.md": "프론트매터 없는 문서\n",
+		})
+		if got := findByRule(res, "gate.min-wikilinks"); len(got) != 0 {
+			t.Fatalf("단계를 모르는 문서를 대상으로 세면 안 됨: %+v", got)
+		}
+		vs := findByRule(res, "gate.deferred")
+		if len(vs) != 1 || !strings.Contains(vs[0].Message, "대상 문서가 1개") {
+			t.Fatalf("대상 1개로 유예되어야 함: %+v", vs)
+		}
+	})
+
+	t.Run("관계 필드가 있는 문서는 고아가 아니다", func(t *testing.T) {
+		// 위키링크 없이 관계 필드만 있는 문서 셋. 각각 고아가 아니어야 한다.
+		res := runLint(t, map[string]string{
+			"engram.yaml": "min_wikilinks: 0\n",
+			// derived_context 만 있다.
+			"sources/only-context.md": "---\n" +
+				"type: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+				"indexable: false\nsource_refs: []\nderived_from: []\n" +
+				"derived_context:\n  - 파생문서\n" +
+				"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\n" +
+				"---\n\n원본\n",
+			// derived_from 만 있다.
+			"context/only-from.md": "---\n" +
+				"type: concept\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\n" +
+				"derived_from:\n  - sources/2026-02-원본.md\n" +
+				"related: []\nsource_channel: manual\nderived_context: []\n" +
+				"---\n\n본문\n",
+			// source_refs 만 있다.
+			"inbox/only-refs.md": "---\n" +
+				"type: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
+				"indexable: false\n" +
+				"source_refs:\n  - https://example.com/a\n" +
+				"---\n\n메모\n",
+		})
+		vs := findByRule(res, "graph.orphan")
+		for _, v := range vs {
+			t.Errorf("관계 필드가 있는 문서가 고아로 판정됨: %+v", v)
+		}
+	})
+
+	t.Run("관계 필드 경로 값은 날짜 접두사를 떼고 슬러그로 비교한다", func(t *testing.T) {
+		// 원본은 위키링크가 없다. 파생 문서의 derived_from 이 경로로 이
+		// 문서를 가리키므로 고아가 아니다. promote 가 문서를 옮기며 날짜
+		// 접두사를 떼기 때문에 접두사를 정규화해야 연결된다(ADR 0022).
+		res := runLint(t, map[string]string{
+			"engram.yaml": "min_wikilinks: 0\n",
+			"sources/2026-02-원본.md": "---\n" +
+				"type: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+				"indexable: false\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
+				"source_channel: web\ncreated: 2026-02-01\nsourced_at: 2026-02-02\n" +
+				"---\n\n원본\n",
+			"context/파생문서.md": "---\n" +
+				"type: concept\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\n" +
+				"derived_from:\n  - sources/2026-02-원본.md\n" +
+				"related: []\nsource_channel: manual\nderived_context: []\n" +
+				"---\n\n본문\n",
+		})
+		vs := findByRule(res, "graph.orphan")
+		for _, v := range vs {
+			if v.Path == "sources/2026-02-원본.md" {
+				t.Errorf("경로 관계로 연결된 원본이 고아로 판정됨: %+v", v)
+			}
+		}
+	})
+
+	t.Run("관계 필드가 있어도 게이트는 위키링크만 센다", func(t *testing.T) {
+		// 대상 2개(다른 context 문서 2개)로 게이트가 동작하는 상태에서
+		// 관계 필드만 있고 위키링크가 없는 문서는 게이트에 걸린다.
+		// 관계 필드는 도구가 채우므로 게이트에 넣으면 게이트가 무력해진다.
+		res := runLint(t, map[string]string{
+			"context/a.md": "---\n" +
+				"type: concept\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\n" +
+				"derived_from:\n  - sources/2026-02-원본.md\n" +
+				"related: []\nsource_channel: manual\nderived_context: []\n" +
+				"---\n\n본문\n",
+			"context/b.md": cleanContextDoc("a", "c"),
+			"context/c.md": cleanContextDoc("a", "b"),
+		})
+		if got := findByRule(res, "graph.orphan"); len(got) != 0 {
+			t.Fatalf("관계 필드가 있는 문서가 고아로 판정됨: %+v", got)
+		}
+		vs := findByRule(res, "gate.min-wikilinks")
+		if len(vs) != 1 || vs[0].Path != "context/a.md" {
+			t.Fatalf("위키링크 없는 문서는 게이트 reject 여야 함: %+v", vs)
+		}
+	})
+
+	t.Run("EvaluateGate 는 자기 자신을 대상 수에서 뺀다", func(t *testing.T) {
+		// 문서가 자신 하나뿐이면 대상 0개. 유예다.
+		g := EvaluateGate(2, 0, 2)
+		if !g.Deferred || !g.Passed {
+			t.Errorf("대상 0이면 유예 통과여야 함: %+v", g)
+		}
+		// 대상이 min 과 같아지면 유예 없이 판정한다.
+		g = EvaluateGate(1, 2, 2)
+		if g.Deferred || g.Passed {
+			t.Errorf("대상 2, 링크 1이면 유예 없이 거절이어야 함: %+v", g)
+		}
+		g = EvaluateGate(2, 2, 2)
+		if g.Deferred || !g.Passed {
+			t.Errorf("대상 2, 링크 2면 통과여야 함: %+v", g)
+		}
+		// min_wikilinks 0 은 게이트 오프. 유예 표시도 없다.
+		g = EvaluateGate(0, 0, 0)
+		if !g.Passed || g.Deferred {
+			t.Errorf("게이트 오프는 유예 없이 통과여야 함: %+v", g)
 		}
 	})
 
@@ -455,9 +669,14 @@ func TestRun(t *testing.T) {
 		}
 		// 제외는 root_files 소속 여부로 판정한다. page_dirs 안의 문서는
 		// 이름이 무엇이든 게이트와 고아 판정 대상이다.
+		// 문서 3개로 대상을 min_wikilinks 만큼 확보해 게이트가 동작하게 한다.
 		res = runLint(t, map[string]string{
 			"engram.yaml":  "root_files: [home.md]\n",
+			"home.md":      indexDoc,
 			"context/x.md": indexDoc,
+			// y 는 실재하지 않는 슬러그로 링크 수를 채운다. x 가 고아
+			// 판정에 남도록 들어오는 링크를 만들지 않기 위해서다.
+			"context/y.md": cleanContextDoc("home", "없는문서"),
 		})
 		if got := findByRule(res, "gate.min-wikilinks"); len(got) != 1 {
 			t.Fatalf("page_dirs 안의 색인형 문서는 게이트 대상이어야 함: %+v", res.Violations)

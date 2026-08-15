@@ -63,6 +63,12 @@ func newRootCmd() *cobra.Command {
 	root.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력한다")
 	root.PersistentFlags().String(flagNow, "", "기준 시각(RFC3339). 빈 값이면 현재 시각")
 
+	root.AddCommand(newNewCmd())
+	root.AddCommand(newPromoteCmd())
+	root.AddCommand(newCaptureCmd())
+	root.AddCommand(newSourceCmd())
+	root.AddCommand(newStatusCmd())
+	root.AddCommand(newDoctorCmd())
 	root.AddCommand(newInitCmd())
 	root.AddCommand(newLintCmd())
 	root.AddCommand(newVersionCmd())
