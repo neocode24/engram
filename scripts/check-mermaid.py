@@ -4,7 +4,7 @@
 사용: python3 scripts/check-mermaid.py docs/architecture.md [...]"""
 import re, os, sys, subprocess, tempfile
 
-files = sys.argv[1:] or ["docs/architecture.md"]
+files = sys.argv[1:] or ["README.md", "docs/architecture.md"]
 env = dict(os.environ, npm_config_cache="/tmp/npmcache")
 fail, total = [], 0
 

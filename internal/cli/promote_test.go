@@ -422,3 +422,119 @@ func TestPromoteFillsContextFields(t *testing.T) {
 		}
 	})
 }
+
+func TestPromoteType(t *testing.T) {
+	t.Run("--type로 지정한 문서 종류를 반영한다", func(t *testing.T) {
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel, "--type", "concept")
+		if err != nil {
+			t.Fatalf("promote 실패: %v\n%s", err, out)
+		}
+		raw := readWikiFile(t, filepath.Join(dir, "context"), "memo.md")
+		if !strings.Contains(raw, "type: concept\n") {
+			t.Errorf("type이 반영되지 않음:\n%s", raw)
+		}
+		if strings.Contains(out, "경고: 문서 종류가") {
+			t.Errorf("지정했으면 경고가 없어야 함:\n%s", out)
+		}
+	})
+
+	t.Run("허용값 밖의 --type은 목록과 함께 거절한다", func(t *testing.T) {
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+		_, err := runPromoteRoot(t, "promote", "--wiki", dir, rel, "--type", "diary")
+		if err == nil || !strings.Contains(err.Error(), "허용값") {
+			t.Fatalf("거절되어야 함: %v", err)
+		}
+		if !strings.Contains(err.Error(), "concept") {
+			t.Errorf("거절 메시지에 허용값 목록이 없음: %v", err)
+		}
+	})
+
+	t.Run("미지정이고 기존 값이 inbox-note면 경고한다", func(t *testing.T) {
+		dir := initWiki(t)
+		rel := captureMemo(t, dir) // capture는 type을 inbox-note로 만든다
+		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel)
+		if err != nil {
+			t.Fatalf("경고는 거절이 아니다: %v", err)
+		}
+		for _, want := range []string{"경고: 문서 종류가", "inbox-note", "--type"} {
+			if !strings.Contains(out, want) {
+				t.Errorf("경고에 %q 없음:\n%s", want, out)
+			}
+		}
+	})
+
+	t.Run("미지정이고 기존 값이 적절하면 경고하지 않는다", func(t *testing.T) {
+		dir := initWiki(t)
+		p := filepath.Join(dir, "inbox", "2026-01-01-typed.md")
+		content := "---\ntype: procedure\nartifact_stage: inbox\nstatus: inbox\nindexable: false\n---\n\n본문\n"
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		out, err := runPromoteRoot(t, "promote", "--wiki", dir, "inbox/2026-01-01-typed.md")
+		if err != nil {
+			t.Fatalf("promote 실패: %v", err)
+		}
+		if strings.Contains(out, "경고: 문서 종류가") {
+			t.Errorf("적절한 값에는 경고가 없어야 함:\n%s", out)
+		}
+		raw := readWikiFile(t, filepath.Join(dir, "context"), "typed.md")
+		if !strings.Contains(raw, "type: procedure\n") {
+			t.Errorf("기존 종류가 보존되지 않음:\n%s", raw)
+		}
+	})
+
+	t.Run("sources 파생 경로에서도 같은 규칙을 적용한다", func(t *testing.T) {
+		dir := initWiki(t)
+		if _, err := runPromoteRoot(t, "source", "--wiki", dir,
+			"--now", "2026-01-01T00:00:00Z", "--slug", "talk", "--created", "2025-11-08", "원본"); err != nil {
+			t.Fatal(err)
+		}
+		out, err := runPromoteRoot(t, "promote", "--wiki", dir, "sources/2025-11-08-talk.md")
+		if err != nil {
+			t.Fatalf("경고는 거절이 아니다: %v", err)
+		}
+		if !strings.Contains(out, "source-summary") {
+			t.Errorf("source 단계 기본값 경고가 없음:\n%s", out)
+		}
+		out, err = runPromoteRoot(t, "source", "--wiki", dir,
+			"--now", "2026-01-01T00:00:00Z", "--slug", "talk2", "--created", "2025-11-08", "원본")
+		if err != nil {
+			t.Fatal(err)
+		}
+		out, err = runPromoteRoot(t, "promote", "--wiki", dir, "sources/2025-11-08-talk2.md",
+			"--type", "source-summary", "--related", "talk", "--related", "index")
+		if err != nil {
+			t.Fatalf("promote 실패: %v\n%s", err, out)
+		}
+		if strings.Contains(out, "경고: 문서 종류가") {
+			t.Errorf("명시적으로 지정했으면 경고가 없어야 함:\n%s", out)
+		}
+		raw := readWikiFile(t, filepath.Join(dir, "context"), "talk2.md")
+		if !strings.Contains(raw, "type: source-summary\n") {
+			t.Errorf("--type 값이 반영되지 않음:\n%s", raw)
+		}
+	})
+
+	t.Run("--json에 문서 종류가 반영된다", func(t *testing.T) {
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+		out, err := runPromoteRoot(t, "promote", "--json", "--wiki", dir, rel, "--type", "concept")
+		if err != nil {
+			t.Fatalf("promote 실패: %v\n%s", err, out)
+		}
+		var res promoteOutcome
+		jsonPart := out[strings.Index(out, "{"):]
+		if err := json.Unmarshal([]byte(strings.TrimSpace(jsonPart)), &res); err != nil {
+			t.Fatalf("JSON 파싱 실패: %v\n출력: %s", err, out)
+		}
+		if res.Type != "concept" || res.Slug != "memo" || res.Stage != "context" {
+			t.Errorf("JSON 내용이 잘못됨: %+v", res)
+		}
+	})
+}

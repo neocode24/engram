@@ -72,6 +72,19 @@ sources 문서는 파생을 만든다. 원본이 그대로 남는다. sources는
 			if err != nil {
 				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagRelated, err)
 			}
+			// 문서 종류는 내용을 읽어야 아는 판단이라 도구가 정하지 못한다.
+			// 사용자가 준 값만 반영하고 추론하지 않는다. ADR 0014.
+			typeFlag, err := stringFlag(cmd, flagType)
+			if err != nil {
+				return err
+			}
+			if typeFlag != "" && !containsString(cfg.Schema.Types, typeFlag) {
+				return fmt.Errorf("--type 값이 허용값 밖이다: %q (허용값: %s)",
+					typeFlag, strings.Join(cfg.Schema.Types, ", "))
+			}
+			if typeFlag == "" {
+				warnStageDefaultType(cmd.ErrOrStderr(), stage, fieldString(d, "type"), cfg)
+			}
 
 			rel, err := filepath.Rel(root, srcPath)
 			if err != nil {
@@ -86,6 +99,9 @@ sources 문서는 파생을 만든다. 원본이 그대로 남는다. sources는
 			}
 			fields := promoteFields(d.Fields, related, derivedFrom)
 			fields = fillContextFields(fields, cfg)
+			if typeFlag != "" {
+				fields = upsertField(fields, doc.Field{Key: "type", Kind: doc.KindString, Str: typeFlag})
+			}
 			updated := d
 			updated.Fields = fields
 
@@ -128,7 +144,10 @@ sources 문서는 파생을 만든다. 원본이 그대로 남는다. sources는
 				}
 			}
 
-			res := writeOutcome{Path: destPath, Slug: slug, Stage: "context", Gate: gateOf(g)}
+			res := promoteOutcome{
+				writeOutcome: writeOutcome{Path: destPath, Slug: slug, Stage: "context", Gate: gateOf(g)},
+				Type:         finalType(fields),
+			}
 			if jsonOutput(cmd) {
 				enc := json.NewEncoder(cmd.OutOrStdout())
 				enc.SetIndent("", "  ")
@@ -140,13 +159,49 @@ sources 문서는 파생을 만든다. 원본이 그대로 남는다. sources는
 	}
 	cmd.Flags().String(flagSlug, "", "도착지 문서 슬러그. 생략하면 원본 파일명에서 날짜 접두사를 뗀 값이다")
 	cmd.Flags().StringArray(flagRelated, nil, "related 필드에 추가할 슬러그. 여러 번 쓸 수 있다")
+	cmd.Flags().String(flagType, "", "승급 문서의 문서 종류. 허용값은 위키 설정의 types다")
 	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
 	return cmd
 }
 
+// promoteOutcome은 promote의 결과다. 공통 결과에 문서 종류를 더 낸다.
+type promoteOutcome struct {
+	writeOutcome
+	Type string `json:"type"`
+}
+
+// finalType은 완성된 필드에서 문서 종류를 꺼낸다.
+func finalType(fields []doc.Field) string {
+	for _, f := range fields {
+		if f.Key == "type" && f.Kind == doc.KindString {
+			return f.Str
+		}
+	}
+	return ""
+}
+
+// warnStageDefaultType은 문서 종류를 지정받지 못해 단계 기본값이 그대로
+// 남았음을 알린다. 승급을 막을 사유가 아니므로 경고로만 낸다.
+// 기본값의 진실원은 wiki의 단계별 초기값이다.
+func warnStageDefaultType(w io.Writer, stage, cur string, cfg config.Config) {
+	var def string
+	switch stage {
+	case "inbox":
+		def, _ = wiki.Frontmatter(wiki.StageInbox, cfg)["type"].(string)
+	case "source":
+		def, _ = wiki.Frontmatter(wiki.StageSource, cfg)["type"].(string)
+	}
+	if cur == "" || cur != def {
+		return
+	}
+	fmt.Fprintf(w, "경고: 문서 종류가 %s 단계 기본값 %q 그대로다. --type으로 지정한다 (허용값: %s)\n",
+		stage, cur, strings.Join(cfg.Schema.Types, ", "))
+}
+
 // printPromoted은 만들어진 경로와 다음에 할 수 있는 일을 낸다.
-func printPromoted(w io.Writer, res writeOutcome) {
+func printPromoted(w io.Writer, res promoteOutcome) {
 	fmt.Fprintf(w, "context로 올렸다: %s\n", res.Path)
+	fmt.Fprintf(w, "문서 종류: %s\n", res.Type)
 	fmt.Fprintf(w, "게이트: 링크 %d개, 대상 %d개, 기준 %d개%s\n", res.Gate.Links, res.Gate.Targets, res.Gate.Min,
 		deferredNote(res.Gate.Deferred))
 	fmt.Fprintf(w, "다음: engram lint로 승급 문서의 스키마를 확인한다\n")
