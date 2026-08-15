@@ -65,6 +65,12 @@ func newRootCmd() *cobra.Command {
 
 	root.AddCommand(newNewCmd())
 	root.AddCommand(newPromoteCmd())
+	root.AddCommand(newReindexCmd())
+	root.AddCommand(newSearchCmd())
+	root.AddCommand(newBacklinksCmd())
+	root.AddCommand(newDemoteCmd())
+	root.AddCommand(newUpdateCmd())
+	root.AddCommand(newMvCmd())
 	root.AddCommand(newCaptureCmd())
 	root.AddCommand(newSourceCmd())
 	root.AddCommand(newStatusCmd())
@@ -84,6 +90,9 @@ func jsonOutput(cmd *cobra.Command) bool {
 
 // Execute는 루트 커맨드를 실행하고 프로세스 종료 코드를 반환한다.
 func Execute() int {
+	// Windows 콘솔이면 출력 코드페이지를 UTF-8 로 바꾸고 끝나면 되돌린다.
+	// 다른 플랫폼은 no-op 이다. ADR 0026.
+	defer setupConsole()()
 	if err := newRootCmd().Execute(); err != nil {
 		return 1
 	}

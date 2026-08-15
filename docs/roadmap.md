@@ -4,12 +4,18 @@
 
 ## 현재 상태
 
-**0.1 마일스톤의 커맨드가 전부 동작한다.** ADR 24건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 8개다.
+**0.2 마일스톤의 커맨드가 전부 동작한다.** ADR 26건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 11개다. Windows 실환경 1차 검증을 마쳤고 거기서 나온 결함 둘을 닫았다.
 
 ## 끝난 것
 
 | 커맨드 | 하는 일 | 관련 ADR |
 |---|---|---|
+| `search` | 한국어 bigram과 BM25. 인덱스 상태를 알린다 | [0010](decisions/0010-storage-index-and-korean-search.md), [0025](decisions/0025-index-storage-and-staleness.md) |
+| `reindex` | 인덱스를 만드는 유일한 커맨드 | [0025](decisions/0025-index-storage-and-staleness.md) |
+| `backlinks` | 들어오는 링크. 종류를 구분해 보여준다 | |
+| `mv` | 이름 변경. 모든 링크를 함께 고친다 | [0020](decisions/0020-slug-and-filename-rules.md) |
+| `demote` | 승급을 되돌린다. 깨질 링크를 알린다 | [0022](decisions/0022-promote-moves-inbox-derives-sources.md) |
+| `update` | 본문과 프론트매터 갱신 | |
 | `version` | 버전과 빌드 정보 | [0016](decisions/0016-cli-framework-and-global-flags.md) |
 | `init` | 위키 생성. 프리셋 3종 | [0017](decisions/0017-yaml-for-config-and-frontmatter.md), [0018](decisions/0018-taxonomy-field-names.md), [0020](decisions/0020-slug-and-filename-rules.md) |
 | `capture` | 검증 없이 `inbox/`에 받는다 | |
@@ -26,9 +32,9 @@
 
 ## 즉시 다음
 
-1. **upstream parity 대조** — 지금 harness가 덮는 것은 자기 출력의 골든 스냅샷뿐이다. ADR 0005가 정한 upstream 스크립트와의 실제 대조는 아직 없다. `docs/parity.md`는 그때 생긴다.
-2. **0.2 커맨드** — `search`, `backlinks`, `reindex`, `demote`, `mv`, `update`. `mv`가 백링크를 따라가지 않으면 링크 무결성이 즉시 깨지므로 `mv`와 `backlinks`를 묶어서 한다.
-3. **Windows 실환경 검증** — 경로 구분자와 CRLF 처리는 코드에 반영했으나 실제 Windows에서 돌려 본 적이 없다. CI가 잡지 못하는 콘솔 인코딩과 경로 길이 제한은 실제 터미널에서 확인한다.
+1. **Windows 재검증** — 콘솔 코드페이지 수정(ADR 0026)이 실제 `cmd.exe`에서 동작하는지 확인한다. `autocrlf` 항목은 VM에 git이 없어 아직 미검증이다.
+2. **upstream parity 대조** — 지금 harness가 덮는 것은 자기 출력의 골든 스냅샷뿐이다. ADR 0005가 정한 upstream 스크립트와의 실제 대조는 아직 없다. `docs/parity.md`는 그때 생긴다.
+3. **0.3 커맨드** — `resurface`, `bridge`, `digest`, `recall`, `archive`. 재발견 루프가 여기서 완성된다. `--now`를 처음부터 넣어 둔 이유가 `resurface`다.
 
 ## 알려진 빈틈
 

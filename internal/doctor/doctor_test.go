@@ -228,3 +228,23 @@ func equal(a, b []string) bool {
 	}
 	return true
 }
+
+func TestGitMissingIsWarn(t *testing.T) {
+	// git 이 없는 환경을 흉내낸다. PATH 를 비워 git 실행을 실패하게 한다.
+	// 이 테스트는 PATH 를 바꾸므로 병렬로 돌면 안 된다.
+	oldPath := os.Getenv("PATH")
+	os.Setenv("PATH", "")
+	defer os.Setenv("PATH", oldPath)
+
+	f, ok := checkGit()
+	if ok {
+		t.Skip("PATH 를 비웠는데 git 이 실행되었다. 흉내가 실패했다")
+	}
+	if f.Status != StatusWarn {
+		t.Fatalf("git 부재는 warn 이어야 한다, got %s", f.Status)
+	}
+	// 조치 문구에 왜 지금은 문제가 아닌지가 담겨야 한다.
+	if !strings.Contains(f.Fix, "git 없이") || !strings.Contains(f.Fix, "sync") {
+		t.Errorf("조치 문구에 현재는 문제없다는 사실이 없음: %s", f.Fix)
+	}
+}
