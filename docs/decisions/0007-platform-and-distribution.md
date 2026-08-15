@@ -40,7 +40,7 @@ tier 1은 windows/amd64와 darwin/arm64다. 릴리스 차단 기준은 tier 1 �
 | macOS | Homebrew tap | brew upgrade 또는 self-update |
 | Linux | curl 설치 스크립트, tar.gz | self-update |
 
-`self-update`는 GitHub Releases의 서명된 체크섬을 검증한다. 사내 프록시 환경을 위해 `ENGRAM_UPDATE_URL`로 내부 미러 미러를 가리킬 수 있어야 한다. ADR 0004가 정한 배포 경로가 여기에 연결된다.
+`self-update`는 GitHub Releases의 서명된 체크섬을 검증한다. 폐쇄망과 프록시 환경을 위해 `ENGRAM_UPDATE_URL`로 내부 미러를 가리킬 수 있어야 한다. ADR 0004가 정한 배포 경로가 여기에 연결된다.
 
 ## Windows 고유 함정
 

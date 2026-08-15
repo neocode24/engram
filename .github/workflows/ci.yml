@@ -1,0 +1,87 @@
+# CI 워크플로. 테스트, 교차 빌드, 문서 검사를 한 파일에서 돈다.
+# 릴리스와 배포는 이 범위가 아니다.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    # 네 러너에서 go test 를 돈다. windows-11-arm 은 공개 저장소 전환 시
+    # 무료가 되는 GitHub 호스티드 ARM 러너다. 지금은 과금 대상일 수 있다.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest, windows-11-arm]
+    runs-on: ${{ matrix.os }}
+    steps:
+      # checkout 앞에서 끈다. Windows 러너의 기본 autocrlf 가 켜져 있으면
+      # harness/fixtures 의 CRLF 픽스처가 소리 없이 바뀌고 골든 비교가
+      # 거짓 실패한다. .gitattributes 의 -text 도 있지만 이중 안전망이다.
+      - name: git 줄바꿈 변환 끄기
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          # go-version-file 로 go.mod 에서 버전을 읽는다. 버전을 박지 않는다.
+          go-version-file: go.mod
+      - name: 빌드
+        run: go build ./...
+      - name: 정적 검사
+        run: go vet ./...
+      - name: 테스트
+        run: go test ./...
+
+  cross-build:
+    # 교차 빌드만 확인한다. 여섯 조합 전부 CGO_ENABLED=0 이다(ADR 0007).
+    # tier 1 은 windows/amd64 와 darwin/arm64 다. 나머지는 best effort 이지만
+    # 지금은 전부 성공해야 하므로 특별한 분기를 두지 않는다.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { goos: windows, goarch: amd64 }
+          - { goos: windows, goarch: arm64 }
+          - { goos: darwin, goarch: arm64 }
+          - { goos: darwin, goarch: amd64 }
+          - { goos: linux, goarch: amd64 }
+          - { goos: linux, goarch: arm64 }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: 교차 빌드
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go build ./...
+
+  docs:
+    # 문서 검사. ADR 색인 정합성과 mermaid 렌더다.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: ADR 검사
+        run: python3 scripts/check-adr.py
+      # check-mermaid.py 는 node 와 npx 로 mermaid-cli 를 내려받아 쓴다.
+      # 첫 실행 때 puppeteer 가 크로미움을 내려받아 무겁지만 공식 러너에서
+      # 동작하므로 설치 단계를 넣는다.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: mermaid 렌더 검사
+        run: python3 scripts/check-mermaid.py

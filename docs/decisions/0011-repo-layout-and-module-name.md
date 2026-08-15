@@ -2,7 +2,7 @@
 number: 0011
 title: 저장소 구성과 Go 모듈명
 date: 2026-08-15
-status: accepted
+status: amended
 ---
 
 # 저장소 구성과 Go 모듈명

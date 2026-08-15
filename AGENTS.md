@@ -8,11 +8,11 @@
 
 ## 이 프로젝트가 무엇인가
 
-`engram`은 운영 중인 `~/Git/llm-wiki`의 지식관리 체계(승급 파이프라인, 다축 스키마, 재발견 루프)를 단일 Go 바이너리로 출판하는 프로젝트다. 목적은 사내 교육강좌와 공개 산출물이다.
+`engram`은 운영 중인 위키(`llm-wiki`)의 지식관리 체계(승급 파이프라인, 다축 스키마, 재발견 루프)를 단일 Go 바이너리로 출판하는 프로젝트다. 목적은 교육 자료와 공개 산출물이다.
 
-- upstream 진실원은 `~/Git/llm-wiki`이며 이 저장소는 그 체계를 특정 시점에 얼려 출판한 산물이다.
-- upstream을 건드릴 때는 반드시 `~/Git/llm-wiki/AGENTS.md`의 계약을 먼저 읽는다.
-- 현재 상태는 설계/계획 단계다. Go 코드는 아직 없다.
+- upstream 진실원은 별도 저장소인 `llm-wiki`이며 이 저장소는 그 체계를 특정 시점에 얼려 출판한 산물이다. upstream은 비공개다.
+- upstream을 건드릴 때는 반드시 그쪽 `AGENTS.md`의 계약을 먼저 읽는다.
+- 0.1 마일스톤의 커맨드가 동작한다. `version`, `init`, `capture`, `source`, `promote`, `new`, `lint`, `status`, `doctor` 아홉이다.
 
 ## 저장소 구조
 
@@ -24,9 +24,10 @@
 | `docs/journeys.md` | 사용자 여정과 마일스톤 매핑 |
 | `docs/curriculum.md` | 교육 커리큘럼 |
 | `docs/course/` | 강의 자료. 공개 자산이며 사내 사례를 담지 않는다 (placeholder) |
-| `cmd/engram/`, `internal/` | Go 구현. 저장소 루트가 모듈 루트 (미생성) |
-| `harness/` | upstream 계약 스냅샷, 골든 픽스처, parity (미생성) |
+| `cmd/engram/`, `internal/` | Go 구현. 저장소 루트가 모듈 루트 |
+| `harness/` | 골든 픽스처와 lint 출력 스냅샷 비교. upstream parity는 미착수 |
 | `examples/` | 데모 위키. `init`의 생성물이므로 손으로 고치지 않는다 (placeholder) |
+| `private/` | 공개 경계 밖 자료. **gitignore 대상이라 커밋되지 않는다** ([0024](docs/decisions/0024-public-boundary-and-private-directory.md)) |
 
 ## 작업 규칙
 
@@ -43,9 +44,16 @@
 - 작업 전 `git pull --rebase --autostash`, 작업 후 커밋하고 `git push origin`. origin push는 기본 동기화 행위이므로 확인 없이 진행한다.
 - PR 생성, 외부 배포, 다른 remote push는 명시적 승인이 필요하다.
 
+### 공개 경계
+
+- **첫 작업 전에 훅을 켠다.** `git config core.hooksPath .githooks`. 커밋 시점에 경계 검사가 돈다.
+- 조직 맥락, 동기, IP 경계 판단은 `private/`에 둔다. gitignore 대상이므로 커밋되지 않는다.
+- `private/`는 백업되지 않는다. 실체는 upstream에 두고 여기에는 포인터와 발췌만 둔다.
+- 공개 문서에는 기능과 기술적 판단만 쓴다. 왜 만들었는지의 조직적 맥락은 쓰지 않는다.
+
 ### 검증
 
-이 저장소에는 아직 테스트 스위트가 없다. 검증은 임시 스크립트로 수행하고, 결과를 보고할 때 **정식 테스트가 아니라 ad-hoc 검증**임을 명시한다.
+`go test ./...`가 정식 검증이다. 문서 검사는 `scripts/check-adr.py`와 `scripts/check-mermaid.py`이며 아직 ad-hoc 스크립트다. 그 둘의 결과를 보고할 때는 **정식 테스트가 아니라 ad-hoc 검증**임을 명시한다.
 
 ### 문서 문체
 

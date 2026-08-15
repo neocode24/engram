@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-**0.1 마일스톤의 커맨드가 전부 동작한다.** ADR 23건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 8개다. upstream 쪽 선행 작업인 계약 변경 로그는 1차 구축을 마쳤고 기준 정정만 남았다.
+**0.1 마일스톤의 커맨드가 전부 동작한다.** ADR 24건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 8개다.
 
 ## 끝난 것
 
@@ -28,7 +28,7 @@
 
 1. **upstream parity 대조** — 지금 harness가 덮는 것은 자기 출력의 골든 스냅샷뿐이다. ADR 0005가 정한 upstream 스크립트와의 실제 대조는 아직 없다. `docs/parity.md`는 그때 생긴다.
 2. **0.2 커맨드** — `search`, `backlinks`, `reindex`, `demote`, `mv`, `update`. `mv`가 백링크를 따라가지 않으면 링크 무결성이 즉시 깨지므로 `mv`와 `backlinks`를 묶어서 한다.
-3. **CI** — 지금 검증은 로컬 `go test`뿐이다. tier 1 플랫폼(windows/amd64, darwin/arm64) 교차 빌드를 붙인다. Windows 경로 구분자와 CRLF 처리는 코드에 반영했으나 실제 Windows에서 돌려 본 적이 없다.
+3. **Windows 실환경 검증** — 경로 구분자와 CRLF 처리는 코드에 반영했으나 실제 Windows에서 돌려 본 적이 없다. CI가 잡지 못하는 콘솔 인코딩과 경로 길이 제한은 실제 터미널에서 확인한다.
 
 ## 알려진 빈틈
 
@@ -36,43 +36,9 @@
 - `inbox/`와 `sources/` 문서의 슬러그에는 날짜 접두사가 들어간다. 그 문서를 위키링크로 가리키려면 접두사까지 써야 한다. `context/` 문서는 접두사가 없으므로 실사용에서 걸리는 일은 드물다.
 - `status`의 다음 행동 제안이 `reject`를 계기로 삼지 않는다. 현황 줄에는 `reject` 건수가 나오므로 정보 자체는 있다.
 
-## upstream 선행 작업
+## 공개 경계 밖
 
-ADR 0005의 전제다. 1차 구축은 끝났고 기준 정정이 남았다.
-
-**완료.** upstream `meta/CHANGELOG.md` 신설과 git 이력 backfill 27건, `AGENTS.md`에 동시 커밋 계약 명시(upstream `05f7279`).
-
-**남은 과제는 기록 대상 기준의 정정이다.** 현재 27건은 "계약 파일이 바뀐 커밋"을 기준으로 모았는데, 이 기준이 사용자 데이터와 스키마를 섞는다. 실제로 최다 항목이 `terminology-normalization` 6건이고 그 대부분은 조직 고유명사를 사전에 추가한 것이다. 이는 위키 소유자의 지식이지 downstream 구현이 따라야 할 규칙이 아니다.
-
-ADR 0005는 이미 둘을 갈라 두었다. 치환 사전은 "코드로 옮기지 않고 데이터로 소비"한다고 적혀 있다. 즉 계약은 파일이 아니라 그 파일의 **스키마**다.
-
-| 구분 | 예 | CHANGELOG 대상 |
-|---|---|---|
-| 스키마 | `Auto-correct?` 열의 값 집합, 필수 필드, 판정 임계값, 폐쇄 집합 | 대상 |
-| 사용자 데이터 | 치환 사전 행 추가, `topic` 값 추가, 조직 고유명사 | 비대상 |
-
-경계 사례 둘은 대상으로 남긴다. 값 집합이 늘어난 경우(사전에 `conditional`이 처음 등장)와 치환 규칙 자체가 바뀐 경우(canonical 표기를 영어에서 한국어로 전환)는 행 변경의 외형을 하지만 구현 동작을 바꾼다.
-
-할 일 셋이다.
-
-1. 기존 27건을 이 기준으로 재분류하고 사용자 데이터 항목을 제외한다.
-2. upstream `AGENTS.md`의 계약 문구를 "파일이 바뀌면"에서 "스키마가 바뀌면"으로 정정하고 위 표를 넣는다.
-3. `.githooks/pre-commit`에 게이트를 붙인다. 파일 경로만 보는 검사는 사전 행 추가마다 CHANGELOG를 요구해 로그를 노이즈로 채우므로, 데이터 파일과 규칙 파일을 구분하거나 커밋 메시지 탈출구를 함께 넣는다.
-
-정정 전의 CHANGELOG는 delta 판정의 근거로 쓸 수 있으나 항목 수를 규칙 변경 빈도로 읽으면 안 된다.
-
-## 진행 체제
-
-Orca 오케스트레이션으로 coordinator와 worker를 붙인다.
-
-| 역할 | 실행 | 비고 |
-|---|---|---|
-| coordinator | Hermes 또는 claude CLI(Opus) | 둘 중 하나를 쓴다 |
-| worker | `glm` | `claude`가 아니다 |
-
-worker는 반드시 `glm`으로 띄운다. `glm`은 claude CLI에 z.ai 인증과 모델 매핑을 주입하는 래퍼이므로, `claude`로 띄우면 구독 OAuth로 붙어 worker가 coordinator와 같은 모델이 된다. 모델 별칭도 래퍼가 재매핑하므로 worker에게 `--model opus`를 주면 GLM 5.3이 뜬다. dispatch 지시서에 실행 명령과 모델 별칭을 함께 적는다.
-
-주의할 점 하나는 계획 파일 경로다. worker는 claude 기반이라 superpowers 규약을 따라 저장소의 `.superpowers/plans/`에 쓴다. coordinator가 claude CLI면 같은 경로를 보지만 Hermes면 `.hermes/plans/`를 본다. coordinator를 Hermes로 둘 때만 경로가 갈리므로, 그 경우 dispatch 지시서에 산출물 경로를 명시한다.
+upstream 계약 동기화 과제와 coordinator/worker 실행 체제는 `private/roadmap-internal.md`에 있다. upstream 저장소가 비공개라 공개 독자가 확인할 수 없는 항목이며, 실행 체제는 개인 작업 환경이라 이 저장소의 결정과 무관하다. 근거는 [0024](decisions/0024-public-boundary-and-private-directory.md)에 있다.
 
 ## 문서 부채
 

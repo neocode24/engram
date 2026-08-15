@@ -7,23 +7,20 @@ status: amended
 
 # 0004 IP와 배포 경로
 
-## 결정
+## 공개 범위 밖
 
-- 구현 과정은 본인 개인 GitHub(`neocode24`)에 둔다.
-- 강의 시점에 필요하면 **내부 미러**로 공유(레포 미러/이관)한다.
-- IP·영업비밀 gating은 이 경로로 해소된다.
+이 결정의 본문은 조직의 IP 경계와 내부 배포 경로에 대한 판단이라 공개하지 않는다. 근거와 처리 방식은 [0024](0024-public-boundary-and-private-directory.md)에 있다.
 
-## 근거
+번호와 제목만 남기는 이유는 결정 이력의 번호 연속성 때문이다. 이 자리에 결정이 있었다는 사실은 남기고 내용만 뺀다.
 
-- llm-wiki 체계 자체(승급 파이프라인 설계)는 방법론이지 회사 고유 기반이 아니다.
-- 교육용 데모 위키는 회사 정보가 없는 깨끗한 예시로 별도 제작한다 (`wiki/`).
-- 사내 강의 배포는 내부 미러 경로로 회사 통제권을 확보한다.
+공개 대상인 부분은 다른 ADR이 이미 담고 있다.
 
-## 열린 항목
-
-- 사내 Enterprise 레포 구체적 명/위치 — 강의 확정 시 결정.
-- 회사 특수 스키마 축(`sensitivity: restricted/private-local-only`)을 공개 오픈소스 스키마에 둘지, 보편화하여 제외할지 → [design.md](../design.md)의 스키마 매핑에서 결정.
+- 저장소 구성과 공개 경계를 폴더로 긋는 원칙은 [0011](0011-repo-layout-and-module-name.md)에 있다.
+- 배포 경로는 [0012](0012-distribution-via-personal-homebrew-tap.md)가 개인 Homebrew tap 단일화로 대체했다.
+- 스키마의 조직 특수 축을 프리셋으로 다루는 결정은 [0009](0009-schema-presets-and-thresholds.md)에 있다.
 
 ## 관련
 
-- [0001 프로젝트 목적과 범위](0001-purpose-and-scope.md)
+- [0011 저장소 구성과 Go 모듈명](0011-repo-layout-and-module-name.md)
+- [0012 배포 경로를 개인 Homebrew tap으로 단일화한다](0012-distribution-via-personal-homebrew-tap.md)
+- [0024 공개 경계를 gitignore된 private 디렉토리로 긋고 이력을 익명화한다](0024-public-boundary-and-private-directory.md)

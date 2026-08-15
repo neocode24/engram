@@ -39,7 +39,8 @@ for n in listed:
 
 broken = 0
 for f in glob.glob(os.path.join(ROOT, "**", "*.md"), recursive=True):
-    if "/.git/" in f:
+    # private/은 공개 경계 밖이며 gitignore 대상이다 (ADR 0024). 링크 검사에서 뺀다
+    if "/.git/" in f or "/private/" in f:
         continue
     d = os.path.dirname(f)
     for m in re.finditer(r"\]\((?!https?:|mailto:|#)([^)#]+)", open(f).read()):
