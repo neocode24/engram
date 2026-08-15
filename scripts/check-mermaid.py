@@ -15,10 +15,14 @@ with tempfile.TemporaryDirectory() as td:
             total += 1
             mmd = os.path.join(td, f"b{i}.mmd")
             open(mmd, "w").write(src)
-            r = subprocess.run(
-                ["npx", "-y", "@mermaid-js/mermaid-cli", "-i", mmd,
-                 "-o", os.path.join(td, f"b{i}.svg")],
-                capture_output=True, text=True, env=env)
+            cmd = ["npx", "-y", "@mermaid-js/mermaid-cli", "-i", mmd,
+                   "-o", os.path.join(td, f"b{i}.svg")]
+            # CI 러너처럼 샌드박스를 쓸 수 없거나 크롬 경로가 다른 환경에서는
+            # PUPPETEER_CONFIG 로 설정 파일을 넘긴다. 없으면 기본 동작이다
+            pcfg = os.environ.get("PUPPETEER_CONFIG")
+            if pcfg:
+                cmd += ["-p", pcfg]
+            r = subprocess.run(cmd, capture_output=True, text=True, env=env)
             head = src.strip().split("\n")[0][:40]
             if r.returncode != 0 or not os.path.exists(os.path.join(td, f"b{i}.svg")):
                 fail.append(f"{path} 블록{i+1} ({head}): {r.stderr.strip()[-200:]}")

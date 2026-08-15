@@ -78,10 +78,22 @@ jobs:
       - name: ADR 검사
         run: python3 scripts/check-adr.py
       # check-mermaid.py 는 node 와 npx 로 mermaid-cli 를 내려받아 쓴다.
-      # 첫 실행 때 puppeteer 가 크로미움을 내려받아 무겁지만 공식 러너에서
-      # 동작하므로 설치 단계를 넣는다.
+      # mermaid-cli 는 puppeteer 로 브라우저를 띄우는데, 러너에는 샌드박스가
+      # 없고 크롬 경로도 다르다. 설정 파일을 만들어 PUPPETEER_CONFIG 로 넘긴다.
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: mermaid 렌더 준비
+        run: |
+          CHROME=$(command -v google-chrome || command -v chromium-browser || true)
+          if [ -n "$CHROME" ]; then
+            printf '{"executablePath":"%s","args":["--no-sandbox","--disable-setuid-sandbox"]}\n' "$CHROME" > /tmp/puppeteer.json
+          else
+            npx -y puppeteer browsers install chrome
+            printf '{"args":["--no-sandbox","--disable-setuid-sandbox"]}\n' > /tmp/puppeteer.json
+          fi
+          cat /tmp/puppeteer.json
       - name: mermaid 렌더 검사
+        env:
+          PUPPETEER_CONFIG: /tmp/puppeteer.json
         run: python3 scripts/check-mermaid.py
