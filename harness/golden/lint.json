@@ -1,0 +1,129 @@
+{
+  "violations": [
+    {
+      "rule": "taxonomy.forms",
+      "severity": "error",
+      "path": "context/cli-flag-conventions.md",
+      "line": 15,
+      "message": "form 값이 forms 폐쇄 집합에 없다: /"cheatsheet/" (허용값: note, summary, howto, reference)",
+      "fix": "form 값을 허용값 중 하나로 바꾼다"
+    },
+    {
+      "rule": "gate.min-wikilinks",
+      "severity": "reject",
+      "path": "context/go-table-driven-tests.md",
+      "line": 12,
+      "message": "위키링크가 1개로 min_wikilinks 2개에 못 미친다",
+      "fix": "related 필드나 본문에 위키링크를 1개 더 추가한다"
+    },
+    {
+      "rule": "link.broken",
+      "severity": "warn",
+      "path": "context/go-table-driven-tests.md",
+      "line": 13,
+      "message": "깨진 위키링크: [[test-coverage-matrix]]에 해당하는 문서가 없다",
+      "fix": "슬러그를 고치거나 [[test-coverage-matrix]] 문서를 만든다"
+    },
+    {
+      "rule": "link.broken",
+      "severity": "warn",
+      "path": "context/go-table-driven-tests.md",
+      "line": 35,
+      "message": "깨진 위키링크: [[test-coverage-matrix]]에 해당하는 문서가 없다",
+      "fix": "슬러그를 고치거나 [[test-coverage-matrix]] 문서를 만든다"
+    },
+    {
+      "rule": "gate.min-wikilinks",
+      "severity": "reject",
+      "path": "context/markdown-link-syntax.md",
+      "line": 10,
+      "message": "위키링크가 0개로 min_wikilinks 2개에 못 미친다",
+      "fix": "related 필드나 본문에 위키링크를 2개 더 추가한다"
+    },
+    {
+      "rule": "taxonomy.topics",
+      "severity": "warn",
+      "path": "context/sqlite-foreign-keys.md",
+      "line": 16,
+      "message": "topics 값이 설정에 정의되지 않았다: /"sqlite/" (topics는 개방 집합이다)",
+      "fix": "engram.yaml의 topics 목록에 /"sqlite/"를 추가한다"
+    },
+    {
+      "rule": "graph.orphan",
+      "severity": "warn",
+      "path": "inbox/orphan-note.md",
+      "line": 1,
+      "message": "들어오는 링크와 나가는 링크가 모두 없다",
+      "fix": "다른 문서의 related나 본문에서 [[orphan-note]]로 연결한다"
+    },
+    {
+      "rule": "frontmatter.unclosed",
+      "severity": "error",
+      "path": "inbox/unclosed-frontmatter.md",
+      "line": 1,
+      "message": "프론트매터가 닫는 --- 구분자 없이 끝났다",
+      "fix": "프론트매터 끝에 --- 줄을 추가한다"
+    },
+    {
+      "rule": "frontmatter.missing",
+      "severity": "error",
+      "path": "inbox/voice-memo-raw.md",
+      "line": 1,
+      "message": "프론트매터가 없다",
+      "fix": "문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫는다"
+    },
+    {
+      "rule": "schema.allowed-value",
+      "severity": "error",
+      "path": "inbox/wrong-stage.md",
+      "line": 3,
+      "message": "artifact_stage 값이 허용값 밖이다: /"draft/" (허용값: inbox, source, context)",
+      "fix": "artifact_stage 값을 허용값 중 하나로 바꾼다"
+    },
+    {
+      "rule": "graph.orphan",
+      "severity": "warn",
+      "path": "sources/tech-talk-summary.md",
+      "line": 1,
+      "message": "들어오는 링크와 나가는 링크가 모두 없다",
+      "fix": "다른 문서의 related나 본문에서 [[tech-talk-summary]]로 연결한다"
+    }
+  ],
+  "wikiFindings": [
+    {
+      "rule": "wiki.broad-topic",
+      "severity": "warn",
+      "topic": "documentation",
+      "percent": 36,
+      "threshold": 25,
+      "total": 11,
+      "paths": [
+        "context/cli-flag-conventions.md",
+        "context/legacy-import-notes.md",
+        "context/markdown-link-syntax.md",
+        "index.md"
+      ],
+      "fix": "주제를 더 세분한다. 기준은 engram.yaml의 broad_topic_pct로 조정한다"
+    },
+    {
+      "rule": "wiki.broad-topic",
+      "severity": "warn",
+      "topic": "testing",
+      "percent": 27,
+      "threshold": 25,
+      "total": 11,
+      "paths": [
+        "context/go-table-driven-tests.md",
+        "context/testing-pyramid.md",
+        "sources/tech-talk-summary.md"
+      ],
+      "fix": "주제를 더 세분한다. 기준은 engram.yaml의 broad_topic_pct로 조정한다"
+    }
+  ],
+  "summary": {
+    "files": 13,
+    "error": 4,
+    "warn": 7,
+    "reject": 2
+  }
+}

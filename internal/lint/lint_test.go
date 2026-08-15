@@ -1,0 +1,469 @@
+package lint
+
+import (
+	"os"
+	"path/filepath"
+	"reflect"
+	"strings"
+	"testing"
+
+	"github.com/neocode24/engram/internal/config"
+)
+
+// writeWiki는 임시 디렉토리에 작은 위키를 만들고 그 루트를 반환한다.
+func writeWiki(t *testing.T, files map[string]string) string {
+	t.Helper()
+	dir := t.TempDir()
+	for name, content := range files {
+		p := filepath.Join(dir, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return dir
+}
+
+// runLint는 위키를 만들어 검사하고 결과를 반환한다.
+func runLint(t *testing.T, files map[string]string) Result {
+	t.Helper()
+	dir := writeWiki(t, files)
+	cfg, err := config.Load(dir)
+	if err != nil {
+		t.Fatalf("설정 로드 실패: %v", err)
+	}
+	res, err := Run(dir, cfg)
+	if err != nil {
+		t.Fatalf("lint 실행 실패: %v", err)
+	}
+	return res
+}
+
+// findByRule는 해당 규칙의 위반만 모은다.
+func findByRule(res Result, rule string) []Violation {
+	var out []Violation
+	for _, v := range res.Violations {
+		if v.Rule == rule {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+// cleanContextDoc는 규칙을 통과하는 context 단계 문서다.
+func cleanContextDoc(related, body string) string {
+	return "---\n" +
+		"type: procedure\n" +
+		"artifact_stage: context\n" +
+		"status: promoted\n" +
+		"indexable: true\n" +
+		"tags: []\n" +
+		"source_refs: []\n" +
+		"derived_from: []\n" +
+		"related:\n  - \"[[" + related + "]]\"\n" +
+		"source_channel: manual\n" +
+		"derived_context: []\n" +
+		"---\n\n본문 링크 [[" + body + "]]\n"
+}
+
+func TestRun(t *testing.T) {
+	t.Run("링크가 서로 이어진 위키는 위반이 없다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/a.md": cleanContextDoc("b", "c"),
+			"context/b.md": cleanContextDoc("a", "c"),
+			"context/c.md": cleanContextDoc("a", "b"),
+		})
+		if len(res.Violations) != 0 {
+			t.Fatalf("위반이 없어야 함: %+v", res.Violations)
+		}
+		if res.Summary.Files != 3 {
+			t.Errorf("검사 파일 수 = %d, want 3", res.Summary.Files)
+		}
+	})
+
+	t.Run("프론트매터가 없으면 error다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/plain.md": "# 제목만 있는 문서\n",
+		})
+		vs := findByRule(res, "frontmatter.missing")
+		if len(vs) != 1 || vs[0].Severity != SevError {
+			t.Fatalf("frontmatter.missing error가 있어야 함: %+v", res.Violations)
+		}
+		if vs[0].Fix == "" {
+			t.Error("고치는 법이 비어 있으면 안 됨")
+		}
+	})
+
+	t.Run("닫는 구분자가 없으면 error다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"inbox/unclosed.md": "---\ntype: inbox-note\nartifact_stage: inbox\n",
+		})
+		vs := findByRule(res, "frontmatter.unclosed")
+		if len(vs) != 1 || vs[0].Severity != SevError {
+			t.Fatalf("frontmatter.unclosed error가 있어야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("YAML 파싱 실패는 error다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"inbox/bad.md": "---\ntype: [안 닫힌 목록\n---\n",
+		})
+		vs := findByRule(res, "frontmatter.yaml")
+		if len(vs) != 1 || vs[0].Severity != SevError {
+			t.Fatalf("frontmatter.yaml error가 있어야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("단계별 필수 필드 누락은 error다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/no-related.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"source_channel: manual\nderived_context: []\n---\n\n본문\n",
+		})
+		vs := findByRule(res, "frontmatter.missing-field")
+		if len(vs) != 1 || vs[0].Message == "" {
+			t.Fatalf("related 누락이 잡혀야 함: %+v", res.Violations)
+		}
+		if !strings.Contains(vs[0].Message, "related") {
+			t.Errorf("메시지에 누락 필드가 있어야 함: %s", vs[0].Message)
+		}
+	})
+
+	t.Run("허용값 밖의 값은 허용값 목록과 함께 error다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"inbox/draft.md": "---\n" +
+				"type: inbox-note\nartifact_stage: draft\nstatus: inbox\n" +
+				"indexable: false\n---\n\n본문\n",
+		})
+		vs := findByRule(res, "schema.allowed-value")
+		if len(vs) != 1 {
+			t.Fatalf("schema.allowed-value가 있어야 함: %+v", res.Violations)
+		}
+		for _, want := range []string{"artifact_stage", `"draft"`, "inbox, source, context"} {
+			if !strings.Contains(vs[0].Message, want) {
+				t.Errorf("메시지에 %q 없음: %s", want, vs[0].Message)
+			}
+		}
+	})
+
+	t.Run("꺼진 축의 필드가 있으면 error다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/with-scope.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nscope: work\nsource_refs: []\nderived_from: []\n" +
+				"related:\n  - \"[[a]]\"\nsource_channel: manual\nderived_context: []\n" +
+				"---\n\n본문 [[b]] 링크\n",
+		})
+		vs := findByRule(res, "schema.axis-off")
+		if len(vs) != 1 || !strings.Contains(vs[0].Message, "scope") {
+			t.Fatalf("education 프리셋에서 scope는 꺼진 축 위반이어야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("forms 폐쇄 집합 위반은 error고 topics 미정의는 warn이다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml": "topics: [go]\nforms: [note]\n",
+			"context/f.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"related:\n  - \"[[a]]\"\nsource_channel: manual\nderived_context: []\n" +
+				"form: memo\ntopics:\n  - go\n  - kubernetes\n" +
+				"---\n\n본문 [[b]] 링크\n",
+		})
+		fv := findByRule(res, "taxonomy.forms")
+		if len(fv) != 1 || fv[0].Severity != SevError {
+			t.Fatalf("form 위반이 error여야 함: %+v", res.Violations)
+		}
+		if !strings.Contains(fv[0].Message, "note") {
+			t.Errorf("허용값 목록이 메시지에 있어야 함: %s", fv[0].Message)
+		}
+		tv := findByRule(res, "taxonomy.topics")
+		if len(tv) != 1 || tv[0].Severity != SevWarn {
+			t.Fatalf("kubernetes 미정의가 warn이어야 함: %+v", res.Violations)
+		}
+		if !strings.Contains(tv[0].Fix, "topics") {
+			t.Errorf("고치는 법에 설정 추가 안내가 있어야 함: %s", tv[0].Fix)
+		}
+	})
+
+	t.Run("max_lines 초과는 warn이다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml": "max_lines: 5\n",
+			"inbox/long.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\n---\n" +
+				"줄\n줄\n줄\n줄\n줄\n줄\n줄\n",
+		})
+		vs := findByRule(res, "body.max-lines")
+		if len(vs) != 1 || vs[0].Severity != SevWarn {
+			t.Fatalf("max_lines warn이 있어야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("주제가 여러 문서에 걸쳐도 진단은 주제당 1건이다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml": "topics: [go]\nbroad_topic_pct: 25\n",
+			"context/a.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"related:\n  - \"[[b]]\"\nsource_channel: manual\nderived_context: []\n" +
+				"topics:\n  - go\n---\n\n본문 [[b]] 링크\n",
+			"context/b.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"related:\n  - \"[[a]]\"\nsource_channel: manual\nderived_context: []\n" +
+				"topics:\n  - go\n---\n\n본문 [[a]] 링크\n",
+		})
+		if len(res.WikiFindings) != 1 {
+			t.Fatalf("진단이 1건이어야 함: %+v", res.WikiFindings)
+		}
+		f := res.WikiFindings[0]
+		if f.Rule != "wiki.broad-topic" || f.Severity != SevWarn || f.Topic != "go" {
+			t.Fatalf("진단 내용이 잘못됨: %+v", f)
+		}
+		if f.Percent != 100 || f.Total != 2 || f.Threshold != 25 {
+			t.Fatalf("비율 정보가 잘못됨: %+v", f)
+		}
+		if want := []string{"context/a.md", "context/b.md"}; !reflect.DeepEqual(f.Paths, want) {
+			t.Errorf("해당 문서 목록 = %v, want %v", f.Paths, want)
+		}
+		if got := findByRule(res, "wiki.broad-topic"); len(got) != 0 {
+			t.Errorf("위키 단위 진단이 파일 위반에 섞였음: %+v", got)
+		}
+		if res.Summary.Warn != 1 {
+			t.Errorf("warn 카운트 = %d, want 1", res.Summary.Warn)
+		}
+	})
+
+	t.Run("위키 진단은 비율 내림차순, 같으면 주제 이름순이다", func(t *testing.T) {
+		doc := func(topics string) string {
+			return "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
+				"indexable: false\nsource_channel: manual\ntopics:\n" + topics +
+				"---\n\n메모\n"
+		}
+		res := runLint(t, map[string]string{
+			"engram.yaml": "topics: [alpha, beta, gamma]\nbroad_topic_pct: 25\n",
+			"inbox/1.md":  doc("  - gamma\n  - alpha\n  - beta\n"),
+			"inbox/2.md":  doc("  - gamma\n  - alpha\n  - beta\n"),
+			"inbox/3.md":  doc("  - gamma\n  - alpha\n"),
+			"inbox/4.md":  doc("  - gamma\n  - alpha\n"),
+		})
+		// alpha와 gamma는 4/4, beta는 2/4다. 같은 비율은 이름순이다.
+		want := []string{"alpha", "gamma", "beta"}
+		if len(res.WikiFindings) != len(want) {
+			t.Fatalf("진단 %d건이어야 함: %+v", len(want), res.WikiFindings)
+		}
+		for i, topic := range want {
+			if res.WikiFindings[i].Topic != topic {
+				t.Fatalf("%d번째 진단 = %q, want %q: %+v", i, res.WikiFindings[i].Topic, topic, res.WikiFindings)
+			}
+		}
+	})
+
+	t.Run("한 문서가 같은 주제를 거듭 쓰면 문서 수로 한 번만 센다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml": "topics: [go]\nbroad_topic_pct: 25\n",
+			"inbox/1.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
+				"indexable: false\nsource_channel: manual\ntopics:\n  - go\n  - go\n" +
+				"---\n\n메모\n",
+			"inbox/2.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
+				"indexable: false\nsource_channel: manual\n" +
+				"---\n\n메모\n",
+		})
+		if len(res.WikiFindings) != 1 || res.WikiFindings[0].Percent != 50 {
+			t.Fatalf("거듭 쓴 주제는 50퍼센트(1/2)로 한 번만 세야 함: %+v", res.WikiFindings)
+		}
+	})
+
+	t.Run("깨진 위키링크는 warn이다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/a.md": cleanContextDoc("b", "없는문서"),
+			"context/b.md": cleanContextDoc("a", "a"),
+		})
+		vs := findByRule(res, "link.broken")
+		if len(vs) != 1 {
+			t.Fatalf("깨진 링크 하나가 잡혀야 함: %+v", res.Violations)
+		}
+		if !strings.Contains(vs[0].Message, "없는문서") {
+			t.Errorf("메시지에 슬러그가 있어야 함: %s", vs[0].Message)
+		}
+	})
+
+	t.Run("sources 문서에 updated가 있으면 warn이다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"sources/s.md": "---\n" +
+				"type: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+				"indexable: false\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
+				"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\nupdated: 2026-01-03\n" +
+				"---\n\n원본\n",
+		})
+		vs := findByRule(res, "sources.updated")
+		if len(vs) != 1 || vs[0].Severity != SevWarn {
+			t.Fatalf("sources.updated warn이 있어야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("링크가 전혀 없는 문서는 고아 warn이다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml": "min_wikilinks: 0\n",
+			"inbox/alone.md": "---\n" +
+				"type: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\n" +
+				"---\n\n링크 없는 메모\n",
+		})
+		vs := findByRule(res, "graph.orphan")
+		if len(vs) != 1 || vs[0].Severity != SevWarn {
+			t.Fatalf("고아 warn이 있어야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("위키링크가 부족한 context 문서는 reject다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/thin.md": cleanContextDoc("b", "b"),
+			"context/b.md":    cleanContextDoc("thin", "없는문서"),
+		})
+		vs := findByRule(res, "gate.min-wikilinks")
+		if len(vs) != 1 || vs[0].Severity != SevReject {
+			t.Fatalf("게이트 reject가 있어야 함: %+v", res.Violations)
+		}
+		if res.HasBlocking() != true {
+			t.Error("reject는 승급을 막아야 함")
+		}
+		// b.md는 related와 본문이 서로 다른 슬러그를 가리켜 2개로 통과한다.
+		for _, v := range vs {
+			if v.Path != "context/thin.md" {
+				t.Errorf("b.md도 reject 되었음: %+v", v)
+			}
+		}
+	})
+
+	t.Run("코드 펜스 안의 링크는 게이트와 링크 검사에서 세지 않는다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/fence.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"related:\n  - \"[[b]]\"\nsource_channel: manual\nderived_context: []\n" +
+				"---\n\n" +
+				"```\n[[b]]\n```\n" +
+				"인라인 `[[b]]` 도 링크가 아니다.\n",
+			"context/b.md": cleanContextDoc("a", "fence"),
+			"context/a.md": cleanContextDoc("fence", "b"),
+		})
+		if vs := findByRule(res, "gate.min-wikilinks"); len(vs) == 0 {
+			t.Fatalf("펜스 안 [[b]]를 빼면 링크 1개라 reject여야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("min_wikilinks가 0이면 게이트가 돌지 않는다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml": "min_wikilinks: 0\n",
+			"context/nolink.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"source_channel: manual\nderived_context: []\n" +
+				"---\n\n링크 없는 문서\n",
+		})
+		if vs := findByRule(res, "gate.min-wikilinks"); len(vs) != 0 {
+			t.Fatalf("게이트가 꺼져 있어야 함: %+v", vs)
+		}
+		if res.Summary.Reject != 0 {
+			t.Errorf("reject 수 = %d, want 0", res.Summary.Reject)
+		}
+	})
+
+	t.Run("같은 위키를 두 번 검사하면 결과가 같다", func(t *testing.T) {
+		files := map[string]string{
+			"engram.yaml": "topics: [go]\nforms: [note]\n",
+			"context/a.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"related:\n  - \"[[없는문서]]\"\nsource_channel: manual\nderived_context: []\n" +
+				"form: memo\ntopics:\n  - go\n---\n\n본문\n",
+			"inbox/b.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: weird\nindexable: false\nscope: work\n---\n\n메모\n",
+		}
+		first := runLint(t, files)
+		second := runLint(t, files)
+		if !reflect.DeepEqual(first, second) {
+			t.Fatalf("두 실행 결과가 다름:\n%+v\n%+v", first, second)
+		}
+	})
+
+	t.Run("위반은 경로, 줄, 규칙 ID 순으로 정렬된다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml": "topics: [go]\nforms: [note]\n",
+			"context/a.md": "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nscope: work\nsource_refs: []\nderived_from: []\n" +
+				"related:\n  - \"[[b]]\"\nsource_channel: manual\nderived_context: []\n" +
+				"form: memo\n---\n\n본문 [[b]]\n",
+			"context/b.md": cleanContextDoc("a", "a"),
+		})
+		for i := 1; i < len(res.Violations); i++ {
+			prev, cur := res.Violations[i-1], res.Violations[i]
+			if prev.Path > cur.Path ||
+				(prev.Path == cur.Path && prev.Line > cur.Line) ||
+				(prev.Path == cur.Path && prev.Line == cur.Line && prev.Rule > cur.Rule) {
+				t.Fatalf("정렬 깨짐: %+v 다음 %+v", prev, cur)
+			}
+		}
+	})
+
+	// indexDoc는 링크가 없는 색인 문서다. init 직후 위키의 초기 상태를 재현한다.
+	indexDoc := "---\n" +
+		"type: system\nartifact_stage: context\nstatus: promoted\n" +
+		"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+		"source_channel: manual\nderived_context: []\n" +
+		"---\n\n# 위키 색인\n"
+
+	t.Run("색인 문서는 게이트와 고아 판정에서 빠진다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"index.md": indexDoc,
+		})
+		if len(res.Violations) != 0 {
+			t.Fatalf("링크 없는 색인만 있는 위키는 위반이 없어야 함: %+v", res.Violations)
+		}
+		if res.HasBlocking() {
+			t.Error("색인만 있는 위키가 승급을 막는 판정을 받으면 안 됨")
+		}
+	})
+
+	t.Run("색인 문서라도 스키마 위반은 잡힌다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml": "forms: [note]\n",
+			"index.md": "---\n" +
+				"type: system\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+				"source_channel: manual\nderived_context: []\nform: memo\n" +
+				"---\n\n# 위키 색인\n",
+		})
+		vs := findByRule(res, "taxonomy.forms")
+		if len(vs) != 1 || vs[0].Severity != SevError {
+			t.Fatalf("색인의 스키마 위반이 잡혀야 함: %+v", res.Violations)
+		}
+		if got := findByRule(res, "gate.min-wikilinks"); len(got) != 0 {
+			t.Errorf("스키마 위반이 있어도 게이트는 색인을 보지 않음: %+v", got)
+		}
+	})
+
+	t.Run("root_files를 바꾸면 그 파일이 색인으로 제외된다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml": "root_files: [home.md]\n",
+			"home.md":     indexDoc,
+		})
+		if len(res.Violations) != 0 {
+			t.Fatalf("root_files로 지정한 색인은 게이트와 고아에서 빠져야 함: %+v", res.Violations)
+		}
+		// 제외는 root_files 소속 여부로 판정한다. page_dirs 안의 문서는
+		// 이름이 무엇이든 게이트와 고아 판정 대상이다.
+		res = runLint(t, map[string]string{
+			"engram.yaml":  "root_files: [home.md]\n",
+			"context/x.md": indexDoc,
+		})
+		if got := findByRule(res, "gate.min-wikilinks"); len(got) != 1 {
+			t.Fatalf("page_dirs 안의 색인형 문서는 게이트 대상이어야 함: %+v", res.Violations)
+		}
+		if got := findByRule(res, "graph.orphan"); len(got) != 1 {
+			t.Fatalf("page_dirs 안의 색인형 문서는 고아 판정 대상이어야 함: %+v", res.Violations)
+		}
+	})
+}

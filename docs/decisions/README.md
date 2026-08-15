@@ -31,6 +31,9 @@
 | [0014](0014-llm-boundary-agent-drives-binary.md) | LLM 호출을 바이너리에 두지 않고 에이전트가 바이너리를 부른다 | 2026-08-15 | accepted |
 | [0015](0015-adr-status-vocabulary-and-amendment-index.md) | ADR 상태 어휘와 개정 관계를 색인으로 관리한다 | 2026-08-15 | accepted |
 | [0016](0016-cli-framework-and-global-flags.md) | CLI 프레임워크를 cobra로 하고 전역 플래그 계약을 고정한다 | 2026-08-15 | accepted |
+| [0017](0017-yaml-for-config-and-frontmatter.md) | 설정과 프론트매터를 모두 YAML로 하고 파서를 하나만 둔다 | 2026-08-15 | accepted |
+| [0018](0018-taxonomy-field-names.md) | taxonomy 두 facet의 문서 필드명을 topics와 form으로 확정한다 | 2026-08-15 | accepted |
+| [0019](0019-index-documents-outside-the-gate.md) | 색인 문서를 승급 게이트와 고아 판정 대상에서 제외한다 | 2026-08-15 | accepted |
 
 ## 개정 그래프
 

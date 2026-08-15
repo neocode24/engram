@@ -4,14 +4,30 @@
 
 ## 현재 상태
 
-설계 문서가 확정되었고 Go 코드는 아직 없다. ADR 15건, 동작 구조 도식 10종, 커맨드 체계, 여정 24개가 문서로 존재한다. upstream 쪽 선행 작업인 계약 변경 로그는 1차 구축을 마쳤고 기준 정정만 남았다.
+Go 구현이 시작되었다. ADR 19건, 동작 구조 도식 10종, 커맨드 체계, 여정 24개가 문서로 있고, 0.1 마일스톤의 커맨드 셋 중 `version`, `init`, `lint` 셋이 동작한다. upstream 쪽 선행 작업인 계약 변경 로그는 1차 구축을 마쳤고 기준 정정만 남았다.
+
+## 끝난 것
+
+로드맵 착수 항목 넷이 닫혔다.
+
+| 항목 | 산출물 | 관련 ADR |
+|---|---|---|
+| Go 스캐폴드 | `cmd/engram/`, `internal/cli/`, `version`, 전역 `--json`과 `--now` | [0016](decisions/0016-cli-framework-and-global-flags.md) |
+| `init`과 스키마 로더 | `internal/config/`(프리셋 3종, 축 on/off, 임계값), `internal/cli/init.go` | [0017](decisions/0017-yaml-for-config-and-frontmatter.md), [0018](decisions/0018-taxonomy-field-names.md) |
+| `lint`와 게이트 | `internal/doc/`(프론트매터와 위키링크 파싱), `internal/lint/`(규칙 14종) | [0019](decisions/0019-index-documents-outside-the-gate.md) |
+| harness 골격 | `harness/fixtures/golden-wiki/`(사례 12종), `harness/lint_golden_test.go` | [0005](decisions/0005-upstream-contract-and-harness.md) |
+
+`init` 직후 `lint`가 위반 0건에 종료 코드 0을 낸다. 여정 0의 첫 화면이 거절이 아니어야 한다는 요구가 회귀 검사로 고정되었다.
 
 ## 즉시 다음
 
-1. **Go 스캐폴드** — 루트에 `go.mod`(모듈명 `github.com/neocode24/engram`), `cmd/engram/`, `internal/`. CLI 프레임워크를 붙이고 `version`과 `--json` 전역 플래그, `--now` 전역 플래그를 먼저 뚫는다. `--now`는 0.3의 `resurface`를 위한 것이지만 처음부터 있어야 parity 측정이 성립한다.
-2. **`init`과 스키마 로더** — 프리셋 3종, 설정 파일 파싱, 디렉토리 생성과 온보딩 문구 인쇄.
-3. **`lint`와 게이트** — 프론트매터 검증, 위키링크 파싱, `min_wikilinks` 판정. 거절 메시지 품질이 제품 품질이므로 여기서 에러 출력 형식을 확정한다.
-4. **harness 골격** — `harness/fixtures/`에 골든 위키를 만들고 lint 출력 비교를 붙인다. 코드가 늘어난 뒤에 시작하면 이미 늦다.
+0.1 마일스톤에 남은 커맨드는 다섯이다. 순서는 아래로 한다.
+
+1. **`capture`와 `source`** — 인테이크 두 경로. `capture`는 검증 없이 `inbox/`에 넣고, `source`는 `sources/`에 넣으며 원본 필드를 확정한다. `sources/`에 `updated`를 쓰지 않는다는 계약을 여기서 강제한다.
+2. **`promote`와 `new`** — 승급 경로. 게이트 판정은 `internal/lint`가 이미 갖고 있으므로 그것을 호출한다. 게이트 로직을 두 벌 만들면 곧 갈라진다.
+3. **`status`** — 위키 현황과 inbox 적체 압력. `lint`의 순회를 재사용한다.
+4. **`doctor`** — 환경 점검. 사내 배포에서 지원 요청을 줄이는 장치이므로 각 항목에 복구 명령을 함께 낸다.
+5. **upstream parity 대조** — 지금 harness가 덮는 것은 자기 출력의 골든 스냅샷뿐이다. ADR 0005가 정한 upstream 스크립트와의 실제 대조는 아직 없다. `docs/parity.md`는 그때 생긴다.
 
 ## upstream 선행 작업
 
@@ -66,14 +82,24 @@ worker는 반드시 `glm`으로 띄운다. `glm`은 claude CLI에 z.ai 인증과
 
 ## 검증 수단
 
-이 저장소에는 아직 테스트 스위트가 없다. 현재 있는 것은 ad-hoc 스크립트 둘이다.
+Go 테스트 스위트가 생겼다. `go test ./...`가 정식 검증이다.
+
+| 대상 | 검사 |
+|---|---|
+| `internal/config` | 프리셋 축 on/off, 병합 우선순위, 미정의 키 수집, 허용값 거절 |
+| `internal/doc` | 프론트매터 분리와 파싱, BOM과 CRLF, 위키링크 추출, 코드 펜스 제외 |
+| `internal/lint` | 규칙별 판정, 종료 코드, 출력 결정론 |
+| `internal/cli` | `init` 생성물과 멱등성, `--now` 고정 시 바이트 동일 |
+| `harness` | 골든 위키에 대한 lint 출력 스냅샷 비교. `go test ./harness -update`로 갱신 |
+
+문서 쪽은 여전히 ad-hoc 스크립트 둘이다.
 
 | 스크립트 | 검사 대상 |
 |---|---|
 | `scripts/check-adr.py` | ADR frontmatter 규약, 색인과 상태 일치, 상대링크 무결성 |
 | `scripts/check-mermaid.py` | 문서 내 mermaid 블록 렌더 가능 여부 |
 
-Go 코드가 들어오면 정식 테스트로 대체하고, 문서 검사 둘은 pre-commit에 붙인다.
+문서 검사 둘은 pre-commit에 붙인다. 아직 붙이지 않았다.
 
 ## 관련
 

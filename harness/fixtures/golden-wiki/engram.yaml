@@ -1,0 +1,13 @@
+preset: education
+topics:
+  - go
+  - testing
+  - databases
+  - documentation
+  - cli
+forms:
+  - note
+  - summary
+  - howto
+  - reference
+min_wikilinks: 2
