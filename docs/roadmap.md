@@ -40,7 +40,16 @@ ADR 0005는 이미 둘을 갈라 두었다. 치환 사전은 "코드로 옮기�
 
 ## 진행 체제
 
-coordinator는 Hermes, worker는 claude CLI를 Orca 오케스트레이션으로 붙인다. 주의할 점 하나는 계획 파일 경로다. worker 쪽은 superpowers 규약을 따라 저장소의 `.superpowers/plans/`에 쓰고 coordinator는 `.hermes/plans/`를 본다. 두 경로가 갈리므로 dispatch 지시서에 산출물 경로를 명시한다.
+Orca 오케스트레이션으로 coordinator와 worker를 붙인다.
+
+| 역할 | 실행 | 비고 |
+|---|---|---|
+| coordinator | Hermes 또는 claude CLI(Opus) | 둘 중 하나를 쓴다 |
+| worker | `glm` | `claude`가 아니다 |
+
+worker는 반드시 `glm`으로 띄운다. `glm`은 claude CLI에 z.ai 인증과 모델 매핑을 주입하는 래퍼이므로, `claude`로 띄우면 구독 OAuth로 붙어 worker가 coordinator와 같은 모델이 된다. 모델 별칭도 래퍼가 재매핑하므로 worker에게 `--model opus`를 주면 GLM 5.3이 뜬다. dispatch 지시서에 실행 명령과 모델 별칭을 함께 적는다.
+
+주의할 점 하나는 계획 파일 경로다. worker는 claude 기반이라 superpowers 규약을 따라 저장소의 `.superpowers/plans/`에 쓴다. coordinator가 claude CLI면 같은 경로를 보지만 Hermes면 `.hermes/plans/`를 본다. coordinator를 Hermes로 둘 때만 경로가 갈리므로, 그 경우 dispatch 지시서에 산출물 경로를 명시한다.
 
 ## 문서 부채
 
