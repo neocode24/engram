@@ -27,7 +27,7 @@ func newDemoteCmd() *cobra.Command {
 		Long: `context 단계 문서를 inbox 또는 sources로 내립니다.
 
 도착 단계의 기본값은 inbox다. inbox가 임시 계층이라 되돌리기의
-도착지로 안전하입니다.
+도착지로 안전합니다.
 
 문서를 내리면 파일명에 날짜 접두사가 붙어 슬러그가 바뀝니다. 그 문서를
 가리키던 위키링크는 전부 깨지므로 실행 전에 목록을 경고로 냅니다.
