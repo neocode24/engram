@@ -9,9 +9,14 @@
 목록 파일이 없으면 검사를 건너뛴다. CI에는 목록이 없으므로 항상 건너뛴다.
 CI 로그는 저장소와 함께 공개되므로 거기에 패턴이 찍히면 가드가 유출 경로가 된다.
 
+`--require`를 주면 목록이 없을 때 실패한다. 커밋 훅이 이것을 쓴다. 훅에서
+목록이 없다는 것은 검사할 필요가 없다는 뜻이 아니라 검사할 수 없다는 뜻이고,
+그 상태로 통과시키면 가드가 없는 것과 같다. ADR 0033.
+
 사용법:
     python3 scripts/check-boundary.py            워킹트리만 검사
     python3 scripts/check-boundary.py --history  커밋 이력까지 검사 (느리다)
+    python3 scripts/check-boundary.py --require  목록이 없으면 실패
 """
 
 import os
@@ -83,6 +88,11 @@ def scan_history(pats):
 def main():
     pats = load_patterns()
     if pats is None:
+        if "--require" in sys.argv:
+            print("패턴 목록이 없어 공개 경계를 검사할 수 없다 (private/boundary-patterns.txt)")
+            print("private/ 는 gitignore 대상이라 저장소에 없다. upstream 의 meta/engram/ 에서 복구한다")
+            print("복구: ENGRAM_UPSTREAM=<llm-wiki 경로> sh scripts/private-backup.sh --restore")
+            return 1
         print("패턴 목록이 없어 건너뛴다 (private/boundary-patterns.txt)")
         return 0
     if not pats:

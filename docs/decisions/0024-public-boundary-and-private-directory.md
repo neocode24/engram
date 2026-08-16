@@ -2,7 +2,7 @@
 number: 0024
 title: 공개 경계를 gitignore된 private 디렉토리로 긋고 이력을 익명화한다
 date: 2026-08-15
-status: accepted
+status: amended
 ---
 
 # 공개 경계의 구현

@@ -2,13 +2,14 @@
 # 커밋 전 검사 (ADR 0024).
 # 활성화: git config core.hooksPath .githooks
 #
-# 공개 경계 검사는 private/boundary-patterns.txt 가 있는 기계에서만 동작한다.
-# 그 파일이 없으면 건너뛴다. CI 에서는 의도적으로 돌리지 않는다.
+# 공개 경계 검사에 --require 를 준다. private/boundary-patterns.txt 가 없으면
+# 커밋을 막는다. 검사할 필요가 없는 것이 아니라 검사할 수 없는 상태이기
+# 때문이다. CI 는 이 플래그 없이 돌므로 그대로 건너뛴다. ADR 0033.
 set -e
 
 ROOT=$(git rev-parse --show-toplevel)
 
-python3 "$ROOT/scripts/check-boundary.py" || {
+python3 "$ROOT/scripts/check-boundary.py" --require || {
     echo "공개 경계 위반으로 커밋을 막았다. 해당 위치를 고친 뒤 다시 커밋한다"
     exit 1
 }

@@ -107,11 +107,21 @@ func newUpdateCmd() *cobra.Command {
 				}
 			}
 
+			// updated는 도구가 채우는 필드다(ADR 0009). 갱신 사실을 날짜로
+			// 남겨야 재발견 루프가 노후를 올바르게 판정한다. sources 계층과
+			// 사용자가 updated를 직접 정하거나 지운 경우는 채우지 않는다.
+			autoUpdated := ""
+			if stageOfPath(root, srcPath) != "sources" &&
+				!hasSetKey(sets, "updated") && !containsString(unsets, "updated") {
+				autoUpdated = Now(cmd).Format("2006-01-02")
+				fields = upsertField(fields, doc.Field{Key: "updated", Kind: doc.KindDate, Str: autoUpdated})
+			}
+
 			if err := os.WriteFile(srcPath, doc.Render(fields, body), 0o644); err != nil {
 				return fmt.Errorf("문서를 쓸 수 없음: %s: %w", srcPath, err)
 			}
 
-			res := updateOutcome{Path: srcPath, Set: sets, Unset: unsets}
+			res := updateOutcome{Path: srcPath, Set: sets, Unset: unsets, Updated: autoUpdated}
 			if bodyChanged {
 				res.BodyFrom = bodyFrom
 			}
@@ -131,12 +141,25 @@ func newUpdateCmd() *cobra.Command {
 	return cmd
 }
 
-// updateOutcome은 update의 결과다.
+// updateOutcome은 update의 결과다. Updated는 도구가 updated 필드를
+// 자동으로 채웠을 때만 값이 있다.
 type updateOutcome struct {
 	Path     string   `json:"path"`
 	Set      []string `json:"set"`
 	Unset    []string `json:"unset"`
 	BodyFrom string   `json:"bodyFrom,omitempty"`
+	Updated  string   `json:"updated,omitempty"`
+}
+
+// hasSetKey는 --set 목록에 키가 이미 있는지 본다. 사용자가 직접 정한
+// 값은 자동 갱신이 덮지 않는다.
+func hasSetKey(sets []string, key string) bool {
+	for _, kv := range sets {
+		if k, _, _ := strings.Cut(kv, "="); k == key {
+			return true
+		}
+	}
+	return false
 }
 
 // arrayFields는 쉼표로 여러 값을 받는 필드다.
@@ -284,6 +307,9 @@ func printUpdated(w io.Writer, res updateOutcome) {
 	}
 	if res.BodyFrom != "" {
 		fmt.Fprintf(w, "본문 교체: %s\n", res.BodyFrom)
+	}
+	if res.Updated != "" {
+		fmt.Fprintf(w, "updated에 갱신 날짜 %s를 기록했습니다\n", res.Updated)
 	}
 	fmt.Fprintf(w, "다음: engram lint로 갱신된 문서의 스키마를 확인하세요\n")
 }

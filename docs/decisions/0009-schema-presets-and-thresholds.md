@@ -2,7 +2,7 @@
 number: 0009
 title: 스키마 프리셋과 게이트 임계값
 date: 2026-08-15
-status: accepted
+status: amended
 ---
 
 # 스키마 프리셋과 게이트 임계값

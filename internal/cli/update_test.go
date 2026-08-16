@@ -151,5 +151,95 @@ func TestUpdateCmd(t *testing.T) {
 		if len(res.Set) != 1 || res.Set[0] != "status=archived" {
 			t.Errorf("결과가 틀리입니다: %+v", res)
 		}
+		if res.Updated == "" {
+			t.Errorf("자동 갱신한 updated가 JSON에 남아야 함: %+v", res)
+		}
+	})
+
+	// fixedNow는 updated 자동 기록의 결정론용 --now 값이다. 날짜는
+	// 2026-08-16 이다.
+	const fixedNow = "2026-08-16T10:00:00Z"
+
+	t.Run("--set 으로 고치면 updated 를 --now 날짜로 채웁니다", func(t *testing.T) {
+		root := makeDemoteWiki(t)
+		out, err := runDemoteUpdate(t, "update", "--wiki", root, "--now", fixedNow,
+			"--set", "status=archived", "context/note.md")
+		if err != nil {
+			t.Fatalf("update 실패: %v\n%s", err, out)
+		}
+		content := readWiki(t, root, "context/note.md")
+		if !strings.Contains(content, "updated: 2026-08-16") {
+			t.Errorf("updated가 갱신되지 않음:\n%s", content)
+		}
+		if strings.Contains(content, "updated: 2026-02-01") {
+			t.Errorf("기존 updated가 남음:\n%s", content)
+		}
+		if !strings.Contains(out, "기록했습니다") {
+			t.Errorf("자동 기록 안내가 없음: %s", out)
+		}
+	})
+
+	t.Run("sources 문서는 updated가 생기지 않습니다", func(t *testing.T) {
+		root := makeDemoteWiki(t)
+		src := "---\ntype: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+			"indexable: false\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
+			"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\n---\n\n원본\n"
+		if err := os.MkdirAll(filepath.Join(root, "sources"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(root, "sources", "2026-01-01-raw.md"), []byte(src), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := runDemoteUpdate(t, "update", "--wiki", root, "--now", fixedNow,
+			"--set", "status=superseded", "sources/2026-01-01-raw.md"); err != nil {
+			t.Fatal(err)
+		}
+		content := readWiki(t, root, "sources/2026-01-01-raw.md")
+		if strings.Contains(content, "updated:") {
+			t.Errorf("원본 보존 계층에 updated가 생기면 안 됨:\n%s", content)
+		}
+	})
+
+	t.Run("--set updated 값은 자동 갱신이 덮지 않습니다", func(t *testing.T) {
+		root := makeDemoteWiki(t)
+		if _, err := runDemoteUpdate(t, "update", "--wiki", root, "--now", fixedNow,
+			"--set", "updated=2020-01-01", "context/note.md"); err != nil {
+			t.Fatal(err)
+		}
+		content := readWiki(t, root, "context/note.md")
+		if !strings.Contains(content, "updated: 2020-01-01") {
+			t.Errorf("사용자가 정한 updated가 남아야 함:\n%s", content)
+		}
+		if strings.Contains(content, "updated: 2026-08-16") {
+			t.Errorf("자동 갱신이 사용자 값을 덮었음:\n%s", content)
+		}
+	})
+
+	t.Run("--unset updated 면 채우지 않고 지운 채로 둡니다", func(t *testing.T) {
+		root := makeDemoteWiki(t)
+		if _, err := runDemoteUpdate(t, "update", "--wiki", root, "--now", fixedNow,
+			"--set", "status=archived", "--unset", "updated", "context/note.md"); err != nil {
+			t.Fatal(err)
+		}
+		content := readWiki(t, root, "context/note.md")
+		if strings.Contains(content, "updated:") {
+			t.Errorf("지운 updated가 다시 채워졌음:\n%s", content)
+		}
+	})
+
+	t.Run("--body-from 으로 본문만 바꿔도 updated를 채웁니다", func(t *testing.T) {
+		root := makeDemoteWiki(t)
+		bodyFile := filepath.Join(t.TempDir(), "body.md")
+		if err := os.WriteFile(bodyFile, []byte("바뀐 본문\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := runDemoteUpdate(t, "update", "--wiki", root, "--now", fixedNow,
+			"--body-from", bodyFile, "context/note.md"); err != nil {
+			t.Fatal(err)
+		}
+		content := readWiki(t, root, "context/note.md")
+		if !strings.Contains(content, "updated: 2026-08-16") {
+			t.Errorf("본문 교체에도 updated가 갱신되어야 함:\n%s", content)
+		}
 	})
 }

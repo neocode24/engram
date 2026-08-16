@@ -90,7 +90,7 @@ func knownSlugs(walked []walk.Doc) map[string]bool {
 func gateRejectError(g lint.GateResult) error {
 	need := g.Min - g.Links
 	return fmt.Errorf("승급 게이트를 넘지 못했습니다: 위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다\n"+
-		"related 필드나 본문에 위키링크를 %d개 더 추가하세요.이 자리에서 채우려면 --related <슬러그>를 반복해 주세요",
+		"related 필드나 본문에 위키링크를 %d개 더 추가하세요.\n이 자리에서 채우려면 --related <슬러그>를 반복해 주세요",
 		g.Links, g.Min, need)
 }
 

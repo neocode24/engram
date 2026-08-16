@@ -23,7 +23,7 @@
 | [0006](0006-dual-mode-eject-seal.md) | easy/hard 듀얼 모드와 모드 전환 커맨드 | 2026-08-13 | amended |
 | [0007](0007-platform-and-distribution.md) | 플랫폼과 배포, 코어와 시맨틱 층 분리 | 2026-08-13 | amended |
 | [0008](0008-project-name-engram.md) | 프로젝트 이름을 engram으로 확정한다 | 2026-08-13 | accepted |
-| [0009](0009-schema-presets-and-thresholds.md) | 스키마 프리셋과 게이트 임계값 | 2026-08-14 | accepted |
+| [0009](0009-schema-presets-and-thresholds.md) | 스키마 프리셋과 게이트 임계값 | 2026-08-14 | amended |
 | [0010](0010-storage-index-and-korean-search.md) | 저장, 인덱스, 한국어 검색 | 2026-08-14 | accepted |
 | [0011](0011-repo-layout-and-module-name.md) | 저장소 구성과 Go 모듈명 | 2026-08-14 | amended |
 | [0012](0012-distribution-via-personal-homebrew-tap.md) | 배포 경로를 개인 Homebrew tap으로 단일화한다 | 2026-08-14 | accepted |
@@ -38,7 +38,7 @@
 | [0021](0021-gate-deferral-when-targets-are-scarce.md) | 링크 대상이 부족하면 승급 게이트를 유예한다 | 2026-08-15 | amended |
 | [0022](0022-promote-moves-inbox-derives-sources.md) | promote는 inbox를 옮기고 sources에서는 파생을 만든다 | 2026-08-15 | accepted |
 | [0023](0023-gate-targets-exclude-inbox.md) | 게이트의 링크 대상 집계에서 inbox 문서를 제외한다 | 2026-08-15 | accepted |
-| [0024](0024-public-boundary-and-private-directory.md) | 공개 경계를 gitignore된 private 디렉토리로 긋고 이력을 익명화한다 | 2026-08-15 | accepted |
+| [0024](0024-public-boundary-and-private-directory.md) | 공개 경계를 gitignore된 private 디렉토리로 긋고 이력을 익명화한다 | 2026-08-15 | amended |
 | [0025](0025-index-storage-and-staleness.md) | 인덱스를 JSON으로 저장하고 조회는 인덱스를 갱신하지 않는다 | 2026-08-15 | accepted |
 | [0026](0026-windows-console-utf8.md) | Windows 콘솔에 출력할 때 코드페이지를 UTF-8로 바꾼다 | 2026-08-15 | accepted |
 | [0027](0027-prose-register-by-audience.md) | 문체를 독자에 따라 세 층으로 나눈다 | 2026-08-15 | accepted |
@@ -46,6 +46,8 @@
 | [0029](0029-upstream-vendoring-and-parity-execution.md) | upstream 계약을 치환 사전으로 익명화해 vendoring하고 parity는 로컬에서만 돈다 | 2026-08-16 | amended |
 | [0030](0030-upstream-delta-is-not-a-public-artifact.md) | upstream 변경 로그에서 뽑은 delta는 공개하지 않는다 | 2026-08-16 | accepted |
 | [0031](0031-location-must-agree-with-stage.md) | 문서가 놓인 디렉토리와 artifact_stage가 일치해야 한다 | 2026-08-16 | accepted |
+| [0032](0032-update-writes-the-updated-field.md) | 문서를 바꾸는 커맨드가 updated를 그 자리에서 채운다 | 2026-08-16 | accepted |
+| [0033](0033-private-backup-and-fail-closed-boundary.md) | private 자료는 upstream에 백업하고 경계 검사는 닫히는 쪽으로 실패한다 | 2026-08-16 | accepted |
 
 ## 공개 범위 밖
 
@@ -69,6 +71,9 @@
 | 0005 | 스캐너가 걸리면 실패시킨다 | [0029](0029-upstream-vendoring-and-parity-execution.md) 치환 사전을 거친 뒤 실패시킨다 |
 | 0005 | `docs/parity.md`로 자동 갱신한다 | [0029](0029-upstream-vendoring-and-parity-execution.md) upstream이 로컬에 있을 때만 돌고 사람이 커밋한다 |
 | 0029 | delta를 `harness/deltas/`에 남긴다 | [0030](0030-upstream-delta-is-not-a-public-artifact.md) `private/deltas/`로 옮겨 공개하지 않는다 |
+| 0009 | `updated`는 git 이력에서만 채운다 | [0032](0032-update-writes-the-updated-field.md) 문서를 바꾸는 커맨드가 그 자리에서 채우고 `sync`가 나중에 정정한다 |
+| 0024 | `private/`의 실체는 upstream에 두고 여기에는 포인터와 발췌만 둔다 | [0033](0033-private-backup-and-fail-closed-boundary.md) 실체를 양쪽에 두고 `meta/engram/`으로 백업한다 |
+| 0024 | 패턴 목록이 없으면 경계 검사를 건너뛴다 | [0033](0033-private-backup-and-fail-closed-boundary.md) 커밋 훅에서는 `--require`로 막는다 |
 
 ## 근거만 갱신된 경우
 
