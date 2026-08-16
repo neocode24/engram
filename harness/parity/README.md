@@ -1,6 +1,6 @@
 # parity
 
-ADR 0029 가 정한 upstream llm-wiki 스크립트와 engram 구현의 parity 비교
+ADR 0029 가 정한 upstream llm-wiki 스크립트와 engram 구현의 동등성 검증
 러너다. 비교 축은 ADR 0005 가 넷을 들었으나 지금 여기에 있는 것은
 **lint 위반 목록 하나**다. 나머지 축(resurface 선정 순위, 프론트매터
 정규화, eject 산출물)은 이 골격이 검증된 뒤에 붙는다.
@@ -23,7 +23,7 @@ ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/parity/... -v
 
 - `ENGRAM_UPSTREAM` 이 없으면 skip 한다. **CI 는 항상 skip 이다.**
   upstream 저장소가 비공개라 공개 저장소의 CI 에서는 볼 수 없고, 비교
-  시점도 매 커밋이 아니라 upstream 계약이 바뀔 때 사람이 정한다(ADR 0029).
+  시점도 매 커밋이 아니라 upstream 명세가 바뀔 때 사람이 정한다(ADR 0029).
 - bash 가 없거나 `<루트>/scripts/lint-frontmatter.sh` 가 없으면 이유와
   함께 skip 한다.
 - 종료 코드는 0(통과), 1(위반 있음) 둘 다 정상 출력으로 본다. 그 밖의

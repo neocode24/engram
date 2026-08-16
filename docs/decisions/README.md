@@ -48,6 +48,7 @@
 | [0031](0031-location-must-agree-with-stage.md) | 문서가 놓인 디렉토리와 artifact_stage가 일치해야 한다 | 2026-08-16 | accepted |
 | [0032](0032-update-writes-the-updated-field.md) | 문서를 바꾸는 커맨드가 updated를 그 자리에서 채운다 | 2026-08-16 | accepted |
 | [0033](0033-private-backup-and-fail-closed-boundary.md) | private 자료는 upstream에 백업하고 경계 검사는 닫히는 쪽으로 실패한다 | 2026-08-16 | accepted |
+| [0034](0034-rule-spec-terminology.md) | upstream 규칙 문서를 계약이 아니라 규칙 명세라 부른다 | 2026-08-16 | accepted |
 
 ## 공개 범위 밖
 
@@ -83,3 +84,5 @@
 |---|---|---|
 | 0002 | 분리의 이유가 "본인이 안 쓰기 때문"에서 "같은 체계를 두 강제 방식으로 제공하기 때문"으로 바뀌었다 | [0006](0006-dual-mode-eject-seal.md) 본문 |
 | 0001 | Homebrew 배포가 0007에서 후퇴했다가 0012에서 복권되어 원문과 일치한다 | [0012](0012-distribution-via-personal-homebrew-tap.md) 본문 |
+| 0005 | "계약 파일"이라는 명칭이 "규칙 명세"로 바뀌었다. 결론은 그대로다 | [0034](0034-rule-spec-terminology.md) 본문 |
+| 0029 | 상동. 제목의 "계약"은 당시 명칭으로 읽는다 | [0034](0034-rule-spec-terminology.md) 본문 |

@@ -1,4 +1,4 @@
-# upstream parity
+# upstream 동등성 검증
 
 upstream `llm-wiki`의 스크립트와 이 저장소의 Go 구현이 같은 입력에 같은 판정을 내리는지 비교한 결과다. ADR [0005](decisions/0005-upstream-contract-and-harness.md)가 정한 3층 harness의 세 번째 층이다.
 
@@ -86,7 +86,7 @@ engram은 ADR [0020](decisions/0020-slug-and-filename-rules.md)에서 반대로 
 | `graph.orphan` | 1 | 고아 문서 |
 | `frontmatter.unclosed` | 1 | 위 표현 차이의 뒷면 |
 
-**engram 고유 규칙이 오탐은 아니다.** 게이트와 taxonomy 판정은 upstream `meta/`의 규칙 문서에 정의되어 있으나 upstream의 lint 스크립트가 구현하지 않은 것이다. 문서의 계약과 스크립트의 구현이 어긋나 있고, engram은 문서 쪽을 따랐다.
+**engram 고유 규칙이 오탐은 아니다.** 게이트와 taxonomy 판정은 upstream `meta/`의 규칙 문서에 정의되어 있으나 upstream의 lint 스크립트가 구현하지 않은 것이다. 규칙 명세와 스크립트의 구현이 어긋나 있고, engram은 명세 쪽을 따랐다.
 
 ## 비교 축 밖
 

@@ -4,7 +4,7 @@
 
 ## 첫 번째로 읽을 문서
 
-**`docs/architecture.md`** — engram이 무엇을 하고 무엇을 하지 않는지, 어떤 순서로 도는지가 도식과 함께 들어 있다. 그다음 `docs/design.md`(커맨드 체계와 설정), `docs/decisions/README.md`(결정 이력과 개정 관계) 순으로 읽는다.
+**`docs/architecture.md`** — engram이 무엇을 하고 무엇을 하지 않는지, 어떤 순서로 도는지가 도식과 함께 들어 있다. 그다음 **`docs/spec-map.md`**(upstream 규칙 명세가 engram의 무엇이 되었는지. 이 프로젝트의 뼈대다), `docs/design.md`(커맨드 체계와 설정), `docs/decisions/README.md`(결정 이력과 개정 관계) 순으로 읽는다.
 
 ## 이 프로젝트가 무엇인가
 
@@ -20,12 +20,13 @@
 |---|---|
 | `docs/architecture.md` | 동작 구조 전체. mermaid 도식 10종 |
 | `docs/decisions/` | ADR. 번호순, 소급 수정 금지. `README.md`가 색인 |
+| `docs/spec-map.md` | upstream 규칙 명세와 구현의 대응. 무엇을 코드가 강제하고 무엇을 사람에게 남겼는지 |
 | `docs/design.md` | 커맨드 체계, 설정, 마일스톤 |
 | `docs/journeys.md` | 사용자 여정과 마일스톤 매핑 |
 | `docs/curriculum.md` | 교육 커리큘럼 |
 | `docs/course/` | 강의 자료. 공개 자산이며 사내 사례를 담지 않는다 (placeholder) |
 | `cmd/engram/`, `internal/` | Go 구현. 저장소 루트가 모듈 루트 |
-| `harness/` | 골든 픽스처와 lint 출력 스냅샷 비교. upstream parity는 미착수 |
+| `harness/` | 골든 픽스처, 여정 통합 테스트, upstream 동등성 검증. lint 축까지 마쳤다 |
 | `examples/` | 데모 위키. `init`의 생성물이므로 손으로 고치지 않는다 (placeholder) |
 | `private/` | 공개 경계 밖 자료. **gitignore 대상이라 커밋되지 않는다** ([0024](docs/decisions/0024-public-boundary-and-private-directory.md)) |
 
@@ -67,5 +68,5 @@
 | `README.md` | 안내체. 구체 규칙은 재작성 시점에 정한다 |
 
 아래는 세 층 전부에 적용된다.
-- 이 저장소는 오픈소스 공개 예정이므로 **사내 식별자(실명, 조직명, 사내 제품명)를 쓰지 않는다.** upstream llm-wiki는 반대로 보존하므로, 계약 파일을 가져올 때 익명화 경계를 넘지 않았는지 확인한다.
+- 이 저장소는 오픈소스 공개 예정이므로 **사내 식별자(실명, 조직명, 사내 제품명)를 쓰지 않는다.** upstream llm-wiki는 반대로 보존하므로, 규칙 명세를 가져올 때 익명화 경계를 넘지 않았는지 확인한다.
 - 한국어 산문에 em dash, 화살표, 가운뎃점, 말줄임표, smart quotes를 쓰지 않는다. 코드 블록, 표, frontmatter, 기술 표기는 예외다.

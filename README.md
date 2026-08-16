@@ -326,6 +326,7 @@ broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
 | 문서 | 내용 | 언제 읽는가 |
 |---|---|---|
 | [architecture.md](docs/architecture.md) | 동작 구조. mermaid 도식 10종 | 전체 그림이 필요할 때 |
+| [spec-map.md](docs/spec-map.md) | 규칙 명세와 구현의 대응 | **무엇이 다른지**가 궁금할 때 |
 | [design.md](docs/design.md) | 커맨드 체계, 설정, 마일스톤 | 커맨드 경계와 설정이 궁금할 때 |
 | [journeys.md](docs/journeys.md) | 사용자 여정 24개 | 실제 사용 시나리오가 궁금할 때 |
 | [decisions/](docs/decisions/README.md) | ADR 색인. 설계 결정과 개정 이력 | "왜 이렇게 설계했는가"가 궁금할 때 |
