@@ -33,6 +33,9 @@ inbox/voice-memo-raw.md
     프론트매터가 없습니다
     고치는 법: 문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫으세요
 inbox/wrong-stage.md
+  [error] 3 location.stage-agreement
+    문서가 inbox 디렉토리에 있지만 artifact_stage가 "draft"입니다
+    고치는 법: 문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 inbox로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요
   [error] 3 schema.allowed-value
     artifact_stage 값이 허용값 밖입니다: "draft" (허용값: inbox, source, context, archive)
     고치는 법: artifact_stage 값을 허용값 중 하나로 바꿉니다
@@ -45,4 +48,4 @@ inbox/wrong-stage.md
     사용 비율이 27%(3/11 문서)로 broad_topic_pct 25를 넘습니다
     해당 문서: context/go-table-driven-tests.md, context/testing-pyramid.md, sources/tech-talk-summary.md
     고치는 법: 주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요
-검사한 파일 13개, error 4, warn 6, reject 2
+검사한 파일 13개, error 5, warn 6, reject 2

@@ -15,6 +15,7 @@ upstream 저장소는 비공개이며 로컬에만 있다. 환경변수가 없�
 | 항목 | 값 |
 |---|---|
 | 측정일 | 2026-08-16 |
+| 상태 | `title`과 `location.stage-agreement` 반영 전 |
 | upstream 커밋 | `05f7279` |
 | 픽스처 | `harness/fixtures/golden-wiki`, 문서 13개 |
 | 프리셋 | `team` |
@@ -42,8 +43,8 @@ engram이 따라가야 할 후보다. 셋으로 갈린다.
 | 규칙 | 건수 | 내용 |
 |---|---|---|
 | `frontmatter.missing-field:title` | 7 | **의도된 차이다.** 아래에서 설명한다 |
-| `location.stage-agreement` | 2 | 문서가 놓인 디렉토리와 `artifact_stage` 값이 어긋나는지 |
-| `location.type-agreement` | 1 | 디렉토리와 `type` 값이 어긋나는지 |
+| `location.stage-agreement` | 2 | **닫았다.** ADR [0031](decisions/0031-location-must-agree-with-stage.md)로 규칙을 넣었다. `index.md`의 1건은 ADR 0019에 따른 의도된 차이로 남는다 |
+| `location.type-agreement` | 1 | **따라가지 않는다.** 적용 자리가 upstream에만 있는 `moc` 타입과 `index` 단계뿐이다 |
 
 #### title은 따라가지 않는다
 
@@ -89,6 +90,6 @@ engram은 ADR [0020](decisions/0020-slug-and-filename-rules.md)에서 반대로 
 
 ## 다음
 
-- `location.stage-agreement`를 lint 규칙으로 넣을지 정한다. `index.md` 예외는 ADR 0019가 이미 근거를 갖고 있다.
+- 반영 후 재측정한다. `location.stage-agreement`가 들어갔으므로 `upstream만 잡음`이 15쌍에서 14쌍으로 준다.
 - 비교 축을 늘린다. `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
 - upstream `meta/CHANGELOG.md`에 `binary-affecting` 항목이 붙으면 이 비교를 다시 돌린다.

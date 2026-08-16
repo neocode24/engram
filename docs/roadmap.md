@@ -22,7 +22,7 @@
 | `source` | `sources/`에 원본을 확정한다. `updated`를 쓰지 않는다 | [0009](decisions/0009-schema-presets-and-thresholds.md) |
 | `promote` | inbox는 이동, sources는 파생 | [0021](decisions/0021-gate-deferral-when-targets-are-scarce.md), [0022](decisions/0022-promote-moves-inbox-derives-sources.md), [0023](decisions/0023-gate-targets-exclude-inbox.md) |
 | `new` | 처음부터 검수된 지식으로 `context/`에 쓴다 | 상동 |
-| `lint` | 규칙 15종. 스키마와 링크 무결성 | [0019](decisions/0019-index-documents-outside-the-gate.md) |
+| `lint` | 규칙 16종. 스키마, 링크 무결성, 위치와 단계의 일치 | [0019](decisions/0019-index-documents-outside-the-gate.md) |
 | `status` | 현황과 적체 압력, 다음 행동 제안 | |
 | `doctor` | 환경과 위키 점검 12종. 항목마다 복구 조치 | |
 | `resurface` | 오래 안 본 문서를 제시 이력 기준으로 꺼낸다 | [0028](decisions/0028-rediscovery-state-and-boundaries.md) |
@@ -43,8 +43,7 @@
 
 1. **upstream parity 대조** — 지금 harness가 덮는 것은 자기 출력의 골든 스냅샷뿐이다. ADR 0005가 정한 upstream 스크립트와의 실제 대조는 아직 없다. `docs/parity.md`는 그때 생긴다. 공개 경계는 **커밋되는 것**에만 걸린다. upstream 계약 파일을 vendoring할 때 익명화 경계를 넘은 문자열이 들어오지 않게 하는 것이 요건이며, 픽스처는 ADR 0005대로 조직 정보 없는 깨끗한 예시를 새로 쓴다.
 2. **Windows 재검증** — 다음 버전 검증 때 함께 한다. 콘솔 직결 항목은 2차 검증 당시 스크립트가 출력을 캡처해 버려 실제로는 파이프를 검증하고 있었다. 스크립트를 고쳐 두었으나 실행하지 않았다. `autocrlf` 항목은 VM에 git이 없어 여전히 미검증이다.
-3. **parity가 찾아낸 갭을 판단한다.** 상세는 [parity.md](parity.md)에 있다. `title`은 따라가지 않기로 정리했다.
-   - `location.stage-agreement`를 규칙으로 넣을지. 문서가 놓인 디렉토리와 `artifact_stage` 값의 일치 검사이며 engram에 없다. `index.md` 예외는 ADR 0019가 이미 근거를 갖고 있다.
+3. **parity 재측정.** 갭 둘을 닫았으므로 수치가 바뀐다. `title`은 따라가지 않기로 정리했고 `location.stage-agreement`는 ADR 0031로 넣었다.
 4. **비교 축을 늘린다.** `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
 
 ## 알려진 빈틈

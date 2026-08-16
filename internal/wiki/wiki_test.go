@@ -101,6 +101,36 @@ func TestFilePath(t *testing.T) {
 			t.Error("YYYY-MM-DD나 YYYY-MM이 아니면 에러여야 함")
 		}
 	})
+
+	t.Run("archive 단계는 파일 경로를 만들지 않는다", func(t *testing.T) {
+		// archive는 파일명과 슬러그를 유지하는 커맨드 계약이다(ADR 0028).
+		// FilePath가 archive 경로를 만들면 그 계약과 어긋난다.
+		if _, err := FilePath(defaultCfg(t), StageArchive, "2026-01-01", "slug"); err == nil {
+			t.Error("archive 단계는 FilePath 대상이 아니어야 함")
+		}
+	})
+}
+
+func TestStageForDir(t *testing.T) {
+	t.Run("디렉토리의 단계는 stageDirs 표를 따른다", func(t *testing.T) {
+		for dir, want := range map[string]Stage{
+			"inbox":   StageInbox,
+			"sources": StageSource,
+			"context": StageContext,
+			"archive": StageArchive,
+		} {
+			got, ok := StageForDir(dir)
+			if !ok || got != want {
+				t.Errorf("StageForDir(%q) = %q, %v, want %q, true", dir, got, ok, want)
+			}
+		}
+	})
+
+	t.Run("단계에 대응하지 않는 디렉토리는 false다", func(t *testing.T) {
+		if _, ok := StageForDir("journal"); ok {
+			t.Error("대응하지 않는 디렉토리는 false여야 함")
+		}
+	})
 }
 
 func TestCreate(t *testing.T) {

@@ -15,6 +15,7 @@ import (
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
 	"github.com/neocode24/engram/internal/walk"
+	"github.com/neocode24/engram/internal/wiki"
 )
 
 // Severity는 위반의 등급이다.
@@ -189,6 +190,7 @@ func scanDoc(w walk.Doc, cfg config.Config) (scannedDoc, []Violation) {
 
 	sd.checkRequiredFields(cfg, add)
 	sd.checkAllowedValues(cfg, add)
+	sd.checkStageAgreement(cfg, add)
 	sd.checkAxisOff(cfg, add)
 	sd.checkTaxonomy(cfg, add)
 	sd.checkSourcesUpdated(add)
@@ -314,6 +316,30 @@ func (s *scannedDoc) checkAllowedValues(cfg config.Config, add func(Severity, st
 				fmt.Sprintf("%s 값이 허용값 밖입니다: %q (허용값: %s)", vf.key, f.Str, strings.Join(allowed, ", ")),
 				fmt.Sprintf("%s 값을 허용값 중 하나로 바꿉니다", vf.key))
 		}
+	}
+}
+
+// checkStageAgreement는 문서가 놓인 최상위 디렉토리와 artifact_stage
+// 값의 일치를 검사한다(ADR 0031). 단계와 디렉토리의 대응은 wiki의
+// stageDirs 표가 단일 진실원이므로 여기에 두지 않는다. artifact_stage가
+// 없으면 frontmatter.missing-field가 이미 잡으므로 건너뛴다. 값이
+// 허용 집합 밖이어도 비교한다. 허용값 위반과 위치 불일치는 다른 결함이다.
+func (s *scannedDoc) checkStageAgreement(cfg config.Config, add func(Severity, string, int, string, string)) {
+	if s.stage == "" {
+		return
+	}
+	if isRootFile(s.rel, cfg) {
+		return // 색인은 위키 루트에 있어 비교할 디렉토리가 없다(ADR 0019)
+	}
+	top, _, _ := strings.Cut(s.rel, "/")
+	expected, ok := wiki.StageForDir(top)
+	if !ok {
+		return // 단계에 대응하지 않는 디렉토리는 비교 기준이 없다
+	}
+	if s.stage != string(expected) {
+		add(SevError, "location.stage-agreement", lineOfKey(s.content, "artifact_stage"),
+			fmt.Sprintf("문서가 %s 디렉토리에 있지만 artifact_stage가 %q입니다", top, s.stage),
+			fmt.Sprintf("문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 %s로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요", expected))
 	}
 }
 

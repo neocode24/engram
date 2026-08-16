@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
 	"github.com/neocode24/engram/internal/graph"
 	"github.com/neocode24/engram/internal/walk"
+	"github.com/neocode24/engram/internal/wiki"
 	"github.com/spf13/cobra"
 )
 
@@ -55,7 +55,7 @@ updated를 갱신합니다. 이 문서를 가리키는 링크가 있으면 개�
 			}
 			rel = filepath.ToSlash(rel)
 
-			dir, err := archiveDir(cfg)
+			dir, err := wiki.DirFor(cfg, wiki.StageArchive)
 			if err != nil {
 				return err
 			}
@@ -130,17 +130,6 @@ func archiveFields(src []doc.Field, now string) []doc.Field {
 	fields = upsertField(fields, doc.Field{Key: "status", Kind: doc.KindString, Str: "archived"})
 	fields = upsertField(fields, doc.Field{Key: "updated", Kind: doc.KindDate, Str: now})
 	return fields
-}
-
-// archiveDir은 설정 page_dirs에서 보관 디렉토리를 찾는다.
-// page_dirs가 진실원이므로 여기에 디렉토리 이름을 두지 않는다.
-func archiveDir(cfg config.Config) (string, error) {
-	for _, d := range cfg.PageDirs {
-		if d == "archive" {
-			return d, nil
-		}
-	}
-	return "", fmt.Errorf("설정의 page_dirs에 archive 디렉토리가 없습니다\nengram.yaml의 page_dirs에 \"archive\"를 추가하세요")
 }
 
 // printArchived는 보관 결과를 낸다.

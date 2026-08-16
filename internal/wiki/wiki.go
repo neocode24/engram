@@ -19,14 +19,27 @@ import (
 	"github.com/neocode24/engram/internal/doc"
 )
 
-// Stage는 문서가 놓이는 단계다. 이름이 곧 최상위 디렉토리 이름이다.
+// Stage는 문서가 놓이는 단계다. 단계에 대응하는 디렉토리는 stageDirs
+// 표가 정한다.
 type Stage string
 
 const (
 	StageInbox   Stage = "inbox"
 	StageSource  Stage = "source"
 	StageContext Stage = "context"
+	StageArchive Stage = "archive"
 )
+
+// stageDirs는 단계와 디렉토리 이름의 대응표다. 대부분 단계 이름과
+// 디렉토리 이름이 같고 source 단계의 원본 보존 계층만 복수형 sources가
+// 관례다. 이 표가 대응의 단일 진실원이므로 같은 지식을 다른 곳에
+// 두지 않는다(ADR 0031).
+var stageDirs = map[Stage]string{
+	StageInbox:   "inbox",
+	StageSource:  "sources",
+	StageContext: "context",
+	StageArchive: "archive",
+}
 
 // Slug는 제목에서 파일명으로 쓸 슬러그를 만든다.
 // 공백과 구분자를 하이픈 하나로 바꾸고 연속 하이픈을 줄이며 앞뒤 하이픈을
@@ -81,7 +94,7 @@ func isReservedName(s string) bool {
 // YYYY-MM 이다. upstream 실제 파일명에서 확인한 규칙이다.
 // 도착지 디렉토리는 config의 page_dirs가 진실원이다.
 func FilePath(cfg config.Config, stage Stage, date, slug string) (string, error) {
-	dir, err := dirFor(cfg, stage)
+	dir, err := DirFor(cfg, stage)
 	if err != nil {
 		return "", err
 	}
@@ -97,15 +110,13 @@ func FilePath(cfg config.Config, stage Stage, date, slug string) (string, error)
 	return "", fmt.Errorf("알 수 없는 단계: %q (허용값: inbox, source, context)", string(stage))
 }
 
-// dirFor는 단계에 대응하는 디렉토리를 page_dirs에서 찾는다.
-// 스키마에 단계와 디렉토리의 명시적 대응이 없으므로 단계 이름으로 찾되
-// source 단계의 원본 보존 계층은 복수형 sources가 관례다.
-// page_dirs에 없으면 기본값으로 조용히 떨어지지 않고 설정에 무엇을
-// 추가해야 하는지를 알린다.
-func dirFor(cfg config.Config, stage Stage) (string, error) {
-	want := string(stage)
-	if stage == StageSource {
-		want = "sources"
+// DirFor는 단계에 대응하는 디렉토리를 page_dirs에서 찾는다. 대응은
+// stageDirs 표가 정한다. page_dirs에 없으면 기본값으로 조용히 떨어지지
+// 않고 설정에 무엇을 추가해야 하는지를 알린다.
+func DirFor(cfg config.Config, stage Stage) (string, error) {
+	want, ok := stageDirs[stage]
+	if !ok {
+		return "", fmt.Errorf("알 수 없는 단계: %q (허용값: inbox, source, context, archive)", string(stage))
 	}
 	for _, d := range cfg.PageDirs {
 		if d == want {
@@ -114,6 +125,18 @@ func dirFor(cfg config.Config, stage Stage) (string, error) {
 	}
 	return "", fmt.Errorf("설정의 page_dirs에 %s 단계 디렉토리가 없습니다: %q\nengram.yaml의 page_dirs에 %q를 추가하세요",
 		stage, want, want)
+}
+
+// StageForDir는 최상위 디렉토리 이름에 대응하는 단계를 반환한다.
+// lint의 위치 검사가 이 조회를 써서 단계와 디렉토리의 대응이 두 벌이
+// 되지 않게 한다(ADR 0031). 대응하지 않는 디렉토리면 false를 반환한다.
+func StageForDir(dir string) (Stage, bool) {
+	for st, d := range stageDirs {
+		if d == dir {
+			return st, true
+		}
+	}
+	return "", false
 }
 
 // validDate는 날짜 접두사의 정밀도를 검사한다. 하루 단위와 연월 단위만
@@ -206,6 +229,8 @@ func stageStatus(stage Stage) string {
 		return "inbox"
 	case StageSource:
 		return "sourced"
+	case StageArchive:
+		return "archived"
 	}
 	return "promoted"
 }

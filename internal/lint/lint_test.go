@@ -149,6 +149,73 @@ func TestRun(t *testing.T) {
 		}
 	})
 
+	t.Run("디렉토리와 artifact_stage가 어긋나면 error다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"inbox/misplaced.md": "---\n" +
+				"type: inbox-note\nartifact_stage: context\nstatus: inbox\nindexable: false\n" +
+				"---\n\n메모\n",
+		})
+		vs := findByRule(res, "location.stage-agreement")
+		if len(vs) != 1 || vs[0].Severity != SevError {
+			t.Fatalf("위치 불일치가 error여야 함: %+v", res.Violations)
+		}
+		// 메시지는 어느 디렉토리에 있고 무엇이라 적혀 있는지를 낸다.
+		for _, want := range []string{"inbox", `"context"`} {
+			if !strings.Contains(vs[0].Message, want) {
+				t.Errorf("메시지에 %q 없음: %s", want, vs[0].Message)
+			}
+		}
+		// 고치는 법은 둘이므로 둘 다 알린다(ADR 0031).
+		if !strings.Contains(vs[0].Fix, "옮기") || !strings.Contains(vs[0].Fix, "artifact_stage") {
+			t.Errorf("고치는 법이 파일 이동과 값 수정을 모두 알려야 함: %s", vs[0].Fix)
+		}
+	})
+
+	t.Run("sources 디렉토리의 source 단계 문서는 통과한다", func(t *testing.T) {
+		// source만 단계 이름과 디렉토리 이름이 어긋나는 자리다.
+		res := runLint(t, map[string]string{
+			"engram.yaml": "min_wikilinks: 0\n",
+			"sources/s.md": "---\n" +
+				"type: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+				"indexable: false\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
+				"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\n" +
+				"---\n\n원본\n",
+		})
+		if got := findByRule(res, "location.stage-agreement"); len(got) != 0 {
+			t.Fatalf("sources 디렉토리의 source 문서는 통과해야 함: %+v", got)
+		}
+	})
+
+	t.Run("하위 디렉토리는 최상위 디렉토리 기준으로 판정한다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml":           "min_wikilinks: 0\n",
+			"context/sub/nested.md": cleanContextDoc("sub", "sub"),
+		})
+		if got := findByRule(res, "location.stage-agreement"); len(got) != 0 {
+			t.Fatalf("하위 디렉토리는 단계를 바꾸지 않음: %+v", got)
+		}
+	})
+
+	t.Run("허용값 밖의 단계 값도 위치 검사가 잡는다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"inbox/draft.md": "---\n" +
+				"type: inbox-note\nartifact_stage: draft\nstatus: inbox\nindexable: false\n" +
+				"---\n\n본문\n",
+		})
+		if got := findByRule(res, "location.stage-agreement"); len(got) != 1 {
+			t.Fatalf("허용값 밖 값도 위치 불일치와 별개로 잡혀야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("artifact_stage가 없으면 위치 검사를 건너뛴다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"inbox/nostage.md": "---\ntype: inbox-note\nstatus: inbox\nindexable: false\n---\n\n메모\n",
+		})
+		if got := findByRule(res, "location.stage-agreement"); len(got) != 0 {
+			t.Fatalf("값이 없으면 missing-field가 잡으므로 위치 검사는 하지 않음: %+v", got)
+		}
+	})
+
 	t.Run("꺼진 축의 필드가 있으면 error다", func(t *testing.T) {
 		res := runLint(t, map[string]string{
 			"context/with-scope.md": "---\n" +
@@ -683,6 +750,16 @@ func TestRun(t *testing.T) {
 		}
 		if got := findByRule(res, "graph.orphan"); len(got) != 1 {
 			t.Fatalf("page_dirs 안의 색인형 문서는 고아 판정 대상이어야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("색인 문서는 위치 검사에서 빠진다", func(t *testing.T) {
+		// 색인은 위키 루트에 있어 비교할 디렉토리가 없다(ADR 0019).
+		res := runLint(t, map[string]string{
+			"index.md": indexDoc,
+		})
+		if got := findByRule(res, "location.stage-agreement"); len(got) != 0 {
+			t.Fatalf("root_files는 위치 검사 대상이 아님: %+v", got)
 		}
 	})
 }
