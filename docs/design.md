@@ -169,7 +169,7 @@
 | 0.2 | `search`, `backlinks`, `reindex`, `demote`, `mv`, `update` | 1, 19, 22 |
 | 0.3 | `resurface`, `bridge`, `digest`, `recall`, `archive` | 9, 10, 11, 20 |
 | 0.4 | `eject`, `rules show`, `migrate`, `sync` (완료) | 12, 13, 16 |
-| 1.0 | `skills install`, 배포 (완료). `serve`, `pack`, MCP (남음) | 8, 14, 15, 17, 21, 23 |
+| 1.0 | `skills install`, MCP, 배포 (완료). `serve`, `pack` (남음) | 8, 14, 15, 17, 21, 23 |
 
 여정 2(음성)는 외부 전사기 의존이라 별도 트랙이다. 바이너리는 "외부 전사 결과를 수용하는 인터페이스"만 정의하고 전사 자체를 내장하지 않는다.
 
@@ -179,7 +179,7 @@
 
 - 교육용 데모 위키의 내용. `engram init --preset education`으로 재생성 가능해야 하며 결과가 다르면 회귀로 본다.
 - `serve` 웹 UI의 쓰기 범위. 웹에서 직접 파일을 쓰지 않고 제안으로 접수하는 방식을 검토 중이다.
-- MCP 노출 시 도구 단위 분해. 쓰기가 `inbox`까지라는 경계는 확정이다.
+- ~~MCP 노출 시 도구 단위 분해.~~ [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md)이 도구 열로 정했다. 쓰기는 `capture` 하나다.
 
 ## 관련
 

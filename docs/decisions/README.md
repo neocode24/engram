@@ -57,6 +57,7 @@
 | [0040](0040-gate-follows-the-directory-not-the-declaration.md) | 게이트는 선언이 아니라 디렉토리를 따르고 artifact_stage 누락은 오류다 | 2026-08-16 | accepted |
 | [0041](0041-skills-install-embeds-one-static-skill.md) | skills install은 정적 스킬 문서 하나를 심고 위키별 규칙은 rules show로 넘긴다 | 2026-08-17 | accepted |
 | [0042](0042-release-artifacts-and-workflow.md) | 릴리스는 goreleaser로 만들고 태그 푸시가 유일한 계기다 | 2026-08-17 | accepted |
+| [0043](0043-mcp-exposes-one-write-tool-and-omits-promote.md) | MCP는 쓰기 도구를 하나만 노출하고 promote를 내보내지 않는다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 

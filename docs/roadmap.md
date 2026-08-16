@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-**0.4까지 끝났고 1.0의 둘이 동작한다.** 커맨드 스물다섯, ADR 42건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 열다섯이다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
+**0.4까지 끝났고 1.0의 셋이 동작한다.** 커맨드 스물여섯, ADR 43건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 열다섯이다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
 
 ## 끝난 것
 
@@ -35,6 +35,7 @@
 | `rules show` | 이 위키에 적용되는 규칙 전부를 읽기 전용으로 낸다 | [0013](decisions/0013-eject-redefined-seal-removed.md) |
 | `eject` | 규칙을 명세 문서와 Python 린터로 풀어 소유권을 넘긴다. 연산은 engram에 남는다 | [0039](decisions/0039-eject-emits-rule-specs-and-a-python-linter.md), [0013](decisions/0013-eject-redefined-seal-removed.md) |
 | `skills install` | 에이전트에 정적 스킬 문서를 심는다. 위키별 규칙은 `rules show`가 낸다 | [0041](decisions/0041-skills-install-embeds-one-static-skill.md), [0014](decisions/0014-llm-boundary-agent-drives-binary.md) |
+| `mcp` | 위키를 MCP 서버로 노출한다. 도구 열 중 쓰기는 `capture` 하나이고 `promote`는 없다 | [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md) |
 
 패키지는 열다섯이다. `config`(설정과 프리셋), `doc`(파싱과 직렬화), `walk`(순회), `graph`(링크 관계), `lint`(규칙과 게이트), `wiki`(문서 쓰기), `index`(색인과 BM25), `chunk`(헤딩 청킹), `state`(영구 상태), `resurface`, `digest`, `bridge`, `status`, `doctor`, `cli`다.
 
@@ -51,8 +52,7 @@
 ## 즉시 다음
 
 1. **저장소 공개 전환과 첫 릴리스.** 둘이 한 묶음이다. private인 동안 Homebrew가 아카이브를 받을 수 없으므로 tap 갱신을 먼저 켜면 Formula가 죽은 링크를 가리킨다(ADR [0042](decisions/0042-release-artifacts-and-workflow.md)).
-2. **MCP 노출.** 여정 8. 쓰기가 `inbox`까지라는 경계는 확정이고 도구 단위 분해가 미결이다. `skills install`의 스킬 문서가 같은 경계를 이미 말하므로 그것을 진실원으로 삼는다.
-3. **`serve`와 `pack`.** 1.0에서 남은 둘이다. `serve`의 쓰기 범위가 미결이다.
+2. **`serve`와 `pack`.** 1.0에서 남은 둘이다. `serve`의 쓰기 범위가 미결이며, MCP가 stdio만 쓰기로 했으므로 HTTP 전송을 `serve`에 붙일지 별도로 둘지 함께 정한다.
 2. **비교 축을 늘린다.** 동등성 검증이 지금 보는 것은 lint 위반 목록 하나다. `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
 3. **Windows 재검증** — 다음 버전 검증 때 함께 한다. 콘솔 직결 항목은 2차 검증 당시 스크립트가 출력을 캡처해 버려 실제로는 파이프를 검증하고 있었다. 스크립트를 고쳐 두었으나 실행하지 않았다. `autocrlf` 항목은 VM에 git이 없어 여전히 미검증이다.
 
