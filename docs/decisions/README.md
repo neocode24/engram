@@ -45,6 +45,7 @@
 | [0028](0028-rediscovery-state-and-boundaries.md) | 재발견 커맨드의 상태를 성격에 따라 두 곳에 나눠 둔다 | 2026-08-16 | accepted |
 | [0029](0029-upstream-vendoring-and-parity-execution.md) | upstream 계약을 치환 사전으로 익명화해 vendoring하고 parity는 로컬에서만 돈다 | 2026-08-16 | amended |
 | [0030](0030-upstream-delta-is-not-a-public-artifact.md) | upstream 변경 로그에서 뽑은 delta는 공개하지 않는다 | 2026-08-16 | accepted |
+| [0031](0031-location-must-agree-with-stage.md) | 문서가 놓인 디렉토리와 artifact_stage가 일치해야 한다 | 2026-08-16 | accepted |
 
 ## 공개 범위 밖
 
