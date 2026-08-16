@@ -15,7 +15,7 @@ upstream 저장소는 비공개이며 로컬에만 있다. 환경변수가 없�
 | 항목 | 값 |
 |---|---|
 | 측정일 | 2026-08-16 |
-| 상태 | `title`과 `location.stage-agreement` 반영 전 |
+| 반영 | ADR 0031(`location.stage-agreement`)까지 |
 | upstream 커밋 | `05f7279` |
 | 픽스처 | `harness/fixtures/golden-wiki`, 문서 13개 |
 | 프리셋 | `team` |
@@ -27,8 +27,8 @@ upstream 저장소는 비공개이며 로컬에만 있다. 환경변수가 없�
 
 | 갈래 | 쌍 |
 |---|---|
-| 양쪽 다 잡음 | **38** |
-| upstream만 잡음 | 15 |
+| 양쪽 다 잡음 | **39** |
+| upstream만 잡음 | 14 |
 | engram만 잡음 | 15 |
 | 정규화 매핑 없음 | 0 |
 
@@ -38,13 +38,17 @@ upstream 저장소는 비공개이며 로컬에만 있다. 환경변수가 없�
 
 engram이 따라가야 할 후보다. 셋으로 갈린다.
 
-### 진짜 갭
+### 남은 차이
+
+전부 의도했거나 판단이 끝난 것이다. 첫 측정에서 나온 진짜 갭 둘은 닫혔다.
 
 | 규칙 | 건수 | 내용 |
 |---|---|---|
 | `frontmatter.missing-field:title` | 7 | **의도된 차이다.** 아래에서 설명한다 |
-| `location.stage-agreement` | 2 | **닫았다.** ADR [0031](decisions/0031-location-must-agree-with-stage.md)로 규칙을 넣었다. `index.md`의 1건은 ADR 0019에 따른 의도된 차이로 남는다 |
+| `location.stage-agreement` | 1 | `index.md` 하나만 남았다. ADR [0019](decisions/0019-index-documents-outside-the-gate.md)에 따른 의도된 차이다 |
 | `location.type-agreement` | 1 | **따라가지 않는다.** 적용 자리가 upstream에만 있는 `moc` 타입과 `index` 단계뿐이다 |
+
+`inbox/wrong-stage.md`의 `location.stage-agreement`는 ADR [0031](decisions/0031-location-must-agree-with-stage.md)로 닫았다. 이제 양쪽이 함께 잡는다. `index.md`에 붙은 둘은 upstream이 색인 문서에 `moc` 타입과 `index` 단계를 요구하기 때문이며, engram에는 그 타입도 그 단계도 없다.
 
 #### title은 따라가지 않는다
 
@@ -90,6 +94,5 @@ engram은 ADR [0020](decisions/0020-slug-and-filename-rules.md)에서 반대로 
 
 ## 다음
 
-- 반영 후 재측정한다. `location.stage-agreement`가 들어갔으므로 `upstream만 잡음`이 15쌍에서 14쌍으로 준다.
 - 비교 축을 늘린다. `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
 - upstream `meta/CHANGELOG.md`에 `binary-affecting` 항목이 붙으면 이 비교를 다시 돌린다.

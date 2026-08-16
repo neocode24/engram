@@ -112,7 +112,8 @@ func NormalizeEngram(rule, message string) string {
 	switch rule {
 	case "frontmatter.missing", "frontmatter.unclosed", "frontmatter.yaml",
 		"taxonomy.forms", "taxonomy.topics", "sources.updated", "body.max-lines",
-		"link.broken", "graph.orphan", "gate.deferred", "gate.min-wikilinks":
+		"link.broken", "graph.orphan", "gate.deferred", "gate.min-wikilinks",
+		"location.stage-agreement":
 		return rule
 	case "frontmatter.missing-field":
 		if m := engramMissingField.FindStringSubmatch(message); m != nil {
