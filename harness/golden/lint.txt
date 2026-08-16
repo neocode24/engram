@@ -26,7 +26,7 @@ inbox/orphan-note.md
     고치는 법: 다른 문서의 related나 본문에서 [[orphan-note]]로 연결하거나 관계 필드로 잇으세요
 inbox/unclosed-frontmatter.md
   [error] 1 frontmatter.unclosed
-    프론트매터가 닫는 --- 구분자 없이 끝났다
+    프론트매터가 닫는 --- 구분자 없이 끝났습니다
     고치는 법: 프론트매터 끝에 --- 줄을 추가하세요
 inbox/voice-memo-raw.md
   [error] 1 frontmatter.missing

@@ -159,7 +159,7 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 	}
 	cmd.Flags().String(flagSlug, "", "도착지 문서 슬러그. 생략하면 원본 파일명에서 날짜 접두사를 뗀 값입니다")
 	cmd.Flags().StringArray(flagRelated, nil, "related 필드에 추가할 슬러그. 여러 번 쓸 수 있습니다")
-	cmd.Flags().String(flagType, "", "승급 문서의 문서 종류. 허용값은 위키 설정의 types다")
+	cmd.Flags().String(flagType, "", "승급 문서의 문서 종류. 허용값은 위키 설정의 types입니다")
 	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
 	return cmd
 }

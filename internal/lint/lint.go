@@ -153,7 +153,7 @@ func parseViolations(w walk.Doc) []Violation {
 	if errors.Is(w.Err, walk.ErrUnclosed) {
 		return []Violation{{
 			Rule: "frontmatter.unclosed", Severity: SevError, Path: w.Rel, Line: 1,
-			Message: "프론트매터가 닫는 --- 구분자 없이 끝났다",
+			Message: "프론트매터가 닫는 --- 구분자 없이 끝났습니다",
 			Fix:     "프론트매터 끝에 --- 줄을 추가하세요",
 		}}
 	}

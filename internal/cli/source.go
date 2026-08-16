@@ -104,7 +104,7 @@ func newSourceCmd() *cobra.Command {
 	cmd.Flags().String(flagCreated, "", "원본이 작성된 날(YYYY-MM-DD 또는 YYYY-MM)")
 	cmd.Flags().String(flagChannel, "", "입력 경로. source_channel 축 값")
 	cmd.Flags().StringArray(flagRef, nil, "원본 출처(경로나 URL). 여러 번 쓸 수 있습니다")
-	cmd.Flags().String(flagType, defaultSourceType, "문서 종류. 허용값은 위키 설정의 types다")
+	cmd.Flags().String(flagType, defaultSourceType, "문서 종류. 허용값은 위키 설정의 types입니다")
 	return cmd
 }
 

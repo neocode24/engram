@@ -42,7 +42,7 @@ func newRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:   "engram",
 		Short: "지식관리 위키의 승급 파이프라인을 다루는 CLI",
-		Long: `engram은 지식관리 위키의 문서 상태와 승급 파이프라인을 다루는 CLI다.
+		Long: `engram은 지식관리 위키의 문서 상태와 승급 파이프라인을 다루는 CLI입니다.
 
 모든 조회 커맨드는 --json으로 JSON 출력을 지원하고, --now로 기준 시각을
 고정해 결정론적인 결과를 얻을 수 있습니다.`,

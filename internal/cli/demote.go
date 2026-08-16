@@ -26,7 +26,7 @@ func newDemoteCmd() *cobra.Command {
 		Short: "context 문서를 inbox나 sources로 되돌립니다",
 		Long: `context 단계 문서를 inbox 또는 sources로 내립니다.
 
-도착 단계의 기본값은 inbox다. inbox가 임시 계층이라 되돌리기의
+도착 단계의 기본값은 inbox입니다. inbox가 임시 계층이라 되돌리기의
 도착지로 안전합니다.
 
 문서를 내리면 파일명에 날짜 접두사가 붙어 슬러그가 바뀝니다. 그 문서를
@@ -54,7 +54,7 @@ func newDemoteCmd() *cobra.Command {
 				return fmt.Errorf("문서를 파싱할 수 없음: %s: %w", srcPath, err)
 			}
 			if stage := fieldString(d, "artifact_stage"); stage != "context" {
-				return fmt.Errorf("context 단계 문서만 되돌립니다: %s의 artifact_stage 값이 %q다", srcPath, stage)
+				return fmt.Errorf("context 단계 문서만 되돌립니다: %s의 artifact_stage 값이 %q입니다", srcPath, stage)
 			}
 
 			toFlag, err := stringFlag(cmd, flagTo)

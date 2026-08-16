@@ -61,7 +61,7 @@
       "severity": "error",
       "path": "inbox/unclosed-frontmatter.md",
       "line": 1,
-      "message": "프론트매터가 닫는 --- 구분자 없이 끝났다",
+      "message": "프론트매터가 닫는 --- 구분자 없이 끝났습니다",
       "fix": "프론트매터 끝에 --- 줄을 추가하세요"
     },
     {
