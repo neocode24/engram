@@ -189,7 +189,7 @@ $ engram recall 게이트웨이 --limit 1
 
 ## 커맨드
 
-스물셋이다. 다섯 갈래로 나뉜다. 넣고, 올리고, 조회하고, 다시 만나고, 관리한다.
+스물넷이다. 다섯 갈래로 나뉜다. 넣고, 올리고, 조회하고, 다시 만나고, 관리한다.
 
 ```mermaid
 flowchart LR
@@ -270,6 +270,7 @@ flowchart LR
 | `migrate` | 기존 문서를 지금의 설정과 규칙에 맞춘다. `--dry-run`이 기본 |
 | `sync` | git 이력에서 `updated`와 `sourced_at`을 정정한다. `--dry-run`이 기본 |
 | `rules show` | 이 위키에 적용되는 규칙 전부를 읽기 전용으로 낸다 |
+| `eject` | 규칙을 명세 문서와 Python 린터로 풀어 소유권을 넘긴다. 단방향 |
 | `version` | 버전과 빌드 정보 |
 
 전역 플래그는 둘이다. `--json`은 기계 판독 출력이고, `--now`는 기준 시각을 고정해 결과를 결정론적으로 만든다.
@@ -310,18 +311,17 @@ broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
 
 ## 어디까지 왔는가
 
-**0.1, 0.2, 0.3 마일스톤이 끝났고 0.4가 진행 중이다.** 위의 커맨드 스물셋이 전부 동작한다.
+**0.1부터 0.4까지 끝났다.** 위의 커맨드 스물넷이 전부 동작한다.
 
 | 마일스톤 | 범위 | 상태 |
 |---|---|---|
 | 0.1 | `init`, `capture`, `source`, `promote`, `new`, 게이트, `lint`, `status`, `doctor` | 완료 |
 | 0.2 | `search`, `backlinks`, `reindex`, `demote`, `mv`, `update` | 완료 |
 | 0.3 | `resurface`, `bridge`, `digest`, `recall`, `archive` | 완료 |
-| 0.4 | `rules show`, `migrate`, `sync` | 완료 |
-| 0.4 | `eject` | **아직 없다** |
+| 0.4 | `eject`, `rules show`, `migrate`, `sync` | 완료 |
 | 1.0 | `serve`(웹 UI), `skills install`, `pack`, MCP 노출, 배포 체계 | **아직 없다** |
 
-0.4에서 남은 것은 `eject` 하나다. 내장 규칙을 규칙 명세 문서와 Python 린터로 풀어 사용자에게 넘기는 커맨드이며 설계는 [ADR 0039](docs/decisions/0039-eject-emits-rule-specs-and-a-python-linter.md)에 있다. 1.0은 웹 UI, 에이전트 스킬 설치, 배포이고 아직 구현 전이다. 마일스톤별 범위는 [design.md](docs/design.md)에 있다.
+`eject`는 규칙을 사용자에게 넘기되 연산은 넘기지 않는다. 내보낸 뒤에도 `search`, `recall`, `resurface`, `bridge`, `digest`, `backlinks`가 그대로 동작한다. 내보낸 Python 린터가 `engram lint`와 같은 판정을 내는지 대조하는 검증이 CI에서 돈다. 1.0은 웹 UI, 에이전트 스킬 설치, 배포이고 아직 구현 전이다. 마일스톤별 범위는 [design.md](docs/design.md)에 있다.
 
 검증은 `go test ./...`가 정식이다. **도구가 만든 위키는 어느 시점에 `lint`를 돌려도 `error`가 0이어야 한다.** 이 불변식을 여정 통합 테스트가 지킨다. `init`부터 `archive`까지 실제 바이너리로 순서대로 돌리고 각 단계마다 `lint`를 다시 검사한다. 도구가 자기 산출물을 자기 검사로 통과하지 못하면 게이트를 믿을 수 없기 때문이다.
 

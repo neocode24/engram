@@ -230,3 +230,167 @@ func TestRulesListMatchesLint(t *testing.T) {
 		}
 	}
 }
+
+// TestDisplayWidth는 표시 폭 계산이 동아시아 넓은 문자를 두 칸으로
+// 세는지 검증한다.
+func TestDisplayWidth(t *testing.T) {
+	cases := []struct {
+		in   string
+		want int
+	}{
+		{"", 0},
+		{"error", 5},
+		{"0123", 4},
+		{"또는", 4},
+		{"error 또는 warn", 15},
+		{"설명이 여기 있습니다", 20},
+		{"가나다123", 9},
+		{"漢字", 4},   // 한중일 통합 한자
+		{"ひらがな", 8}, // 히라가나
+		{"カタカナ", 8}, // 가타카나
+		{"！", 2},    // 전각 형식
+		{"　", 2},    // 전각 공백
+	}
+	for _, c := range cases {
+		if got := displayWidth(c.in); got != c.want {
+			t.Errorf("displayWidth(%q) = %d, want %d", c.in, got, c.want)
+		}
+	}
+}
+
+// TestPadRight는 한글이 섞인 문자열을 표시 폭 기준으로 채우는지 검증한다.
+func TestPadRight(t *testing.T) {
+	cases := []struct {
+		in    string
+		width int
+		want  string
+	}{
+		{"또는", 6, "또는  "},
+		{"error", 5, "error"},
+		{"error", 7, "error  "},
+		{"가", 6, "가    "},
+		{"넓은 값", 4, "넓은 값"},
+	}
+	for _, c := range cases {
+		if got := padRight(c.in, c.width); got != c.want {
+			t.Errorf("padRight(%q, %d) = %q, want %q", c.in, c.width, got, c.want)
+		}
+	}
+}
+
+// displayCol은 문자열의 처음부터 byteIdx 까지의 표시 폭을 센다.
+// 테스트가 열 시작 위치를 표시 폭으로 잰다.
+func displayCol(s string, byteIdx int) int {
+	n := 0
+	for i, r := range s {
+		if i >= byteIdx {
+			break
+		}
+		if isWide(r) {
+			n += 2
+		} else {
+			n++
+		}
+	}
+	return n
+}
+
+// colAfterToken은 줄에서 tok 토큰 뒤의 공백을 건너뛴 위치의 표시 폭을 반환한다.
+func colAfterToken(line, tok string) (int, bool) {
+	i := strings.Index(line, tok)
+	if i < 0 {
+		return 0, false
+	}
+	i += len(tok)
+	for i < len(line) && line[i] == ' ' {
+		i++
+	}
+	return displayCol(line, i), true
+}
+
+// TestRulesShowTableColumns은 rules show 의 네 표에서 마지막 열의 시작
+// 위치가 모든 행에서 같은지 검증한다. fmt 의 룬 수 폭으로는 한글이 섞인
+// 열이 화면에서 어긋난다.
+func TestRulesShowTableColumns(t *testing.T) {
+	wiki := makeRulesWiki(t, "preset: education\n")
+	out, err := runRules(t, "rules", "show", "--wiki", wiki)
+	if err != nil {
+		t.Fatalf("실행 실패: %v\n%s", err, out)
+	}
+
+	var ruleCols, threshCols, stageCols, valueCols, openValueCols []int
+	section := ""
+	for _, line := range strings.Split(out, "\n") {
+		switch {
+		case line == "":
+			continue
+		case !strings.HasPrefix(line, " "):
+			section = line
+			continue
+		}
+		switch {
+		case strings.HasPrefix(line, "  ["):
+			// 규칙 표. [등급] ID 설명 순서고 ID 에는 공백이 없다.
+			bracket := strings.Index(line, "] ")
+			if bracket < 0 {
+				t.Fatalf("규칙 줄에서 등급 닫기를 못 찾음: %q", line)
+			}
+			id := strings.Fields(line[bracket+2:])
+			if len(id) == 0 {
+				t.Fatalf("규칙 줄에서 ID 를 못 찾음: %q", line)
+			}
+			if col, ok := colAfterToken(line, id[0]); ok {
+				ruleCols = append(ruleCols, col)
+			}
+		case strings.HasPrefix(section, "임계값"):
+			f := strings.Fields(line)
+			if len(f) < 3 {
+				continue
+			}
+			if col, ok := colAfterToken(line, f[1]); ok {
+				threshCols = append(threshCols, col)
+			}
+		case strings.HasPrefix(section, "단계별"):
+			f := strings.Fields(line)
+			if len(f) < 2 {
+				continue
+			}
+			if col, ok := colAfterToken(line, f[0]); ok {
+				stageCols = append(stageCols, col)
+			}
+		case strings.HasPrefix(section, "허용값. 폐쇄"):
+			f := strings.Fields(line)
+			if len(f) < 2 {
+				continue
+			}
+			if col, ok := colAfterToken(line, f[0]); ok {
+				valueCols = append(valueCols, col)
+			}
+		case strings.HasPrefix(section, "허용값. 개방"):
+			f := strings.Fields(line)
+			if len(f) < 2 {
+				continue
+			}
+			if col, ok := colAfterToken(line, f[0]); ok {
+				openValueCols = append(openValueCols, col)
+			}
+		}
+	}
+	for name, cols := range map[string][]int{
+		"규칙 표":  ruleCols,
+		"임계값 표": threshCols,
+		"단계별 표": stageCols,
+		"허용값 표": valueCols,
+	} {
+		if len(cols) == 0 {
+			t.Errorf("%s의 행을 못 찾았습니다", name)
+			continue
+		}
+		for _, c := range cols[1:] {
+			if c != cols[0] {
+				t.Errorf("%s의 마지막 열 시작 위치가 행마다 다릅니다: %v", name, cols)
+				break
+			}
+		}
+	}
+}

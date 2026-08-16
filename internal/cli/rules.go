@@ -178,12 +178,12 @@ func printRules(w io.Writer, res rulesReport) {
 	fmt.Fprintf(w, "\n단계별 필수 필드\n")
 	stageWidth := 0
 	for _, st := range []string{"inbox", "source", "context", "archive"} {
-		if len(st) > stageWidth {
-			stageWidth = len(st)
+		if w := displayWidth(st); w > stageWidth {
+			stageWidth = w
 		}
 	}
 	for _, st := range []string{"inbox", "source", "context", "archive"} {
-		fmt.Fprintf(w, "  %-*s  %s\n", stageWidth, st, strings.Join(res.RequiredFields[st], ", "))
+		fmt.Fprintf(w, "  %s  %s\n", padRight(st, stageWidth), strings.Join(res.RequiredFields[st], ", "))
 	}
 
 	fmt.Fprintf(w, "\n허용값. 폐쇄 집합은 정의되지 않은 값이 오류입니다\n")
@@ -205,15 +205,15 @@ func printRules(w io.Writer, res rulesReport) {
 	}
 	nameWidth, valWidth := 0, 0
 	for _, r := range thresholdRows {
-		if len(r.name) > nameWidth {
-			nameWidth = len(r.name)
+		if w := displayWidth(r.name); w > nameWidth {
+			nameWidth = w
 		}
-		if len(r.val) > valWidth {
-			valWidth = len(r.val)
+		if w := displayWidth(r.val); w > valWidth {
+			valWidth = w
 		}
 	}
 	for _, r := range thresholdRows {
-		fmt.Fprintf(w, "  %-*s %-*s  %s\n", nameWidth, r.name, valWidth, r.val, r.desc)
+		fmt.Fprintf(w, "  %s %s  %s\n", padRight(r.name, nameWidth), padRight(r.val, valWidth), r.desc)
 	}
 
 	fmt.Fprintf(w, "\n승급 게이트\n")
@@ -224,15 +224,15 @@ func printRules(w io.Writer, res rulesReport) {
 	fmt.Fprintf(w, "\nlint 규칙 %d종\n", len(res.Rules))
 	idWidth, sevWidth := 0, 0
 	for _, r := range res.Rules {
-		if len(r.ID) > idWidth {
-			idWidth = len(r.ID)
+		if w := displayWidth(r.ID); w > idWidth {
+			idWidth = w
 		}
-		if len(r.Severity) > sevWidth {
-			sevWidth = len(r.Severity)
+		if w := displayWidth(r.Severity); w > sevWidth {
+			sevWidth = w
 		}
 	}
 	for _, r := range res.Rules {
-		fmt.Fprintf(w, "  [%-*s] %-*s  %s\n", sevWidth, r.Severity, idWidth, r.ID, r.Desc)
+		fmt.Fprintf(w, "  [%s] %s  %s\n", padRight(r.Severity, sevWidth), padRight(r.ID, idWidth), r.Desc)
 	}
 	fmt.Fprintf(w, "  등급에서 error와 reject는 lint를 종료 코드 1로 끝냅니다. warn은 알리고 통과시킵니다.\n")
 	fmt.Fprintf(w, "  승급 시점에 문서를 거절하는 것은 reject 하나뿐입니다.\n")
@@ -255,8 +255,8 @@ func printValueSets(w io.Writer, sets map[string][]string, emptyNote string) {
 	sort.Strings(keys)
 	width := 0
 	for _, k := range keys {
-		if len(k) > width {
-			width = len(k)
+		if w := displayWidth(k); w > width {
+			width = w
 		}
 	}
 	for _, k := range keys {
@@ -264,6 +264,6 @@ func printValueSets(w io.Writer, sets map[string][]string, emptyNote string) {
 		if vals == "" {
 			vals = "(" + emptyNote + ")"
 		}
-		fmt.Fprintf(w, "  %-*s  %s\n", width, k, vals)
+		fmt.Fprintf(w, "  %s  %s\n", padRight(k, width), vals)
 	}
 }
