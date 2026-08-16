@@ -64,6 +64,7 @@ func newRootCmd() *cobra.Command {
 	root.PersistentFlags().String(flagNow, "", "기준 시각(RFC3339). 빈 값이면 현재 시각")
 
 	root.AddCommand(newArchiveCmd())
+	root.AddCommand(newBridgeCmd())
 	root.AddCommand(newRecallCmd())
 	root.AddCommand(newNewCmd())
 	root.AddCommand(newPromoteCmd())
