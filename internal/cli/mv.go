@@ -10,6 +10,7 @@ import (
 
 	"github.com/neocode24/engram/internal/doc"
 	"github.com/neocode24/engram/internal/graph"
+	"github.com/neocode24/engram/internal/state"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
 	"github.com/spf13/cobra"
@@ -112,7 +113,14 @@ related, derived_from, derived_context, source_refs 필드도 같이 고칩니�
 				}
 			}
 
-			res := mvOutcome{From: srcPath, To: dstPath, Slug: newSlug, DryRun: dryRun}
+			// bridge 기각 쌍도 옛 슬러그를 가리킨다. 함께 고치지 않으면
+			// 기각이 조용히 무효가 되어 같은 쌍이 다시 제시된다. ADR 0028.
+			rejections, err := renameRejections(root, oldSlug, newSlug, dryRun)
+			if err != nil {
+				return err
+			}
+
+			res := mvOutcome{From: srcPath, To: dstPath, Slug: newSlug, DryRun: dryRun, Rejections: rejections}
 			for from, n := range perFile {
 				res.Updated = append(res.Updated, mvUpdated{Path: from, Links: n})
 			}
@@ -138,6 +146,46 @@ type mvOutcome struct {
 	Slug    string      `json:"slug"`
 	DryRun  bool        `json:"dryRun"`
 	Updated []mvUpdated `json:"updated"`
+	// Rejections는 함께 고친 bridge 기각 쌍의 수다.
+	Rejections int `json:"rejections"`
+}
+
+// renameRejections는 engram-state.yaml의 기각 쌍에서 옛 슬러그를 새
+// 슬러그로 바꾸고 고친 쌍의 수를 반환한다. 상태 파일이 없으면 0이다.
+// dryRun이면 세기만 하고 쓰지 않는다.
+func renameRejections(root, oldSlug, newSlug string, dryRun bool) (int, error) {
+	st, err := state.Load(root)
+	if err != nil {
+		return 0, err
+	}
+	from, to := graph.Normalize(oldSlug), graph.Normalize(newSlug)
+	var pairs [][2]string
+	changed := 0
+	for _, p := range st.BridgeRejections {
+		a, b := p[0], p[1]
+		if a == from || b == from {
+			changed++
+			if a == from {
+				a = to
+			}
+			if b == from {
+				b = to
+			}
+		}
+		pairs = append(pairs, [2]string{a, b})
+	}
+	if changed == 0 || dryRun {
+		return changed, nil
+	}
+	// 정규형(정렬과 중복 제거)은 Reject가 보장하므로 빈 상태에 다시 넣는다.
+	next := state.State{}
+	for _, p := range pairs {
+		next.Reject(p[0], p[1])
+	}
+	if err := next.Save(root); err != nil {
+		return 0, err
+	}
+	return changed, nil
 }
 
 // mvUpdated는 파일 하나에서 고친 링크 수다.
@@ -280,6 +328,9 @@ func printMoved(w io.Writer, res mvOutcome) {
 		for _, u := range res.Updated {
 			fmt.Fprintf(w, "  %s: %d건\n", u.Path, u.Links)
 		}
+	}
+	if res.Rejections > 0 {
+		fmt.Fprintf(w, "bridge 기각 쌍 %d건의 슬러그도 함께 고쳤습니다\n", res.Rejections)
 	}
 	if res.DryRun {
 		fmt.Fprintf(w, "시험 실행이라 아무것도 쓰지 않았습니다\n")

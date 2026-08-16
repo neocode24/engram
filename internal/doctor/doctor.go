@@ -14,6 +14,9 @@ import (
 	"strings"
 
 	"github.com/neocode24/engram/internal/config"
+	"github.com/neocode24/engram/internal/graph"
+	"github.com/neocode24/engram/internal/state"
+	"github.com/neocode24/engram/internal/walk"
 )
 
 // Status는 점검 항목 하나의 상태다.
@@ -75,6 +78,7 @@ func Run(root string) Result {
 	findings = append(findings, checkPageDirs(root, cfg, isWiki))
 	findings = append(findings, checkRootFiles(root, cfg, isWiki))
 	findings = append(findings, checkEngramGitignore(root, hasGit, isWiki))
+	findings = append(findings, checkBridgeRejections(root, cfg, isWiki))
 
 	res := Result{Findings: findings}
 	res.Summary.Items = len(findings)
@@ -397,6 +401,51 @@ func checkRootFiles(root string, cfg config.Config, isWiki bool) Finding {
 		return f
 	}
 	f.Status, f.Detail = StatusOK, fmt.Sprintf("root_files %d개가 모두 있습니다", len(cfg.RootFiles))
+	return f
+}
+
+// checkBridgeRejections는 engram-state.yaml의 기각 쌍이 실재하는 슬러그를
+// 가리키는지 본다. 문서를 지우거나 engram 밖에서 이름을 바꾸면 기각이
+// 실재하지 않는 슬러그를 가리키게 되고, 그러면 그 판단이 조용히 무효가
+// 된다. 사용자 판단이 사라지는 것이므로 알린다. ADR 0028.
+func checkBridgeRejections(root string, cfg config.Config, isWiki bool) Finding {
+	if !isWiki {
+		return skipFinding("wiki.bridge-rejections")
+	}
+	f := Finding{ID: "wiki.bridge-rejections"}
+	st, err := state.Load(root)
+	if err != nil {
+		f.Status = StatusWarn
+		f.Detail = fmt.Sprintf("%s을 읽을 수 없습니다: %v", state.StateFileName, err)
+		f.Fix = fmt.Sprintf("%s의 YAML 형식을 고치세요. 손으로 고치기 어려우면 파일을 지우면 기각이 전부 사라집니다", state.StateFileName)
+		return f
+	}
+	if len(st.BridgeRejections) == 0 {
+		f.Status, f.Detail = StatusOK, "기각된 쌍이 없습니다"
+		return f
+	}
+	walked, err := walk.Files(root, cfg)
+	if err != nil {
+		f.Status, f.Detail = StatusWarn, "위키를 순회할 수 없어 확인하지 못했습니다"
+		return f
+	}
+	g := graph.Build(walked)
+	var dangling []string
+	for _, p := range st.BridgeRejections {
+		for _, slug := range p {
+			if !g.Has(slug) {
+				dangling = append(dangling, fmt.Sprintf("%s %s (%s 없음)", p[0], p[1], slug))
+				break
+			}
+		}
+	}
+	if len(dangling) > 0 {
+		f.Status = StatusWarn
+		f.Detail = fmt.Sprintf("실재하지 않는 슬러그를 가리키는 기각 쌍 %d건: %s", len(dangling), strings.Join(dangling, ", "))
+		f.Fix = "engram bridge --unreject <A> <B>로 지우거나 engram mv로 슬러그를 맞추세요"
+		return f
+	}
+	f.Status, f.Detail = StatusOK, fmt.Sprintf("기각 쌍 %d건이 모두 실재하는 문서를 가리킵니다", len(st.BridgeRejections))
 	return f
 }
 

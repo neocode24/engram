@@ -65,6 +65,8 @@ func newRootCmd() *cobra.Command {
 
 	root.AddCommand(newArchiveCmd())
 	root.AddCommand(newBridgeCmd())
+	root.AddCommand(newDigestCmd())
+	root.AddCommand(newResurfaceCmd())
 	root.AddCommand(newRecallCmd())
 	root.AddCommand(newNewCmd())
 	root.AddCommand(newPromoteCmd())

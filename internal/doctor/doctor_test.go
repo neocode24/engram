@@ -21,6 +21,7 @@ var wantIDs = []string{
 	"wiki.page-dirs",
 	"wiki.root-files",
 	"wiki.engram-gitignore",
+	"wiki.bridge-rejections",
 }
 
 func ids(res Result) []string {
@@ -86,8 +87,8 @@ func TestRun(t *testing.T) {
 				wikiSkips++
 			}
 		}
-		if wikiSkips != 6 {
-			t.Errorf("위키 항목 6개가 skip 이어야 한다, got %d", wikiSkips)
+		if wikiSkips != 7 {
+			t.Errorf("위키 항목 7개가 skip 이어야 한다, got %d", wikiSkips)
 		}
 	})
 

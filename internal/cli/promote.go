@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
@@ -99,6 +100,7 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 			}
 			fields := promoteFields(d.Fields, related, derivedFrom)
 			fields = fillContextFields(fields, cfg)
+			fields = fillCreated(fields, filepath.Base(srcPath), Now(cmd))
 			if typeFlag != "" {
 				fields = upsertField(fields, doc.Field{Key: "type", Kind: doc.KindString, Str: typeFlag})
 			}
@@ -244,6 +246,32 @@ func stripDatePrefix(name string) string {
 		return strings.TrimPrefix(base, m)
 	}
 	return base
+}
+
+// datePrefix는 파일명 앞의 날짜 접두사를 반환한다. 없으면 빈 문자열이다.
+func datePrefix(name string) string {
+	m := regexp.MustCompile(`^(\d{4}-\d{2}(-\d{2})?)-`).FindStringSubmatch(strings.TrimSuffix(name, ".md"))
+	if m == nil {
+		return ""
+	}
+	return m[1]
+}
+
+// fillCreated는 created가 비어 있을 때 채운다. 값의 우선순위는 기존
+// 프론트매터, 파일명의 날짜 접두사, 기준 시각 순이다. 승급 문서에
+// 날짜가 없으면 resurface와 digest가 그 문서를 대상에서 빼므로
+// 여기서 반드시 확정한다.
+func fillCreated(fields []doc.Field, srcName string, now time.Time) []doc.Field {
+	for _, f := range fields {
+		if f.Key == "created" && f.Str != "" {
+			return fields
+		}
+	}
+	date := datePrefix(srcName)
+	if date == "" {
+		date = now.Format("2006-01-02")
+	}
+	return upsertField(fields, doc.Field{Key: "created", Kind: doc.KindDate, Str: date})
 }
 
 // promoteFields는 승급에 맞게 프론트매터 필드를 갱신한다.

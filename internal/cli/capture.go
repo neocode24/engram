@@ -66,6 +66,10 @@ func newCaptureCmd() *cobra.Command {
 			}
 			fm := wiki.Frontmatter(wiki.StageInbox, cfg)
 			date := Now(cmd).Format("2006-01-02")
+			// created를 프론트매터에도 남긴다. 파일명 접두사만으로는
+			// 승급 시 날짜가 사라져 resurface와 digest가 이 문서를
+			// 대상에서 빼게 된다.
+			fm["created"] = date
 			path, err := wiki.Create(root, cfg, wiki.StageInbox, date, slug, fm, content)
 			if err != nil {
 				return err
