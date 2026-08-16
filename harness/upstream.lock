@@ -1,0 +1,13 @@
+{
+  "commit": "05f7279cf141ce3571567abe9ceae99940a38718",
+  "files": [
+    "frontmatter-schema.md",
+    "ingest-rules.md",
+    "promotion-rules.md",
+    "security-rules.md",
+    "taxonomy.md",
+    "wiki-artifact-schema.md",
+    "wiki-graph-policy.md"
+  ],
+  "synced_at": "2026-08-16T10:02:22"
+}

@@ -2,7 +2,7 @@
 number: 0029
 title: upstream 계약을 치환 사전으로 익명화해 vendoring하고 parity는 로컬에서만 돈다
 date: 2026-08-16
-status: accepted
+status: amended
 ---
 
 # upstream vendoring의 익명화와 parity 실행 조건

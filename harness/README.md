@@ -20,9 +20,8 @@ git 이 스냅샷을 CRLF 로 풀지 않도록 `golden/.gitattributes` 가 줄�
 
 - 비교 축 넷 중 지금 덮는 것은 lint 위반 목록 하나뿐이다. resurface 선정 순위,
   프론트매터 정규화 결과, eject 산출물 diff 셋은 아직 러너가 없다.
-- upstream 파이썬 스크립트와의 실제 parity 대조도 아니다. 지금 러너는
-  Go 구현 자신의 출력이 언제 바뀌는지를 지키는 회귀망이다. upstream 대조는
-  다음 단계다.
+- upstream 스크립트와의 실제 parity 대조는 `parity/` 가 맡는다. `lint_golden_test.go`
+  는 Go 구현 자신의 출력이 언제 바뀌는지를 지키는 회귀망이다.
 - 스냅샷이 곧 정답은 아니다. 스냅샷은 "지금 구현이 내는 출력"의 기록이므로
   버그를 포착하는 것과 버그를 고정하는 것을 갈리는 판단은 아래 기준이 한다.
 
@@ -60,3 +59,24 @@ go test ./harness -update
 | `fixtures/golden-wiki/` | 고정 입력 위키. 손으로 관리한다. 사례표는 안쪽 README |
 | `golden/` | lint 출력 스냅샷. `go test ./harness -update` 로 재생성 |
 | `lint_golden_test.go` | 골든 비교 러너 |
+| `upstream/` | vendoring 한 upstream 계약 파일. **손으로 고치지 않는다** |
+| `upstream.lock` | vendoring 시점의 upstream 커밋 해시와 파일 목록 |
+| `parity/` | upstream 스크립트와의 출력 비교 러너 |
+
+## upstream 계약 동기화
+
+```
+python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki --check
+python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki
+```
+
+계약 파일 목록은 upstream `AGENTS.md` 가 선언한 것을 매번 읽는다. 이쪽에
+목록을 복제하지 않는다(ADR 0029). `terminology-normalization.md` 는 사전
+전체가 조직 어휘 목록이라 제외한다.
+
+복사한 파일은 `private/vendor-replacements.txt` 로 익명화한 뒤
+`scripts/check-boundary.py` 를 통과해야 한다. **걸리면 sync 가 실패하고
+vendored 파일이 지워진다.** 사전에 항목을 추가하고 다시 돌린다.
+
+계약 변화 delta 는 `private/deltas/` 에 남는다. upstream CHANGELOG 원문을
+인용하므로 공개하지 않는다(ADR 0030).
