@@ -234,7 +234,7 @@ func defaultSchema() Schema {
 			"concept", "project", "system", "decision", "procedure", "incident",
 			"meeting-summary", "agent-workflow", "source-summary", "inbox-note",
 		},
-		ArtifactStages: ClosedSet{Values: []string{"inbox", "source", "context"}},
+		ArtifactStages: ClosedSet{Values: []string{"inbox", "source", "context", "archive"}},
 		Statuses:       ClosedSet{Values: []string{"inbox", "sourced", "promoted", "archived", "superseded"}},
 		Scopes:         ClosedSet{Values: []string{"work", "personal", "mixed", "unknown"}},
 		Sensitivities:  ClosedSet{Values: []string{"public-reference", "internal", "restricted", "private-local-only"}},

@@ -77,7 +77,7 @@
       "severity": "error",
       "path": "inbox/wrong-stage.md",
       "line": 3,
-      "message": "artifact_stage 값이 허용값 밖입니다: /"draft/" (허용값: inbox, source, context)",
+      "message": "artifact_stage 값이 허용값 밖입니다: /"draft/" (허용값: inbox, source, context, archive)",
       "fix": "artifact_stage 값을 허용값 중 하나로 바꿉니다"
     }
   ],

@@ -34,7 +34,7 @@ inbox/voice-memo-raw.md
     고치는 법: 문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫으세요
 inbox/wrong-stage.md
   [error] 3 schema.allowed-value
-    artifact_stage 값이 허용값 밖입니다: "draft" (허용값: inbox, source, context)
+    artifact_stage 값이 허용값 밖입니다: "draft" (허용값: inbox, source, context, archive)
     고치는 법: artifact_stage 값을 허용값 중 하나로 바꿉니다
 위키 진단:
   [warn] wiki.broad-topic 주제 "documentation"
