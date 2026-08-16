@@ -9,6 +9,22 @@
       "fix": "form 값을 허용값 중 하나로 바꿉니다"
     },
     {
+      "rule": "location.stage-agreement",
+      "severity": "warn",
+      "path": "context/declares-inbox.md",
+      "line": 3,
+      "message": "문서가 context 디렉토리에 있지만 artifact_stage가 /"inbox/"입니다",
+      "fix": "문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 context로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요"
+    },
+    {
+      "rule": "gate.min-wikilinks",
+      "severity": "reject",
+      "path": "context/declares-inbox.md",
+      "line": 8,
+      "message": "위키링크가 1개로 min_wikilinks 2개에 못 미칩니다",
+      "fix": "related 필드나 본문에 위키링크를 1개 더 추가하세요"
+    },
+    {
       "rule": "gate.min-wikilinks",
       "severity": "reject",
       "path": "context/go-table-driven-tests.md",
@@ -39,6 +55,14 @@
       "line": 10,
       "message": "위키링크가 0개로 min_wikilinks 2개에 못 미칩니다",
       "fix": "related 필드나 본문에 위키링크를 2개 더 추가하세요"
+    },
+    {
+      "rule": "frontmatter.missing-field",
+      "severity": "error",
+      "path": "context/missing-stage.md",
+      "line": 1,
+      "message": "artifact_stage 필드가 없습니다",
+      "fix": "프론트매터에 artifact_stage 필드를 채우세요"
     },
     {
       "rule": "taxonomy.topics",
@@ -102,9 +126,9 @@
       "rule": "wiki.broad-topic",
       "severity": "warn",
       "topic": "documentation",
-      "percent": 33,
+      "percent": 28,
       "threshold": 25,
-      "total": 12,
+      "total": 14,
       "paths": [
         "context/cli-flag-conventions.md",
         "context/legacy-import-notes.md",
@@ -117,9 +141,9 @@
       "rule": "wiki.broad-topic",
       "severity": "warn",
       "topic": "testing",
-      "percent": 33,
+      "percent": 28,
       "threshold": 25,
-      "total": 12,
+      "total": 14,
       "paths": [
         "context/go-table-driven-tests.md",
         "context/testing-pyramid.md",
@@ -130,9 +154,9 @@
     }
   ],
   "summary": {
-    "files": 14,
-    "error": 5,
-    "warn": 7,
-    "reject": 2
+    "files": 16,
+    "error": 6,
+    "warn": 8,
+    "reject": 3
   }
 }

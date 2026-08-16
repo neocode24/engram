@@ -54,6 +54,7 @@
 | [0037](0037-sync-corrects-dates-from-git.md) | sync는 git 이력에서 날짜를 정정하고 프론트매터 병합은 맡지 않는다 | 2026-08-16 | accepted |
 | [0038](0038-migrate-conforms-documents-to-current-rules.md) | migrate는 기존 문서를 지금의 설정과 규칙에 맞춘다 | 2026-08-16 | accepted |
 | [0039](0039-eject-emits-rule-specs-and-a-python-linter.md) | eject는 규칙 명세와 표준 라이브러리 Python 린터를 내보낸다 | 2026-08-16 | accepted |
+| [0040](0040-gate-follows-the-directory-not-the-declaration.md) | 게이트는 선언이 아니라 디렉토리를 따르고 artifact_stage 누락은 오류다 | 2026-08-16 | accepted |
 
 ## 공개 범위 밖
 

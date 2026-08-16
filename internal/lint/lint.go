@@ -80,7 +80,7 @@ func newViolation(sev Severity, r Rule, path string, line int, msg, fix string) 
 // 규칙 정의. 나열 순서는 게이트의 거절 사유를 먼저 읽히는 순서다.
 var (
 	ruleGateMinWikilinks = newRule("gate.min-wikilinks", "reject",
-		"context 문서의 고유 위키링크 수가 min_wikilinks 미달. 게이트의 유일한 거절 사유")
+		"context 디렉토리 아래 문서의 고유 위키링크 수가 min_wikilinks 미달. 게이트의 유일한 거절 사유(ADR 0040)")
 	ruleFrontmatterMissing = newRule("frontmatter.missing", "error",
 		"프론트매터 블록이 아예 없는 문서")
 	ruleFrontmatterUnclosed = newRule("frontmatter.unclosed", "error",
@@ -345,8 +345,19 @@ func RequiredFields(stage string, cfg config.Config) []string {
 
 // checkRequiredFields는 단계별 필수 필드 누락을 검사한다.
 func (s *scannedDoc) checkRequiredFields(cfg config.Config, add func(Severity, Rule, int, string, string)) {
+	if _, ok := s.fields["artifact_stage"]; !ok {
+		// artifact_stage 는 단계 판정의 입력이다. 없으면 그 자체가
+		// 오류이다(ADR 0040). 어느 단계인지 모르므로 다른 필수 필드는
+		// 보고하지 않는다. 값을 채우면 다음 실행이 나머지를 본다.
+		if cfg.Axes[config.AxisArtifactStage] {
+			add(SevError, ruleFrontmatterMissingField, lineOfKey(s.content, "artifact_stage"),
+				"artifact_stage 필드가 없습니다",
+				"프론트매터에 artifact_stage 필드를 채우세요")
+		}
+		return
+	}
 	if s.stage == "" {
-		return // artifact_stage 자체의 문제는 다른 규칙이 잡는다
+		return // 값이 있어도 문자열이 아니면 단계를 알 수 없다
 	}
 	for _, f := range RequiredFields(s.stage, cfg) {
 		if _, ok := s.fields[f]; !ok {
@@ -572,6 +583,12 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 		vs = append(vs, newViolation(sev, r, rel, line, msg, fix))
 	}
 
+	// 게이트의 발동 조건은 문서가 놓인 디렉토리다(ADR 0040). 승급은 파일을
+	// 옮기는 행위이므로 위치가 운영의 진실원이고 resurface 와 status 도
+	// 위치로 센다. 선언을 보면 값을 비우거나 낮춰 우회할 수 있다.
+	contextDir, dirErr := wiki.DirFor(cfg, wiki.StageContext)
+	gateOn := dirErr == nil && cfg.Thresholds.MinWikilinks > 0
+
 	bySlug := map[string]string{}
 	for _, s := range docs {
 		slug := strings.TrimSuffix(filepath.Base(s.rel), ".md")
@@ -630,7 +647,7 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 				"들어오는 관계와 나가는 관계가 모두 없습니다",
 				fmt.Sprintf("다른 문서의 related나 본문에서 [[%s]]로 연결하거나 관계 필드로 잇으세요", slug))
 		}
-		if s.stage == "context" && cfg.Thresholds.MinWikilinks > 0 {
+		if gateOn && strings.HasPrefix(s.rel, contextDir+"/") {
 			n := len(outgoing)
 			g := EvaluateGate(n, LinkableTargets(walked, s.rel), cfg.Thresholds.MinWikilinks)
 			// 유예는 링크가 부족해 게이트에 걸렸을 문서만 알린다.

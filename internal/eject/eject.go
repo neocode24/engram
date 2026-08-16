@@ -203,7 +203,7 @@ func valueSetsDoc(cfg config.Config) string {
 func promotionRulesDoc(cfg config.Config, dirs map[string]string) string {
 	var b strings.Builder
 	b.WriteString("# 승급 게이트와 위치 규칙\n\n")
-	fmt.Fprintf(&b, "min_wikilinks 는 %d다. context 단계 문서의 고유 위키링크 수가 이 값에 못 미치면 게이트가 문서를 거절한다. 0이면 게이트가 꺼진다.\n\n", cfg.Thresholds.MinWikilinks)
+	fmt.Fprintf(&b, "min_wikilinks 는 %d다. context 디렉토리 아래 문서의 고유 위키링크 수가 이 값에 못 미치면 게이트가 문서를 거절한다. 0이면 게이트가 꺼진다. 게이트는 선언이 아니라 문서가 놓인 디렉토리로 발동한다.\n\n", cfg.Thresholds.MinWikilinks)
 	b.WriteString("거절 사유는 gate.min-wikilinks 하나뿐이다. 게이트를 통과하려면 관련 문서에 위키링크로 연결되어 있어야 한다.\n\n")
 	b.WriteString("링크 가능한 대상은 문서 수가 충분해야 센다. 대상 문서가 min_wikilinks 보다 적으면 게이트를 유예하고 경고만 낸다. 위키가 자라면 게이트가 다시 동작한다. inbox 단계 문서는 대상에서 뺀다. promote 되면 슬러그가 바뀌어 링크가 깨지기 때문이다.\n\n")
 	b.WriteString("## 위치와 단계의 일치\n\n문서가 놓인 최상위 디렉토리와 artifact_stage 값이 일치해야 한다.\n\n")

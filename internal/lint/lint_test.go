@@ -132,6 +132,72 @@ func TestRun(t *testing.T) {
 		}
 	})
 
+	t.Run("artifact_stage가 없으면 error다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/hole.md": "---\n" +
+				"type: concept\nstatus: promoted\n" +
+				"---\n\n# 링크 없음\n",
+		})
+		vs := findByRule(res, "frontmatter.missing-field")
+		// 누락 그 자체만 말한다. 어느 단계인지 모르므로 다른 필수 필드는
+		// 보고하지 않는다(ADR 0040).
+		if len(vs) != 1 || vs[0].Severity != SevError {
+			t.Fatalf("artifact_stage 누락이 error 한 건이어야 함: %+v", vs)
+		}
+		if !strings.Contains(vs[0].Message, "artifact_stage") {
+			t.Errorf("메시지에 artifact_stage가 없음: %s", vs[0].Message)
+		}
+	})
+
+	t.Run("artifact_stage 축이 꺼져 있으면 누락을 보고하지 않는다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml":   "axes:\n  artifact_stage: false\n",
+			"inbox/note.md": "---\ntype: inbox-note\nstatus: inbox\nindexable: false\n---\n\n메모\n",
+		})
+		if got := findByRule(res, "frontmatter.missing-field"); len(got) != 0 {
+			t.Fatalf("축이 꺼져 있으면 누락을 보고하지 않음: %+v", got)
+		}
+	})
+
+	t.Run("context 디렉토리의 inbox 선언 문서에 게이트가 돈다", func(t *testing.T) {
+		// 선언을 낮춰 게이트를 우회하던 경로다(ADR 0040).
+		res := runLint(t, map[string]string{
+			"context/a.md": cleanContextDoc("b", "c"),
+			"context/b.md": cleanContextDoc("a", "c"),
+			"context/c.md": cleanContextDoc("a", "b"),
+			"context/underdeclared.md": "---\n" +
+				"type: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\nsource_channel:\n" +
+				"---\n\n링크 없는 메모\n",
+		})
+		gate := findByRule(res, "gate.min-wikilinks")
+		if len(gate) != 1 || gate[0].Path != "context/underdeclared.md" || gate[0].Severity != SevReject {
+			t.Fatalf("context 디렉토리의 문서가 게이트에 걸려야 함: %+v", gate)
+		}
+		loc := findByRule(res, "location.stage-agreement")
+		if len(loc) != 1 || loc[0].Path != "context/underdeclared.md" || loc[0].Severity != SevWarn {
+			t.Fatalf("선언이 낮은 방향은 location warn이어야 함: %+v", loc)
+		}
+	})
+
+	t.Run("artifact_stage 없는 context 문서에도 게이트가 돈다", func(t *testing.T) {
+		// 값을 비워 게이트를 우회하던 경로다(ADR 0040).
+		res := runLint(t, map[string]string{
+			"context/a.md": cleanContextDoc("b", "c"),
+			"context/b.md": cleanContextDoc("a", "c"),
+			"context/c.md": cleanContextDoc("a", "b"),
+			"context/nostage.md": "---\n" +
+				"type: concept\nstatus: promoted\n" +
+				"---\n\n# 링크 없음\n",
+		})
+		gate := findByRule(res, "gate.min-wikilinks")
+		if len(gate) != 1 || gate[0].Path != "context/nostage.md" {
+			t.Fatalf("artifact_stage 가 없어도 게이트가 돌아야 함: %+v", gate)
+		}
+		if got := findByRule(res, "gate.deferred"); len(got) != 0 {
+			t.Fatalf("대상이 충분하면 유예가 아니어야 함: %+v", got)
+		}
+	})
+
 	t.Run("허용값 밖의 값은 허용값 목록과 함께 error다", func(t *testing.T) {
 		res := runLint(t, map[string]string{
 			"inbox/draft.md": "---\n" +

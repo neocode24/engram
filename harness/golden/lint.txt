@@ -2,6 +2,13 @@ context/cli-flag-conventions.md
   [error] 15 taxonomy.forms
     form 값이 forms 폐쇄 집합에 없습니다: "cheatsheet" (허용값: note, summary, howto, reference)
     고치는 법: form 값을 허용값 중 하나로 바꿉니다
+context/declares-inbox.md
+  [warn] 3 location.stage-agreement
+    문서가 context 디렉토리에 있지만 artifact_stage가 "inbox"입니다
+    고치는 법: 문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 context로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요
+  [reject] 8 gate.min-wikilinks
+    위키링크가 1개로 min_wikilinks 2개에 못 미칩니다
+    고치는 법: related 필드나 본문에 위키링크를 1개 더 추가하세요
 context/go-table-driven-tests.md
   [reject] 12 gate.min-wikilinks
     위키링크가 1개로 min_wikilinks 2개에 못 미칩니다
@@ -16,6 +23,10 @@ context/markdown-link-syntax.md
   [reject] 10 gate.min-wikilinks
     위키링크가 0개로 min_wikilinks 2개에 못 미칩니다
     고치는 법: related 필드나 본문에 위키링크를 2개 더 추가하세요
+context/missing-stage.md
+  [error] 1 frontmatter.missing-field
+    artifact_stage 필드가 없습니다
+    고치는 법: 프론트매터에 artifact_stage 필드를 채우세요
 context/sqlite-foreign-keys.md
   [warn] 16 taxonomy.topics
     topics 값이 설정에 정의되지 않았습니다: "sqlite" (topics는 개방 집합입니다)
@@ -45,11 +56,11 @@ inbox/wrong-stage.md
     고치는 법: artifact_stage 값을 허용값 중 하나로 바꿉니다
 위키 진단:
   [warn] wiki.broad-topic 주제 "documentation"
-    사용 비율이 33%(4/12 문서)로 broad_topic_pct 25를 넘습니다
+    사용 비율이 28%(4/14 문서)로 broad_topic_pct 25를 넘습니다
     해당 문서: context/cli-flag-conventions.md, context/legacy-import-notes.md, context/markdown-link-syntax.md, index.md
     고치는 법: 주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요
   [warn] wiki.broad-topic 주제 "testing"
-    사용 비율이 33%(4/12 문서)로 broad_topic_pct 25를 넘습니다
+    사용 비율이 28%(4/14 문서)로 broad_topic_pct 25를 넘습니다
     해당 문서: context/go-table-driven-tests.md, context/testing-pyramid.md, inbox/misplaced-context.md, sources/tech-talk-summary.md
     고치는 법: 주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요
-검사한 파일 14개, error 5, warn 7, reject 2
+검사한 파일 16개, error 6, warn 8, reject 3

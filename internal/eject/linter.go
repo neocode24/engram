@@ -404,7 +404,15 @@ def check_docs(root, cfg):
         if isinstance(stage, str):
             doc["stage"] = stage
 
-        if stage:
+        if "artifact_stage" not in fields:
+            # artifact_stage 는 단계 판정의 입력이다. 없으면 그 자체가
+            # 오류이고 어느 단계인지 모르므로 다른 필수 필드는 보고하지
+            # 않는다(ADR 0040).
+            if "artifact_stage" in cfg["axes"]:
+                add(rel, line_of_key(text, "artifact_stage"), "frontmatter.missing-field", "error",
+                    "artifact_stage 필드가 없습니다",
+                    "프론트매터에 artifact_stage 필드를 채우세요")
+        elif stage:
             for f in required_fields(stage, cfg["axes"]):
                 if f not in fields:
                     add(rel, line_of_key(text, "artifact_stage"), "frontmatter.missing-field", "error",
@@ -530,6 +538,7 @@ def graph_rules(docs, cfg):
                 incoming[key] = incoming.get(key, 0) + 1
 
     min_wikilinks = cfg["min_wikilinks"]
+    context_dir = STAGE_DIRS.get("context")
     for doc in docs:
         if doc["root"]:
             continue
@@ -543,7 +552,9 @@ def graph_rules(docs, cfg):
                 doc["rel"], 1, "graph.orphan", "warn",
                 "들어오는 관계와 나가는 관계가 모두 없습니다",
                 "다른 문서의 related나 본문에서 [[%%s]]로 연결하거나 관계 필드로 잇으세요" %% slug))
-        if doc["stage"] == "context" and min_wikilinks > 0:
+        # 게이트는 문서가 놓인 디렉토리로 발동한다(ADR 0040). 선언을 보면
+        # 값을 비우거나 낮춰 우회할 수 있다.
+        if context_dir and doc["rel"].startswith(context_dir + "/") and min_wikilinks > 0:
             n = len(outgoing)
             targets = sum(1 for d in docs if d["rel"] != doc["rel"] and linkable(d))
             passed, deferred = evaluate_gate(n, targets, min_wikilinks)
