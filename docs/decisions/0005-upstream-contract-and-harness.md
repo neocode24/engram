@@ -2,7 +2,7 @@
 number: 0005
 title: upstream 계약을 harness로 동기화한다
 date: 2026-08-13
-status: accepted
+status: amended
 ---
 
 # 0005 upstream 계약과 harness

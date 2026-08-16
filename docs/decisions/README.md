@@ -19,7 +19,7 @@
 | [0002](0002-operating-vs-product-separation.md) | 운영과 산출물을 분리한다 | 2026-08-08 | accepted |
 | [0003](0003-approach-B-fullspec-with-promotion.md) | 접근법 B, 풀스펙에 승급 파이프라인 | 2026-08-08 | amended |
 | [0004](0004-ip-and-distribution-path.md) | IP와 배포 경로 | 2026-08-08 | amended |
-| [0005](0005-upstream-contract-and-harness.md) | upstream 계약을 harness로 동기화한다 | 2026-08-13 | accepted |
+| [0005](0005-upstream-contract-and-harness.md) | upstream 계약을 harness로 동기화한다 | 2026-08-13 | amended |
 | [0006](0006-dual-mode-eject-seal.md) | easy/hard 듀얼 모드와 모드 전환 커맨드 | 2026-08-13 | amended |
 | [0007](0007-platform-and-distribution.md) | 플랫폼과 배포, 코어와 시맨틱 층 분리 | 2026-08-13 | amended |
 | [0008](0008-project-name-engram.md) | 프로젝트 이름을 engram으로 확정한다 | 2026-08-13 | accepted |
@@ -43,6 +43,7 @@
 | [0026](0026-windows-console-utf8.md) | Windows 콘솔에 출력할 때 코드페이지를 UTF-8로 바꾼다 | 2026-08-15 | accepted |
 | [0027](0027-prose-register-by-audience.md) | 문체를 독자에 따라 세 층으로 나눈다 | 2026-08-15 | accepted |
 | [0028](0028-rediscovery-state-and-boundaries.md) | 재발견 커맨드의 상태를 성격에 따라 두 곳에 나눠 둔다 | 2026-08-16 | accepted |
+| [0029](0029-upstream-vendoring-and-parity-execution.md) | upstream 계약을 치환 사전으로 익명화해 vendoring하고 parity는 로컬에서만 돈다 | 2026-08-16 | accepted |
 
 ## 공개 범위 밖
 
@@ -62,6 +63,9 @@
 | 0007 | `ENGRAM_UPDATE_URL`로 Enterprise 미러를 가리킨다 | [0012](0012-distribution-via-personal-homebrew-tap.md) 공개 릴리스를 사내에서도 그대로 받는다 |
 | 0011 | 공개 전환은 `private/` 경로를 이력에서 제거하는 방식으로 처리한다 | [0024](0024-public-boundary-and-private-directory.md) gitignore로 애초에 커밋하지 않는다 |
 | 0021 | 대상은 `page_dirs` 아래 문서와 `root_files`다 | [0023](0023-gate-targets-exclude-inbox.md) inbox 단계와 단계 불명 문서를 제외 |
+| 0005 | 계약 파일은 `meta/` 아래 여섯이다 | [0029](0029-upstream-vendoring-and-parity-execution.md) upstream AGENTS.md의 선언을 진실원으로 삼는다 |
+| 0005 | 스캐너가 걸리면 실패시킨다 | [0029](0029-upstream-vendoring-and-parity-execution.md) 치환 사전을 거친 뒤 실패시킨다 |
+| 0005 | `docs/parity.md`로 자동 갱신한다 | [0029](0029-upstream-vendoring-and-parity-execution.md) upstream이 로컬에 있을 때만 돌고 사람이 커밋한다 |
 
 ## 근거만 갱신된 경우
 
