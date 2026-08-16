@@ -1,0 +1,46 @@
+# 릴리스 워크플로. v* 태그 푸시가 유일한 계기다(ADR 0042).
+# CI 와 파일을 나눈다. 계기와 권한이 다르다. 수동 실행 버튼을 두지
+# 않는다. 태그 없는 릴리스가 생기면 version 이 무엇을 가리키는지
+# 모호해진다. 태그가 곧 버전이다.
+# 태그를 붙이기 전에 CI 가 통과했는지 사람이 확인한다. 이 워크플로가
+# 그것을 대신 판단하지 않는다.
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# 릴리스를 만들려면 contents 쓰기 권한이 필요하다. 최소 권한만 준다.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # 태그 전 이력이 필요하다. goreleaser 가 태그와 커밋으로 버전과
+      # 변경 이력을 만든다.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          # go-version-file 로 go.mod 에서 버전을 읽는다. 버전을 박지
+          # 않는다. ci.yml 과 같은 방식이다.
+          go-version-file: go.mod
+      # goreleaser 가 .goreleaser.yaml 대로 여섯 플랫폼을 빌드하고
+      # 아카이브와 checksums.txt 를 GitHub Releases 에 올린다.
+      # Homebrew tap 갱신은 꺼 둔 상태다. 켜는 절차는 .goreleaser.yaml 의
+      # brews 절 주석에 적혀 있다. 켤 때 이 스텝의 env 에
+      # HOMEBREW_TAP_TOKEN 을 더한다. 토큰 없이 tap 갱신을 시도하면
+      # 절반만 성공한 릴리스가 남으므로 실패로 끝나야 한다(ADR 0042).
+      - name: 릴리스
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

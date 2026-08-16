@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-**0.4까지 끝났다.** 커맨드 스물넷, ADR 40건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 열다섯이다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
+**0.4까지 끝났고 1.0의 둘이 동작한다.** 커맨드 스물다섯, ADR 42건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 열다섯이다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
 
 ## 끝난 것
 
@@ -34,6 +34,7 @@
 | `sync` | git 이력에서 `updated`와 `sourced_at`을 정정한다 | [0037](decisions/0037-sync-corrects-dates-from-git.md) |
 | `rules show` | 이 위키에 적용되는 규칙 전부를 읽기 전용으로 낸다 | [0013](decisions/0013-eject-redefined-seal-removed.md) |
 | `eject` | 규칙을 명세 문서와 Python 린터로 풀어 소유권을 넘긴다. 연산은 engram에 남는다 | [0039](decisions/0039-eject-emits-rule-specs-and-a-python-linter.md), [0013](decisions/0013-eject-redefined-seal-removed.md) |
+| `skills install` | 에이전트에 정적 스킬 문서를 심는다. 위키별 규칙은 `rules show`가 낸다 | [0041](decisions/0041-skills-install-embeds-one-static-skill.md), [0014](decisions/0014-llm-boundary-agent-drives-binary.md) |
 
 패키지는 열다섯이다. `config`(설정과 프리셋), `doc`(파싱과 직렬화), `walk`(순회), `graph`(링크 관계), `lint`(규칙과 게이트), `wiki`(문서 쓰기), `index`(색인과 BM25), `chunk`(헤딩 청킹), `state`(영구 상태), `resurface`, `digest`, `bridge`, `status`, `doctor`, `cli`다.
 
@@ -49,7 +50,9 @@
 
 ## 즉시 다음
 
-1. **1.0 착수.** `serve`(웹 UI), `skills install`, `pack`, MCP 노출, 배포 체계다.
+1. **저장소 공개 전환과 첫 릴리스.** 둘이 한 묶음이다. private인 동안 Homebrew가 아카이브를 받을 수 없으므로 tap 갱신을 먼저 켜면 Formula가 죽은 링크를 가리킨다(ADR [0042](decisions/0042-release-artifacts-and-workflow.md)).
+2. **MCP 노출.** 여정 8. 쓰기가 `inbox`까지라는 경계는 확정이고 도구 단위 분해가 미결이다. `skills install`의 스킬 문서가 같은 경계를 이미 말하므로 그것을 진실원으로 삼는다.
+3. **`serve`와 `pack`.** 1.0에서 남은 둘이다. `serve`의 쓰기 범위가 미결이다.
 2. **비교 축을 늘린다.** 동등성 검증이 지금 보는 것은 lint 위반 목록 하나다. `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
 3. **Windows 재검증** — 다음 버전 검증 때 함께 한다. 콘솔 직결 항목은 2차 검증 당시 스크립트가 출력을 캡처해 버려 실제로는 파이프를 검증하고 있었다. 스크립트를 고쳐 두었으나 실행하지 않았다. `autocrlf` 항목은 VM에 git이 없어 여전히 미검증이다.
 
@@ -100,6 +103,7 @@ Go 테스트 스위트가 생겼다. `go test ./...`가 정식 검증이다.
 | `harness/parity` | upstream 스크립트와의 대조. lint 위반 목록과 `resurface` 선정 순위 두 축. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |
 | `harness/eject` | 내보낸 Python 린터와 `engram lint`의 판정 대조. 여덟 상황에서 출력과 종료 코드를 본다. **어긋나면 실패다.** CI에서 돈다 |
 | `harness/realdata` | 실운영 위키 306문서 스모크. 생존, 조회 커맨드의 무변경, 판정의 결정론, 시간 상한 넷만 단언하고 위반 수는 로그로 남긴다. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |
+| 릴리스 산출물 | `goreleaser release --snapshot --clean --skip=publish`로 아카이브 여섯과 `checksums.txt`를 만든다. 현재 플랫폼 바이너리의 `engram version`이 `dev`가 아니고 `strings`로 `/Users/` 경로가 안 박혔는지 본다 |
 
 문서 쪽은 여전히 ad-hoc 스크립트 둘이다.
 

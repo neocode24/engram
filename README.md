@@ -189,7 +189,7 @@ $ engram recall 게이트웨이 --limit 1
 
 ## 커맨드
 
-스물넷이다. 다섯 갈래로 나뉜다. 넣고, 올리고, 조회하고, 다시 만나고, 관리한다.
+스물다섯이다. 다섯 갈래로 나뉜다. 넣고, 올리고, 조회하고, 다시 만나고, 관리한다.
 
 ```mermaid
 flowchart LR
@@ -271,6 +271,7 @@ flowchart LR
 | `sync` | git 이력에서 `updated`와 `sourced_at`을 정정한다. `--dry-run`이 기본 |
 | `rules show` | 이 위키에 적용되는 규칙 전부를 읽기 전용으로 낸다 |
 | `eject` | 규칙을 명세 문서와 Python 린터로 풀어 소유권을 넘긴다. 단방향 |
+| `skills install` | 에이전트에 스킬 문서를 심는다. LLM 통합의 전부 |
 | `version` | 버전과 빌드 정보 |
 
 전역 플래그는 둘이다. `--json`은 기계 판독 출력이고, `--now`는 기준 시각을 고정해 결과를 결정론적으로 만든다.
@@ -311,7 +312,7 @@ broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
 
 ## 어디까지 왔는가
 
-**0.1부터 0.4까지 끝났다.** 위의 커맨드 스물넷이 전부 동작한다.
+**0.1부터 0.4까지 끝났고 1.0이 진행 중이다.** 위의 커맨드 스물다섯이 전부 동작한다.
 
 | 마일스톤 | 범위 | 상태 |
 |---|---|---|
@@ -319,7 +320,8 @@ broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
 | 0.2 | `search`, `backlinks`, `reindex`, `demote`, `mv`, `update` | 완료 |
 | 0.3 | `resurface`, `bridge`, `digest`, `recall`, `archive` | 완료 |
 | 0.4 | `eject`, `rules show`, `migrate`, `sync` | 완료 |
-| 1.0 | `serve`(웹 UI), `skills install`, `pack`, MCP 노출, 배포 체계 | **아직 없다** |
+| 1.0 | `skills install`, 릴리스 배포 | 완료 |
+| 1.0 | `serve`(웹 UI), `pack`, MCP 노출 | **아직 없다** |
 
 `eject`는 규칙을 사용자에게 넘기되 연산은 넘기지 않는다. 내보낸 뒤에도 `search`, `recall`, `resurface`, `bridge`, `digest`, `backlinks`가 그대로 동작한다. 내보낸 Python 린터가 `engram lint`와 같은 판정을 내는지 대조하는 검증이 CI에서 돈다. 1.0은 웹 UI, 에이전트 스킬 설치, 배포이고 아직 구현 전이다. 마일스톤별 범위는 [design.md](docs/design.md)에 있다.
 

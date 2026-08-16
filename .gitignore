@@ -7,3 +7,6 @@ bin/
 
 # 공개 경계 밖 (ADR 0024)
 private/
+
+# goreleaser 산출물
+dist/
