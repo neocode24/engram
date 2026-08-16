@@ -2,7 +2,7 @@
 number: 0031
 title: 문서가 놓인 디렉토리와 artifact_stage가 일치해야 한다
 date: 2026-08-16
-status: accepted
+status: amended
 ---
 
 # 위치와 단계의 일치

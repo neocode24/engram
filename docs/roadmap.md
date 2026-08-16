@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-**0.3 마일스톤의 커맨드가 전부 동작한다.** 커맨드 스물, ADR 34건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 열다섯이다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
+**0.3 마일스톤의 커맨드가 전부 동작한다.** 커맨드 스물, ADR 36건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 열다섯이다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
 
 ## 끝난 것
 
@@ -43,9 +43,9 @@
 
 ## 즉시 다음
 
-1. **비교 축을 늘린다.** 동등성 검증이 지금 보는 것은 lint 위반 목록 하나다. `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
-2. **Windows 재검증** — 다음 버전 검증 때 함께 한다. 콘솔 직결 항목은 2차 검증 당시 스크립트가 출력을 캡처해 버려 실제로는 파이프를 검증하고 있었다. 스크립트를 고쳐 두었으나 실행하지 않았다. `autocrlf` 항목은 VM에 git이 없어 여전히 미검증이다.
-3. **0.4 착수.** `eject`, `rules show`, `migrate`, `sync` 넷이다. `sync`는 `updated`를 만드는 일이 아니라 git 이력으로 정정하는 일이 되었다(ADR [0032](decisions/0032-update-writes-the-updated-field.md)).
+1. **0.4 착수.** `eject`, `rules show`, `migrate`, `sync` 넷이다. `migrate`가 실데이터에서 나온 `location.stage-agreement` 경고 40건을 정리하는 일을 맡고, `sync`는 `updated`를 만드는 일이 아니라 git 이력으로 정정하는 일이 되었다(ADR [0032](decisions/0032-update-writes-the-updated-field.md)).
+2. **비교 축을 늘린다.** 동등성 검증이 지금 보는 것은 lint 위반 목록 하나다. `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
+3. **Windows 재검증** — 다음 버전 검증 때 함께 한다. 콘솔 직결 항목은 2차 검증 당시 스크립트가 출력을 캡처해 버려 실제로는 파이프를 검증하고 있었다. 스크립트를 고쳐 두었으나 실행하지 않았다. `autocrlf` 항목은 VM에 git이 없어 여전히 미검증이다.
 
 ## 알려진 빈틈
 
@@ -55,6 +55,7 @@
 - `digest`가 승급을 집계하지 않는다. `promote`가 승급 시각을 프론트매터에 남기지 않기 때문이다. 필드를 새로 만드는 것은 스키마 축이 느는 일이라 요구가 나올 때 결정한다.
 - ~~`updated` 필드를 아무도 채우지 않는다.~~ `update`가 채운다(ADR [0032](decisions/0032-update-writes-the-updated-field.md)). 손으로 고친 파일은 여전히 `sync`가 와야 정정된다.
 - `resurface`의 제시 이력이 무한히 쌓인다. 문서 수만큼이므로 지금 규모에서는 문제가 아니다.
+- **실운영 위키 306문서를 돌리면 `error`가 23건 남는다.** 열다섯은 upstream 위키가 자기 명세에 없는 값(`status: draft`, `trigger_mode: manual`, `sensitivity: public`)을 쓰거나 engram에 없는 `index` 단계를 쓴 것이고, 여덟은 프론트매터가 빠진 실제 문서다. 셋 다 engram이 옳게 잡은 것이라 조치 대상이 아니다. 근거는 `docs/spec-map.md` 6절에 있다.
 - **위키 경로를 받는 방식이 커맨드마다 다르다.** `lint`, `status`, `doctor`, `init`, `reindex`는 위치 인자로 받고 나머지는 `--wiki`로 받는다. 자기 위치 인자가 따로 있는 커맨드는 `--wiki`가 맞지만 `resurface`, `bridge`, `digest`는 위치 인자가 없는데도 `--wiki`만 받는다. `engram status ~/wiki`를 익힌 사용자가 `engram resurface ~/wiki`를 치면 `unknown command` 에러를 본다. 0.4에서 커맨드가 더 늘기 전에 정한다.
 
 ## 공개 경계 밖
@@ -91,6 +92,7 @@ Go 테스트 스위트가 생겼다. `go test ./...`가 정식 검증이다.
 | `harness` | 골든 위키에 대한 lint 출력 스냅샷 비교. `go test ./harness -update`로 갱신 |
 | `harness/journey` | 실제 바이너리로 `init`부터 `reindex`까지 열한 단계. 각 변경 뒤 `lint`의 `error`와 `reject`가 0인지, 승급 문서에 `created`가 남는지, `resurface` 후보에 승급 문서가 드는지 |
 | `harness/parity` | upstream 스크립트와의 lint 위반 목록 대조. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |
+| `harness/realdata` | 실운영 위키 306문서 스모크. 생존, 조회 커맨드의 무변경, 판정의 결정론, 시간 상한 넷만 단언하고 위반 수는 로그로 남긴다. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |
 
 문서 쪽은 여전히 ad-hoc 스크립트 둘이다.
 

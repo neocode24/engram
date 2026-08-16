@@ -52,6 +52,10 @@ func TestInit(t *testing.T) {
 		if !strings.Contains(cfg, "preset: education") {
 			t.Errorf("engram.yaml에 기본 프리셋이 없음:\n%s", cfg)
 		}
+		// 기본값이 있으므로 활성 설정이 아니라 주석으로 안내한다(ADR 0036).
+		if !strings.Contains(cfg, "# ignore_files: [README.md]") {
+			t.Errorf("engram.yaml에 ignore_files 안내 주석이 없음:\n%s", cfg)
+		}
 		gitignore := readWikiFile(t, dir, ".gitignore")
 		if !strings.Contains(gitignore, ".engram/") {
 			t.Errorf(".gitignore에 .engram/이 없음:\n%s", gitignore)

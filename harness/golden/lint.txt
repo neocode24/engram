@@ -20,6 +20,10 @@ context/sqlite-foreign-keys.md
   [warn] 16 taxonomy.topics
     topics 값이 설정에 정의되지 않았습니다: "sqlite" (topics는 개방 집합입니다)
     고치는 법: engram.yaml의 topics 목록에 "sqlite"를 추가하세요
+inbox/misplaced-context.md
+  [error] 3 location.stage-agreement
+    문서가 inbox 디렉토리에 있지만 artifact_stage가 "context"입니다
+    고치는 법: 문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 inbox로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요
 inbox/orphan-note.md
   [warn] 1 graph.orphan
     들어오는 관계와 나가는 관계가 모두 없습니다
@@ -33,7 +37,7 @@ inbox/voice-memo-raw.md
     프론트매터가 없습니다
     고치는 법: 문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫으세요
 inbox/wrong-stage.md
-  [error] 3 location.stage-agreement
+  [warn] 3 location.stage-agreement
     문서가 inbox 디렉토리에 있지만 artifact_stage가 "draft"입니다
     고치는 법: 문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 inbox로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요
   [error] 3 schema.allowed-value
@@ -41,11 +45,11 @@ inbox/wrong-stage.md
     고치는 법: artifact_stage 값을 허용값 중 하나로 바꿉니다
 위키 진단:
   [warn] wiki.broad-topic 주제 "documentation"
-    사용 비율이 36%(4/11 문서)로 broad_topic_pct 25를 넘습니다
+    사용 비율이 33%(4/12 문서)로 broad_topic_pct 25를 넘습니다
     해당 문서: context/cli-flag-conventions.md, context/legacy-import-notes.md, context/markdown-link-syntax.md, index.md
     고치는 법: 주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요
   [warn] wiki.broad-topic 주제 "testing"
-    사용 비율이 27%(3/11 문서)로 broad_topic_pct 25를 넘습니다
-    해당 문서: context/go-table-driven-tests.md, context/testing-pyramid.md, sources/tech-talk-summary.md
+    사용 비율이 33%(4/12 문서)로 broad_topic_pct 25를 넘습니다
+    해당 문서: context/go-table-driven-tests.md, context/testing-pyramid.md, inbox/misplaced-context.md, sources/tech-talk-summary.md
     고치는 법: 주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요
-검사한 파일 13개, error 5, warn 6, reject 2
+검사한 파일 14개, error 5, warn 7, reject 2

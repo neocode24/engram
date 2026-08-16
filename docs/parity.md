@@ -15,9 +15,9 @@ upstream 저장소는 비공개이며 로컬에만 있다. 환경변수가 없�
 | 항목 | 값 |
 |---|---|
 | 측정일 | 2026-08-16 |
-| 반영 | ADR 0031(`location.stage-agreement`)까지 |
+| 반영 | ADR 0035(불일치 방향에 따른 등급), ADR 0036(`ignore_files`)까지 |
 | upstream 커밋 | `05f7279` |
-| 픽스처 | `harness/fixtures/golden-wiki`, 문서 13개 |
+| 픽스처 | `harness/fixtures/golden-wiki`, 문서 14개 |
 | 프리셋 | `team` |
 | 비교 축 | lint 위반 목록 |
 
@@ -27,8 +27,8 @@ upstream 저장소는 비공개이며 로컬에만 있다. 환경변수가 없�
 
 | 갈래 | 쌍 |
 |---|---|
-| 양쪽 다 잡음 | **39** |
-| upstream만 잡음 | 14 |
+| 양쪽 다 잡음 | **44** |
+| upstream만 잡음 | 15 |
 | engram만 잡음 | 15 |
 | 정규화 매핑 없음 | 0 |
 
@@ -44,11 +44,13 @@ engram이 따라가야 할 후보다. 셋으로 갈린다.
 
 | 규칙 | 건수 | 내용 |
 |---|---|---|
-| `frontmatter.missing-field:title` | 7 | **의도된 차이다.** 아래에서 설명한다 |
+| `frontmatter.missing-field:title` | 8 | **의도된 차이다.** 아래에서 설명한다 |
 | `location.stage-agreement` | 1 | `index.md` 하나만 남았다. ADR [0019](decisions/0019-index-documents-outside-the-gate.md)에 따른 의도된 차이다 |
 | `location.type-agreement` | 1 | **따라가지 않는다.** 적용 자리가 upstream에만 있는 `moc` 타입과 `index` 단계뿐이다 |
 
-`inbox/wrong-stage.md`의 `location.stage-agreement`는 ADR [0031](decisions/0031-location-must-agree-with-stage.md)로 닫았다. 이제 양쪽이 함께 잡는다. `index.md`에 붙은 둘은 upstream이 색인 문서에 `moc` 타입과 `index` 단계를 요구하기 때문이며, engram에는 그 타입도 그 단계도 없다.
+`inbox/wrong-stage.md`의 `location.stage-agreement`는 ADR [0031](decisions/0031-location-must-agree-with-stage.md)로 닫았다. 이제 양쪽이 함께 잡는다. 등급은 ADR [0035](decisions/0035-stage-mismatch-severity-by-direction.md)로 방향에 따라 갈렸으나 비교 단위가 (경로, 규칙 이름) 쌍이라 대조 결과는 바뀌지 않는다.
+
+픽스처에 `inbox/misplaced-context.md`를 더했다. `artifact_stage: context`를 선언하고 `inbox/`에 남은 문서이며 0035가 `error`로 잡는 방향을 때린다. 이 문서 때문에 일치가 다섯 늘고 `title` 차이가 하나 늘었다. `index.md`에 붙은 둘은 upstream이 색인 문서에 `moc` 타입과 `index` 단계를 요구하기 때문이며, engram에는 그 타입도 그 단계도 없다.
 
 #### title은 따라가지 않는다
 

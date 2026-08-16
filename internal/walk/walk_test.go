@@ -76,6 +76,53 @@ func TestFiles(t *testing.T) {
 		}
 	})
 
+	t.Run("ignore_files 의 파일명은 모든 깊이에서 순회를 제외한다", func(t *testing.T) {
+		// 기본값은 README.md 다. 하위 디렉토리의 README도 파일명으로 뺀다.
+		root := writeWiki(t, map[string]string{
+			"engram.yaml":        "preset: education\n",
+			"inbox/a.md":         doc,
+			"context/README.md":  "context 디렉토리 설명\n",
+			"inbox/모음/README.md": "모음 디렉토리 설명\n",
+		})
+		docs, err := Files(root, mustConfig(t, root))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(docs) != 1 || docs[0].Rel != "inbox/a.md" {
+			t.Errorf("README가 순회에 남아 있음: %+v", docs)
+		}
+	})
+
+	t.Run("ignore_files 를 비우면 README.md 도 문서로 잡는다", func(t *testing.T) {
+		root := writeWiki(t, map[string]string{
+			"engram.yaml":       "ignore_files: []\n",
+			"context/README.md": "context 디렉토리 설명\n",
+		})
+		docs, err := Files(root, mustConfig(t, root))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(docs) != 1 || docs[0].Rel != "context/README.md" {
+			t.Errorf("ignore_files 가 비었으면 README도 순회해야 함: %+v", docs)
+		}
+	})
+
+	t.Run("root_files 는 ignore_files 와 무관하다", func(t *testing.T) {
+		// 루트 파일은 이름으로 명시되므로 같은 파일명이 제외 목록에 있어도
+		// 순회한다. 두 키를 합치지 않는 이유다(ADR 0036).
+		root := writeWiki(t, map[string]string{
+			"engram.yaml": "ignore_files: [index.md]\n",
+			"index.md":    doc,
+		})
+		docs, err := Files(root, mustConfig(t, root))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(docs) != 1 || docs[0].Rel != "index.md" || !docs[0].Root {
+			t.Errorf("root_files 가 ignore_files 에 밀려남: %+v", docs)
+		}
+	})
+
 	t.Run("닫는 구분자가 없는 문서는 ErrUnclosed 를 싣는다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
 			"engram.yaml": "preset: education\n",

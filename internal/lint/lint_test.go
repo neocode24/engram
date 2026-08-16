@@ -149,7 +149,7 @@ func TestRun(t *testing.T) {
 		}
 	})
 
-	t.Run("디렉토리와 artifact_stage가 어긋나면 error다", func(t *testing.T) {
+	t.Run("context를 선언한 문서가 context 밖에 있으면 error다", func(t *testing.T) {
 		res := runLint(t, map[string]string{
 			"inbox/misplaced.md": "---\n" +
 				"type: inbox-note\nartifact_stage: context\nstatus: inbox\nindexable: false\n" +
@@ -157,7 +157,7 @@ func TestRun(t *testing.T) {
 		})
 		vs := findByRule(res, "location.stage-agreement")
 		if len(vs) != 1 || vs[0].Severity != SevError {
-			t.Fatalf("위치 불일치가 error여야 함: %+v", res.Violations)
+			t.Fatalf("선언이 위치보다 높은 방향은 error여야 함: %+v", res.Violations)
 		}
 		// 메시지는 어느 디렉토리에 있고 무엇이라 적혀 있는지를 낸다.
 		for _, want := range []string{"inbox", `"context"`} {
@@ -168,6 +168,31 @@ func TestRun(t *testing.T) {
 		// 고치는 법은 둘이므로 둘 다 알린다(ADR 0031).
 		if !strings.Contains(vs[0].Fix, "옮기") || !strings.Contains(vs[0].Fix, "artifact_stage") {
 			t.Errorf("고치는 법이 파일 이동과 값 수정을 모두 알려야 함: %s", vs[0].Fix)
+		}
+	})
+
+	t.Run("archive에 있으면서 inbox를 선언하면 warn이다", func(t *testing.T) {
+		// 선언이 위치보다 낮은 방향은 게이트를 우회하지 않는다(ADR 0035).
+		res := runLint(t, map[string]string{
+			"archive/old.md": "---\n" +
+				"type: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\n" +
+				"---\n\n낡은 메모\n",
+		})
+		vs := findByRule(res, "location.stage-agreement")
+		if len(vs) != 1 || vs[0].Severity != SevWarn {
+			t.Fatalf("선언이 위치보다 낮은 방향은 warn이어야 함: %+v", vs)
+		}
+	})
+
+	t.Run("sources에 있으면서 inbox를 선언하면 warn이다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"sources/s.md": "---\n" +
+				"type: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\n" +
+				"---\n\n원본\n",
+		})
+		vs := findByRule(res, "location.stage-agreement")
+		if len(vs) != 1 || vs[0].Severity != SevWarn {
+			t.Fatalf("선언이 위치보다 낮은 방향은 warn이어야 함: %+v", vs)
 		}
 	})
 
@@ -202,8 +227,10 @@ func TestRun(t *testing.T) {
 				"type: inbox-note\nartifact_stage: draft\nstatus: inbox\nindexable: false\n" +
 				"---\n\n본문\n",
 		})
-		if got := findByRule(res, "location.stage-agreement"); len(got) != 1 {
-			t.Fatalf("허용값 밖 값도 위치 불일치와 별개로 잡혀야 함: %+v", res.Violations)
+		vs := findByRule(res, "location.stage-agreement")
+		// context가 아닌 값의 불일치는 방향과 무관하게 warn이다(ADR 0035).
+		if len(vs) != 1 || vs[0].Severity != SevWarn {
+			t.Fatalf("허용값 밖 값도 위치 불일치와 별개로 warn으로 잡혀야 함: %+v", vs)
 		}
 	})
 
@@ -213,6 +240,19 @@ func TestRun(t *testing.T) {
 		})
 		if got := findByRule(res, "location.stage-agreement"); len(got) != 0 {
 			t.Fatalf("값이 없으면 missing-field가 잡으므로 위치 검사는 하지 않음: %+v", got)
+		}
+	})
+
+	t.Run("README.md는 frontmatter 검사와 고아 판정에서 빠진다", func(t *testing.T) {
+		// README는 순회에서 이미 빠진다. 남아 있었다면 frontmatter.missing
+		// 두 건과 고아 판정이 나온다(ADR 0036).
+		res := runLint(t, map[string]string{
+			"engram.yaml":        "preset: education\n",
+			"context/README.md":  "context 디렉토리 설명입니다\n",
+			"inbox/모음/README.md": "모음 디렉토리 설명입니다\n",
+		})
+		if len(res.Violations) != 0 || res.Summary.Files != 0 {
+			t.Fatalf("README가 순회에 남아 있음: %+v (파일 %d)", res.Violations, res.Summary.Files)
 		}
 	})
 

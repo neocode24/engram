@@ -49,6 +49,14 @@
       "fix": "engram.yaml의 topics 목록에 /"sqlite/"를 추가하세요"
     },
     {
+      "rule": "location.stage-agreement",
+      "severity": "error",
+      "path": "inbox/misplaced-context.md",
+      "line": 3,
+      "message": "문서가 inbox 디렉토리에 있지만 artifact_stage가 /"context/"입니다",
+      "fix": "문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 inbox로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요"
+    },
+    {
       "rule": "graph.orphan",
       "severity": "warn",
       "path": "inbox/orphan-note.md",
@@ -74,7 +82,7 @@
     },
     {
       "rule": "location.stage-agreement",
-      "severity": "error",
+      "severity": "warn",
       "path": "inbox/wrong-stage.md",
       "line": 3,
       "message": "문서가 inbox 디렉토리에 있지만 artifact_stage가 /"draft/"입니다",
@@ -94,9 +102,9 @@
       "rule": "wiki.broad-topic",
       "severity": "warn",
       "topic": "documentation",
-      "percent": 36,
+      "percent": 33,
       "threshold": 25,
-      "total": 11,
+      "total": 12,
       "paths": [
         "context/cli-flag-conventions.md",
         "context/legacy-import-notes.md",
@@ -109,21 +117,22 @@
       "rule": "wiki.broad-topic",
       "severity": "warn",
       "topic": "testing",
-      "percent": 27,
+      "percent": 33,
       "threshold": 25,
-      "total": 11,
+      "total": 12,
       "paths": [
         "context/go-table-driven-tests.md",
         "context/testing-pyramid.md",
+        "inbox/misplaced-context.md",
         "sources/tech-talk-summary.md"
       ],
       "fix": "주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요"
     }
   ],
   "summary": {
-    "files": 13,
+    "files": 14,
     "error": 5,
-    "warn": 6,
+    "warn": 7,
     "reject": 2
   }
 }

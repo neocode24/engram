@@ -62,7 +62,7 @@ lint 규칙 16종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 `promote`와 `new`는 이 명세의 단계별 필드를 채워 쓴다. 채우는 값의 진실원은 `internal/wiki`의 단계별 초기값이다.
 
-**설정으로 열어 둔 것.** 축 14종의 on/off(`axes`)와 문서 종류 집합(`types`). 꺼진 축의 필수성은 사라지고 `schema.axis-off`가 오히려 그 필드의 존재를 잡는다. 필수 필드 검사가 명세의 단계별 표를 그대로 옮기지 않고 프리셋에 따라 변형되는 것이 이 대응이다. 날짜 필드의 이름과 형식은 설정 키가 없이 코드에 고정되어 있다.
+**설정으로 열어 둔 것.** 축 14종의 on/off(`axes`), 문서 종류 집합(`types`), 문서가 아닌 파일 목록(`ignore_files`, 기본 `README.md`). 꺼진 축의 필수성은 사라지고 `schema.axis-off`가 오히려 그 필드의 존재를 잡는다. 필수 필드 검사가 명세의 단계별 표를 그대로 옮기지 않고 프리셋에 따라 변형되는 것이 이 대응이다. 날짜 필드의 이름과 형식은 설정 키가 없이 코드에 고정되어 있다.
 
 **사람에게 남긴 것.** 검토 상태(review state)의 운용, `meta/templates/`의 템플릿 관리(Template Rule), "indexable: true인데 restricted인 문서 찾기" 같은 검토 뷰의 구성이다. engram에는 검토 상태 축이 없다.
 
@@ -74,9 +74,9 @@ lint 규칙 16종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 | 규칙 ID | 등급 | 판정 |
 |---|---|---|
-| `location.stage-agreement` | error | 문서가 놓인 최상위 디렉토리와 `artifact_stage` 값이 어긋남 |
+| `location.stage-agreement` | error 또는 warn | 문서가 놓인 최상위 디렉토리와 `artifact_stage` 값이 어긋남. `context`를 선언했는데 `context/`에 없으면 `error`, 그 밖의 불일치는 `warn`([ADR 0035](decisions/0035-stage-mismatch-severity-by-direction.md)) |
 
-이 규칙이 이 명세의 "유형별 기본 위치" 표를 판정으로 바꾼 것이다. 단계와 디렉토리의 대응 표는 `internal/wiki`가 단일 진실원이고 lint는 그것을 읽는다([ADR 0031](decisions/0031-location-must-agree-with-stage.md)).
+이 규칙이 이 명세의 "유형별 기본 위치" 표를 판정으로 바꾼 것이다. 등급이 방향으로 갈리는 이유는 해악이 다르기 때문이다. `context`를 선언하고 `context/` 밖에 있는 문서는 검수된 지식의 필드 집합과 색인 자격을 얻어 게이트를 우회한다. 반대 방향은 필수 필드가 느슨하게 검사될 뿐 아무 관문도 지나치지 않는다. 단계와 디렉토리의 대응 표는 `internal/wiki`가 단일 진실원이고 lint는 그것을 읽는다([ADR 0031](decisions/0031-location-must-agree-with-stage.md)).
 
 **설정으로 열어 둔 것.** `page_dirs`(단계별 디렉토리 이름), `root_files`, `source_channel`, `trigger_mode`, `workflow` 축. 셋은 개방 집합이라 `engram.yaml`의 폐쇄 집합에 담지 않고 축 on/off만 둔다. `types` 집합은 위키별로 정의한다.
 
@@ -194,6 +194,7 @@ LLM으로 승급 기준 전부를 판정하게 하면 그 판정은 재현되지
 |---|---|---|
 | `supersedes` / `superseded_by` | wiki-graph-policy.md가 관계 필드로 선언 | 축 14종에 없다 |
 | `index` 단계와 MOC | `context/mocs/`를 별도 단계로 둔다 | 없다. 의도된 차이지만 실데이터에서 5건이 거절된다 |
+| 단계 디렉토리 안의 비문서 파일 | 명세에 개념이 없다. 실데이터에는 `README.md`가 네 자리에 있다 | ~~없었다~~ `ignore_files`로 순회에서 뺀다([ADR 0036](decisions/0036-non-document-files-in-stage-dirs.md)) |
 | security-rules.md 전체 | 커밋 금지 항목과 민감 자료 취급 | 코드로 강제하는 것이 하나도 없다. `sensitivity` 축만 있다 |
 | `indexable` 단계 기본값 | wiki-artifact-schema.md가 유형별 인덱싱 기본값으로 선언. upstream lint는 위반을 검사 | 강제 규칙이 없다. 쓰기 커맨드가 단계별 초기값으로만 채운다 |
 

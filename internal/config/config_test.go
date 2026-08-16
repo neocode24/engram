@@ -41,6 +41,9 @@ func TestLoad(t *testing.T) {
 				if want := []string{"index.md"}; !reflect.DeepEqual(c.RootFiles, want) {
 					t.Errorf("root_files = %v, want %v", c.RootFiles, want)
 				}
+				if want := []string{"README.md"}; !reflect.DeepEqual(c.IgnoreFiles, want) {
+					t.Errorf("ignore_files = %v, want %v", c.IgnoreFiles, want)
+				}
 				if len(c.UnknownKeys) != 0 {
 					t.Errorf("미정의 키가 있음: %v", c.UnknownKeys)
 				}
@@ -159,6 +162,26 @@ func TestLoad(t *testing.T) {
 			},
 		},
 		{
+			name: "ignore_files 를 파일이 정의하고 비울 수 있다",
+			yaml: "ignore_files: []\n",
+			check: func(t *testing.T, c Config) {
+				if len(c.IgnoreFiles) != 0 {
+					t.Errorf("ignore_files = %v, want 빈 목록", c.IgnoreFiles)
+				}
+				if len(c.UnknownKeys) != 0 {
+					t.Errorf("ignore_files 가 미정의 키로 수집됨: %v", c.UnknownKeys)
+				}
+				if got := c.Origins["ignore_files"]; got != OriginFile {
+					t.Errorf("ignore_files 출처 = %q, want file", got)
+				}
+			},
+		},
+		{
+			name:    "ignore_files 값이 목록이 아니면 거절한다",
+			yaml:    "ignore_files: README.md\n",
+			wantErr: "ignore_files",
+		},
+		{
 			name: "값의 출처를 기본값 프리셋 파일로 구분해 추적한다",
 			yaml: "preset: team\nmin_wikilinks: 4\naxes:\n  scope: false\n",
 			check: func(t *testing.T, c Config) {
@@ -176,6 +199,9 @@ func TestLoad(t *testing.T) {
 				}
 				if got := c.Origins["stale_days"]; got != OriginDefault {
 					t.Errorf("stale_days 출처 = %q, want default", got)
+				}
+				if got := c.Origins["ignore_files"]; got != OriginDefault {
+					t.Errorf("ignore_files 출처 = %q, want default", got)
 				}
 			},
 		},

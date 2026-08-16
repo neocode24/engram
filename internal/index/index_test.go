@@ -291,3 +291,31 @@ func readIndexFile(t *testing.T, dir string) string {
 	}
 	return string(raw)
 }
+
+// TestIgnoreFilesExcludedFromIndex는 순회에서 제외된 README가 색인에도
+// 없는지를 본다. walk 한 곳에서만 제외하면 색인과 검색이 함께 따른다는
+// 증거다(ADR 0036).
+func TestIgnoreFilesExcludedFromIndex(t *testing.T) {
+	dir, walked, _ := writeWiki(t, map[string]string{
+		"context/README.md":  "디렉토리 설명. 게이트웨이라는 단어를 넣는다.",
+		"context/gateway.md": simpleDoc("context", "# 게이트웨이 노트\n\n게이트웨이가 프롬프트를 중계한다."),
+	})
+	for _, wd := range walked {
+		if filepath.Base(wd.Rel) == "README.md" {
+			t.Fatalf("README가 순회에 남아 있음: %s", wd.Rel)
+		}
+	}
+	ix, err := Build(dir, walked, DefaultWeights())
+	if err != nil {
+		t.Fatal(err)
+	}
+	// README에만 있는 단어는 검색되지 않는다.
+	if res := ix.Search("설명", 3); len(res) != 0 {
+		t.Errorf("제외된 README가 검색에 나옴: %+v", res)
+	}
+	// 두 문서에 다 있는 단어는 README를 제외한 문서만 낸다.
+	res := ix.Search("게이트웨이", 3)
+	if len(res) != 1 || res[0].Slug != "gateway" {
+		t.Errorf("README를 뺀 문서만 검색되어야 함: %+v", res)
+	}
+}

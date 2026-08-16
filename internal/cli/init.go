@@ -205,6 +205,10 @@ broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
 # 문서가 놓이는 디렉토리와 루트에 있어야 하는 파일
 page_dirs: [inbox, sources, context, archive]
 root_files: [index.md]
+
+# 문서가 아닌 마크다운. 같은 파일명이면 깊이와 무관하게 순회에서 뺍니다.
+# 기본값은 README.md 하나입니다. 비워 두면 README.md도 문서로 검사합니다.
+# ignore_files: [README.md]
 `, preset)
 }
 

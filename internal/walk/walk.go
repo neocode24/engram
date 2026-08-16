@@ -79,7 +79,7 @@ func listFiles(wikiRoot string, cfg config.Config) ([]string, error) {
 				}
 				return nil
 			}
-			if strings.HasSuffix(entry.Name(), ".md") {
+			if strings.HasSuffix(entry.Name(), ".md") && !ignoredFile(entry.Name(), cfg) {
 				rel, err := filepath.Rel(wikiRoot, path)
 				if err != nil {
 					return err
@@ -102,6 +102,19 @@ func listFiles(wikiRoot string, cfg config.Config) ([]string, error) {
 	}
 	sort.Strings(rels)
 	return rels, nil
+}
+
+// ignoredFile은 파일명이 ignore_files 목록과 완전 일치하는지를 반환한다.
+// page_dirs 아래 모든 깊이에 적용한다. 디렉토리를 설명하는 README 같은
+// 비문서 마크다운을 순회에서 빼는 것이 목적이다(ADR 0036). 순회를 부르는
+// 모든 커맨드가 같은 답을 내도록 적용 지점은 여기 한 곳이다.
+func ignoredFile(name string, cfg config.Config) bool {
+	for _, f := range cfg.IgnoreFiles {
+		if f == name {
+			return true
+		}
+	}
+	return false
 }
 
 // loadDoc는 문서 하나를 읽어 정규화하고 파싱한다.

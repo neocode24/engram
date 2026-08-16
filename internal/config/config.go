@@ -175,6 +175,9 @@ type Config struct {
 	Thresholds Thresholds
 	PageDirs   []string
 	RootFiles  []string
+	// IgnoreFiles는 page_dirs 아래 어느 깊이에 있든 문서가 아닌 파일로
+	// 순회에서 빼는 파일명이다. ADR 0036.
+	IgnoreFiles []string
 	// UnknownKeys는 설정 파일에 있었지만 스키마가 모르는 키다.
 	// 오타를 조용히 삼키지 않기 위해 호출자에게 넘긴다.
 	UnknownKeys []string
@@ -211,13 +214,14 @@ func defaults() Config {
 		Axes:       presetAxes(DefaultPreset),
 		Schema:     defaultSchema(),
 		Thresholds: Thresholds{MinWikilinks: 2, StaleDays: 90, MaxLines: 1000, BroadTopicPct: 25},
-		PageDirs:   []string{"inbox", "sources", "context", "archive"},
-		RootFiles:  []string{"index.md"},
-		Origins:    make(map[string]Origin),
+		PageDirs:    []string{"inbox", "sources", "context", "archive"},
+		RootFiles:   []string{"index.md"},
+		IgnoreFiles: []string{"README.md"},
+		Origins:     make(map[string]Origin),
 	}
 	// 프리셋 키 자체는 기본값에서 왔다. 축의 on/off는 프리셋이 정했다.
 	cfg.Origins["preset"] = OriginDefault
-	for _, k := range []string{"types", "topics", "forms", "min_wikilinks", "stale_days", "max_lines", "broad_topic_pct", "page_dirs", "root_files"} {
+	for _, k := range []string{"types", "topics", "forms", "min_wikilinks", "stale_days", "max_lines", "broad_topic_pct", "page_dirs", "root_files", "ignore_files"} {
 		cfg.Origins[k] = OriginDefault
 	}
 	for _, a := range allAxes() {
@@ -355,6 +359,13 @@ func build(doc map[string]any) (Config, error) {
 			}
 			cfg.RootFiles = list
 			cfg.Origins["root_files"] = OriginFile
+		case "ignore_files":
+			list, err := stringListOf("ignore_files", val)
+			if err != nil {
+				return Config{}, err
+			}
+			cfg.IgnoreFiles = list
+			cfg.Origins["ignore_files"] = OriginFile
 		default:
 			cfg.UnknownKeys = append(cfg.UnknownKeys, key)
 		}

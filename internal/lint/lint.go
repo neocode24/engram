@@ -324,6 +324,9 @@ func (s *scannedDoc) checkAllowedValues(cfg config.Config, add func(Severity, st
 // stageDirs 표가 단일 진실원이므로 여기에 두지 않는다. artifact_stage가
 // 없으면 frontmatter.missing-field가 이미 잡으므로 건너뛴다. 값이
 // 허용 집합 밖이어도 비교한다. 허용값 위반과 위치 불일치는 다른 결함이다.
+// 등급은 방향으로 나눈다(ADR 0035). context를 선언했는데 context
+// 디렉토리에 없는 문서는 게이트를 우회하므로 error고, 그 밖의 불일치는
+// 느슨한 필수 필드 검사로 그치므로 warn이다.
 func (s *scannedDoc) checkStageAgreement(cfg config.Config, add func(Severity, string, int, string, string)) {
 	if s.stage == "" {
 		return
@@ -337,7 +340,13 @@ func (s *scannedDoc) checkStageAgreement(cfg config.Config, add func(Severity, s
 		return // 단계에 대응하지 않는 디렉토리는 비교 기준이 없다
 	}
 	if s.stage != string(expected) {
-		add(SevError, "location.stage-agreement", lineOfKey(s.content, "artifact_stage"),
+		sev := SevWarn
+		if s.stage == string(wiki.StageContext) {
+			// context를 선언한 문서가 여기 걸렸으면 context 디렉토리 밖에
+			// 있다는 뜻이다. 검수된 지식의 필드 집합과 색인 자격을 훔친다.
+			sev = SevError
+		}
+		add(sev, "location.stage-agreement", lineOfKey(s.content, "artifact_stage"),
 			fmt.Sprintf("문서가 %s 디렉토리에 있지만 artifact_stage가 %q입니다", top, s.stage),
 			fmt.Sprintf("문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 %s로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요", expected))
 	}

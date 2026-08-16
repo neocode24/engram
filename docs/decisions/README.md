@@ -45,10 +45,12 @@
 | [0028](0028-rediscovery-state-and-boundaries.md) | 재발견 커맨드의 상태를 성격에 따라 두 곳에 나눠 둔다 | 2026-08-16 | accepted |
 | [0029](0029-upstream-vendoring-and-parity-execution.md) | upstream 계약을 치환 사전으로 익명화해 vendoring하고 parity는 로컬에서만 돈다 | 2026-08-16 | amended |
 | [0030](0030-upstream-delta-is-not-a-public-artifact.md) | upstream 변경 로그에서 뽑은 delta는 공개하지 않는다 | 2026-08-16 | accepted |
-| [0031](0031-location-must-agree-with-stage.md) | 문서가 놓인 디렉토리와 artifact_stage가 일치해야 한다 | 2026-08-16 | accepted |
+| [0031](0031-location-must-agree-with-stage.md) | 문서가 놓인 디렉토리와 artifact_stage가 일치해야 한다 | 2026-08-16 | amended |
 | [0032](0032-update-writes-the-updated-field.md) | 문서를 바꾸는 커맨드가 updated를 그 자리에서 채운다 | 2026-08-16 | accepted |
 | [0033](0033-private-backup-and-fail-closed-boundary.md) | private 자료는 upstream에 백업하고 경계 검사는 닫히는 쪽으로 실패한다 | 2026-08-16 | accepted |
 | [0034](0034-rule-spec-terminology.md) | upstream 규칙 문서를 계약이 아니라 규칙 명세라 부른다 | 2026-08-16 | accepted |
+| [0035](0035-stage-mismatch-severity-by-direction.md) | 위치와 단계의 불일치는 방향에 따라 등급을 나눈다 | 2026-08-16 | accepted |
+| [0036](0036-non-document-files-in-stage-dirs.md) | 단계 디렉토리 안의 비문서 마크다운을 순회에서 제외한다 | 2026-08-16 | accepted |
 
 ## 공개 범위 밖
 
@@ -75,6 +77,7 @@
 | 0009 | `updated`는 git 이력에서만 채운다 | [0032](0032-update-writes-the-updated-field.md) 문서를 바꾸는 커맨드가 그 자리에서 채우고 `sync`가 나중에 정정한다 |
 | 0024 | `private/`의 실체는 upstream에 두고 여기에는 포인터와 발췌만 둔다 | [0033](0033-private-backup-and-fail-closed-boundary.md) 실체를 양쪽에 두고 `meta/engram/`으로 백업한다 |
 | 0024 | 패턴 목록이 없으면 경계 검사를 건너뛴다 | [0033](0033-private-backup-and-fail-closed-boundary.md) 커밋 훅에서는 `--require`로 막는다 |
+| 0031 | 등급은 `error`다 | [0035](0035-stage-mismatch-severity-by-direction.md) 불일치 방향에 따라 `error`와 `warn`으로 나눈다 |
 
 ## 근거만 갱신된 경우
 
