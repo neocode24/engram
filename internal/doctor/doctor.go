@@ -108,8 +108,8 @@ func gitOutput(args ...string) (string, error) {
 
 // checkGit는 git 실행 가능 여부와 버전을 본다. git 이 없어도 fail 이
 // 아니라 warn 이다. fail 은 종료 코드 1 을 만들어 스크립트와 CI 를
-// 막는데 지금 구현된 커맨드는 git 없이 전부 동작하고 git 이 필요한 것은
-// sync 와 updated 필드 자동 채움뿐이기 때문이다. 필수가 아닌 것으로 막지 않는다.
+// 막는데, git 을 요구하는 커맨드는 sync 하나뿐이고 나머지 열아홉은 git
+// 없이 전부 동작하기 때문이다. 필수가 아닌 것으로 막지 않는다. ADR 0037.
 func checkGit() (Finding, bool) {
 	ver, err := gitOutput("--version")
 	if err != nil {
@@ -117,7 +117,7 @@ func checkGit() (Finding, bool) {
 			ID:     "env.git",
 			Status: StatusWarn,
 			Detail: "git을 실행할 수 없습니다",
-			Fix:    "지금 구현된 커맨드는 git 없이 전부 동작하므로 당장은 문제가 아닙니다. 이후 sync와 updated 필드 자동 채움에 필요하니 그 전에 설치하세요. macOS는 xcode-select --install, Windows는 Git for Windows 설치",
+			Fix:    "engram sync만 git을 요구하고 나머지 커맨드는 git 없이 동작하므로 당장은 문제가 아닙니다. 날짜 필드를 git 이력에서 정정하려면 설치하세요. macOS는 xcode-select --install, Windows는 Git for Windows 설치",
 		}, false
 	}
 	return Finding{ID: "env.git", Status: StatusOK, Detail: ver}, true

@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-**0.3 마일스톤의 커맨드가 전부 동작한다.** 커맨드 스물, ADR 36건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 열다섯이다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
+**0.3이 끝났고 0.4의 셋이 동작한다.** 커맨드 스물셋, ADR 39건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 열다섯이다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
 
 ## 끝난 것
 
@@ -30,6 +30,9 @@
 | `digest` | 기간 안의 신규, 노후, 고아 집계. 상태를 남기지 않는다 | [0028](decisions/0028-rediscovery-state-and-boundaries.md) |
 | `recall` | 헤딩 단위 청크 원문과 출처 | [0028](decisions/0028-rediscovery-state-and-boundaries.md) |
 | `archive` | 수명이 끝난 문서를 보관한다. 슬러그를 유지해 링크가 안 깨진다 | [0028](decisions/0028-rediscovery-state-and-boundaries.md) |
+| `migrate` | 기존 문서를 지금의 설정과 규칙에 맞춘다. 파일을 옮기지 않고 승급시키지 않는다 | [0038](decisions/0038-migrate-conforms-documents-to-current-rules.md) |
+| `sync` | git 이력에서 `updated`와 `sourced_at`을 정정한다 | [0037](decisions/0037-sync-corrects-dates-from-git.md) |
+| `rules show` | 이 위키에 적용되는 규칙 전부를 읽기 전용으로 낸다 | [0013](decisions/0013-eject-redefined-seal-removed.md) |
 
 패키지는 열다섯이다. `config`(설정과 프리셋), `doc`(파싱과 직렬화), `walk`(순회), `graph`(링크 관계), `lint`(규칙과 게이트), `wiki`(문서 쓰기), `index`(색인과 BM25), `chunk`(헤딩 청킹), `state`(영구 상태), `resurface`, `digest`, `bridge`, `status`, `doctor`, `cli`다.
 
@@ -43,7 +46,7 @@
 
 ## 즉시 다음
 
-1. **0.4 착수.** `eject`, `rules show`, `migrate`, `sync` 넷이다. `migrate`가 실데이터에서 나온 `location.stage-agreement` 경고 40건을 정리하는 일을 맡고, `sync`는 `updated`를 만드는 일이 아니라 git 이력으로 정정하는 일이 되었다(ADR [0032](decisions/0032-update-writes-the-updated-field.md)).
+1. **`eject` 구현.** 0.4에서 남은 하나다. 규칙 명세 문서와 표준 라이브러리 Python 린터를 생성하고, 내보낸 린터가 `engram lint`와 같은 판정을 내는지 대조하는 검증까지가 범위다. 설계는 ADR [0039](decisions/0039-eject-emits-rule-specs-and-a-python-linter.md)에 있다.
 2. **비교 축을 늘린다.** 동등성 검증이 지금 보는 것은 lint 위반 목록 하나다. `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
 3. **Windows 재검증** — 다음 버전 검증 때 함께 한다. 콘솔 직결 항목은 2차 검증 당시 스크립트가 출력을 캡처해 버려 실제로는 파이프를 검증하고 있었다. 스크립트를 고쳐 두었으나 실행하지 않았다. `autocrlf` 항목은 VM에 git이 없어 여전히 미검증이다.
 

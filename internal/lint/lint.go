@@ -27,6 +27,92 @@ const (
 	SevReject Severity = "reject" // 게이트 거절
 )
 
+// Rule은 lint 규칙 하나의 메타데이터다. ID 는 동등성 검증의 정규화
+// 표가 짝짓는 문자열 그대로다.
+type Rule struct {
+	ID       string `json:"id"`
+	Severity string `json:"severity"` // error, warn, reject. 조건에 따라 갈리면 그 사실을 적는다
+	Desc     string `json:"desc"`     // 무엇을 판정하는지 한 줄
+}
+
+// registry는 정의된 규칙 전부다. newRule 이 정의 시점에 채운다.
+// 선언 순서가 곧 Rules 의 나열 순서다.
+var registry []Rule
+
+// ruleIndex는 등록된 규칙 ID 의 색인이다. newViolation 이 등록 여부를
+// 확인하는 데 쓴다.
+var ruleIndex = map[string]bool{}
+
+// newRule는 규칙을 정의하고 등록한다. 규칙은 이 함수로만 만들며
+// 위반을 만드는 자리는 여기서 만든 Rule 값만 받는다. 정의와 등록이
+// 한몸이므로 메타데이터 없는 규칙이 존재할 수 없고 목록이 규칙과
+// 어긋날 수 없다. 소스 텍스트를 긁어 대조하는 방식은 새 접두어를
+// 놓친 적이 있어 쓰지 않는다.
+func newRule(id, severity, desc string) Rule {
+	if ruleIndex[id] {
+		panic("규칙 ID가 중복 정의되었습니다: " + id)
+	}
+	r := Rule{ID: id, Severity: severity, Desc: desc}
+	ruleIndex[id] = true
+	registry = append(registry, r)
+	return r
+}
+
+// Rules는 이 바이너리가 검사하는 규칙 전부를 반환한다. 규칙 메타데이터의
+// 진실원은 이 목록 하나다. rules show 가 여기서 읽고 계획된 eject 도
+// 여기서 읽는다(ADR 0039).
+func Rules() []Rule {
+	out := make([]Rule, len(registry))
+	copy(out, registry)
+	return out
+}
+
+// newViolation은 등록된 규칙의 위반을 만든다. 등록되지 않은 규칙이
+// 여기 오면 프로그램 결함이므로 바로 죽인다. 문자열을 직접 짓는
+// 경로를 닫아 규칙과 메타데이터가 어긋나는 것을 막는다.
+func newViolation(sev Severity, r Rule, path string, line int, msg, fix string) Violation {
+	if !ruleIndex[r.ID] {
+		panic("등록되지 않은 규칙: " + r.ID)
+	}
+	return Violation{Rule: r.ID, Severity: sev, Path: path, Line: line, Message: msg, Fix: fix}
+}
+
+// 규칙 정의. 나열 순서는 게이트의 거절 사유를 먼저 읽히는 순서다.
+var (
+	ruleGateMinWikilinks = newRule("gate.min-wikilinks", "reject",
+		"context 문서의 고유 위키링크 수가 min_wikilinks 미달. 게이트의 유일한 거절 사유")
+	ruleFrontmatterMissing = newRule("frontmatter.missing", "error",
+		"프론트매터 블록이 아예 없는 문서")
+	ruleFrontmatterUnclosed = newRule("frontmatter.unclosed", "error",
+		"닫는 --- 없이 끝난 프론트매터")
+	ruleFrontmatterYAML = newRule("frontmatter.yaml", "error",
+		"프론트매터 YAML 문법 오류")
+	ruleFrontmatterMissingField = newRule("frontmatter.missing-field", "error",
+		"단계별 필수 필드 누락")
+	ruleSchemaAllowedValue = newRule("schema.allowed-value", "error",
+		"허용 집합 밖의 필드 값. artifact_stage, status, scope, sensitivity, trigger_mode")
+	ruleSchemaAxisOff = newRule("schema.axis-off", "error",
+		"설정이 끈 축의 필드가 문서에 있음")
+	ruleLocationStageAgreement = newRule("location.stage-agreement", "error 또는 warn",
+		"문서가 놓인 디렉토리와 artifact_stage 값의 불일치. context를 선언했는데 context/ 밖에 있으면 error, 그 밖의 불일치는 warn(ADR 0035)")
+	ruleTaxonomyForms = newRule("taxonomy.forms", "error",
+		"forms 폐쇄 집합에 없는 form 값")
+	ruleSourcesUpdated = newRule("sources.updated", "warn",
+		"sources 문서의 원본 보존에 어긋나는 updated 필드")
+	ruleTaxonomyTopics = newRule("taxonomy.topics", "warn",
+		"설정에 정의되지 않은 topics 값. 개방 집합이라 경고")
+	ruleBodyMaxLines = newRule("body.max-lines", "warn",
+		"문서 줄 수가 max_lines 초과")
+	ruleLinkBroken = newRule("link.broken", "warn",
+		"위키링크가 가리키는 문서가 위키에 없음")
+	ruleGraphOrphan = newRule("graph.orphan", "warn",
+		"들어오는 관계와 나가는 관계가 모두 없는 문서")
+	ruleGateDeferred = newRule("gate.deferred", "warn",
+		"링크 가능한 대상 문서가 부족해 게이트 유예")
+	ruleWikiBroadTopic = newRule("wiki.broad-topic", "warn",
+		"한 주제가 전체 문서의 broad_topic_pct를 넘게 붙음")
+)
+
 // Violation은 위반 하나다. 모든 위반은 경로와 줄, 무엇이 잘못됐는지,
 // 어떻게 고치는지를 담는다. ADR 0009의 메시지 품질 요구다.
 type Violation struct {
@@ -105,11 +191,9 @@ func Run(wikiRoot string, cfg config.Config) (Result, error) {
 		// 프론트매터가 아예 없는 문서는 문서 단위 규칙을 적용할 수 없으므로
 		// 위반만 남기고 그래프 판정 대상에서 빠진다.
 		if !w.Parsed.HasFrontmatter {
-			violations = append(violations, Violation{
-				Rule: "frontmatter.missing", Severity: SevError, Path: w.Rel, Line: 1,
-				Message: "프론트매터가 없습니다",
-				Fix:     "문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫으세요",
-			})
+			violations = append(violations, newViolation(SevError, ruleFrontmatterMissing, w.Rel, 1,
+				"프론트매터가 없습니다",
+				"문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫으세요"))
 			continue
 		}
 		sd, vs := scanDoc(w, cfg)
@@ -152,18 +236,14 @@ func Run(wikiRoot string, cfg config.Config) (Result, error) {
 // 오류 종류는 walk 의 센티널로 구분한다. 에러 문자열 매칭을 쓰지 않는다.
 func parseViolations(w walk.Doc) []Violation {
 	if errors.Is(w.Err, walk.ErrUnclosed) {
-		return []Violation{{
-			Rule: "frontmatter.unclosed", Severity: SevError, Path: w.Rel, Line: 1,
-			Message: "프론트매터가 닫는 --- 구분자 없이 끝났습니다",
-			Fix:     "프론트매터 끝에 --- 줄을 추가하세요",
-		}}
+		return []Violation{newViolation(SevError, ruleFrontmatterUnclosed, w.Rel, 1,
+			"프론트매터가 닫는 --- 구분자 없이 끝났습니다",
+			"프론트매터 끝에 --- 줄을 추가하세요")}
 	}
-	return []Violation{{
-		Rule: "frontmatter.yaml", Severity: SevError, Path: w.Rel,
-		Line:    yamlErrorLine(w.Err.Error()),
-		Message: "프론트매터 YAML 파싱 실패: " + w.Err.Error(),
-		Fix:     "프론트매터의 YAML 문법을 고치세요",
-	}}
+	return []Violation{newViolation(SevError, ruleFrontmatterYAML, w.Rel,
+		yamlErrorLine(w.Err.Error()),
+		"프론트매터 YAML 파싱 실패: "+w.Err.Error(),
+		"프론트매터의 YAML 문법을 고치세요")}
 }
 
 // scanDoc는 파싱된 문서 하나에 문서 단위 규칙을 적용한다.
@@ -171,8 +251,8 @@ func parseViolations(w walk.Doc) []Violation {
 func scanDoc(w walk.Doc, cfg config.Config) (scannedDoc, []Violation) {
 	rel := w.Rel
 	var vs []Violation
-	add := func(sev Severity, rule string, line int, msg, fix string) {
-		vs = append(vs, Violation{Rule: rule, Severity: sev, Path: rel, Line: line, Message: msg, Fix: fix})
+	add := func(sev Severity, r Rule, line int, msg, fix string) {
+		vs = append(vs, newViolation(sev, r, rel, line, msg, fix))
 	}
 
 	d := w.Parsed
@@ -234,10 +314,10 @@ func axisFields() []config.Axis {
 	}
 }
 
-// requiredFields는 단계별 필수 필드를 반환한다. upstream 계약
+// RequiredFields는 단계별 필수 필드를 반환한다. upstream 계약
 // meta/frontmatter-schema.md의 단계별 필수 정의에서 왔고, 꺼진 축의
 // 필수성은 사라진다.
-func requiredFields(stage string, cfg config.Config) []string {
+func RequiredFields(stage string, cfg config.Config) []string {
 	req := []string{"type", "artifact_stage", "status", "indexable"}
 	for _, f := range []string{"scope", "sensitivity", "source_channel", "trigger_mode", "workflow"} {
 		if cfg.Axes[config.Axis(f)] {
@@ -264,13 +344,13 @@ func requiredFields(stage string, cfg config.Config) []string {
 }
 
 // checkRequiredFields는 단계별 필수 필드 누락을 검사한다.
-func (s *scannedDoc) checkRequiredFields(cfg config.Config, add func(Severity, string, int, string, string)) {
+func (s *scannedDoc) checkRequiredFields(cfg config.Config, add func(Severity, Rule, int, string, string)) {
 	if s.stage == "" {
 		return // artifact_stage 자체의 문제는 다른 규칙이 잡는다
 	}
-	for _, f := range requiredFields(s.stage, cfg) {
+	for _, f := range RequiredFields(s.stage, cfg) {
 		if _, ok := s.fields[f]; !ok {
-			add(SevError, "frontmatter.missing-field", lineOfKey(s.content, "artifact_stage"),
+			add(SevError, ruleFrontmatterMissingField, lineOfKey(s.content, "artifact_stage"),
 				fmt.Sprintf("단계 %s의 필수 필드 %s가 없습니다", s.stage, f),
 				fmt.Sprintf("프론트매터에 %s 필드를 추가하세요", f))
 		}
@@ -301,7 +381,7 @@ func valueFields() []valueField {
 
 // checkAllowedValues는 허용값 밖의 값을 검사한다. 축이 꺼져 있으면
 // checkAxisOff가 이미 잡으므로 여기서는 보지 않는다.
-func (s *scannedDoc) checkAllowedValues(cfg config.Config, add func(Severity, string, int, string, string)) {
+func (s *scannedDoc) checkAllowedValues(cfg config.Config, add func(Severity, Rule, int, string, string)) {
 	for _, vf := range valueFields() {
 		if !cfg.Axes[vf.axis] {
 			continue
@@ -312,7 +392,7 @@ func (s *scannedDoc) checkAllowedValues(cfg config.Config, add func(Severity, st
 		}
 		allowed := vf.set(cfg)
 		if !contains(allowed, f.Str) {
-			add(SevError, "schema.allowed-value", lineOfKey(s.content, vf.key),
+			add(SevError, ruleSchemaAllowedValue, lineOfKey(s.content, vf.key),
 				fmt.Sprintf("%s 값이 허용값 밖입니다: %q (허용값: %s)", vf.key, f.Str, strings.Join(allowed, ", ")),
 				fmt.Sprintf("%s 값을 허용값 중 하나로 바꿉니다", vf.key))
 		}
@@ -327,7 +407,7 @@ func (s *scannedDoc) checkAllowedValues(cfg config.Config, add func(Severity, st
 // 등급은 방향으로 나눈다(ADR 0035). context를 선언했는데 context
 // 디렉토리에 없는 문서는 게이트를 우회하므로 error고, 그 밖의 불일치는
 // 느슨한 필수 필드 검사로 그치므로 warn이다.
-func (s *scannedDoc) checkStageAgreement(cfg config.Config, add func(Severity, string, int, string, string)) {
+func (s *scannedDoc) checkStageAgreement(cfg config.Config, add func(Severity, Rule, int, string, string)) {
 	if s.stage == "" {
 		return
 	}
@@ -346,20 +426,20 @@ func (s *scannedDoc) checkStageAgreement(cfg config.Config, add func(Severity, s
 			// 있다는 뜻이다. 검수된 지식의 필드 집합과 색인 자격을 훔친다.
 			sev = SevError
 		}
-		add(sev, "location.stage-agreement", lineOfKey(s.content, "artifact_stage"),
+		add(sev, ruleLocationStageAgreement, lineOfKey(s.content, "artifact_stage"),
 			fmt.Sprintf("문서가 %s 디렉토리에 있지만 artifact_stage가 %q입니다", top, s.stage),
 			fmt.Sprintf("문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 %s로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요", expected))
 	}
 }
 
 // checkAxisOff는 설정이 끈 축의 필드가 문서에 있는지 검사한다.
-func (s *scannedDoc) checkAxisOff(cfg config.Config, add func(Severity, string, int, string, string)) {
+func (s *scannedDoc) checkAxisOff(cfg config.Config, add func(Severity, Rule, int, string, string)) {
 	for _, ax := range axisFields() {
 		if cfg.Axes[ax] {
 			continue
 		}
 		if _, ok := s.fields[string(ax)]; ok {
-			add(SevError, "schema.axis-off", lineOfKey(s.content, string(ax)),
+			add(SevError, ruleSchemaAxisOff, lineOfKey(s.content, string(ax)),
 				fmt.Sprintf("설정에서 꺼진 축의 필드가 문서에 있습니다: %s (프리셋 %s)", ax, cfg.Preset),
 				fmt.Sprintf("engram.yaml의 axes에서 %s를 켜거나 문서에서 %s 필드를 지웁니다", ax, ax))
 		}
@@ -367,11 +447,11 @@ func (s *scannedDoc) checkAxisOff(cfg config.Config, add func(Severity, string, 
 }
 
 // checkTaxonomy는 form 폐쇄 집합과 topics 개방 집합을 검사한다.
-func (s *scannedDoc) checkTaxonomy(cfg config.Config, add func(Severity, string, int, string, string)) {
+func (s *scannedDoc) checkTaxonomy(cfg config.Config, add func(Severity, Rule, int, string, string)) {
 	if f, ok := s.fields["form"]; ok && f.Kind == doc.KindString && f.Str != "" {
 		forms := cfg.Schema.Taxonomy.Forms.Values
 		if len(forms) > 0 && !contains(forms, f.Str) {
-			add(SevError, "taxonomy.forms", lineOfKey(s.content, "form"),
+			add(SevError, ruleTaxonomyForms, lineOfKey(s.content, "form"),
 				fmt.Sprintf("form 값이 forms 폐쇄 집합에 없습니다: %q (허용값: %s)", f.Str, strings.Join(forms, ", ")),
 				"form 값을 허용값 중 하나로 바꿉니다")
 		}
@@ -380,7 +460,7 @@ func (s *scannedDoc) checkTaxonomy(cfg config.Config, add func(Severity, string,
 		topics := cfg.Schema.Taxonomy.Topics.Values
 		for _, v := range f.List {
 			if !contains(topics, v) {
-				add(SevWarn, "taxonomy.topics", lineOfKey(s.content, "topics"),
+				add(SevWarn, ruleTaxonomyTopics, lineOfKey(s.content, "topics"),
 					fmt.Sprintf("topics 값이 설정에 정의되지 않았습니다: %q (topics는 개방 집합입니다)", v),
 					fmt.Sprintf("engram.yaml의 topics 목록에 %q를 추가하세요", v))
 			}
@@ -389,21 +469,21 @@ func (s *scannedDoc) checkTaxonomy(cfg config.Config, add func(Severity, string,
 }
 
 // checkSourcesUpdated는 sources 계층 문서의 updated 필드를 검사한다.
-func (s *scannedDoc) checkSourcesUpdated(add func(Severity, string, int, string, string)) {
+func (s *scannedDoc) checkSourcesUpdated(add func(Severity, Rule, int, string, string)) {
 	if _, ok := s.fields["updated"]; !ok {
 		return
 	}
 	if s.rel == sourcesDirName || strings.HasPrefix(s.rel, sourcesDirName+"/") {
-		add(SevWarn, "sources.updated", lineOfKey(s.content, "updated"),
+		add(SevWarn, ruleSourcesUpdated, lineOfKey(s.content, "updated"),
 			"sources 계층 문서에 updated 필드가 있습니다",
 			"updated 필드를 지우세요. sources는 원본 보존 계층이라 갱신하지 않습니다")
 	}
 }
 
 // checkMaxLines는 문서 줄 수 상한을 검사한다.
-func (s *scannedDoc) checkMaxLines(cfg config.Config, add func(Severity, string, int, string, string)) {
+func (s *scannedDoc) checkMaxLines(cfg config.Config, add func(Severity, Rule, int, string, string)) {
 	if n := lineCount(s.content); n > cfg.Thresholds.MaxLines {
-		add(SevWarn, "body.max-lines", lineOfKey(s.content, "artifact_stage"),
+		add(SevWarn, ruleBodyMaxLines, lineOfKey(s.content, "artifact_stage"),
 			fmt.Sprintf("문서가 %d줄로 max_lines %d줄을 넘습니다", n, cfg.Thresholds.MaxLines),
 			"문서를 나누세요. 상한은 engram.yaml의 max_lines로 조정하세요")
 	}
@@ -443,7 +523,7 @@ func EvaluateGate(links, targets, minWikilinks int) GateResult {
 func OrphanCount(res Result) int {
 	n := 0
 	for _, v := range res.Violations {
-		if v.Rule == "graph.orphan" {
+		if v.Rule == ruleGraphOrphan.ID {
 			n++
 		}
 	}
@@ -488,8 +568,8 @@ func LinkableTargets(walked []walk.Doc, self string) int {
 // 게이트 유예의 대상 수를 잰다.
 func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Violation {
 	var vs []Violation
-	add := func(sev Severity, rule, rel string, line int, msg, fix string) {
-		vs = append(vs, Violation{Rule: rule, Severity: sev, Path: rel, Line: line, Message: msg, Fix: fix})
+	add := func(sev Severity, r Rule, rel string, line int, msg, fix string) {
+		vs = append(vs, newViolation(sev, r, rel, line, msg, fix))
 	}
 
 	bySlug := map[string]string{}
@@ -511,7 +591,7 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 				incoming[key]++
 			}
 			if _, ok := bySlug[l.Slug]; !ok {
-				add(SevWarn, "link.broken", s.rel, l.Line,
+				add(SevWarn, ruleLinkBroken, s.rel, l.Line,
 					fmt.Sprintf("깨진 위키링크: [[%s]]에 해당하는 문서가 없습니다", l.Slug),
 					fmt.Sprintf("슬러그를 고치거나 [[%s]] 문서를 만드세요", l.Slug))
 			}
@@ -546,7 +626,7 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 		outgoing := uniqueSlugs(s)
 		related := len(relationValues(s)) > 0
 		if len(outgoing) == 0 && !related && incoming[relationSlug(s.rel)] == 0 {
-			add(SevWarn, "graph.orphan", s.rel, 1,
+			add(SevWarn, ruleGraphOrphan, s.rel, 1,
 				"들어오는 관계와 나가는 관계가 모두 없습니다",
 				fmt.Sprintf("다른 문서의 related나 본문에서 [[%s]]로 연결하거나 관계 필드로 잇으세요", slug))
 		}
@@ -556,13 +636,13 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 			// 유예는 링크가 부족해 게이트에 걸렸을 문서만 알린다.
 			// 링크가 기준을 채운 문서는 유예와 무관하게 스스로 통과한다.
 			if g.Deferred && n < cfg.Thresholds.MinWikilinks {
-				add(SevWarn, "gate.deferred", s.rel, lineOfKey(s.content, "related"),
+				add(SevWarn, ruleGateDeferred, s.rel, lineOfKey(s.content, "related"),
 					fmt.Sprintf("링크 가능한 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예합니다. 대상 문서가 %d개가 되면 게이트가 동작합니다", g.Targets, g.Min, g.Min),
 					fmt.Sprintf("연결할 문서를 만들어 대상을 늘리세요. 기준은 engram.yaml의 min_wikilinks로 조정하세요"))
 				continue
 			}
 			if !g.Passed {
-				add(SevReject, "gate.min-wikilinks", s.rel, lineOfKey(s.content, "related"),
+				add(SevReject, ruleGateMinWikilinks, s.rel, lineOfKey(s.content, "related"),
 					fmt.Sprintf("위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다", n, cfg.Thresholds.MinWikilinks),
 					fmt.Sprintf("related 필드나 본문에 위키링크를 %d개 더 추가하세요", cfg.Thresholds.MinWikilinks-n))
 			}
@@ -605,7 +685,7 @@ func broadTopicFindings(docs []scannedDoc, cfg config.Config) []WikiFinding {
 			continue
 		}
 		out = append(out, WikiFinding{
-			Rule:      "wiki.broad-topic",
+			Rule:      ruleWikiBroadTopic.ID,
 			Severity:  SevWarn,
 			Topic:     topic,
 			Percent:   pct,

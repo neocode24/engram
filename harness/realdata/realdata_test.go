@@ -238,9 +238,14 @@ func exec2(t *testing.T, args ...string) command {
 }
 
 // excludedDirs 는 사본에서 뺄 디렉토리 이름이다. 어느 깊이에서나 뺀다.
+// raw-private 는 upstream 이 .gitignore 로 제외하는 sources 아래의 원본
+// 비공개 계층이다. upstream 자신의 도구도 보지 않는 문서를 스모크가
+// 보지 않게 한다. 이름으로 걸지만 이 경로에만 있는 이름이므로 목록에
+// 둔다.
 var excludedDirs = map[string]bool{
 	".git": true, ".local": true, "private": true,
 	".superpowers": true, ".codegraph": true, ".obsidian": true,
+	"raw-private": true,
 }
 
 // copyStages 는 upstream 위키의 검사 대상 계층과 색인만 사본으로 만든다.

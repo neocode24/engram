@@ -51,6 +51,9 @@
 | [0034](0034-rule-spec-terminology.md) | upstream 규칙 문서를 계약이 아니라 규칙 명세라 부른다 | 2026-08-16 | accepted |
 | [0035](0035-stage-mismatch-severity-by-direction.md) | 위치와 단계의 불일치는 방향에 따라 등급을 나눈다 | 2026-08-16 | accepted |
 | [0036](0036-non-document-files-in-stage-dirs.md) | 단계 디렉토리 안의 비문서 마크다운을 순회에서 제외한다 | 2026-08-16 | accepted |
+| [0037](0037-sync-corrects-dates-from-git.md) | sync는 git 이력에서 날짜를 정정하고 프론트매터 병합은 맡지 않는다 | 2026-08-16 | accepted |
+| [0038](0038-migrate-conforms-documents-to-current-rules.md) | migrate는 기존 문서를 지금의 설정과 규칙에 맞춘다 | 2026-08-16 | accepted |
+| [0039](0039-eject-emits-rule-specs-and-a-python-linter.md) | eject는 규칙 명세와 표준 라이브러리 Python 린터를 내보낸다 | 2026-08-16 | accepted |
 
 ## 공개 범위 밖
 
