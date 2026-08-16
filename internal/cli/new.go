@@ -40,12 +40,11 @@ func newNewCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			slug := slugFlag
-			if slug == "" {
-				slug, err = wiki.Slug(title)
-				if err != nil {
-					return err
-				}
+			// capture, source와 같은 경로를 지난다. 명시한 슬러그도
+			// 파일시스템 안전 검사를 받는다(ADR 0045).
+			slug, err := resolveSlug(slugFlag, title)
+			if err != nil {
+				return err
 			}
 			fm, err := newFrontmatter(cmd, cfg)
 			if err != nil {

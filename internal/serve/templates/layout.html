@@ -1,0 +1,46 @@
+{{define "head"}}<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{{.Title}} - engram</title>
+<link rel="stylesheet" href="/assets/engram.css">
+</head>
+<body>
+<a class="skip-link" href="#main">본문으로 건너뜁니다</a>
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="/">engram 위키</a>
+    <nav aria-label="주요 메뉴">
+      <ul>
+        <li><a href="/"{{if eq .Section "index"}} aria-current="page"{{end}}>문서 목록</a></li>
+        <li><a href="/search"{{if eq .Section "search"}} aria-current="page"{{end}}>검색</a></li>
+        <li><a href="/status"{{if eq .Section "status"}} aria-current="page"{{end}}>위키 현황</a></li>
+      </ul>
+    </nav>
+  </div>
+  <form class="site-search" action="/search" method="get" role="search">
+    <label for="q">위키 검색</label>
+    <input type="search" id="q" name="q" value="{{.Query}}" autocomplete="off">
+    <button type="submit">검색</button>
+  </form>
+</header>
+<main id="main">
+{{end}}
+
+{{define "foot"}}
+</main>
+<footer class="site-footer">
+  <p>이 서버는 읽기 전용입니다. 문서를 만들거나 고치는 경로가 없습니다.</p>
+  <p class="exposure">{{template "exposure" .Exposure}}</p>
+</footer>
+</body>
+</html>
+{{end}}
+
+{{define "exposure"}}노출 문서 {{.Visible}}개. context {{.Context}}개, 색인 {{.Index}}개{{if .IncludeArchive}}, archive {{.Archive}}개{{end}}. 제외: inbox {{.ExcludedInbox}}개, sources {{.ExcludedSources}}개{{if not .IncludeArchive}}, archive {{.ExcludedArchive}}개{{end}}{{if .SensitivityOn}}, 민감도 {{.ExcludedSensitive}}개{{end}}.{{end}}
+
+{{define "doclist"}}<ul class="doc-list">
+{{range .}}<li><a href="{{.URL}}">{{.Title}}</a><span class="path">{{.Rel}}</span></li>
+{{end}}</ul>{{end}}

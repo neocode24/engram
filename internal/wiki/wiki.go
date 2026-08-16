@@ -41,6 +41,18 @@ var stageDirs = map[Stage]string{
 	StageArchive: "archive",
 }
 
+// unsafeFilenameChars는 파일명에 쓸 수 없는 문자다. Windows가 tier 1
+// 플랫폼이므로(ADR 0007) Windows 예약 문자를 포함한다.
+const unsafeFilenameChars = `<>:"/\|?*`
+
+// unsafeFilenameRune은 파일명에 쓸 수 없는 문자인지 판정한다. 예약 문자와
+// 제어 문자가 대상이다. 파생 경로는 이 문자를 지우고 명시 경로는 거절하지만
+// 무엇이 위험한지의 판정은 이 함수 하나가 한다(ADR 0045). 판정을 두 벌
+// 두면 한쪽만 고치는 사고가 난다.
+func unsafeFilenameRune(r rune) bool {
+	return r < 0x20 || r == 0x7f || strings.ContainsRune(unsafeFilenameChars, r)
+}
+
 // Slug는 제목에서 파일명으로 쓸 슬러그를 만든다.
 // 공백과 구분자를 하이픈 하나로 바꾸고 연속 하이픈을 줄이며 앞뒤 하이픈을
 // 없앤다. 파일시스템에서 문제가 되는 문자는 지운다. Windows가 tier 1
@@ -48,10 +60,14 @@ var stageDirs = map[Stage]string{
 // 한글은 그대로 보존한다. 이 바이너리에는 LLM이 없으므로(ADR 0014)
 // 기계적 음차나 번역을 하지 않는다. upstream 실제 파일명에 한글이
 // 섞여 있으므로 허용이 계약이다.
+//
+// 만든 결과는 ValidateSlug를 통과한다. 명시 경로가 거절하는 이름을 파생
+// 경로가 만들어내면 같은 규칙이 두 얼굴을 갖게 되므로 마지막에 같은
+// 검사를 받는다.
 func Slug(title string) (string, error) {
 	s := strings.ToLower(title)
 	s = strings.Map(func(r rune) rune {
-		if r < 32 || strings.ContainsRune(`<>:"/\|?*`, r) {
+		if unsafeFilenameRune(r) {
 			return -1
 		}
 		return r
@@ -65,14 +81,57 @@ func Slug(title string) (string, error) {
 	for strings.Contains(s, "--") {
 		s = strings.ReplaceAll(s, "--", "-")
 	}
-	s = strings.Trim(s, "-")
+	// 앞뒤의 하이픈과 점을 없앤다. Windows는 이름 끝의 점을 지우고 앞의
+	// 점은 숨김 파일을 만들어 walk가 문서를 지나친다.
+	s = strings.Trim(s, "-.")
 	if s == "" {
 		return "", fmt.Errorf("제목 %q에서 슬러그를 만들 수 없습니다. 제목 대신 슬러그를 직접 지정하세요", title)
 	}
-	if isReservedName(s) {
-		return "", fmt.Errorf("슬러그 %q가 Windows 예약 파일명입니다. 슬러그를 직접 지정하세요", s)
+	if err := ValidateSlug(s); err != nil {
+		return "", fmt.Errorf("제목 %q에서 만든 슬러그를 파일명으로 쓸 수 없습니다: %w", title, err)
 	}
 	return s, nil
+}
+
+// ValidateSlug는 슬러그를 파일명으로 쓸 수 있는지 검사한다. 사용자가 직접
+// 지정한 슬러그가 주 대상이다(ADR 0045).
+//
+// 파생 경로는 위험한 문자를 지우지만 명시한 값은 조용히 고치지 않고
+// 거절한다. 사용자가 이름을 명시한 것은 그 이름을 원한다는 뜻이므로
+// 도구가 말없이 다른 이름으로 바꾸면 사용자가 기대한 위키링크가 어긋난다.
+//
+// 소문자와 하이픈 정규화는 강제하지 않는다. 대문자, 공백, 한글은 파일을
+// 못 만들게 하지 않으므로 통과시킨다. ADR 0020의 "사용자는 언제든 슬러그를
+// 명시해 파생을 덮어쓸 수 있다"가 사는 자리이며, 덮어쓸 수 있는 것은
+// 취향인 규칙 하나부터 셋까지이고 제약인 규칙 넷은 아니다.
+func ValidateSlug(slug string) error {
+	if slug == "" {
+		return fmt.Errorf("슬러그가 비었습니다\n파일명으로 쓸 이름을 지정하세요")
+	}
+	if strings.ContainsAny(slug, `/\`) {
+		return fmt.Errorf("슬러그에 경로 구분자가 들어 있습니다: %q\n슬러그는 파일 이름 한 조각입니다. / 와 \\ 를 빼고 다시 지정하세요", slug)
+	}
+	for _, r := range slug {
+		if !unsafeFilenameRune(r) {
+			continue
+		}
+		if r < 0x20 || r == 0x7f {
+			return fmt.Errorf("슬러그에 제어 문자가 들어 있습니다: %q (U+%04X)\n보이지 않는 문자입니다. 빼고 다시 지정하세요", slug, r)
+		}
+		return fmt.Errorf("슬러그에 파일명으로 쓸 수 없는 문자가 들어 있습니다: %q (문제 문자: %q)\nWindows에서 만들 수 없는 이름입니다. %s 를 빼고 다시 지정하세요",
+			slug, string(r), unsafeFilenameChars)
+	}
+	runes := []rune(slug)
+	if last := runes[len(runes)-1]; last == '.' || unicode.IsSpace(last) {
+		return fmt.Errorf("슬러그가 점이나 공백으로 끝납니다: %q\nWindows가 이름 끝의 점과 공백을 지웁니다. 끝을 다듬어 다시 지정하세요", slug)
+	}
+	if runes[0] == '.' {
+		return fmt.Errorf("슬러그가 점으로 시작합니다: %q\n숨김 파일이 되어 engram이 문서를 찾지 못합니다. 앞의 점을 빼고 다시 지정하세요", slug)
+	}
+	if isReservedName(slug) {
+		return fmt.Errorf("슬러그 %q가 Windows 예약 파일명입니다\nCON, PRN, AUX, NUL, COM1부터 COM9, LPT1부터 LPT9는 파일명으로 쓸 수 없습니다. 다른 이름을 지정하세요", slug)
+	}
+	return nil
 }
 
 // isReservedName은 Windows가 장치 이름으로 예약한 파일명인지 검사한다.

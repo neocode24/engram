@@ -1,0 +1,14 @@
+{{template "head" .Chrome}}
+<h1>검색</h1>
+{{if .Note}}<p class="note" role="status">{{.Note}}</p>{{end}}
+{{if .Searched}}
+  {{if .Hits}}
+  <p class="lede">{{.Chrome.Query}} 검색 결과 {{len .Hits}}건입니다.</p>
+  {{template "doclist" .Hits}}
+  {{else}}
+  <p class="empty">결과가 없습니다. 다른 낱말로 찾아 보세요.</p>
+  {{end}}
+{{else}}
+<p class="lede">위쪽 검색창에 낱말을 넣고 검색을 누르세요. 노출 범위 안의 문서만 찾습니다.</p>
+{{end}}
+{{template "foot" .Chrome}}

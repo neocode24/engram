@@ -277,6 +277,44 @@ func TestMCPTools(t *testing.T) {
 		}
 	})
 
+	t.Run("capture 는 파일시스템이 감당하지 못하는 슬러그를 거절한다", func(t *testing.T) {
+		// 에이전트가 이 값을 정하므로 CLI --slug 와 같은 검사를 받는다
+		// (ADR 0045). 검사 함수는 한 벌이다.
+		root := makeMCPWiki(t)
+		session, done := connectMCP(t, root)
+		defer done()
+		before := snapshotWiki(t, root)
+
+		for _, hostile := range []string{"a:b", "CON", "lpt1", "trailing.", "trailing ", "제어\t문자"} {
+			res, err := session.CallTool(context.Background(), &mcp.CallToolParams{
+				Name: "capture",
+				Arguments: map[string]any{
+					"title": "안전 검사", "slug": hostile, "body": "안전 검사 본문",
+				},
+			})
+			if err != nil {
+				t.Fatalf("슬러그 %q 호출 실패: %v", hostile, err)
+			}
+			if !res.IsError {
+				t.Errorf("슬러그 %q 가 MCP 에서 거절되지 않음: %+v", hostile, res.StructuredContent)
+			}
+		}
+		if after := snapshotWiki(t, root); before != after {
+			t.Fatalf("거절된 슬러그가 위키를 바꿈:\n%s", diffSnapshot(before, after))
+		}
+
+		// 대문자와 공백과 한글은 통과한다. 취향인 규칙은 강제하지 않는다.
+		for _, ok := range []string{"대문자-슬러그", "UPPER-Case", "공백 있는 슬러그"} {
+			out := callTool(t, session, "capture", map[string]any{
+				"title": "통과 검사", "slug": ok, "body": "통과 검사 본문",
+			})
+			path, _ := out["path"].(string)
+			if filepath.Base(path) == "" || !strings.HasSuffix(path, ok+".md") {
+				t.Errorf("슬러그 %q 가 그대로 파일명이 되지 않음: %q", ok, path)
+			}
+		}
+	})
+
 	t.Run("조회 도구를 전부 불러도 위키가 하나도 안 바뀐다", func(t *testing.T) {
 		root := makeMCPWiki(t)
 		session, done := connectMCP(t, root)

@@ -185,11 +185,15 @@ func withHeading(title, content string, titleFromFlag bool) string {
 }
 
 // resolveSlug는 슬러그 플래그가 비었으면 제목에서 슬러그를 만든다. ADR 0020.
-// 직접 지정한 슬러그는 경로 구분자를 포함하지 않는지만 검사한다.
+//
+// 직접 지정한 슬러그에는 파생 규칙(소문자, 하이픈 정규화)을 적용하지 않는다.
+// 대문자와 공백은 그대로 두고 파일시스템 안전 검사만 받는다. 어기면 조용히
+// 고치지 않고 거절한다(ADR 0045). 검사는 파생 경로와 같은 wiki.ValidateSlug다.
+// CLI의 --slug와 MCP capture 도구의 slug 인자가 이 함수를 함께 지난다.
 func resolveSlug(flagValue, title string) (string, error) {
 	if flagValue != "" {
-		if strings.ContainsAny(flagValue, `/\`) {
-			return "", fmt.Errorf("슬러그에 경로 구분자가 들어 있습니다: %q", flagValue)
+		if err := wiki.ValidateSlug(flagValue); err != nil {
+			return "", err
 		}
 		return flagValue, nil
 	}

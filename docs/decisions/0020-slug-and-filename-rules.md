@@ -2,7 +2,7 @@
 number: 0020
 title: 슬러그와 파일명 규칙을 upstream 실물에서 확정한다
 date: 2026-08-15
-status: accepted
+status: amended
 ---
 
 # 슬러그와 파일명 규칙

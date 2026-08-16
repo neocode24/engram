@@ -49,6 +49,88 @@ func TestSlug(t *testing.T) {
 	}
 }
 
+func TestValidateSlug(t *testing.T) {
+	// 명시한 슬러그가 받는 검사다(ADR 0045). 파일을 만들 수 없게 하는
+	// 것만 거절하고 취향인 규칙은 강제하지 않는다.
+	t.Run("파일시스템이 감당하지 못하는 이름을 거절한다", func(t *testing.T) {
+		tests := []struct {
+			slug string
+			want string // 거절 메시지에 들어 있어야 할 안내
+		}{
+			{slug: "a:b", want: "쓸 수 없는 문자"},
+			{slug: `a"b`, want: "쓸 수 없는 문자"},
+			{slug: "a<b>c", want: "쓸 수 없는 문자"},
+			{slug: "a|b", want: "쓸 수 없는 문자"},
+			{slug: "a?b", want: "쓸 수 없는 문자"},
+			{slug: "a*b", want: "쓸 수 없는 문자"},
+			{slug: "a/b", want: "경로 구분자"},
+			{slug: `a\b`, want: "경로 구분자"},
+			{slug: "../escape", want: "경로 구분자"},
+			{slug: "a\tb", want: "제어 문자"},
+			{slug: "a\nb", want: "제어 문자"},
+			{slug: "a\x00b", want: "제어 문자"},
+			{slug: "a\x7fb", want: "제어 문자"},
+			{slug: "trailing.", want: "점이나 공백으로 끝납니다"},
+			{slug: "trailing ", want: "점이나 공백으로 끝납니다"},
+			{slug: ".hidden", want: "점으로 시작합니다"},
+			{slug: "CON", want: "예약 파일명"},
+			{slug: "con", want: "예약 파일명"},
+			{slug: "Prn", want: "예약 파일명"},
+			{slug: "AUX", want: "예약 파일명"},
+			{slug: "nul", want: "예약 파일명"},
+			{slug: "COM1", want: "예약 파일명"},
+			{slug: "lpt1", want: "예약 파일명"},
+			{slug: "LPT9.backup", want: "예약 파일명"},
+			{slug: "", want: "비었습니다"},
+		}
+		for _, tt := range tests {
+			err := ValidateSlug(tt.slug)
+			if err == nil {
+				t.Errorf("슬러그 %q는 거절되어야 함", tt.slug)
+				continue
+			}
+			if !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("슬러그 %q 거절 메시지에 %q 없음: %v", tt.slug, tt.want, err)
+			}
+			// 무엇이 문제인지와 어떻게 고치면 되는지를 함께 낸다.
+			if !strings.Contains(err.Error(), "지정하세요") {
+				t.Errorf("슬러그 %q 거절 메시지에 고치는 방법이 없음: %v", tt.slug, err)
+			}
+		}
+	})
+
+	t.Run("취향인 규칙은 강제하지 않는다", func(t *testing.T) {
+		// 소문자와 하이픈 정규화는 파생에만 적용한다. 대문자와 공백이
+		// 파일을 못 만들게 하지는 않는다.
+		for _, slug := range []string{
+			"대문자-슬러그", "UPPER-CASE", "공백 있는 슬러그", "한글-슬러그",
+			"weekly-notes", "a.b", "conference", "communication", "nulls",
+			"2026-01-01-메모", "v1.2.3", "ümlaut", "COM10",
+		} {
+			if err := ValidateSlug(slug); err != nil {
+				t.Errorf("슬러그 %q는 통과해야 함: %v", slug, err)
+			}
+		}
+	})
+
+	t.Run("파생 결과는 언제나 이 검사를 통과한다", func(t *testing.T) {
+		// 파생과 명시가 같은 판정을 부르므로 파생이 명시가 거절할 이름을
+		// 만들어내지 않는다.
+		for _, title := range []string{
+			"Table Driven Tests", "테이블 주도 테스트", `a<b>c:d"e/f\g|h?i*j`,
+			"끝에 점이 있는 제목.", ".앞에 점이 있는 제목", "Go 1.22.",
+		} {
+			got, err := Slug(title)
+			if err != nil {
+				continue // 빈 결과나 예약 파일명은 파생 단계에서 거절한다
+			}
+			if err := ValidateSlug(got); err != nil {
+				t.Errorf("제목 %q의 파생 슬러그 %q가 검사를 통과하지 못함: %v", title, got, err)
+			}
+		}
+	})
+}
+
 func TestFilePath(t *testing.T) {
 	t.Run("page_dirs에 단계 디렉토리가 없으면 설정 안내와 함께 에러다", func(t *testing.T) {
 		cfg := defaultCfg(t)

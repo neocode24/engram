@@ -1,0 +1,36 @@
+{{template "head" .Chrome}}
+<h1>위키 현황</h1>
+<p class="lede">수치만 냅니다. 문서 경로와 다음 행동 제안은 내지 않습니다. 제외 대상 문서를 가리키기 때문입니다.</p>
+<section class="group" aria-labelledby="stages-heading">
+  <h2 id="stages-heading">단계별 문서</h2>
+  <dl class="meta">
+    <dt>inbox</dt><dd>{{.Inbox}}개</dd>
+    <dt>sources</dt><dd>{{.Sources}}개</dd>
+    <dt>context</dt><dd>{{.Context}}개</dd>
+    <dt>archive</dt><dd>{{.Archive}}개</dd>
+  </dl>
+</section>
+<section class="group" aria-labelledby="links-heading">
+  <h2 id="links-heading">링크</h2>
+  <dl class="meta">
+    <dt>위키링크</dt><dd>{{.Links}}개</dd>
+    <dt>고아 문서</dt><dd>{{.Orphans}}개</dd>
+  </dl>
+</section>
+<section class="group" aria-labelledby="lint-heading">
+  <h2 id="lint-heading">규칙 검사</h2>
+  <dl class="meta">
+    <dt>검사한 파일</dt><dd>{{.LintFiles}}개</dd>
+    <dt>error</dt><dd>{{.LintError}}건</dd>
+    <dt>warn</dt><dd>{{.LintWarn}}건</dd>
+    <dt>reject</dt><dd>{{.LintReject}}건</dd>
+  </dl>
+</section>
+<section class="group" aria-labelledby="backlog-heading">
+  <h2 id="backlog-heading">적체 압력</h2>
+  <dl class="meta">
+    <dt>승급할 수 있는 문서</dt><dd>{{.Promotable}}개</dd>
+    <dt>노후한 context 문서</dt><dd>{{.Stale}}개</dd>
+  </dl>
+</section>
+{{template "foot" .Chrome}}

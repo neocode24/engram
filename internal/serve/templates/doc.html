@@ -1,0 +1,26 @@
+{{template "head" .Chrome}}
+<article class="doc">
+  <h1>{{.Doc.Title}}</h1>
+  <p class="path">{{.Doc.Rel}}</p>
+  {{if .Doc.Fields}}
+  <dl class="meta">
+    {{range .Doc.Fields}}<dt>{{.Key}}</dt><dd>{{.Value}}</dd>
+    {{end}}
+  </dl>
+  {{end}}
+  <div class="doc-body">
+{{.Body}}
+  </div>
+</article>
+<section class="backlinks" aria-labelledby="backlinks-heading">
+  <h2 id="backlinks-heading">백링크</h2>
+  {{if .Backlinks}}
+  <ul class="doc-list">
+    {{range .Backlinks}}<li><a href="{{.URL}}">{{.Title}}</a><span class="path">{{.Field}}</span></li>
+    {{end}}
+  </ul>
+  {{else}}
+  <p class="empty">이 문서를 가리키는 링크가 없습니다.</p>
+  {{end}}
+</section>
+{{template "foot" .Chrome}}

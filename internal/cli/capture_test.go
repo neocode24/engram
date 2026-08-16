@@ -149,6 +149,92 @@ func TestCapture(t *testing.T) {
 	})
 }
 
+func TestCaptureSlugSafety(t *testing.T) {
+	// 명시한 슬러그도 파일시스템 안전 검사를 받는다(ADR 0045).
+	// 거절 대상은 파일을 만들 수 없게 하는 것뿐이고 취향인 규칙은
+	// 강제하지 않는다.
+	t.Run("파일시스템이 감당하지 못하는 슬러그를 거절합니다", func(t *testing.T) {
+		tests := []struct {
+			slug string
+			want string
+		}{
+			{slug: "a:b", want: "쓸 수 없는 문자"},
+			{slug: "CON", want: "예약 파일명"},
+			{slug: "con", want: "예약 파일명"},
+			{slug: "PRN", want: "예약 파일명"},
+			{slug: "aux", want: "예약 파일명"},
+			{slug: "NUL", want: "예약 파일명"},
+			{slug: "com1", want: "예약 파일명"},
+			{slug: "LPT1", want: "예약 파일명"},
+			{slug: "trailing.", want: "점이나 공백으로 끝납니다"},
+			{slug: "trailing ", want: "점이나 공백으로 끝납니다"},
+			{slug: "제어\t문자", want: "제어 문자"},
+			{slug: "sub/dir", want: "경로 구분자"},
+			{slug: `sub\dir`, want: "경로 구분자"},
+			{slug: "../escape", want: "경로 구분자"},
+		}
+		for _, tt := range tests {
+			dir := initWiki(t)
+			out, err := runIngestRoot(t, "", "capture", "--wiki", dir,
+				"--now", "2026-01-01T00:00:00Z", "--slug", tt.slug, "내용")
+			if err == nil {
+				t.Errorf("슬러그 %q는 거절되어야 함\n출력: %s", tt.slug, out)
+				continue
+			}
+			if !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("슬러그 %q 거절 메시지에 %q 없음: %v", tt.slug, tt.want, err)
+			}
+			// 거절했으면 아무 파일도 남지 않는다.
+			entries, readErr := os.ReadDir(filepath.Join(dir, "inbox"))
+			if readErr == nil && len(entries) > 0 {
+				t.Errorf("슬러그 %q가 거절되었는데 파일이 남음: %v", tt.slug, entries[0].Name())
+			}
+		}
+	})
+
+	t.Run("소문자와 하이픈 정규화를 강제하지 않습니다", func(t *testing.T) {
+		// ADR 0020의 "사용자는 언제든 슬러그를 명시해 파생을 덮어쓸 수
+		// 있다"가 사는 자리다. 명시한 값을 조용히 고치지 않는다.
+		for _, slug := range []string{"대문자-슬러그", "UPPER-Case", "공백 있는 슬러그", "한글-슬러그"} {
+			dir := initWiki(t)
+			out, err := runIngestRoot(t, "", "capture", "--wiki", dir,
+				"--now", "2026-01-01T00:00:00Z", "--slug", slug, "내용")
+			if err != nil {
+				t.Errorf("슬러그 %q는 통과해야 함: %v\n출력: %s", slug, err, out)
+				continue
+			}
+			want := filepath.Join(dir, "inbox", "2026-01-01-"+slug+".md")
+			if _, err := os.Stat(want); err != nil {
+				t.Errorf("슬러그 %q가 그대로 파일명이 되지 않음: %v", slug, err)
+			}
+		}
+	})
+
+	t.Run("파생 경로의 파일명이 그대로입니다", func(t *testing.T) {
+		// 안전 검사는 명시 경로에만 붙는다. 제목에서 만드는 슬러그는
+		// 전과 같은 파일명을 낸다.
+		tests := []struct {
+			title string
+			want  string
+		}{
+			{title: "회의 메모 내용", want: "2026-01-01-회의-메모-내용.md"},
+			{title: "Table Driven Tests", want: "2026-01-01-table-driven-tests.md"},
+			{title: "go  --  table  tests__v2", want: "2026-01-01-go-table-tests-v2.md"},
+		}
+		for _, tt := range tests {
+			dir := initWiki(t)
+			if _, err := runIngestRoot(t, "", "capture", "--wiki", dir,
+				"--now", "2026-01-01T00:00:00Z", "--title", tt.title, "내용"); err != nil {
+				t.Errorf("제목 %q capture 실패: %v", tt.title, err)
+				continue
+			}
+			if _, err := os.Stat(filepath.Join(dir, "inbox", tt.want)); err != nil {
+				t.Errorf("제목 %q의 파생 파일명이 바뀜: %v", tt.title, err)
+			}
+		}
+	})
+}
+
 func TestSource(t *testing.T) {
 	t.Run("원본을 sources에 넣고 updated를 쓰지 않습니다", func(t *testing.T) {
 		dir := initWiki(t)
