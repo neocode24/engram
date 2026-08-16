@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>engram 오리엔테이션: 메모가 지식이 되는 파이프라인</title>
+<meta name="description" content="LLM wiki 패턴과 engram의 승급 파이프라인을 60분에 설명하는 강의 자료. 슬라이드 모드와 읽기 모드를 한 파일에 담았다.">
+<style>
+/* ---------- 토큰 ---------- */
+:root{
+  --bg:#faf8f4; --bg2:#f1ede5; --ink:#1d1d1b; --ink2:#4b4a45; --mute:#8b877e;
+  --line:#dcd7cc; --acc:#0f766e; --acc2:#d9f0ec; --warn:#b7791f; --warn2:#fbefd6;
+  --rej:#b3261e; --rej2:#f9e0dd; --ok:#2f7d4a; --ok2:#e0f2e6;
+  --term:#171a1f; --termfg:#e6e6e0; --termdim:#8a9099; --termgreen:#7bd88f; --termred:#ff7b72; --termyellow:#e3b341; --termcyan:#79c0ff;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding","Nanum Gothic Coding",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic","Segoe UI",Roboto,sans-serif;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{overflow:hidden}
+a{color:var(--acc)}
+code,kbd,pre{font-family:var(--mono)}
+code{background:var(--bg2);padding:.08em .35em;border-radius:5px;font-size:.92em}
+kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 .35em;font-size:.85em;background:#fff}
+h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-.01em}
+p{margin:.35em 0}
+ul,ol{margin:.3em 0 .3em 1.2em;padding:0}
+li{margin:.25em 0}
+strong{font-weight:700;color:var(--ink)}
+.small{font-size:.8em;color:var(--ink2)}
+.mute{color:var(--mute)}
+.acc{color:var(--acc)} .rej{color:var(--rej)} .warn{color:var(--warn)} .ok{color:var(--ok)}
+hr{border:0;border-top:1px solid var(--line);margin:1em 0}
+
+/* ---------- 상단 바 ---------- */
+#bar{position:fixed;top:0;left:0;right:0;height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;background:rgba(250,248,244,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:50;font-size:13px}
+#bar .brand{font-weight:700;letter-spacing:.02em;margin-right:6px}
+#bar .brand span{color:var(--acc)}
+#chapters{display:flex;gap:2px;flex:1;overflow:hidden}
+#chapters button{border:0;background:transparent;color:var(--mute);padding:6px 9px;border-radius:8px;cursor:pointer;font:inherit;white-space:nowrap}
+#chapters button.cur{color:var(--ink);background:var(--bg2);font-weight:600}
+#chapters button:hover{color:var(--ink)}
+#bar .ctl{display:flex;gap:6px;align-items:center}
+#bar .ctl button{border:1px solid var(--line);background:#fff;color:var(--ink2);border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit}
+#bar .ctl button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+#counter{color:var(--mute);min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
+#prog{position:fixed;top:44px;left:0;height:3px;background:var(--acc);width:0;z-index:51;transition:width .25s}
+
+/* ---------- 슬라이드 모드 ---------- */
+#deck{position:absolute;inset:47px 0 0 0;overflow:hidden}
+.slide{position:absolute;inset:0;display:none;padding:4vh 6vw 6vh;font-size:clamp(15px,1.55vw,23px);line-height:1.55}
+.slide.active{display:flex;flex-direction:column;overflow-y:auto;animation:fadein .35s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.slide .in{max-width:1180px;width:100%;margin:auto}
+.slide h1{font-size:2.6em;font-weight:800;margin-bottom:.35em}
+.slide h2{font-size:1.9em;font-weight:800;margin-bottom:.55em}
+.slide h3{font-size:1.15em;font-weight:700;margin:.4em 0 .2em}
+.slide .lead{font-size:1.15em;color:var(--ink2);max-width:34em}
+.slide .kicker{font-size:.72em;text-transform:uppercase;letter-spacing:.14em;color:var(--acc);font-weight:700;margin-bottom:.8em}
+.slide .big{font-size:1.5em;font-weight:700;line-height:1.35;max-width:24em}
+.slide .foot{margin-top:1.4em;font-size:.72em;color:var(--mute)}
+.slide.center{text-align:center}
+.slide.center .in > *{margin-left:auto;margin-right:auto}
+.slide.dark{background:var(--term);color:var(--termfg)}
+.slide.dark h1,.slide.dark h2,.slide.dark strong{color:#fff}
+.slide.dark .lead,.slide.dark .mute{color:#aab0b8}
+.slide.chap .kicker{font-size:.9em}
+.slide.chap h1{font-size:3em}
+.slide.chap .num{font-size:9em;font-weight:900;color:var(--acc2);line-height:1;position:absolute;right:6vw;bottom:4vh;user-select:none}
+.slide.dark.chap .num{color:#252a33}
+
+/* 프래그먼트 */
+.frag{opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s}
+.frag.on{opacity:1;transform:none}
+body.read .frag{opacity:1;transform:none}
+
+/* 격자, 카드, 표 */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2.2em;align-items:start}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.4em;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:.9em 1.1em}
+.card h3{margin-top:0}
+.card.acc{border-color:var(--acc);background:#fbfffe}
+.card.rej{border-color:var(--rej);background:#fffafa}
+.card.warn{border-color:var(--warn);background:#fffdf7}
+.tag{display:inline-block;white-space:nowrap;font-size:.7em;font-weight:700;letter-spacing:.06em;padding:.15em .55em;border-radius:999px;background:var(--bg2);color:var(--ink2);vertical-align:middle}
+.tag.acc{background:var(--acc2);color:var(--acc)} .tag.rej{background:var(--rej2);color:var(--rej)} .tag.warn{background:var(--warn2);color:var(--warn)} .tag.ok{background:var(--ok2);color:var(--ok)}
+table{border-collapse:collapse;width:100%;font-size:.88em}
+th,td{text-align:left;padding:.45em .7em;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;color:var(--ink2);font-size:.85em;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}
+.dark table th,.dark table td{border-color:#2b303a}
+pre.code{background:var(--term);color:var(--termfg);border-radius:var(--r);padding:.9em 1.1em;font-size:.78em;line-height:1.5;overflow:auto;margin:.5em 0}
+pre.code .k{color:var(--termcyan)} pre.code .s{color:var(--termgreen)} pre.code .c{color:var(--termdim)} pre.code .y{color:var(--termyellow)}
+blockquote{margin:.6em 0;padding:.5em 1em;border-left:4px solid var(--acc);background:#fff;border-radius:0 8px 8px 0;color:var(--ink2)}
+blockquote cite{display:block;font-size:.75em;color:var(--mute);margin-top:.3em;font-style:normal}
+
+/* 터미널 */
+.term{background:var(--term);color:var(--termfg);border-radius:var(--r);font-family:var(--mono);font-size:.7em;line-height:1.55;padding:0;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.18);position:relative}
+.term .tb{display:flex;align-items:center;gap:6px;padding:8px 12px;background:#0f1216;border-bottom:1px solid #262b33;font-size:.85em;color:var(--termdim)}
+.term .tb i{width:11px;height:11px;border-radius:50%;background:#3a4049;display:inline-block}
+.term .tb i:nth-child(1){background:#ff5f57}.term .tb i:nth-child(2){background:#febc2e}.term .tb i:nth-child(3){background:#28c840}
+.term .tb .t{margin-left:8px}
+.term .tb .re{margin-left:auto;cursor:pointer;border:1px solid #333a45;border-radius:6px;padding:1px 8px;color:#aab0b8;background:transparent;font:inherit}
+.term .tb .re:hover{color:#fff;border-color:#666}
+.term .body{padding:12px 16px 14px;min-height:8em;max-height:62vh;overflow:auto;white-space:pre-wrap;word-break:break-word}
+body.read .term .body{max-height:none}
+.term .p{color:var(--termgreen)} .term .cmd{color:#fff} .term .out{color:var(--termfg)} .term .err{color:var(--termred)} .term .dim{color:var(--termdim)} .term .hl{color:var(--termyellow)} .term .cy{color:var(--termcyan)}
+.term .cur{display:inline-block;width:.55em;height:1.1em;background:#cfd3d8;vertical-align:-.15em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- SVG 도식 공통 ---------- */
+svg.fig{width:100%;height:auto;display:block;overflow:visible}
+svg .lbl{font-family:var(--sans);font-size:15px;fill:var(--ink)}
+svg .lbl.s{font-size:12.5px;fill:var(--ink2)}
+svg .lbl.m{font-family:var(--mono);font-size:13px}
+svg.sm .lbl.s{font-size:12px}
+svg .lbl.w{fill:#fff}
+svg .box{fill:#fff;stroke:var(--line);stroke-width:1.5}
+svg .box.acc{fill:var(--acc2);stroke:var(--acc)}
+svg .box.rej{fill:var(--rej2);stroke:var(--rej)}
+svg .box.warn{fill:var(--warn2);stroke:var(--warn)}
+svg .box.ok{fill:var(--ok2);stroke:var(--ok)}
+svg .box.dim{fill:var(--bg2);stroke:var(--line)}
+svg .ln{stroke:var(--ink2);stroke-width:1.6;fill:none}
+svg .ln.acc{stroke:var(--acc)} svg .ln.rej{stroke:var(--rej)} svg .ln.dash{stroke-dasharray:5 5} svg .ln.thin{stroke-width:1.1;stroke:var(--mute)}
+svg .node{fill:#fff;stroke:var(--acc);stroke-width:2}
+svg .node.old{fill:var(--bg2);stroke:var(--mute)}
+svg .node.orph{fill:var(--rej2);stroke:var(--rej)}
+marker path{fill:var(--ink2)}
+marker.acc path{fill:var(--acc)}
+/* 애니메이션은 슬라이드가 활성일 때만 돈다 */
+.a{opacity:0}
+.active .a{animation:appear .5s ease forwards}
+.active .a.d1{animation-delay:.6s}.active .a.d2{animation-delay:1.2s}.active .a.d3{animation-delay:1.8s}.active .a.d4{animation-delay:2.4s}.active .a.d5{animation-delay:3s}.active .a.d6{animation-delay:3.6s}.active .a.d7{animation-delay:4.2s}.active .a.d8{animation-delay:4.8s}
+@keyframes appear{to{opacity:1}}
+.active .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.2s ease forwards}
+.active .draw.d1{animation-delay:.6s}.active .draw.d2{animation-delay:1.2s}.active .draw.d3{animation-delay:1.8s}.active .draw.d4{animation-delay:2.4s}
+@keyframes draw{to{stroke-dashoffset:0}}
+.active .pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ---------- 노트 ---------- */
+.notes{display:none}
+#notepane{position:fixed;right:0;top:47px;bottom:0;width:min(420px,40vw);background:#fff;border-left:1px solid var(--line);padding:18px 20px;overflow:auto;font-size:14px;line-height:1.6;color:var(--ink2);z-index:40;transform:translateX(100%);transition:transform .25s}
+#notepane.on{transform:none}
+#notepane h4{margin:0 0 .6em;color:var(--ink);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+#notepane p{margin:.5em 0}
+
+/* ---------- 읽기 모드 ---------- */
+body.read{overflow:auto}
+body.read #deck{position:static;inset:auto;overflow:visible;padding-top:60px}
+body.read .slide{position:relative;display:block;inset:auto;min-height:0;padding:3.2em 6vw 1.4em;font-size:clamp(15px,1.15vw,18px);animation:none;border-bottom:1px solid var(--line)}
+body.read .slide.center{text-align:left}
+body.read .slide.center .in > *{margin-left:0}
+body.read .slide.chap{padding:4em 6vw 2em;background:var(--bg2)}
+body.read .slide.chap .num{font-size:5em;bottom:.2em}
+body.read .slide.dark.chap{background:var(--term)}
+body.read .slide h1{font-size:2.1em}
+body.read .slide h2{font-size:1.6em}
+body.read .notes{display:block;max-width:1180px;margin:1.6em auto 0;padding:1em 1.2em;background:#fff;border:1px dashed var(--line);border-radius:var(--r);font-size:.9em;color:var(--ink2);line-height:1.7}
+body.read .notes::before{content:"강사 노트";display:block;font-size:.72em;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--acc);margin-bottom:.4em}
+body.read .dark .notes{background:#1f232a;border-color:#333a45;color:#c9ced5}
+body.read .dark .notes code,.dark code{background:#2b303a;color:#e6e6e0}
+body.read #notepane{display:none}
+body.read .slide.in-view .a{animation:appear .5s ease forwards}
+body.read .slide.in-view .a.d1{animation-delay:.6s}body.read .slide.in-view .a.d2{animation-delay:1.2s}body.read .slide.in-view .a.d3{animation-delay:1.8s}body.read .slide.in-view .a.d4{animation-delay:2.4s}body.read .slide.in-view .a.d5{animation-delay:3s}body.read .slide.in-view .a.d6{animation-delay:3.6s}body.read .slide.in-view .a.d7{animation-delay:4.2s}body.read .slide.in-view .a.d8{animation-delay:4.8s}
+body.read .slide.in-view .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.2s ease forwards}
+body.read .slide.in-view .draw.d1{animation-delay:.6s}body.read .slide.in-view .draw.d2{animation-delay:1.2s}body.read .slide.in-view .draw.d3{animation-delay:1.8s}body.read .slide.in-view .draw.d4{animation-delay:2.4s}
+body.read .slide.in-view .pulse{animation:pulse 1.6s ease-in-out infinite}
+body.read .slide.in-view .tok{animation-play-state:running}
+body.read .slide .tok{animation-play-state:paused}
+body.read #hint{display:none}
+
+/* 안내 */
+#hint{position:fixed;left:12px;bottom:10px;font-size:12px;color:var(--mute);z-index:40}
+#hint kbd{font-size:11px}
+@media (max-width:820px){
+  .cols,.cols3{grid-template-columns:1fr}
+  #chapters{display:none}
+  .slide{padding:3vh 5vw 5vh}
+  #notepane{width:88vw}
+}
+@media print{
+  #bar,#prog,#hint,#notepane{display:none!important}
+  body{overflow:visible}
+  #deck{position:static}
+  .slide{position:relative;display:block!important;page-break-inside:avoid;padding:2em 1em}
+  .frag{opacity:1;transform:none}
+  .notes{display:block}
+}
+</style>
+</head>
+<body>
+<div id="bar">
+  <div class="brand">engram <span>오리엔테이션</span></div>
+  <div id="chapters"></div>
+  <div class="ctl">
+    <button id="btnNotes" title="강사 노트 (N)">노트</button>
+    <button id="btnMode" title="읽기 모드 전환 (R)">읽기 모드</button>
+    <span id="counter">1 / 1</span>
+  </div>
+</div>
+<div id="prog"></div>
+<div id="notepane"><h4>강사 노트</h4><div id="notebody"></div></div>
+<div id="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> 이동 &nbsp; <kbd>Space</kbd> 다음 &nbsp; <kbd>R</kbd> 읽기 모드 &nbsp; <kbd>N</kbd> 노트 &nbsp; <kbd>Home</kbd> <kbd>End</kbd> 처음과 끝</div>
+
+<div id="deck">
+<!-- ============ 0. 표지 ============ -->
+<section class="slide center" data-ch="0">
+  <div class="in">
+    <div class="kicker">engram course / unit 1 / orientation</div>
+    <h1>메모는 쌓이는데<br>지식은 안 쌓이는 문제</h1>
+    <p class="lead" style="margin:0 auto">LLM wiki 패턴, 그리고 그것을 코드로 강제하는 도구 <strong>engram</strong>. 60분 오리엔테이션.</p>
+    <p class="foot">대상: CLI 에이전트(Claude Code 등)를 이미 쓰는 개발자. 이 파일은 슬라이드이자 읽기 문서다. 상단의 <strong>읽기 모드</strong>를 누르면 강사 노트가 함께 펼쳐진다.</p>
+  </div>
+  <aside class="notes">
+    <p>시작 전에 두 가지를 확인한다. 첫째, 수강생 대부분이 Claude Code나 유사한 CLI 에이전트를 써 봤는지. 둘째, Obsidian이나 마크다운 노트를 굴려 본 사람이 얼마나 되는지. 앞의 답이 많으면 4장의 "LLM을 부르지 않는다"에서 시간을 더 쓰고, 뒤의 답이 많으면 3장의 "슬러그는 무한히 생긴다"에서 공감대가 빨리 잡힌다.</p>
+    <p>이 덱은 도구 사용법 강의가 아니다. "왜 이런 체계가 필요했고, 왜 결국 도구가 필요했나"를 60분에 심는 것이 목표다. 커맨드 실습은 2단위부터다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="0">
+  <div class="in">
+    <h2>오늘 얻어갈 것 다섯 가지</h2>
+    <ol style="font-size:1.1em;line-height:1.7">
+      <li class="frag">LLM wiki가 무엇이고 RAG와 어디서 갈라지는지 한 문장으로 말할 수 있다.</li>
+      <li class="frag">"승급"이라는 개념이 왜 이 체계의 전부인지 안다.</li>
+      <li class="frag">디렉토리가 분류함이 아니라 <strong>성숙 단계</strong>라는 관점을 갖는다.</li>
+      <li class="frag">engram이 무엇을 강제하고 무엇을 사람에게 남기는지, 그 경계의 기준을 안다.</li>
+      <li class="frag">개인 위키가 조직 자산이 되려면 무엇이 더 필요한지 질문을 갖고 돌아간다.</li>
+    </ol>
+    <p class="foot frag">진행: 1장 원론 (10분), 2장 내가 추구하는 wiki (12분), 3장 해결 방향 (10분), 4장 engram (20분, 시연 포함), 5장 개인에서 조직으로 (8분)</p>
+  </div>
+  <aside class="notes">
+    <p>다섯째 항목이 답이 아니라 질문인 이유를 미리 말해 둔다. 5장은 지금 코드에 없는 부분이 많고, 강사도 답을 다 갖고 있지 않다. 그 사실을 감추지 않는 것이 이 자료의 태도다.</p>
+  </aside>
+</section>
+
+<!-- ============ 1. LLM wiki란 ============ -->
+<section class="slide chap dark" data-ch="1">
+  <div class="in">
+    <div class="kicker">1장</div>
+    <h1>LLM wiki란 무엇인가</h1>
+    <p class="lead">원론과 원칙은 짧게. 카파시가 말한 것, RAG와 다른 것, 그리고 원칙 세 줄.</p>
+  </div>
+  <div class="num">1</div>
+  <aside class="notes"><p>이 장은 10분을 넘기지 않는다. 수강생이 이미 아는 이야기가 많다. 목적은 뒤에서 쓸 어휘를 맞추는 것이다. 원본(sources), 위키, 스키마, ingest, query, lint. 이 여섯 단어만 남기면 된다.</p></aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>노트 앱은 넣기 쉽다. 그래서 넣기만 하고 끝난다.</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">회의록, 링크, 음성 메모, 스크린샷. 들어오는 양은 계속 늘고, 6개월 뒤 남는 것은 검색되지 않는 메모 더미다.</p>
+        <ul>
+          <li class="frag">같은 조사를 두 번 한다. 지난번 결론을 못 찾아서.</li>
+          <li class="frag">찾아도 못 믿는다. 그때의 결론이 지금도 유효한지 모른다.</li>
+          <li class="frag">문서끼리 연결이 없다. 하나를 열면 거기서 끝난다.</li>
+        </ul>
+        <p class="frag big" style="margin-top:.8em">문제는 저장이 아니라 <span class="acc">연결과 성숙</span>이다.</p>
+      </div>
+      <div>
+        <svg class="fig" viewBox="0 0 420 300" aria-label="쌓이기만 하는 메모">
+          <g class="a"><rect class="box dim" x="20" y="230" width="90" height="46" rx="8"/><text class="lbl s" x="65" y="258" text-anchor="middle">회의록</text></g>
+          <g class="a d1"><rect class="box dim" x="120" y="230" width="90" height="46" rx="8"/><text class="lbl s" x="165" y="258" text-anchor="middle">링크</text></g>
+          <g class="a d2"><rect class="box dim" x="220" y="230" width="90" height="46" rx="8"/><text class="lbl s" x="265" y="258" text-anchor="middle">음성 메모</text></g>
+          <g class="a d3"><rect class="box dim" x="320" y="230" width="90" height="46" rx="8"/><text class="lbl s" x="365" y="258" text-anchor="middle">기술 문서</text></g>
+          <g class="a d4"><rect class="box dim" x="70" y="176" width="90" height="46" rx="8"/><rect class="box dim" x="170" y="176" width="90" height="46" rx="8"/><rect class="box dim" x="270" y="176" width="90" height="46" rx="8"/></g>
+          <g class="a d5"><rect class="box dim" x="120" y="122" width="90" height="46" rx="8"/><rect class="box dim" x="220" y="122" width="90" height="46" rx="8"/></g>
+          <g class="a d6"><rect class="box dim" x="170" y="68" width="90" height="46" rx="8"/></g>
+          <g class="a d7"><text class="lbl" x="215" y="40" text-anchor="middle" fill="var(--rej)">연결 0개. 검색해도 안 나온다.</text></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>수강생 각자의 경험을 30초 정도 끌어낸다. "지난 분기에 했던 조사를 다시 한 적 있는 분?" 손이 많이 올라온다. 이 자료의 모든 장치는 이 한 장면을 없애기 위한 것이다.</p>
+    <p>핵심 문장은 마지막 줄이다. 저장은 이미 잘 된다. 안 되는 것은 연결(문서끼리)과 성숙(러프한 메모가 검증된 결론이 되는 과정)이다. 뒤에서 engram의 게이트가 연결을, 승급 파이프라인이 성숙을 맡는다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <div class="kicker">Andrej Karpathy, "LLM Wiki", 2026년 4월 (GitHub gist)</div>
+    <h2>카파시의 LLM wiki: 사람은 원본을 고르고, LLM이 위키를 유지한다</h2>
+    <div class="cols">
+      <div>
+        <h3>세 층</h3>
+        <table>
+          <tr><td><strong>raw sources</strong></td><td>불변의 원본. LLM은 읽기만 하고 고치지 않는다</td></tr>
+          <tr><td><strong>the wiki</strong></td><td>LLM이 만든 마크다운. 요약, 개체 페이지, 개념 페이지, 상호 링크</td></tr>
+          <tr><td><strong>the schema</strong></td><td>구조와 절차를 정한 문서(예: CLAUDE.md). 사람과 에이전트 사이의 계약</td></tr>
+        </table>
+        <h3 style="margin-top:.9em">세 연산</h3>
+        <p><strong>ingest</strong> 새 원본을 읽고 관련 페이지를 갱신한다. <strong>query</strong> 위키를 읽고 인용과 함께 답한다. 좋은 답은 다시 페이지로 남긴다. <strong>lint</strong> 모순, 낡은 주장, 고아 페이지를 점검한다.</p>
+      </div>
+      <div>
+        <blockquote class="frag">"The tedious part of maintaining a knowledge base is not the reading or the thinking. It's the bookkeeping."<cite>Karpathy, LLM Wiki gist</cite></blockquote>
+        <blockquote class="frag">"Obsidian is the IDE. The LLM is the programmer. The wiki is the codebase."<cite>같은 글</cite></blockquote>
+        <p class="frag small">뿌리는 1945년 Vannevar Bush의 Memex다. 문서 사이의 연상 경로를 사람이 손으로 유지하는 것이 불가능해서 실현되지 못했고, 그 유지 비용을 LLM이 0에 가깝게 만들었다는 것이 카파시의 주장이다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>날짜와 출처를 정확히 말한다. 2026년 4월 GitHub gist. 이 자료를 만들 당시 이미 여러 구현체가 댓글로 달려 있었고 그중 팀용 구현은 페이지가 커밋되기 전 코드 리뷰 게이트를 두었다. 게이트라는 발상은 우리만의 것이 아니고, 이 자료의 차별점은 게이트를 코드로 강제한다는 데 있다는 점을 미리 짚어 둔다.</p>
+    <p>카파시의 원칙 하나를 강조한다. <em>사람은 위키 페이지를 쓰지 않는다.</em> 원본을 고르고, 방향을 정하고, 제안을 승인한다. 2장에서 우리 체계가 정확히 이 지점에서 갈라진다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>RAG는 매번 다시 조립하고, wiki는 한 번 컴파일하고 누적한다</h2>
+    <div class="cols">
+      <div>
+        <svg class="fig" viewBox="0 0 440 260" aria-label="RAG: 질의마다 조각을 다시 모은다">
+          <text class="lbl" x="0" y="18" font-weight="700">RAG</text>
+          <text class="lbl s" x="0" y="38">질의마다 원본 조각을 다시 찾아 붙인다. 남는 것이 없다.</text>
+          <g class="lbl s">
+            <rect class="box dim" x="0" y="70" width="80" height="34" rx="6"/><text x="40" y="92" text-anchor="middle">문서 A</text>
+            <rect class="box dim" x="0" y="112" width="80" height="34" rx="6"/><text x="40" y="134" text-anchor="middle">문서 B</text>
+            <rect class="box dim" x="0" y="154" width="80" height="34" rx="6"/><text x="40" y="176" text-anchor="middle">문서 C</text>
+            <rect class="box dim" x="0" y="196" width="80" height="34" rx="6"/><text x="40" y="218" text-anchor="middle">문서 D</text>
+          </g>
+          <g class="pulse">
+            <path class="ln thin" d="M80 87 C 160 87, 180 140, 250 140"/>
+            <path class="ln thin" d="M80 171 C 160 171, 180 140, 250 140"/>
+            <path class="ln thin" d="M80 213 C 160 213, 180 140, 250 140"/>
+          </g>
+          <rect class="box warn" x="250" y="118" width="120" height="44" rx="8"/>
+          <text class="lbl s" x="310" y="145" text-anchor="middle">답 (일회용)</text>
+          <text class="lbl s" x="310" y="190" text-anchor="middle" fill="var(--rej)">다음 질의에서 다시 처음부터</text>
+        </svg>
+      </div>
+      <div>
+        <svg class="fig" viewBox="0 0 440 260" aria-label="Wiki: 원본을 한 번 정리해 페이지로 남기고 연결이 누적된다">
+          <text class="lbl" x="0" y="18" font-weight="700">LLM wiki</text>
+          <text class="lbl s" x="0" y="38">원본을 한 번 정리해 페이지로 남긴다. 연결이 쌓인다.</text>
+          <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+          <g class="lbl s">
+            <rect class="box dim" x="0" y="90" width="70" height="30" rx="6"/><text x="35" y="110" text-anchor="middle">원본</text>
+            <rect class="box dim" x="0" y="130" width="70" height="30" rx="6"/><text x="35" y="150" text-anchor="middle">원본</text>
+            <rect class="box dim" x="0" y="170" width="70" height="30" rx="6"/><text x="35" y="190" text-anchor="middle">원본</text>
+          </g>
+          <path class="ln acc draw" d="M70 105 L 150 120" marker-end="url(#ar)"/>
+          <path class="ln acc draw d1" d="M70 145 L 150 145" marker-end="url(#ar)"/>
+          <path class="ln acc draw d2" d="M70 185 L 150 170" marker-end="url(#ar)"/>
+          <g class="a"><circle class="node" cx="180" cy="120" r="16"/></g>
+          <g class="a d1"><circle class="node" cx="200" cy="170" r="16"/><path class="ln acc" d="M186 135 L 194 155"/></g>
+          <g class="a d2"><circle class="node" cx="260" cy="110" r="16"/><path class="ln acc" d="M196 117 L 244 111"/></g>
+          <g class="a d3"><circle class="node" cx="290" cy="175" r="16"/><path class="ln acc" d="M216 171 L 274 174"/><path class="ln acc" d="M267 124 L 283 160"/></g>
+          <g class="a d4"><circle class="node" cx="350" cy="130" r="16"/><path class="ln acc" d="M276 113 L 334 127"/><path class="ln acc" d="M303 165 L 338 142"/></g>
+          <g class="a d5"><text class="lbl s" x="230" y="235" text-anchor="middle" fill="var(--acc)">다음 질의는 더 풍부한 위키에서 시작한다</text></g>
+        </svg>
+      </div>
+    </div>
+    <p class="frag" style="margin-top:.6em">둘은 경쟁 관계가 아니다. wiki 안에서 페이지를 찾는 데 검색을 쓰고, 그 결과가 다시 페이지가 되는 것이 차이다. <strong>축적되는가</strong>가 유일한 질문이다.</p>
+  </div>
+  <aside class="notes">
+    <p>수강생 중 RAG를 만들어 본 사람이 반박할 수 있다. "RAG도 캐시하면 되지 않나." 좋은 질문이고 답은 이렇다. 캐시는 같은 질의에만 답한다. wiki는 정리된 결론이 <em>다른</em> 질의의 재료가 된다. 카파시 원문의 표현으로는 "nothing is built up"이 RAG의 문제다.</p>
+    <p>engram 관점에서 이 슬라이드의 오른쪽 그림에 링크(엣지)가 그려지는 순간을 잘 봐 두라고 말한다. 4장에서 "링크가 2개 미만이면 승급을 거절한다"가 나올 때 이 그림으로 돌아온다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>원칙 세 줄</h2>
+    <div class="cols3">
+      <div class="card frag"><span class="tag acc">1</span><h3>원본은 불변이다</h3><p>읽고 인용하되 고치지 않는다. 결론이 틀렸을 때 되돌아갈 자리가 원본이다.</p></div>
+      <div class="card frag"><span class="tag acc">2</span><h3>위키는 연결이다</h3><p>페이지 하나는 노드다. 가치는 노드 수가 아니라 노드 사이의 링크에서 나온다.</p></div>
+      <div class="card frag"><span class="tag acc">3</span><h3>스키마가 계약이다</h3><p>무엇이 어디에 어떤 형식으로 놓이는지 문서로 정한다. 사람과 에이전트가 같은 계약을 읽는다.</p></div>
+    </div>
+    <p class="frag" style="margin-top:1.2em">이 세 줄은 카파시의 것이고, 우리도 그대로 받는다. 갈라지는 지점은 다음 장이다. <strong>누가 위키를 쓰는가, 그리고 무엇이 위키에 들어갈 자격을 얻는가.</strong></p>
+  </div>
+  <aside class="notes"><p>세 카드는 뒤에서 각각 sources 계층(불변), 게이트(연결), frontmatter와 engram.yaml(계약)로 구체화된다. 지금은 이름만 심는다.</p></aside>
+</section>
+
+<!-- ============ 2. 내가 추구하는 LLM wiki ============ -->
+<section class="slide chap dark" data-ch="2">
+  <div class="in">
+    <div class="kicker">2장</div>
+    <h1>내가 추구하는 LLM wiki는<br>무엇이 특별한가</h1>
+    <p class="lead">frontmatter, meta, script, 승급. 그리고 회의록과 음성과 기술자료라는 입력.</p>
+  </div>
+  <div class="num">2</div>
+  <aside class="notes"><p>이 장은 실제로 운영해 온 위키(공개 저장소에서는 upstream이라 부른다)의 방식을 설명한다. 사내 식별자는 쓰지 않는다. "운영 중인 위키", "upstream"이라고만 부른다.</p></aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>입력이 다양하다. 그래서 채널을 구분한다.</h2>
+    <div class="cols">
+      <div>
+        <table>
+          <tr><th>채널</th><th>들어오는 것</th><th>남길 메타데이터</th></tr>
+          <tr><td><strong>회의록</strong></td><td>회의 중 러프 캡처, 회의 후 결정과 액션과 미결</td><td>회의 제목, 참가자, 날짜</td></tr>
+          <tr><td><strong>음성</strong></td><td>전사 결과와 요약. 원본 오디오는 커밋하지 않는다</td><td>전사기, 화자, 용어 사전 교정 이력</td></tr>
+          <tr><td><strong>기술자료</strong></td><td>사내 위키, Confluence, 설계 문서, 웹 자료</td><td>출처 URL, 원본 작성일</td></tr>
+          <tr><td><strong>직접 작성</strong></td><td>개념 정리, 판단 기준, 체크리스트</td><td>작성일</td></tr>
+        </table>
+        <p class="small" style="margin-top:.7em">채널마다 남길 것이 다르므로 스키마에 <code>source_channel</code> 축이 있다. 채널마다 폴더를 만들지는 않는다. 축 값 하나로 남긴다.</p>
+      </div>
+      <div>
+        <div class="card frag">
+          <h3>회의록 여정의 마지막 고리</h3>
+          <p>회의 중 캡처, 회의 후 구조화, 액션 반출. 여기까지만 있으면 그냥 메모장이다. <strong>다음 회의 직전에 이전 회의록이 자동으로 회수되는 것</strong>이 핵심 가치다.</p>
+        </div>
+        <div class="card frag" style="margin-top:.8em">
+          <h3>음성 여정의 숨은 무기</h3>
+          <p>전사, 화자 분리, 용어 사전 치환, 사람의 오탈자 교정. 교정 내역이 사전에 피드백되어 다음 전사가 좋아진다. 전사 자체는 도구가 내장하지 않고 결과를 받는 인터페이스만 둔다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>수강생이 가장 공감하는 채널은 회의록이다. 오른쪽 첫 카드의 문장을 그대로 읽는다. 앞의 세 단계는 다들 하고 있다. 마지막 고리, 즉 다음 회의 전에 지난 결정이 스스로 나타나는 것이 이 체계의 존재 이유다. 4장의 resurface와 digest가 그 고리다.</p>
+    <p>"기술자료"에 사내 위키나 Confluence를 넣는 이유는 조직의 공식 문서가 개인의 판단 근거로 들어오는 경로를 열어 두기 위해서다. 5장의 개인에서 조직으로 가는 흐름과 대칭이다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>frontmatter는 장식이 아니라 제어면이다</h2>
+    <div class="cols">
+      <div>
+<pre class="code"><span class="c">---</span>
+<span class="k">type</span>: concept
+<span class="k">artifact_stage</span>: context      <span class="c"># inbox / source / context / archive</span>
+<span class="k">status</span>: promoted
+<span class="k">topics</span>: [llm, gateway]      <span class="c"># 개방 집합. 새 값은 경고</span>
+<span class="k">form</span>: note                  <span class="c"># 폐쇄 집합. 미정의 값은 오류</span>
+<span class="k">created</span>: 2026-08            <span class="c"># 원본이 쓰인 날. 연월만 알면 연월만</span>
+<span class="k">sourced_at</span>: 2026-08-16      <span class="c"># 위키에 편입된 날</span>
+<span class="k">updated</span>: 2026-08-16         <span class="c"># 도구가 git 이력에서 채운다</span>
+<span class="k">derived_from</span>:
+  - sources/2026-08-게이트웨이-벤치마크.md
+<span class="k">related</span>:
+  - "[[index]]"
+<span class="k">indexable</span>: true
+<span class="c">---</span></pre>
+      </div>
+      <div>
+        <p class="lead">기계가 읽는 상태다. 어느 단계에 있는지, 무엇에서 나왔는지, 무엇과 연결되는지, 검색 대상인지.</p>
+        <ul>
+          <li class="frag"><strong>단계</strong> <code>artifact_stage</code>가 위치를 선언하고 디렉토리가 그것과 일치해야 한다.</li>
+          <li class="frag"><strong>관계</strong> <code>derived_from</code>, <code>derived_context</code>, <code>related</code>. 링크는 본문에도, 필드에도 있다.</li>
+          <li class="frag"><strong>날짜 셋</strong> 원본 작성일, 편입일, 갱신일. 하나로 합치면 "오래된 자료를 최근에 넣었다"는 사실이 사라진다.</li>
+          <li class="frag"><strong>분류 두 facet</strong> 주제(<code>topics</code>)는 자라야 하니 열어 두고, 형태(<code>form</code>)는 자라면 무너지니 닫는다.</li>
+        </ul>
+        <p class="frag small">축은 14종이고 프리셋(<code>personal</code>, <code>education</code>, <code>team</code>)이 어느 축을 켤지 정한다. 개인용은 축이 적고 팀용은 민감도와 스코프가 켜진다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>이 슬라이드에서 시간을 아끼지 않는다. 뒤의 모든 규칙이 이 필드들 위에서 판정된다. 특히 두 가지를 강조한다.</p>
+    <p>첫째, <code>sources/</code> 문서에는 <code>updated</code>를 쓰지 않는다. 오타 하나 고친 것이 신선도를 오해하게 만들기 때문이다. 원본은 불변이라는 1장의 원칙이 필드 하나로 구현된 사례다.</p>
+    <p>둘째, <code>topics</code>는 열려 있고 <code>form</code>은 닫혀 있다. 이 구분이 없으면 오타로 생긴 분류가 몇 달 만에 자리를 잡아 taxonomy가 무너진다. 문서 필드는 <code>form</code> 단수(하나만 고른다), 설정 키는 <code>forms</code> 복수(허용값 목록)다. 비대칭은 실수가 아니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>meta: 사람이 읽고 지키는 규칙 명세 7종</h2>
+    <div class="cols">
+      <div>
+        <table>
+          <tr><th>명세</th><th>정하는 것</th></tr>
+          <tr><td><code>frontmatter-schema</code></td><td>단계별 필수 필드, 허용값, 날짜 셋</td></tr>
+          <tr><td><code>wiki-artifact-schema</code></td><td>산출물을 폴더가 아니라 축 값 조합으로 분류. 유형별 기본 위치</td></tr>
+          <tr><td><code>promotion-rules</code></td><td>승급 기준 다섯 줄, 금지 네 줄, 승급 문서가 갖출 다섯</td></tr>
+          <tr><td><code>wiki-graph-policy</code></td><td>관계 필드 여섯과 방향. 링크는 의미 있을 때만</td></tr>
+          <tr><td><code>taxonomy</code></td><td>채널, 유형, 민감도, 스코프의 초기 분류</td></tr>
+          <tr><td><code>ingest-rules</code></td><td>입력 여섯 단계. 원본 보존, 처리 노트, 사실 추출, 중복 확인, 승급 제안</td></tr>
+          <tr><td><code>security-rules</code></td><td>커밋 금지 항목. 민감 원본의 위치</td></tr>
+        </table>
+      </div>
+      <div>
+        <p class="lead">카파시의 "schema" 층이 여기서는 문서 일곱으로 나뉜다. <code>meta/</code> 아래 마크다운으로 두고 사람이 읽고 지켰다.</p>
+        <p class="frag">에이전트도 같은 문서를 읽는다. 저장소의 <code>AGENTS.md</code>가 이 일곱을 계약 파일로 선언하고, 에이전트는 작업 전에 그것을 읽는다.</p>
+        <div class="card warn frag" style="margin-top:.8em"><h3>그런데</h3><p>명세는 사람에게 "지켜라"고 말할 수 있을 뿐 지키게 만들지는 못한다. 그래서 스크립트가 붙었다. 다음 슬라이드.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>일곱을 다 외울 필요는 없다고 말한다. 4장에서 이 일곱이 어디로 갔는지 표 하나로 다시 나온다. 지금은 "규칙이 문서로 있었다"는 사실만 남긴다.</p>
+    <p>세 번째 줄 promotion-rules를 손가락으로 짚어 둔다. 열네 줄짜리 짧은 문서인데 이 프로젝트의 핵심이 거기서 나온다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>script와 hook: 지키게 만드는 첫 시도</h2>
+    <div class="cols">
+      <div>
+        <ul style="font-size:1.05em">
+          <li class="frag"><strong>lint 스크립트</strong> 프론트매터 필수 필드, 허용값, 깨진 링크를 검사한다. shell과 python.</li>
+          <li class="frag"><strong>git pre-commit hook</strong> lint가 실패하면 커밋을 막는다.</li>
+          <li class="frag"><strong>승급 스크립트</strong> inbox 문서를 context로 옮기며 필드를 채운다.</li>
+          <li class="frag"><strong>검색</strong> 한국어 문서라 외부 검색 엔진 도입을 시도했다가 철회했다. 임베딩 모델(bge-m3)을 로컬에 두는 방식으로 갔다.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card frag"><h3>잘 된 것</h3><p>빠르게 고쳐 쓴다. 규칙이 바뀌면 그날 스크립트를 고친다. 혼자 운영하는 사람에게는 이 유연성이 핵심 가치다.</p></div>
+        <div class="card rej frag" style="margin-top:.8em"><h3>안 된 것</h3>
+          <p>스크립트가 명세를 읽지 않고 허용값을 본문에 박아 두었다. 명세와 스크립트가 어긋난 지점이 실측으로 확인됐다.</p>
+          <p>남에게 줄 수 없다. Python venv, 모델 다운로드, hook 설정. 설치 진입장벽이 높고 "스크립트 묶음"은 제품으로 인지되지 않는다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>여기서 정직하게 말한다. 이 방식은 작성자 본인에게는 여전히 최선이고, 실제로 지금도 그렇게 운영한다. 문제는 두 가지뿐이다. 명세와 스크립트가 서로 다른 진실을 갖게 되는 것, 그리고 남에게 넘길 수 없다는 것. 4장의 engram은 이 둘을 풀기 위한 것이지 스크립트 운영을 대체하려는 것이 아니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>승급: 카파시와 갈라지는 지점</h2>
+    <div class="cols">
+      <div class="card">
+        <span class="tag">Karpathy</span>
+        <h3>사람은 위키를 쓰지 않는다</h3>
+        <p>사람은 원본을 고르고 질문을 던지고 제안을 승인한다. 위키 페이지는 LLM이 쓰고 유지한다. 유지 비용이 0에 가까우니 위키가 버려지지 않는다.</p>
+        <p class="small">위키에 들어갈 자격은 "LLM이 정리했는가"다.</p>
+      </div>
+      <div class="card acc">
+        <span class="tag acc">이 체계</span>
+        <h3>위키에는 성숙 단계가 있고, 위로 갈수록 자격이 필요하다</h3>
+        <p><code>inbox</code>는 아무거나 받는다. <code>sources</code>는 원본을 보존한다. <code>context</code>는 <strong>검수된 지식</strong>만 들어온다. 러프한 것이 <code>context</code>로 올라가는 행위가 <strong>승급</strong>이고, 승급에는 기준이 있다.</p>
+        <p class="small">위키에 들어갈 자격은 "사람이 검수했고 연결되어 있는가"다.</p>
+      </div>
+    </div>
+    <p class="frag" style="margin-top:1em">둘 다 LLM을 쓴다. 차이는 <strong>LLM의 산출물을 어디까지 믿을 것인가</strong>다. 회의록 요약, 분류 제안, 링크 후보는 LLM이 낸다. 그러나 그것이 "우리 팀의 결론"이 되는 순간은 사람이 정한다.</p>
+    <p class="frag small">에이전트가 위키에 쓸 수 있는 범위는 <code>inbox</code>까지다. 이 문장은 4장에서 MCP 도구 목록으로 다시 나온다.</p>
+  </div>
+  <aside class="notes">
+    <p>이 슬라이드가 2장의 결론이다. 카파시를 비판하는 것이 아니라고 분명히 한다. 개인 연구 노트라면 카파시 방식이 더 가볍고 좋다. 우리가 다루는 것은 회의 결정, 판단 기준, 조직의 결론이라 "누가 확정했는가"가 남아야 한다.</p>
+    <p>승급이라는 단어를 여기서 처음 정의한다. 러프한 문서가 검수된 지식이 되는 상태 이동. 이후 모든 장에서 이 단어를 그대로 쓴다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>승급 기준은 열네 줄이다</h2>
+    <div class="cols">
+      <div>
+        <h3 class="ok">승급하라 (다섯)</h3>
+        <ul class="small">
+          <li>재발할 질문에 답하는가</li>
+          <li>출처를 아는가</li>
+          <li>결론이 재사용할 만큼 안정적인가</li>
+          <li>민감한 세부가 제거되었거나 범위가 정해졌는가</li>
+          <li>중복과 충돌을 확인했는가</li>
+        </ul>
+        <h3 class="rej">승급하지 마라 (넷)</h3>
+        <ul class="small">
+          <li>일회성 잡담, 확인 안 된 추측, 원본 그대로의 덤프, 결론 없는 진행 중 메모</li>
+        </ul>
+        <h3>승급 문서가 갖출 것 (다섯)</h3>
+        <ul class="small">
+          <li>결론, 맥락, 현재 이해, 근거, <strong>관련 링크</strong></li>
+        </ul>
+      </div>
+      <div>
+        <p class="lead frag">이 열네 줄 중 기계가 판정할 수 있는 줄은 몇 개인가?</p>
+        <p class="frag big">하나. <span class="acc">관련 링크가 있는가.</span></p>
+        <p class="frag">"재발할 질문에 답하는가"는 판단이다. "결론이 안정적인가"도 판단이다. 셀 수 있는 것은 링크 수뿐이다.</p>
+        <p class="frag">이 관찰이 4장의 설계 전부를 결정한다. 열세 줄의 판단은 사람에게 그대로 남기고, 셀 수 있는 한 줄만 코드가 강제한다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>왼쪽을 읽고 오른쪽 질문을 던진 뒤 잠깐 기다린다. 수강생이 "링크"를 찾아내면 좋고, 못 찾으면 하나씩 지워 나간다. 이 슬라이드에서 "왜 게이트가 하나뿐인가"의 답이 이미 나온다. 4장에서는 확인만 한다.</p>
+  </aside>
+</section>
+
+<!-- ============ 3. 어떻게 해결할 것인가 ============ -->
+<section class="slide chap dark" data-ch="3">
+  <div class="in">
+    <div class="kicker">3장</div>
+    <h1>이 특별한 과정을<br>어떻게 해결할 것인가</h1>
+    <p class="lead">계층으로 관리한다. 슬러그는 무한히 생기니 폴더 대신 그래프. 데이터는 source로, 결정은 context로.</p>
+  </div>
+  <div class="num">3</div>
+  <aside class="notes"><p>2장이 "무엇이 특별한가"였다면 3장은 "그 특별함을 굴리려면 무엇이 필요한가"다. 아직 도구 이야기가 아니다. 도구 없이도 성립해야 하는 운영 원칙이다.</p></aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>디렉토리는 분류함이 아니라 성숙 단계다</h2>
+    <svg class="fig" viewBox="0 0 1000 300" aria-label="inbox에서 sources, context, archive로 문서가 이동한다" style="max-width:1000px;margin:0 auto">
+      <defs><marker id="ar2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+      <g>
+        <rect class="box dim" x="20" y="60" width="200" height="150" rx="14"/>
+        <text class="lbl m" x="120" y="90" text-anchor="middle" font-weight="700">inbox/</text>
+        <text class="lbl s" x="120" y="115" text-anchor="middle">러프 캡처</text>
+        <text class="lbl s" x="120" y="135" text-anchor="middle">검증 없음</text>
+        <text class="lbl s" x="120" y="155" text-anchor="middle">처리되면 비워진다</text>
+      </g>
+      <g>
+        <rect class="box" x="270" y="60" width="200" height="150" rx="14"/>
+        <text class="lbl m" x="370" y="90" text-anchor="middle" font-weight="700">sources/</text>
+        <text class="lbl s" x="370" y="115" text-anchor="middle">원본 보존</text>
+        <text class="lbl s" x="370" y="135" text-anchor="middle">append-only</text>
+        <text class="lbl s" x="370" y="155" text-anchor="middle">본문을 고치지 않는다</text>
+      </g>
+      <g>
+        <rect class="box acc" x="520" y="60" width="200" height="150" rx="14"/>
+        <text class="lbl m" x="620" y="90" text-anchor="middle" font-weight="700">context/</text>
+        <text class="lbl s" x="620" y="115" text-anchor="middle">검수된 지식</text>
+        <text class="lbl s" x="620" y="135" text-anchor="middle">재사용 가능한 결론</text>
+        <text class="lbl s" x="620" y="155" text-anchor="middle">게이트를 지나야 들어온다</text>
+      </g>
+      <g>
+        <rect class="box dim" x="770" y="60" width="200" height="150" rx="14"/>
+        <text class="lbl m" x="870" y="90" text-anchor="middle" font-weight="700">archive/</text>
+        <text class="lbl s" x="870" y="115" text-anchor="middle">수명 종료</text>
+        <text class="lbl s" x="870" y="135" text-anchor="middle">이력으로만 남는다</text>
+        <text class="lbl s" x="870" y="155" text-anchor="middle">링크는 깨지지 않는다</text>
+      </g>
+      <path class="ln" d="M220 135 L 268 135" marker-end="url(#ar2)"/>
+      <path class="ln acc" d="M470 135 L 518 135" marker-end="url(#ar2)"/>
+      <path class="ln" d="M720 135 L 768 135" marker-end="url(#ar2)"/>
+      <path class="ln acc" d="M120 210 C 120 270, 620 270, 620 212" marker-end="url(#ar2)"/>
+      <text class="lbl s" x="370" y="262" text-anchor="middle" fill="var(--acc)">promote (게이트)</text>
+      <text class="lbl s" x="244" y="122" text-anchor="middle">source</text>
+      <text class="lbl s" x="744" y="122" text-anchor="middle">archive</text>
+      <!-- 이동하는 문서 토큰 -->
+      <g class="tok" style="animation:tokmove 9s ease-in-out infinite">
+        <rect x="-16" y="-20" width="32" height="40" rx="4" fill="#fff" stroke="var(--ink)" stroke-width="1.5"/>
+        <path d="M-9 -8 h18 M-9 0 h18 M-9 8 h12" stroke="var(--mute)" stroke-width="1.5"/>
+      </g>
+      <text class="lbl s" x="500" y="24" text-anchor="middle">아래로 갈수록 검증된 지식이 된다. 검증은 없음, 스키마, 스키마 + 게이트, 스키마 순이다.</text>
+    </svg>
+    <style>
+      @keyframes tokmove{
+        0%{transform:translate(120px,180px);opacity:0}
+        6%{opacity:1}
+        25%{transform:translate(120px,180px)}
+        45%{transform:translate(370px,180px)}
+        58%{transform:translate(370px,180px)}
+        75%{transform:translate(620px,180px)}
+        85%{transform:translate(620px,180px)}
+        96%{transform:translate(870px,180px);opacity:1}
+        100%{transform:translate(870px,180px);opacity:0}
+      }
+      .slide:not(.active):not(.in-view) .tok{animation-play-state:paused}
+    </style>
+    <p class="frag" style="margin-top:.4em">폴더 이름이 주제가 아니다. "llm", "회의록" 같은 폴더를 만드는 순간 문서 하나가 두 폴더에 속하고 싶어진다. 주제는 <code>topics</code> 축이 맡고, 폴더는 <strong>얼마나 믿을 수 있는가</strong>만 말한다.</p>
+  </div>
+  <aside class="notes">
+    <p>이 도식은 뒤에서 세 번 더 나온다. 지금 심을 것은 하나다. 왼쪽에서 오른쪽으로 갈수록 신뢰가 오르고, 그중 <code>context/</code>로 들어가는 화살표에만 관문이 있다.</p>
+    <p>archive에서 나가는 화살표가 없는 것이 설계다. 폐기는 삭제가 아니라 이동이고, 되살리려면 사람이 명시적으로 다시 승급한다. 이때 슬러그가 유지되어 들어오는 링크가 안 깨진다는 점을 짚는다. 폐기된 결정을 가리키는 링크가 깨지면 "왜 폐기됐는가"라는 이력이 사라진다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>슬러그는 무한히 생긴다. 폴더로 못 막는다.</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">문서 하나가 슬러그 하나, 즉 노드 하나다. 회의 한 번에 셋씩 생긴다. 1년이면 수백, 팀이면 수천이다.</p>
+        <ul>
+          <li class="frag">폴더 트리는 깊어질수록 "어디 넣지"라는 질문이 늘고, 그 질문이 캡처를 막는다.</li>
+          <li class="frag">그래서 위치는 성숙 단계 넷으로 고정하고, 나머지 관계는 전부 <strong>링크</strong>로 표현한다. <code>[[슬러그]]</code> 하나가 엣지 하나다.</li>
+          <li class="frag">그러면 새 질문이 생긴다. <strong>연결 없는 노드</strong>는 어떻게 되는가. 그것이 고아(orphan)이고, 검색되지 않는 메모 더미의 정체다.</li>
+          <li class="frag">이름을 바꾸면 걸린 링크가 전부 따라가야 한다. 이건 선택 기능이 아니라 정의상 필수다.</li>
+        </ul>
+      </div>
+      <div>
+        <svg class="fig" viewBox="0 0 440 320" aria-label="노드가 늘어나며 링크가 생기고 고아 노드가 남는다">
+          <defs><marker id="ar3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+          <g class="a"><circle class="node" cx="80" cy="80" r="17"/><text class="lbl s" x="80" y="112" text-anchor="middle">index</text></g>
+          <g class="a d1"><circle class="node" cx="190" cy="60" r="17"/><path class="ln acc" d="M97 76 L 173 63"/></g>
+          <g class="a d2"><circle class="node" cx="160" cy="170" r="17"/><path class="ln acc" d="M92 95 L 150 156"/><path class="ln acc" d="M186 77 L 166 153"/></g>
+          <g class="a d3"><circle class="node" cx="290" cy="120" r="17"/><path class="ln acc" d="M207 64 L 274 113"/><path class="ln acc" d="M177 165 L 273 126"/></g>
+          <g class="a d4"><circle class="node" cx="270" cy="230" r="17"/><path class="ln acc" d="M177 175 L 253 226"/><path class="ln acc" d="M286 137 L 273 213"/></g>
+          <g class="a d5"><circle class="node" cx="380" cy="190" r="17"/><path class="ln acc" d="M306 126 L 367 178"/></g>
+          <g class="a d6"><circle class="node orph pulse" cx="380" cy="60" r="17"/><text class="lbl s" x="380" y="35" text-anchor="middle" fill="var(--rej)">고아. 링크 0개</text></g>
+          <g class="a d7"><circle class="node orph pulse" cx="70" cy="250" r="17"/><text class="lbl s" x="70" y="285" text-anchor="middle" fill="var(--rej)">고아</text></g>
+          <g class="a d8"><text class="lbl s" x="220" y="305" text-anchor="middle">노드는 계속 는다. 문제는 수가 아니라 연결 없는 노드다.</text></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>"슬러그"라는 단어를 처음 쓰는 수강생이 있을 수 있다. 파일명에서 확장자와 날짜 접두사를 뺀 고유 이름, 곧 <code>[[ ]]</code> 안에 들어가는 그 이름이라고 정의한다.</p>
+    <p>이 슬라이드의 결론은 "고아를 만들지 않는 것"이 위키 운영의 첫째 과제라는 것이다. 사람이 손으로 못 지키는 규칙이기도 하다. 4장에서 게이트가 정확히 이것만 막는다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>필요한 데이터는 source로, 중요한 결정은 context로</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">증거와 결론은 수명이 다르다.</p>
+        <p class="frag">회의록, 벤치마크, 기사 요약은 그 자체로 남아야 한다. 거기서 뽑아낸 결론이 나중에 틀렸다고 판명될 때 되돌아갈 지점이 원본이다. 결론을 만들면서 증거를 지우면 검증 경로가 끊긴다.</p>
+        <p class="frag">그래서 <code>sources/</code>에서 <code>context/</code>로 올릴 때는 <strong>이동이 아니라 파생</strong>이다. 원본은 그대로 남고 새 문서가 생기며, 둘 사이가 양방향으로 기록된다.</p>
+        <p class="frag"><code>inbox/</code>는 반대다. 러프 캡처를 남겨 두면 같은 내용이 두 벌이 되어 어느 쪽이 진실인지 묻는 질문이 영구히 생긴다. 그래서 <strong>이동</strong>이다.</p>
+      </div>
+      <div>
+        <svg class="fig" viewBox="0 0 440 300" aria-label="sources 문서에서 context 문서가 파생되고 양방향으로 기록된다">
+          <defs><marker id="ar4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+          <rect class="box" x="20" y="40" width="180" height="110" rx="12"/>
+          <text class="lbl m" x="110" y="66" text-anchor="middle">sources/</text>
+          <text class="lbl s" x="110" y="90" text-anchor="middle">2026-08-게이트웨이-벤치마크</text>
+          <text class="lbl m" x="110" y="118" text-anchor="middle" fill="var(--acc)">derived_context:</text>
+          <text class="lbl m" x="110" y="136" text-anchor="middle" fill="var(--acc)">  - llm-게이트웨이-조사</text>
+          <g class="a d1">
+            <rect class="box acc" x="240" y="40" width="180" height="110" rx="12"/>
+            <text class="lbl m" x="330" y="66" text-anchor="middle">context/</text>
+            <text class="lbl s" x="330" y="90" text-anchor="middle">llm-게이트웨이-조사</text>
+            <text class="lbl m" x="330" y="118" text-anchor="middle" fill="var(--acc)">derived_from:</text>
+            <text class="lbl m" x="330" y="136" text-anchor="middle" fill="var(--acc)">  - sources/2026-08-...</text>
+          </g>
+          <path class="ln acc draw" d="M200 80 L 238 80" marker-end="url(#ar4)"/>
+          <path class="ln acc draw d2" d="M240 120 L 202 120" marker-end="url(#ar4)"/>
+          <g class="a d2"><text class="lbl s" x="220" y="70" text-anchor="middle">파생</text></g>
+          <g class="a d3">
+            <text class="lbl s" x="110" y="190" text-anchor="middle">원본은 그대로. 본문 불변.</text>
+            <text class="lbl s" x="110" y="208" text-anchor="middle"><tspan class="lbl m">updated</tspan> 없음</text>
+            <text class="lbl s" x="330" y="190" text-anchor="middle">결론. 재사용 가능.</text>
+            <text class="lbl s" x="330" y="208" text-anchor="middle">틀리면 원본으로 돌아간다</text>
+          </g>
+          <g class="a d4">
+            <rect class="box dim" x="20" y="240" width="180" height="44" rx="10"/>
+            <text class="lbl s" x="110" y="267" text-anchor="middle">inbox/ 문서는 이동. 안 남는다</text>
+            <path class="ln" d="M200 262 L 238 262" marker-end="url(#ar4)"/>
+            <rect class="box acc" x="240" y="240" width="180" height="44" rx="10"/>
+            <text class="lbl s" x="330" y="267" text-anchor="middle">context/</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>이 슬라이드의 원칙을 한 문장으로 다시 말한다. "이 결론의 근거가 무엇이었나"와 "이 자료에서 무엇이 나왔나"를 둘 다 물을 수 있어야 한다. 그래서 양방향 필드다.</p>
+    <p>"결정"이라는 단어를 넓게 쓴다. 회의의 결정만이 아니라, 판단 기준, 체크리스트, 어떤 도구를 왜 골랐는지 같은 것 전부다. 재발할 질문에 답하는 것이면 context 후보다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>그런데 사람은 규칙을 안 지킨다</h2>
+    <div class="cols">
+      <div>
+        <ul style="font-size:1.05em">
+          <li class="frag">명세는 일곱 문서. 승급하기 전에 그것을 다 읽고 지키는 사람은 작성자 본인뿐이다.</li>
+          <li class="frag">스크립트는 명세를 읽지 않는다. 허용값을 스크립트 본문에 박아 두었고, 어느 날 명세와 어긋났다. 어느 쪽이 진실인지 스크립트는 모른다.</li>
+          <li class="frag">"링크를 두 개 이상 걸어라"는 규칙은 바쁜 회의 직후에 가장 먼저 무시된다. 그리고 그 순간 고아가 생긴다.</li>
+          <li class="frag">남에게 주려면 venv, 모델, hook을 설치시켜야 한다. 첫 실습에서 이탈이 난다.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card acc frag">
+          <h3>필요한 것</h3>
+          <p>규칙 중 <strong>기계가 판정할 수 있는 것</strong>은 기계가 강제하고, 사람의 판단이 필요한 것은 사람에게 그대로 남기는 도구.</p>
+          <p>그 경계를 긋는 기준은 하나다. <strong>같은 입력에 같은 출력이 나오는가.</strong></p>
+        </div>
+        <p class="frag" style="margin-top:1em">그것이 <strong>engram</strong>이다. 다음 장.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>"같은 입력에 같은 출력"이라는 기준을 여기서 처음 말한다. 4장 전체가 이 한 줄의 적용이다. LLM에게 승급 판정을 맡기지 않는 이유(같은 문서에 두 번 물으면 다른 답), 게이트가 링크 수만 세는 이유(셀 수 있는 것만), 커맨드가 산문 대신 재료를 내는 이유(재현 가능한 것만 코드가)까지 전부 여기서 나온다.</p>
+  </aside>
+</section>
+
+<!-- ============ 4. engram의 역할 ============ -->
+<section class="slide chap dark" data-ch="4">
+  <div class="in">
+    <div class="kicker">4장</div>
+    <h1>engram의 역할은 무엇인가</h1>
+    <p class="lead">관리 방식을 프로그램으로 자동화한다. 원하면 하드모드로. 그리고 역방향으로 제시하는 기능들.</p>
+  </div>
+  <div class="num">4</div>
+  <aside class="notes"><p>20분. 시연 슬라이드에서 실제 바이너리로 라이브 시연을 해도 좋고, 슬라이드에 내장된 터미널 재생을 써도 된다. 라이브로 할 경우 빈 디렉토리에서 시작하고 <code>--now</code>로 시각을 고정하면 출력이 슬라이드와 같아진다.</p></aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>engram: 단일 Go 바이너리 하나, 커맨드 스물여섯, 다섯 갈래</h2>
+    <div class="cols3">
+      <div class="card"><span class="tag">넣기</span><h3><code>capture</code> <code>source</code></h3><p class="small">검증 없이 inbox에 받는다. 원본은 sources에 확정한다.</p></div>
+      <div class="card acc"><span class="tag acc">올리기</span><h3><code>promote</code> <code>new</code> <code>demote</code> <code>archive</code></h3><p class="small">게이트를 지나 context로. 되돌리기와 폐기.</p></div>
+      <div class="card"><span class="tag">조회</span><h3><code>search</code> <code>recall</code> <code>backlinks</code> <code>lint</code> <code>status</code> <code>doctor</code></h3><p class="small">검색, 인용 조각, 링크, 검사, 현황, 진단.</p></div>
+      <div class="card"><span class="tag">재발견</span><h3><code>resurface</code> <code>bridge</code> <code>digest</code></h3><p class="small">잊힌 문서, 연결 없는 유사 쌍, 기간 집계.</p></div>
+      <div class="card"><span class="tag">관리</span><h3><code>init</code> <code>mv</code> <code>update</code> <code>reindex</code> <code>migrate</code> <code>sync</code> <code>rules show</code> <code>eject</code> <code>skills install</code> <code>mcp</code> <code>version</code></h3></div>
+      <div class="card">
+        <h3>성격</h3>
+        <ul class="small">
+          <li>순수 Go, CGO 없음, 런타임 의존성 없음. <code>go install</code> 한 줄.</li>
+          <li>마크다운 파일이 진실원. 도구가 파일 접근을 독점하지 않는다.</li>
+          <li>모든 조회 커맨드에 <code>--json</code>. 에이전트용 주 경로.</li>
+          <li><code>--now</code>로 기준 시각을 고정하면 출력이 결정론적이다.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot">이름 engram은 기억이 뇌에 남기는 물리적 흔적을 뜻한다. 흔적은 저장이 아니라 연결로 남는다. 이 도구가 연결을 요구하는 이유다.</p>
+  </div>
+  <aside class="notes">
+    <p>커맨드 목록을 읽지 않는다. 다섯 갈래의 이름만 말한다. 넣고, 올리고, 조회하고, 다시 만나고, 관리한다. 목록의 진실원은 <code>engram --help</code>다.</p>
+    <p>"도구가 파일 접근을 독점하지 않는다"를 강조한다. 사용자는 언제든 에디터로 파일을 직접 고칠 수 있고, 그 결과는 다음 <code>lint</code>에서 검증된다. Obsidian과 함께 써도 된다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>명세 7종은 세 갈래로 갔다</h2>
+    <svg class="fig sm" viewBox="0 0 1000 330" aria-label="명세 7종이 코드, 설정, 사람 세 갈래로 나뉜다" style="max-width:1000px;margin:0 auto">
+      <defs><marker id="ar5" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+      <g class="lbl m">
+        <rect class="box dim" x="20" y="20" width="230" height="30" rx="7"/><text x="135" y="40" text-anchor="middle">frontmatter-schema</text>
+        <rect class="box dim" x="20" y="60" width="230" height="30" rx="7"/><text x="135" y="80" text-anchor="middle">wiki-artifact-schema</text>
+        <rect class="box dim" x="20" y="100" width="230" height="30" rx="7"/><text x="135" y="120" text-anchor="middle">promotion-rules</text>
+        <rect class="box dim" x="20" y="140" width="230" height="30" rx="7"/><text x="135" y="160" text-anchor="middle">wiki-graph-policy</text>
+        <rect class="box dim" x="20" y="180" width="230" height="30" rx="7"/><text x="135" y="200" text-anchor="middle">taxonomy</text>
+        <rect class="box dim" x="20" y="220" width="230" height="30" rx="7"/><text x="135" y="240" text-anchor="middle">ingest-rules</text>
+        <rect class="box dim" x="20" y="260" width="230" height="30" rx="7"/><text x="135" y="280" text-anchor="middle">security-rules</text>
+      </g>
+      <g class="draw"><path class="ln acc" d="M250 35 C 380 35, 400 60, 420 60"/><path class="ln acc" d="M250 75 C 380 75, 400 66, 420 66"/><path class="ln acc" d="M250 115 C 380 115, 400 72, 420 72"/><path class="ln acc" d="M250 155 C 380 155, 400 78, 420 78"/><path class="ln acc" d="M250 195 C 380 195, 400 84, 420 84"/></g>
+      <g class="draw d1"><path class="ln" d="M250 40 C 380 40, 400 165, 420 165"/><path class="ln" d="M250 80 C 380 80, 400 171, 420 171"/><path class="ln" d="M250 120 C 380 120, 400 177, 420 177"/><path class="ln" d="M250 160 C 380 160, 400 183, 420 183"/><path class="ln" d="M250 200 C 380 200, 400 189, 420 189"/><path class="ln" d="M250 235 C 380 235, 400 195, 420 195"/><path class="ln" d="M250 275 C 380 275, 400 201, 420 201"/></g>
+      <g class="draw d2"><path class="ln thin" d="M250 45 C 380 45, 400 270, 420 270"/><path class="ln thin" d="M250 125 C 380 125, 400 276, 420 276"/><path class="ln thin" d="M250 165 C 380 165, 400 282, 420 282"/><path class="ln thin" d="M250 205 C 380 205, 400 288, 420 288"/><path class="ln thin" d="M250 240 C 380 240, 400 294, 420 294"/><path class="ln thin" d="M250 280 C 380 280, 400 300, 420 300"/></g>
+      <g class="a d1">
+        <rect class="box acc" x="425" y="30" width="560" height="86" rx="12"/>
+        <text class="lbl" x="445" y="56" font-weight="700">코드로 강제</text>
+        <text class="lbl s" x="445" y="78">lint 규칙 16종과 승급 게이트 1개. 어기면 종료 코드 1, 승급이 막힌다.</text>
+        <text class="lbl s" x="445" y="98">필수 필드 누락, 허용값 밖, 위치와 단계 불일치, 깨진 링크, 고아, form 위반</text>
+      </g>
+      <g class="a d2">
+        <rect class="box" x="425" y="136" width="560" height="86" rx="12"/>
+        <text class="lbl" x="445" y="162" font-weight="700">설정으로 열어 둠 (engram.yaml)</text>
+        <text class="lbl s" x="445" y="184">축 14종의 on/off, topics와 forms 집합, 임계값 넷.</text>
+        <text class="lbl s" x="445" y="204">위키마다 다르게 정한다. git에 커밋되어 팀이 공유한다.</text>
+      </g>
+      <g class="a d3">
+        <rect class="box dim" x="425" y="242" width="560" height="76" rx="12"/>
+        <text class="lbl" x="445" y="268" font-weight="700">사람과 에이전트에 남김</text>
+        <text class="lbl s" x="445" y="290">"재발할 질문에 답하는가", 민감도 판단, 링크를 걸 의미가 있는지,</text>
+        <text class="lbl s" x="445" y="308">커밋 금지 목록의 실천. 도구가 관여하지 않는다.</text>
+      </g>
+    </svg>
+    <p class="frag small" style="margin-top:.5em">가르는 기준은 한 문장이다. <strong>같은 입력에 같은 출력이 나오는가.</strong> 결정론적으로 판정되는 것만 코드가 강제한다. security-rules는 코드로 옮긴 것이 하나도 없다. 그 사실을 숨기지 않는다.</p>
+  </div>
+  <aside class="notes">
+    <p>engram을 써도 명세 파일은 하나도 생기지 않는다는 점을 말한다. <code>engram init</code>이 만드는 것은 디렉토리 넷과 <code>engram.yaml</code>, <code>index.md</code>, <code>.gitignore</code>뿐이다. 명세는 코드와 설정으로 녹아들었고, 사용자는 명세를 평생 안 볼 수도 있다. 보고 싶으면 <code>rules show</code>가 이 위키에 적용되는 규칙 전부를 읽기 전용으로 낸다.</p>
+    <p>세 번째 갈래가 비어 있지 않다는 점이 중요하다. 승급 기준 열네 줄 중 열세 줄이 여기 있다. 도구가 판단을 대신하지 않는다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>게이트는 하나뿐이다. 왜.</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">문서가 <code>context/</code>로 올라갈 때 다른 문서와 연결되어 있는지 검사하고, 아니면 거절한다. 거절 사유는 <strong>그것 하나</strong>다.</p>
+        <table>
+          <tr><th>키</th><th>기본</th><th>결과</th></tr>
+          <tr><td><code>min_wikilinks</code></td><td>2</td><td><span class="tag rej">거절</span> 미만이면 승급 불가</td></tr>
+          <tr><td><code>max_lines</code></td><td>1000</td><td><span class="tag warn">경고</span></td></tr>
+          <tr><td><code>broad_topic_pct</code></td><td>25</td><td><span class="tag warn">경고</span></td></tr>
+          <tr><td><code>stale_days</code></td><td>90</td><td>재발견 판정 기준</td></tr>
+        </table>
+        <p class="small">길이도 형식도 태그도 막지 않는다. <code>min_wikilinks: 0</code>으로 두면 게이트가 꺼진다. 도구가 위키를 소유하려 든다는 인상을 주지 않기 위해 끄는 길을 막지 않는다.</p>
+      </div>
+      <div>
+        <div class="card frag"><h3>거절이 많으면 사용자는 우회로를 찾는다</h3><p>거절 조건을 늘리는 순간 게이트를 피하는 방법을 궁리하기 시작하고, 그 순간 게이트는 무의미해진다.</p></div>
+        <div class="card frag" style="margin-top:.8em"><h3>LLM에게 판정을 맡기면 게이트가 아니다</h3><p>같은 문서를 두 번 심사해 다른 답이 나오면 거절의 권위가 사라진다. 결정론은 성능 문제가 아니라 <strong>게이트의 존재 조건</strong>이다.</p></div>
+        <div class="card acc frag" style="margin-top:.8em"><h3>거절 경험이 곧 교육이다</h3><p>그래서 에러 메시지에 현재 값, 필요 값, 다음 명령을 반드시 함께 준다. "검증 실패"로 끝내지 않는다.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>2장 마지막 슬라이드로 돌아간다. 열네 줄 중 셀 수 있는 한 줄이 링크였고, 그것만 거절 사유가 됐다. 나머지는 경고조차 아니다.</p>
+    <p>세 갈래 비교를 말로 한다. 일반 노트 앱은 아무것도 강제하지 않아 6개월 뒤 더미가 되고, LLM으로 감싼 도구는 승급 기준 전부를 LLM에게 물으려다 게이트가 게이트가 아니게 되고, engram은 셀 수 있는 한 줄만 확실히 막고 판단은 검토자에게 남긴다.</p>
+    <p>갓 만든 위키에서는 링크할 대상 자체가 없어 게이트를 유예한다는 규칙도 있다(<code>gate.deferred</code>). 빈 위키의 고립은 결함이 아니라 시작이라는 판단이다.</p>
+  </aside>
+</section>
+
+<section class="slide dark" data-ch="4">
+  <div class="in">
+    <h2 style="font-size:1.5em">시연: 빈 디렉토리에서 첫 승급까지. 처음에는 거절당한다.</h2>
+    <div class="term" id="demo1">
+      <div class="tb"><i></i><i></i><i></i><span class="t">engram, 실제 출력 그대로</span><button class="re" type="button">다시 재생</button></div>
+      <div class="body"></div>
+      <script type="application/json" class="tscript">[
+["cmd","engram init wiki"],
+["out","위키를 초기화했습니다: wiki (프리셋: education)\n\n디렉토리:\n  inbox/       새 자료가 들어오는 곳\n  sources/     원본을 보존하는 곳\n  context/     정리된 문서가 사는 곳\n  archive/     승급에서 물러난 문서가 가는 곳\n\n파일:\n  engram.yaml  위키 설정. 축과 임계값을 여기서 조정하세요\n  index.md     첫 문서. 위키 소개로 채우세요\n  .gitignore   .engram/ 캐시 디렉토리를 git에서 제외합니다"],
+["cmd","engram capture --title \"LLM 게이트웨이 조사\" \"여러 프로바이더를 한 엔드포인트로 묶는 패턴. 회의에서 나온 조사 과제.\""],
+["out","inbox에 넣었습니다: inbox/2026-08-16-llm-게이트웨이-조사.md\n다음: 문서를 정리한 뒤 승급하세요. 지금은 engram lint로 위키 상태를 볼 수 있습니다"],
+["cmd","engram source --title \"게이트웨이 벤치마크\" --created 2026-08 --ref \"https://example.com/report\" \"지연시간과 비용을 프로바이더별로 측정한 원문.\""],
+["out","source에 넣었습니다: sources/2026-08-게이트웨이-벤치마크.md\n다음: 정리가 끝나면 이 원본을 인용하는 맥락 문서를 만드세요"],
+["cmd","engram promote inbox/2026-08-16-llm-게이트웨이-조사.md --type concept"],
+["err","Error: 승급 게이트를 넘지 못했습니다: 위키링크가 0개로 min_wikilinks 2개에 못 미칩니다\nrelated 필드나 본문에 위키링크를 2개 더 추가하세요.\n이 자리에서 채우려면 --related <슬러그>를 반복해 주세요"],
+["cmd","engram promote inbox/2026-08-16-llm-게이트웨이-조사.md --type concept --related index --related 2026-08-게이트웨이-벤치마크"],
+["out","context로 올렸습니다: context/llm-게이트웨이-조사.md\n문서 종류: concept\n게이트: 링크 2개, 대상 2개, 기준 2개\n다음: engram lint로 승급 문서의 스키마를 확인하세요"],
+["cmd","engram lint"],
+["out","검사한 파일 3개, 위반 없음"]
+]</script>
+    </div>
+    <p class="small mute" style="margin-top:.6em">Space나 화살표를 누를 때마다 커맨드가 하나씩 실행된다. 실제 바이너리로 라이브 시연을 하려면 빈 디렉토리에서 같은 순서로 치면 된다.</p>
+  </div>
+  <aside class="notes">
+    <p>이 슬라이드가 강의의 클라이맥스다. 거절 메시지가 뜨는 순간 잠깐 멈춘다. 메시지가 세 가지를 말한다. 현재 값(0개), 필요 값(2개), 다음 명령(<code>--related</code>). 이것이 "거절 경험이 교육"이라는 원칙의 실체다.</p>
+    <p><code>capture</code>가 아무것도 검증하지 않는 것도 짚는다. 회의 중에 쓰는 명령이라 마찰이 있으면 안 된다. 관문은 올라갈 때 한 번이면 된다.</p>
+    <p>승급 결과에서 <code>context/</code> 파일명에 날짜 접두사가 사라진 것을 본다. context 문서는 시간이 아니라 개념으로 불리기 때문이다.</p>
+  </aside>
+</section>
+
+<section class="slide dark" data-ch="4">
+  <div class="in">
+    <h2 style="font-size:1.5em">시연 (계속): 현황을 보고, 쌓인 위키를 다시 만난다</h2>
+    <div class="term" id="demo2">
+      <div class="tb"><i></i><i></i><i></i><span class="t">engram, 실제 출력 그대로</span><button class="re" type="button">다시 재생</button></div>
+      <div class="body"></div>
+      <script type="application/json" class="tscript">[
+["cmd","engram status"],
+["out","현황\n  inbox 0, source 1, context 1, archive 0 문서\n  위키링크 2개, 고아 문서 0개\n  lint: 파일 3개, error 0, warn 0, reject 0 (상세는 engram lint)\n\n적체 압력 (기준 2026-08-16)\n  inbox 문서 0개\n  지금 승급할 수 있는 문서 0개\n\n다음 행동\n  - engram capture\n    inbox가 비었습니다. 새 메모를 받아 파이프라인을 돌리세요"],
+["cmd","engram reindex"],
+["out","색인을 만들었습니다: .engram/index.json\n문서 3개, 토큰 76개, 크기 3832 바이트"],
+["cmd","engram search 게이트웨이"],
+["out","  1  2.73  2026-08-게이트웨이-벤치마크  sources/2026-08-게이트웨이-벤치마크.md\n  2  2.66  llm-게이트웨이-조사  context/llm-게이트웨이-조사.md"],
+["cmd","engram recall 게이트웨이 --limit 1"],
+["out","1  4.00  [[2026-08-게이트웨이-벤치마크]]  sources/2026-08-게이트웨이-벤치마크.md:16-18\n# 게이트웨이 벤치마크\n\n지연시간과 비용을 프로바이더별로 측정한 원문."]
+]</script>
+    </div>
+    <p class="small mute" style="margin-top:.6em"><code>search</code>는 사람이 열어 볼 목록을 주고, <code>recall</code>은 에이전트가 컨텍스트에 넣고 <code>[[슬러그]]</code>로 인용할 원문 조각을 준다. 둘 다 요약하지 않는다.</p>
+  </div>
+  <aside class="notes">
+    <p><code>status</code>의 "다음 행동" 줄을 읽는다. 도구가 현황만 나열하지 않고 무엇을 하면 되는지 말한다. inbox 적체 압력도 여기서 본다. 며칠째 몇 개가 쌓였는지가 곧 정리 세션을 열 신호다.</p>
+    <p><code>recall</code> 출력의 줄 범위(16-18)를 짚는다. 헤딩 단위로 자른 청크에 슬러그와 줄 범위가 붙어서 에이전트가 그대로 인용할 수 있다. 요약은 안 한다. 요약은 에이전트 몫이다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>engram은 LLM을 부르지 않는다. 호출 방향이 반대다.</h2>
+    <div class="cols">
+      <div>
+        <svg class="fig" viewBox="0 0 460 300" aria-label="사용자가 에이전트와 대화하고, 에이전트가 engram을 부르고, engram이 위키 파일을 읽고 쓴다">
+          <defs><marker id="ar6" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+          <rect class="box" x="20" y="20" width="120" height="44" rx="10"/><text class="lbl" x="80" y="47" text-anchor="middle">사용자</text>
+          <rect class="box" x="20" y="120" width="220" height="70" rx="10"/>
+          <text class="lbl" x="130" y="146" text-anchor="middle">에이전트 세션</text>
+          <text class="lbl s" x="130" y="168" text-anchor="middle">Claude Code, Hermes 등</text>
+          <text class="lbl s" x="130" y="182" text-anchor="middle">+ 설치된 engram 스킬 문서</text>
+          <rect class="box acc" x="300" y="120" width="140" height="70" rx="10"/><text class="lbl" x="370" y="160" text-anchor="middle">engram 바이너리</text>
+          <rect class="box dim" x="300" y="236" width="140" height="44" rx="10"/><text class="lbl s" x="370" y="263" text-anchor="middle">위키 파일</text>
+          <path class="ln draw" d="M80 64 L 80 118" marker-end="url(#ar6)"/><text class="lbl s" x="88" y="96">대화</text>
+          <path class="ln acc draw d1" d="M240 145 L 298 145" marker-end="url(#ar6)"/><text class="lbl s" x="269" y="136" text-anchor="middle">CLI 실행</text>
+          <path class="ln acc draw d1" d="M298 170 L 242 170" marker-end="url(#ar6)"/><text class="lbl s" x="269" y="192" text-anchor="middle">--json 재료</text>
+          <path class="ln draw d2" d="M370 190 L 370 234" marker-end="url(#ar6)"/>
+          <path class="ln draw d2" d="M140 42 C 250 42, 330 60, 356 118" marker-end="url(#ar6)"/><text class="lbl s" x="150" y="30" text-anchor="start">직접 CLI 실행도 된다</text>
+          <g class="a d3">
+            <path class="ln rej dash" d="M440 155 C 480 100, 480 60, 300 60 C 200 60, 190 90, 190 118"/>
+            <line x1="392" y1="72" x2="420" y2="100" stroke="var(--rej)" stroke-width="3"/><line x1="420" y1="72" x2="392" y2="100" stroke="var(--rej)" stroke-width="3"/>
+            <text class="lbl s" x="458" y="45" text-anchor="end" fill="var(--rej)">engram이 LLM을 부르는 경로는 없다</text>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <p class="lead">API key도, OAuth 토큰도, 프로바이더 설정도 보관하지 않는다. 이미 열려 있는 에이전트 세션이 engram을 부른다.</p>
+        <table>
+          <tr><th>하는 일</th><th>소유</th></tr>
+          <tr><td>게이트 판정, lint, 스키마 검증</td><td><strong>engram</strong></td></tr>
+          <tr><td>검색, 링크 그래프, 재발견 후보 선정</td><td><strong>engram</strong></td></tr>
+          <tr><td>회의록 요약, 분류 제안, 다이제스트 산문</td><td>에이전트</td></tr>
+        </table>
+        <ul class="small" style="margin-top:.6em">
+          <li class="frag">바이너리가 LLM을 부르면 컨텍스트를 공유하지 못하는 두 번째 세션이 뜬다. 요금이 두 번 나가고 대화 맥락을 잃는다.</li>
+          <li class="frag">그래서 조회 커맨드는 완성된 산문이 아니라 <strong>재료</strong>를 낸다. <code>digest</code>는 글이 아니라 변경분과 집계를 주고, 문장은 에이전트가 만든다.</li>
+          <li class="frag">통합은 <code>skills install</code> 한 번이다. 바이너리에 임베드된 스킬 문서를 에이전트의 스킬 디렉토리에 심는다. 그것이 LLM 통합의 전부다.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>가장 자주 오해가 생기는 지점이라 그림으로 못 박는다. "AI 도구인데 왜 API 키를 안 묻나"라는 질문이 나오면 이 슬라이드다.</p>
+    <p>부수 효과를 말한다. 자격증명이 없으니 유출 경로가 없고, 폐쇄망과 사내 프록시 환경에서 추가 통신 경로가 생기지 않으며, 사용자가 어떤 모델을 쓰든 engram은 관여하지 않는다. 대신 에이전트 없이 바이너리만 쓰면 요약과 제안은 얻지 못한다. 결손이 아니라 설계된 경계다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>MCP로 노출해도 경계는 같다. 쓰기 도구는 하나.</h2>
+    <div class="cols">
+      <div>
+        <table>
+          <tr><th>도구</th><th>성격</th><th>비고</th></tr>
+          <tr><td><code>capture</code></td><td><span class="tag rej">쓰기</span></td><td><strong>inbox에만 쓴다. 유일한 쓰기 도구</strong></td></tr>
+          <tr><td><code>search</code> <code>recall</code> <code>backlinks</code></td><td>읽기</td><td>목록, 인용 조각, 링크</td></tr>
+          <tr><td><code>status</code> <code>lint</code> <code>rules</code></td><td>읽기</td><td>현황, 위반, 적용 규칙</td></tr>
+          <tr><td><code>resurface</code> <code>bridge</code> <code>digest</code></td><td>읽기</td><td>제시 이력과 기각을 기록하지 않는다</td></tr>
+          <tr><td><code>promote</code></td><td colspan="2"><strong>없다.</strong> 도구로 내보내지 않는다</td></tr>
+        </table>
+      </div>
+      <div>
+        <p class="lead">스킬 문서는 이렇게 말한다. "promote를 제안할 수 있지만 실행은 사람에게 맡겨라."</p>
+        <p class="frag">MCP에 <code>promote</code> 도구가 있으면 그 문장은 규칙이 아니라 부탁이다. 에이전트가 승급을 실행할 <strong>수단이 없어야</strong> 게이트가 관문으로 남는다.</p>
+        <p class="frag">쓰기 도구가 하나뿐이고 그것이 inbox에만 쓰면, 설명을 읽지 않은 에이전트도 도구 목록만 훑고 경계를 안다. 어길 수단이 없다.</p>
+        <p class="frag small">위키 경로는 서버 시작 시 고정하고 도구는 경로를 받지 않는다. 경로를 인자로 두는 것은 파일 시스템 읽기 권한을 여는 것과 같다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>2장의 "에이전트가 쓸 수 있는 범위는 inbox까지"가 여기서 도구 목록으로 실현된다. 다른 PKM MCP와의 차별점이 도구 목록에서 바로 읽힌다는 점을 강조한다.</p>
+    <p><code>source</code>도 노출하지 않는다. 원본 확정은 사람이 출처를 확인하고 하는 일이라서다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>역방향으로 제시한다: 잊힌 문서, 놓친 연결, 지난 기간</h2>
+    <div class="cols">
+      <div>
+        <table>
+          <tr><th style="white-space:nowrap">커맨드</th><th>축</th><th style="white-space:nowrap">단위</th><th>남기는 상태</th></tr>
+          <tr><td><code>resurface</code></td><td>시간. 오래 안 봄</td><td style="white-space:nowrap">문서 하나씩</td><td>제시 이력 (<code>.engram/</code>, 지워도 됨)</td></tr>
+          <tr><td><code>bridge</code></td><td>관계. 유사한데 링크 없음</td><td>문서 쌍</td><td>기각 쌍 (<code>engram-state.yaml</code>, git 추적)</td></tr>
+          <tr><td><code>digest</code></td><td>기간. 창 안의 변화</td><td>집계</td><td>없음</td></tr>
+        </table>
+        <ul class="small" style="margin-top:.6em">
+          <li class="frag"><strong>resurface</strong> "90일째 안 봤습니다. 아직 유효한가요?" 유효, 폐기, 보강 셋 중 하나로 답한다. 같은 문서가 매번 나오지 않도록 제시 이력을 남긴다.</li>
+          <li class="frag"><strong>bridge</strong> "이 둘은 비슷한데 연결이 없습니다. 묶을까요?" 기각하면 영구 기록해 다시 묻지 않는다. 기각은 사람의 판단이라 git에 남긴다.</li>
+          <li class="frag"><strong>digest</strong> 기간을 받아 신규, 노후, 고아를 집계한다. 고아의 정의는 링크 0개.</li>
+        </ul>
+        <p class="frag small">셋 다 후보와 근거만 낸다. "왜 지금 이 문서인지"를 설명하는 문장은 에이전트가 쓴다. 회의록 여정의 마지막 고리, 즉 다음 회의 전에 지난 결정이 스스로 나타나는 것이 이 셋이다.</p>
+      </div>
+      <div>
+        <svg class="fig" viewBox="0 0 440 320" aria-label="오래된 노드가 떠오르고, 유사하지만 링크 없는 쌍에 점선이 그려진다">
+          <g class="lbl s">
+            <circle class="node" cx="90" cy="90" r="16"/><circle class="node" cx="180" cy="60" r="16"/><circle class="node" cx="160" cy="160" r="16"/><circle class="node" cx="280" cy="120" r="16"/>
+            <path class="ln acc" d="M106 86 L 164 64"/><path class="ln acc" d="M100 103 L 150 148"/><path class="ln acc" d="M196 66 L 264 113"/><path class="ln acc" d="M176 158 L 264 126"/>
+          </g>
+          <g class="a d1">
+            <circle class="node old pulse" cx="330" cy="240" r="16"/>
+            <path class="ln thin" d="M292 132 L 320 226"/>
+            <text class="lbl s" x="330" y="275" text-anchor="middle" fill="var(--mute)">updated 120일 전</text>
+            <text class="lbl s" x="330" y="291" text-anchor="middle" fill="var(--acc)">resurface 후보</text>
+          </g>
+          <g class="a d3">
+            <circle class="node" cx="70" cy="240" r="16"/>
+            <path class="ln acc dash draw d3" d="M86 232 L 145 172"/>
+            <text class="lbl s" x="70" y="275" text-anchor="middle" fill="var(--acc)">bridge: 유사도 높음, 링크 없음</text>
+          </g>
+          <g class="a d5">
+            <rect x="20" y="20" width="400" height="0" fill="none"/>
+            <text class="lbl s" x="220" y="24" text-anchor="middle">위키가 커질수록 가치가 나오고, 사람이 손으로는 절대 못 하는 부분이다.</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>상태 두 종류를 왜 다른 곳에 두는지 한 줄로 말한다. 잃었을 때 사용자 판단이 사라지면 git 추적(<code>engram-state.yaml</code>), 재생성되면 캐시(<code>.engram/</code>). 제시 이력을 잃으면 같은 문서를 한 번 더 볼 뿐이지만, 기각을 잃으면 사용자가 내린 판단이 사라진다.</p>
+    <p><code>resurface</code>는 상태를 읽고 쓰므로 실행마다 결과가 달라진다. 그래서 <code>--now</code>가 필수다. 이 플래그가 처음부터 있었던 이유는 검증(골든 비교)이 성립해야 해서다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>원하면 하드모드로: eject는 규칙의 소유권을 넘긴다</h2>
+    <div class="cols">
+      <div>
+        <svg class="fig" viewBox="0 0 460 300" aria-label="easy 모드와 eject 이후. 규칙 행만 바뀌고 연산 행은 그대로다">
+          <defs><marker id="ar7" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+          <text class="lbl" x="110" y="26" text-anchor="middle" font-weight="700">easy 모드</text>
+          <text class="lbl" x="350" y="26" text-anchor="middle" font-weight="700">eject 이후 (hard)</text>
+          <rect class="box acc" x="20" y="44" width="180" height="70" rx="10"/><text class="lbl" x="110" y="72" text-anchor="middle">규칙</text><text class="lbl s" x="110" y="94" text-anchor="middle">바이너리 내장</text>
+          <rect class="box" x="20" y="130" width="180" height="70" rx="10"/><text class="lbl" x="110" y="158" text-anchor="middle">연산</text><text class="lbl s" x="110" y="180" text-anchor="middle">검색, 재발견, 그래프</text>
+          <path class="ln draw" d="M200 80 L 258 80" marker-end="url(#ar7)"/><text class="lbl s" x="229" y="70" text-anchor="middle">eject</text>
+          <g class="a d1"><rect class="box rej" x="260" y="44" width="180" height="70" rx="10"/><text class="lbl" x="350" y="72" text-anchor="middle">규칙</text><text class="lbl s" x="350" y="94" text-anchor="middle">사용자 파일 (명세, 린터, hook)</text></g>
+          <g class="a d2"><rect class="box" x="260" y="130" width="180" height="70" rx="10"/><text class="lbl" x="350" y="158" text-anchor="middle">연산</text><text class="lbl s" x="350" y="180" text-anchor="middle">바이너리 (그대로)</text></g>
+          <g class="a d3"><text class="lbl s" x="230" y="240" text-anchor="middle">색이 바뀌는 행은 규칙뿐이다. 되돌릴 대상이 없으니 단방향이다.</text>
+          <text class="lbl s" x="230" y="262" text-anchor="middle">바이너리를 지우면 규칙은 파일로 남아 계속 돌고, 연산만 사라진다.</text></g>
+        </svg>
+      </div>
+      <div>
+        <p class="lead">그동안 자신을 막아 온 강제력의 실체를 파일로 열어 본다. 도구 학습이 아니라 체계 학습으로 착지한다.</p>
+        <ul>
+          <li class="frag"><code>eject</code>는 제품에서 나가는 문이 아니다. 규칙 명세와 Python 린터, git hook을 위키 안에 풀어 준다. 이후 사용자가 마음대로 고친다.</li>
+          <li class="frag">내보낸 뒤에도 <code>search</code>, <code>recall</code>, <code>resurface</code>, <code>bridge</code>, <code>digest</code>는 그대로 동작한다. 연산은 넘어가지 않는다.</li>
+          <li class="frag">내보낸 Python 린터가 <code>engram lint</code>와 같은 판정을 내는지 대조하는 검증이 CI에서 돈다.</li>
+          <li class="frag">eject 없이 규칙만 보려면 <code>rules show</code>. 이 위키에 지금 적용되는 규칙 전부를 읽기 전용으로 낸다.</li>
+        </ul>
+        <p class="frag small">교육 서사의 마지막은 "도구를 버리는 법"이 아니라 "규칙은 당신 것이 되고, 어려운 계산은 도구가 계속 해 준다"다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>2장에서 본 스크립트 운영과 여기가 만난다. eject하면 정확히 2장의 형태(명세 문서 + 린터 + hook)가 나온다. 다만 이제는 명세와 린터가 같은 코드에서 생성되므로 어긋나지 않는다.</p>
+    <p>"되돌리기(seal)"가 없는 이유를 물으면 이렇게 답한다. eject 후 규칙을 고치지 않을 거면 eject할 이유가 없었고, 고쳤다면 되돌리기는 그 작업을 버리는 것이다. 정직하게 구현하면 "당신의 수정을 지웁니다"가 된다.</p>
+  </aside>
+</section>
+
+<!-- ============ 5. 개인에서 조직으로 ============ -->
+<section class="slide chap dark" data-ch="5">
+  <div class="in">
+    <div class="kicker">5장</div>
+    <h1>개인에서 조직으로</h1>
+    <p class="lead">개인의 context 레벨을 조직의 자산으로 병합하는 과정이 필요하다. 있는 것과 없는 것을 나눠 본다.</p>
+  </div>
+  <div class="num">5</div>
+  <aside class="notes"><p>이 장은 8분이고 절반은 미결이다. 강사가 답을 다 갖고 있지 않다는 것을 처음부터 말한다. 수강생의 질문이 여기서 가장 많이 나오고, 그 질문이 다음 설계의 재료다.</p></aside>
+</section>
+
+<section class="slide" data-ch="5">
+  <div class="in">
+    <h2>개인의 context는 개인의 자산이다. 조직은 그것을 어떻게 받는가.</h2>
+    <svg class="fig" viewBox="0 0 1000 330" aria-label="여러 개인 위키의 context가 조직 위키로 병합되는 흐름. 다시 게이트를 지난다" style="max-width:1000px;margin:0 auto">
+      <defs><marker id="ar8" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+      <g class="a">
+        <rect class="box" x="20" y="30" width="230" height="80" rx="12"/><text class="lbl" x="135" y="58" text-anchor="middle">개인 위키 A</text>
+        <text class="lbl m" x="135" y="82" text-anchor="middle">inbox  sources  <tspan fill="var(--acc)" font-weight="700">context</tspan></text>
+        <rect class="box" x="20" y="125" width="230" height="80" rx="12"/><text class="lbl" x="135" y="153" text-anchor="middle">개인 위키 B</text>
+        <text class="lbl m" x="135" y="177" text-anchor="middle">inbox  sources  <tspan fill="var(--acc)" font-weight="700">context</tspan></text>
+        <rect class="box" x="20" y="220" width="230" height="80" rx="12"/><text class="lbl" x="135" y="248" text-anchor="middle">개인 위키 C</text>
+        <text class="lbl m" x="135" y="272" text-anchor="middle">inbox  sources  <tspan fill="var(--acc)" font-weight="700">context</tspan></text>
+      </g>
+      <g class="draw d1"><path class="ln acc" d="M250 70 C 350 70, 380 150, 440 150" marker-end="url(#ar8)"/><path class="ln acc" d="M250 165 L 440 165" marker-end="url(#ar8)"/><path class="ln acc" d="M250 260 C 350 260, 380 180, 440 180" marker-end="url(#ar8)"/></g>
+      <g class="a d2">
+        <rect class="box warn" x="445" y="120" width="130" height="90" rx="12"/>
+        <text class="lbl" x="510" y="152" text-anchor="middle">병합</text>
+        <text class="lbl s" x="510" y="174" text-anchor="middle">민감도 필터</text>
+        <text class="lbl s" x="510" y="192" text-anchor="middle">중복과 충돌</text>
+      </g>
+      <g class="draw d3"><path class="ln acc" d="M575 165 L 640 165" marker-end="url(#ar8)"/></g>
+      <g class="a d3"><polygon points="660,165 700,135 740,165 700,195" fill="var(--rej2)" stroke="var(--rej)" stroke-width="1.5"/><text class="lbl s" x="700" y="169" text-anchor="middle" fill="var(--rej)">게이트</text></g>
+      <g class="draw d4"><path class="ln acc" d="M740 165 L 800 165" marker-end="url(#ar8)"/></g>
+      <g class="a d4">
+        <rect class="box acc" x="805" y="95" width="175" height="140" rx="12"/>
+        <text class="lbl" x="892" y="125" text-anchor="middle" font-weight="700">조직 위키</text>
+        <text class="lbl s" x="892" y="150" text-anchor="middle">개인의 context가</text>
+        <text class="lbl s" x="892" y="168" text-anchor="middle">조직의 sources 또는</text>
+        <text class="lbl s" x="892" y="186" text-anchor="middle">context 후보로 들어온다</text>
+        <text class="lbl s" x="892" y="214" text-anchor="middle" fill="var(--acc)">serve: 읽기 전용, context만</text>
+      </g>
+      <g class="a d5"><text class="lbl s" x="500" y="315" text-anchor="middle">승급이 한 단계 더 있는 셈이다. 개인이 검수한 것이 조직에서 다시 검수된다.</text></g>
+    </svg>
+    <p class="frag" style="margin-top:.5em">개인 위키에서 <code>context</code>는 종점이었다. 조직 관점에서는 <strong>출발점</strong>이다. 개인이 검수한 결론이 조직 위키의 <code>sources</code>(증거)로 들어오고, 조직의 결론이 되려면 조직의 게이트를 한 번 더 지난다.</p>
+  </div>
+  <aside class="notes">
+    <p>이 그림은 확정된 설계가 아니라 제안이다. 그렇게 말한다. 확정된 것은 두 가지뿐이다. 첫째, 조직 위키도 같은 성숙 단계와 게이트를 쓴다(다른 체계를 만들지 않는다). 둘째, 조직에 보이는 것은 조직 위키의 <code>context</code>뿐이다.</p>
+    <p>"개인의 context가 조직의 sources로 들어온다"는 부분을 토론에 부친다. 개인의 결론이 조직에는 아직 증거일 뿐이라는 관점과, 이중 검수는 마찰이라 사람들이 안 올릴 것이라는 관점이 부딪힌다. 어느 쪽이든 게이트를 하나 더 두는 것이지 새 규칙을 만드는 것은 아니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="5">
+  <div class="in">
+    <h2>이미 있는 재료</h2>
+    <div class="cols">
+      <div>
+        <table style="font-size:.78em">
+          <tr><th>재료</th><th>하는 일</th></tr>
+          <tr><td><code>team</code> 프리셋</td><td><code>scope</code>와 <code>sensitivity</code> 축이 켜진다. 업무 자료와 개인 자료가 섞일 때</td></tr>
+          <tr><td><code>sensitivity</code></td><td><code>private-local-only</code>와 <code>restricted</code>는 네트워크로 나가지 않는다. 뒤집는 플래그가 없다</td></tr>
+          <tr><td><code>engram.yaml</code></td><td>축, 임계값, 분류 집합이 git에 커밋되어 팀이 같은 규칙을 공유한다</td></tr>
+          <tr><td><code>engram-state.yaml</code></td><td><code>bridge</code> 기각은 위키에 대한 판단이라 git으로 팀과 공유된다</td></tr>
+          <tr><td><code>serve</code> (설계 확정)</td><td>읽기 전용 웹 뷰어. <code>context/</code>만 보인다. 팀에 자료를 보이려면 승급해야 한다. 우회로가 없다</td></tr>
+          <tr><td><code>archive</code></td><td>슬러그를 유지해 폐기된 결정을 가리키는 링크가 깨지지 않는다. 이력이 남는다</td></tr>
+          <tr><td><code>sync</code></td><td>여러 PC를 git으로 맞출 때 날짜 필드를 이력에서 정정</td></tr>
+        </table>
+      </div>
+      <div>
+        <p class="lead">공통점이 하나 있다. 전부 <strong>게이트를 지난 것만 밖으로 나간다</strong>는 원칙 위에 있다.</p>
+        <p class="frag">게이트를 지나서 얻는 것이 처음에는 "검색 대상이 된다"였다. 조직 맥락에서 하나가 더해진다. <strong>팀에 보인다.</strong></p>
+        <p class="frag">민감도 선언을 도구가 뒤집지 않는다는 점이 조직 자산의 전제다. 값을 붙인 사람의 판단을 플래그 하나로 덮을 수 있으면 그 플래그가 사고 경로가 된다. 내보내야 하면 문서의 값을 고치는 것이 옳은 순서다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><code>serve</code>는 이 자료 작성 시점에 설계(ADR)만 확정되고 구현은 진행 중이다. 그렇게 말한다. 확정된 내용은 읽기 전용, <code>context/</code>와 루트 파일만, 기본 로컬 바인딩, 인증 없음(쓰기가 없어서 성립), 빌드 체인 없이 바이너리에 임베드다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="5">
+  <div class="in">
+    <h2>열려 있는 것. 솔직하게.</h2>
+    <div class="cols3">
+      <div class="card warn frag"><h3>병합 절차</h3><p>개인 <code>context</code>를 조직 위키로 옮기는 커맨드가 없다. 지금은 사람이 파일을 복사하고 조직 쪽에서 <code>source</code> 또는 <code>promote</code>를 다시 돈다.</p><p class="small">질문: 이것은 <code>pack</code>의 일인가, 새 커맨드인가, 아니면 git 워크플로로 충분한가.</p></div>
+      <div class="card warn frag"><h3>pack (외부 반출)</h3><p>보고서, 블로그, 발표자료로 내보내며 익명화와 민감도 필터를 거는 커맨드. 예약만 되어 있다.</p><p class="small"><code>serve</code>의 제외 규칙을 진실원으로 삼기로 했다.</p></div>
+      <div class="card warn frag"><h3>충돌 병합</h3><p>같은 문서의 서로 다른 축이 양쪽에서 바뀌는 상황이 흔하다. 프론트매터 병합이 필요한데 지금은 git 충돌로 남는다.</p></div>
+      <div class="card warn frag"><h3>이중 검수의 마찰</h3><p>개인에서 한 번, 조직에서 한 번 게이트를 지나면 사람들이 안 올릴 수 있다. 조직 게이트의 임계값을 어떻게 둘지 정해지지 않았다.</p></div>
+      <div class="card warn frag"><h3>대체 이력</h3><p><code>supersedes</code>와 <code>superseded_by</code> 필드가 아직 없다. 지금은 <code>related</code>나 본문 링크로 대신 표현한다. 조직 결정의 개정 이력이 필요해지면 그때 결정한다.</p></div>
+      <div class="card acc frag"><h3>변하지 않는 것</h3><p>어떤 답이 나오든 원칙은 같다. 결정론적인 것은 코드가 강제하고, 판단은 사람에게 남기며, 밖으로 나가는 것은 게이트를 지난 것뿐이다.</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>여섯 카드를 다 읽지 말고 첫째와 넷째만 소리 내어 읽는다. 나머지는 읽기 모드에서 보게 한다. 수강생에게 묻는다. "여러분 조직이라면 병합을 누가, 어떤 주기로 하겠습니까." 그 답이 다음 단위의 실습 시나리오가 된다.</p>
+  </aside>
+</section>
+
+<section class="slide center" data-ch="5">
+  <div class="in">
+    <div class="kicker">정리</div>
+    <h1 style="font-size:2.2em">판단은 사람이,<br>불변식은 코드가.</h1>
+    <div class="cols3" style="text-align:left;margin-top:1.4em;font-size:.9em">
+      <div class="card frag"><h3>LLM wiki</h3><p>원본은 불변, 위키는 연결, 스키마는 계약. RAG와 다른 점은 축적된다는 것.</p></div>
+      <div class="card frag"><h3>이 체계</h3><p>위키에 성숙 단계가 있고 위로 갈수록 자격이 필요하다. 그 이동이 승급이다. LLM은 inbox까지.</p></div>
+      <div class="card frag"><h3>engram</h3><p>셀 수 있는 한 줄만 강제한다. 연결 없는 문서는 올라가지 못한다. 나머지 판단은 사람에게 남긴다.</p></div>
+    </div>
+    <p class="frag" style="margin-top:1.4em">다음 단위부터는 손으로 한다. 2단위 캡처와 원본 보존, 3단위 승급 게이트, 4단위 검색과 회수, 5단위 재발견 루프, 6단위 에이전트 연동.</p>
+    <p class="foot">더 읽을 것: 저장소의 <code>README.md</code>(5분 만에 해 보기), <code>docs/architecture.md</code>(도식 10종), <code>docs/spec-map.md</code>(명세와 구현의 대응), <code>docs/decisions/</code>(왜 이렇게 설계했는가). Karpathy, "LLM Wiki", GitHub gist, 2026년 4월.</p>
+  </div>
+  <aside class="notes">
+    <p>마지막 문장을 한 번 더 말하고 끝낸다. 판단은 사람이, 불변식은 코드가. 질문 시간은 5장 슬라이드로 돌아가서 받는 것이 좋다. 질문 대부분이 거기서 나온다.</p>
+  </aside>
+</section>
+
+</div><!-- /deck -->
+
+<script>
+(function(){
+  const CH = ['표지','1 LLM wiki란','2 특별한 점','3 해결 방향','4 engram','5 개인에서 조직으로'];
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const deck = document.getElementById('deck');
+  const counter = document.getElementById('counter');
+  const prog = document.getElementById('prog');
+  const chapBar = document.getElementById('chapters');
+  const notepane = document.getElementById('notepane');
+  const notebody = document.getElementById('notebody');
+  const btnNotes = document.getElementById('btnNotes');
+  const btnMode = document.getElementById('btnMode');
+  let cur = 0, read = false;
+
+  // 장 버튼
+  CH.forEach((name, i) => {
+    const b = document.createElement('button');
+    b.textContent = name;
+    b.addEventListener('click', () => {
+      const idx = slides.findIndex(s => s.dataset.ch === String(i));
+      if (idx >= 0) go(idx, true);
+    });
+    chapBar.appendChild(b);
+  });
+
+  function frags(s){ return Array.from(s.querySelectorAll('.frag')); }
+
+  function show(i){
+    slides.forEach((s, k) => {
+      const on = k === i;
+      s.classList.toggle('active', on);
+      if (!on) { s.classList.remove('in-view'); }
+    });
+    const s = slides[i];
+    // 새로 진입하는 슬라이드는 프래그먼트를 접은 상태로
+    frags(s).forEach(f => f.classList.remove('on'));
+    counter.textContent = (i+1) + ' / ' + slides.length;
+    prog.style.width = ((i+1)/slides.length*100) + '%';
+    Array.from(chapBar.children).forEach((b, k) => b.classList.toggle('cur', String(k) === s.dataset.ch));
+    const n = s.querySelector('.notes');
+    notebody.innerHTML = n ? n.innerHTML : '<p class="mute">이 슬라이드에는 노트가 없다.</p>';
+    location.hash = '#/' + (i+1);
+    runTerm(s);
+  }
+
+  function go(i, reset){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    cur = i;
+    if (read) {
+      slides[i].scrollIntoView({behavior:'smooth', block:'start'});
+      counter.textContent = (i+1) + ' / ' + slides.length;
+      location.hash = '#/' + (i+1);
+      return;
+    }
+    show(i);
+  }
+
+  function next(){
+    if (read) { go(cur+1); return; }
+    const term = slides[cur].querySelector('.term');
+    if (term && termHasNext(term)) { termStep(term); return; }
+    const fs = frags(slides[cur]);
+    const off = fs.find(f => !f.classList.contains('on'));
+    if (off) { off.classList.add('on'); return; }
+    if (cur < slides.length-1) go(cur+1);
+  }
+  function prev(){
+    if (read) { go(cur-1); return; }
+    const fs = frags(slides[cur]).filter(f => f.classList.contains('on'));
+    if (fs.length) { fs[fs.length-1].classList.remove('on'); return; }
+    if (cur > 0) { go(cur-1); frags(slides[cur]).forEach(f => f.classList.add('on')); }
+  }
+
+  // 키보드
+  document.addEventListener('keydown', e => {
+    if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': case ' ': e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'PageUp': e.preventDefault(); prev(); break;
+      case 'Home': e.preventDefault(); go(0); break;
+      case 'End': e.preventDefault(); go(slides.length-1); break;
+      case 'r': case 'R': toggleRead(); break;
+      case 'n': case 'N': toggleNotes(); break;
+      case 'Escape': notepane.classList.remove('on'); btnNotes.classList.remove('on'); break;
+    }
+  });
+  // 클릭 진행 (슬라이드 모드, 터미널/링크/버튼 제외)
+  deck.addEventListener('click', e => {
+    if (read) return;
+    if (e.target.closest('a,button,.term,table,pre')) return;
+    const x = e.clientX / window.innerWidth;
+    if (x < 0.15) prev(); else next();
+  });
+
+  function toggleNotes(){
+    if (read) return;
+    notepane.classList.toggle('on');
+    btnNotes.classList.toggle('on', notepane.classList.contains('on'));
+  }
+  btnNotes.addEventListener('click', toggleNotes);
+
+  function toggleRead(){
+    read = !read;
+    document.body.classList.toggle('read', read);
+    btnMode.classList.toggle('on', read);
+    btnMode.textContent = read ? '슬라이드 모드' : '읽기 모드';
+    notepane.classList.remove('on'); btnNotes.classList.remove('on');
+    if (read) {
+      slides.forEach(s => { s.classList.remove('active'); });
+      // 읽기 모드에서는 화면에 들어온 슬라이드만 애니메이션과 터미널을 돌린다
+      slides.forEach(s => io.observe(s));
+      setTimeout(() => slides[cur].scrollIntoView({block:'start'}), 30);
+    } else {
+      slides.forEach(s => { io.unobserve(s); s.classList.remove('in-view'); });
+      window.scrollTo(0,0);
+      show(cur);
+    }
+  }
+  btnMode.addEventListener('click', toggleRead);
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      const s = en.target;
+      if (en.isIntersecting && en.intersectionRatio > 0.35) {
+        if (!s.classList.contains('in-view')) { s.classList.add('in-view'); runTerm(s); }
+        const i = slides.indexOf(s);
+        if (i >= 0) { cur = i; counter.textContent = (i+1) + ' / ' + slides.length; prog.style.width = ((i+1)/slides.length*100)+'%';
+          Array.from(chapBar.children).forEach((b, k) => b.classList.toggle('cur', String(k) === s.dataset.ch)); }
+      } else if (!en.isIntersecting) {
+        s.classList.remove('in-view');
+      }
+    });
+  }, {threshold:[0, .35, .6]});
+
+  // ---------- 터미널 재생 ----------
+  // 슬라이드 모드: Space/→ 를 누를 때마다 커맨드 하나씩 진행한다 (강사가 속도를 쥔다).
+  // 읽기 모드: 화면에 들어오면 끝까지 자동 재생한다. 터미널 클릭은 현재 단계를 즉시 완료한다.
+  const esc = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const tstate = new WeakMap();
+  function termInit(term){
+    const script = JSON.parse(term.querySelector('.tscript').textContent);
+    // 단계 = 커맨드 하나 + 그 뒤에 이어지는 출력들
+    const steps = [];
+    script.forEach(line => { if (line[0] === 'cmd' || !steps.length) steps.push([line]); else steps[steps.length-1].push(line); });
+    const st = {steps, pos:0, html:'', busy:false, skip:false, ids:[], gen:0};
+    tstate.set(term, st);
+    term.querySelector('.body').innerHTML = '<span class="p">$ </span><span class="cur"></span>';
+    return st;
+  }
+  function termReset(term){ const st = tstate.get(term); if (st) { st.gen++; st.ids.forEach(clearTimeout); } termInit(term); }
+  function termHasNext(term){ const st = tstate.get(term) || termInit(term); return st.pos < st.steps.length; }
+  async function termStep(term){
+    const st = tstate.get(term) || termInit(term);
+    if (st.busy) { st.skip = true; return; }
+    if (st.pos >= st.steps.length) return;
+    const body = term.querySelector('.body');
+    const gen = st.gen; st.busy = true; st.skip = false;
+    const wait = ms => new Promise(r => { if (st.skip) { r(); return; } st.ids.push(setTimeout(r, ms)); });
+    const render = extra => { body.innerHTML = st.html + (extra||'') + '<span class="p">$ </span><span class="cur"></span>'; body.scrollTop = body.scrollHeight; };
+    const step = st.steps[st.pos++];
+    for (const [kind, text] of step) {
+      if (st.gen !== gen) return;
+      if (kind === 'cmd') {
+        if (st.html) st.html += '\n';
+        let typed = '';
+        for (const ch of text) { typed += ch; body.innerHTML = st.html + '<span class="p">$ </span><span class="cmd">' + esc(typed) + '</span><span class="cur"></span>'; body.scrollTop = body.scrollHeight; await wait(16 + Math.random()*20); if (st.gen !== gen) return; }
+        st.html += '<span class="p">$ </span><span class="cmd">' + esc(text) + '</span>\n';
+        body.innerHTML = st.html + '<span class="cur"></span>'; await wait(320);
+      } else {
+        st.html += '<span class="' + (kind === 'err' ? 'err' : 'out') + '">' + esc(text) + '</span>\n';
+        render(); await wait(200);
+      }
+    }
+    render();
+    st.busy = false;
+  }
+  async function termAuto(term){
+    termReset(term);
+    const st = tstate.get(term); const gen = st.gen;
+    await new Promise(r => setTimeout(r, 500));
+    while (st.gen === gen && st.pos < st.steps.length) { await termStep(term); await new Promise(r => setTimeout(r, 900)); }
+  }
+  function runTerm(slide){
+    const term = slide.querySelector('.term'); if (!term) return;
+    if (read) termAuto(term); else termReset(term);
+  }
+  document.querySelectorAll('.term').forEach(term => {
+    termInit(term);
+    term.querySelector('.re').addEventListener('click', e => { e.stopPropagation(); if (read) termAuto(term); else termReset(term); });
+    term.querySelector('.body').addEventListener('click', e => { e.stopPropagation(); const st = tstate.get(term); if (st && st.busy) st.skip = true; else if (!read) termStep(term); });
+  });
+
+  // 시작
+  const m = location.hash.match(/#\/(\d+)/);
+  const start = m ? Math.max(0, Math.min(slides.length-1, parseInt(m[1],10)-1)) : 0;
+  cur = start;
+  show(start);
+  window.addEventListener('hashchange', () => {
+    const mm = location.hash.match(/#\/(\d+)/);
+    if (!mm) return;
+    const i = parseInt(mm[1],10)-1;
+    if (i !== cur && i >= 0 && i < slides.length) { if (read) go(i); else { cur = i; show(i); } }
+  });
+})();
+</script>
+</body>
+</html>
