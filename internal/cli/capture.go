@@ -59,7 +59,9 @@ func newCaptureCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			titleFromFlag := title != ""
 			title = deriveTitle(title, content)
+			content = withHeading(title, content, titleFromFlag)
 			slug, err := resolveSlug(slugFlag, title)
 			if err != nil {
 				return err
@@ -160,6 +162,26 @@ func deriveTitle(flagValue, content string) string {
 		}
 	}
 	return "무제"
+}
+
+// withHeading은 본문 맨 앞에 제목 헤딩을 붙인다.
+//
+// 제목이 파일명 슬러그로만 남으면 사라진다. 슬러그는 공백을 하이픈으로
+// 바꾸고 대소문자와 구두점을 잃으므로 되돌려도 원문이 아니다. 본문에
+// 헤딩을 두면 문서가 스스로 제목을 들고 다니고, index의 docTitle이
+// 슬러그 역변환 대신 이 헤딩을 읽는다. new와 init이 이미 같은 방식이다.
+//
+// 본문이 이미 헤딩으로 시작하면 붙이지 않는다. --title을 생략해 본문
+// 첫 줄에서 제목을 뽑은 경우도 붙이지 않는다. 첫 줄이 곧 제목이라
+// 같은 문장이 두 번 나오기 때문이다.
+func withHeading(title, content string, titleFromFlag bool) string {
+	if !titleFromFlag || title == "" {
+		return content
+	}
+	if strings.HasPrefix(strings.TrimSpace(content), "#") {
+		return content
+	}
+	return "# " + title + "\n\n" + content
 }
 
 // resolveSlug는 슬러그 플래그가 비었으면 제목에서 슬러그를 만든다. ADR 0020.

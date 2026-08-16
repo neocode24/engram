@@ -53,6 +53,7 @@ func newSourceCmd() *cobra.Command {
 				return err
 			}
 			title := deriveTitle(titleFlag, content)
+			content = withHeading(title, content, titleFlag != "")
 			slug, err := resolveSlug(slugFlag, title)
 			if err != nil {
 				return err

@@ -41,9 +41,23 @@ engram이 따라가야 할 후보다. 셋으로 갈린다.
 
 | 규칙 | 건수 | 내용 |
 |---|---|---|
-| `frontmatter.missing-field:title` | 7 | **engram은 `title`을 필수 필드로 보지 않는다.** upstream 스키마는 요구한다 |
+| `frontmatter.missing-field:title` | 7 | **의도된 차이다.** 아래에서 설명한다 |
 | `location.stage-agreement` | 2 | 문서가 놓인 디렉토리와 `artifact_stage` 값이 어긋나는지 |
 | `location.type-agreement` | 1 | 디렉토리와 `type` 값이 어긋나는지 |
+
+#### title은 따라가지 않는다
+
+upstream 스크립트가 이 규칙의 이유를 주석에 적어 두었다.
+
+> context 노드는 사람이 읽는 한글 제목을 title에 둔다. 파일명은 링크 안정성 때문에 영어 slug로 유지하므로, title이 없으면 index.md가 slug로만 보인다.
+
+**upstream은 파일명을 영어 슬러그로 유지하기 때문에 한글 제목이 갈 곳이 없다.** 그래서 프론트매터에 둔다.
+
+engram은 ADR [0020](decisions/0020-slug-and-filename-rules.md)에서 반대로 정했다. 한글 슬러그를 보존하고 음차하지 않는다. 한글 제목이 곧 파일명이므로 upstream이 `title`을 필요로 하는 이유가 성립하지 않는다.
+
+다만 슬러그는 되돌려도 원문이 아니다. 공백이 하이픈이 되고 대소문자와 구두점을 잃는다. 그래서 제목을 문서 본문의 첫 헤딩으로 남긴다. `new`와 `init`이 이미 그렇게 했고, `capture`와 `source`도 `--title`을 받으면 `# 제목`을 붙이도록 맞췄다. `index`의 `docTitle`이 본문 첫 헤딩을 우선해서 읽으므로 검색 순위도 이 값을 쓴다.
+
+프론트매터 축을 늘리지 않는 편을 택했다. 축을 늘리면 프리셋 세 벌과 lint 규칙이 함께 늘고, ADR [0018](decisions/0018-taxonomy-field-names.md)이 정한 스키마가 흔들린다. 제목이 파일명과 헤딩 두 곳에 이미 있는데 세 번째 자리를 만들 이유가 없다.
 
 `location.*` 두 규칙 중 `index.md`에 붙은 것은 의도된 차이다. ADR [0019](decisions/0019-index-documents-outside-the-gate.md)가 색인 문서를 게이트와 고아 검사 밖에 두기로 했다. 그러나 `inbox/wrong-stage.md`에 붙은 `location.stage-agreement`는 의도한 적이 없는 갭이다. engram은 그 문서를 `schema.allowed-value:artifact_stage`로만 잡아 위치 불일치를 별도로 보고하지 않는다.
 
@@ -75,7 +89,6 @@ engram이 따라가야 할 후보다. 셋으로 갈린다.
 
 ## 다음
 
-- `title` 필수 여부를 정한다. upstream 스키마를 따를지, 따르지 않기로 하고 근거를 ADR로 남길지.
 - `location.stage-agreement`를 lint 규칙으로 넣을지 정한다. `index.md` 예외는 ADR 0019가 이미 근거를 갖고 있다.
 - 비교 축을 늘린다. `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
 - upstream `meta/CHANGELOG.md`에 `binary-affecting` 항목이 붙으면 이 비교를 다시 돌린다.

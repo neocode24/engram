@@ -43,8 +43,7 @@
 
 1. **upstream parity 대조** — 지금 harness가 덮는 것은 자기 출력의 골든 스냅샷뿐이다. ADR 0005가 정한 upstream 스크립트와의 실제 대조는 아직 없다. `docs/parity.md`는 그때 생긴다. 공개 경계는 **커밋되는 것**에만 걸린다. upstream 계약 파일을 vendoring할 때 익명화 경계를 넘은 문자열이 들어오지 않게 하는 것이 요건이며, 픽스처는 ADR 0005대로 조직 정보 없는 깨끗한 예시를 새로 쓴다.
 2. **Windows 재검증** — 다음 버전 검증 때 함께 한다. 콘솔 직결 항목은 2차 검증 당시 스크립트가 출력을 캡처해 버려 실제로는 파이프를 검증하고 있었다. 스크립트를 고쳐 두었으나 실행하지 않았다. `autocrlf` 항목은 VM에 git이 없어 여전히 미검증이다.
-3. **parity가 찾아낸 갭 둘을 판단한다.** 상세는 [parity.md](parity.md)에 있다.
-   - `title`을 필수 필드로 볼지. upstream 스키마는 요구하고 engram은 검사하지 않는다. 문서 7개에서 갈렸다.
+3. **parity가 찾아낸 갭을 판단한다.** 상세는 [parity.md](parity.md)에 있다. `title`은 따라가지 않기로 정리했다.
    - `location.stage-agreement`를 규칙으로 넣을지. 문서가 놓인 디렉토리와 `artifact_stage` 값의 일치 검사이며 engram에 없다. `index.md` 예외는 ADR 0019가 이미 근거를 갖고 있다.
 4. **비교 축을 늘린다.** `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
 
