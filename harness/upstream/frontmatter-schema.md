@@ -1,5 +1,5 @@
 <!-- upstream llm-wiki meta/frontmatter-schema.md 에서 가져왔다.
-     원본 커밋 05f7279. 익명화 치환 6건이 적용되었습니다.
+     원본 커밋 05f7279. 익명화 치환 6건을 적용했다.
      손으로 고치지 않는다. scripts/upstream-sync.py 가 다시 만든다. -->
 # Frontmatter Schema
 

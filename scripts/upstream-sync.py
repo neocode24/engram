@@ -137,7 +137,7 @@ def apply_replacements(text, entries):
 
 def vendor_header(short, count):
     """치환 사실을 독자에게 알리는 머리말. 원문과 다르다는 것을 알아야 한다."""
-    line2 = f"익명화 치환 {count}건이 적용되었습니다" if count else "치환 없음"
+    line2 = f"익명화 치환 {count}건을 적용했다" if count else "치환 없음"
     return (
         f"<!-- upstream llm-wiki meta/NAME 에서 가져왔다.\n"
         f"     원본 커밋 {short}. {line2}.\n"
