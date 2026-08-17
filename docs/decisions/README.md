@@ -60,6 +60,7 @@
 | [0043](0043-mcp-exposes-one-write-tool-and-omits-promote.md) | MCP는 쓰기 도구를 하나만 노출하고 promote를 내보내지 않는다 | 2026-08-17 | accepted |
 | [0044](0044-serve-is-read-only-and-shows-only-vetted-knowledge.md) | serve는 읽기 전용이고 검수된 지식만 보여준다 | 2026-08-17 | accepted |
 | [0045](0045-explicit-slug-must-still-be-filesystem-safe.md) | 명시한 슬러그도 파일시스템 안전 검사를 받는다 | 2026-08-17 | accepted |
+| [0046](0046-pack-exports-files-and-anonymizes-by-user-dictionary.md) | pack은 파일을 그대로 내보내고 익명화는 사용자 사전으로 한다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 

@@ -1,0 +1,194 @@
+package cli
+
+import (
+	"bytes"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"github.com/spf13/cobra"
+)
+
+// runPack은 pack 커맨드를 루트 등록 없이 시험한다. 전역 플래그는 테스트용
+// 부모 커맨드에 붙인다.
+func runPack(t *testing.T, args ...string) (string, error) {
+	t.Helper()
+	parent := &cobra.Command{Use: "engram", SilenceUsage: true}
+	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력합니다")
+	parent.PersistentFlags().String(flagNow, "", "기준 시각(RFC3339)")
+	parent.AddCommand(newPackCmd())
+	var out bytes.Buffer
+	parent.SetOut(&out)
+	parent.SetErr(&out)
+	parent.SetArgs(args)
+	err := parent.Execute()
+	return out.String(), err
+}
+
+// makePackWiki는 반출 대상이 있는 임시 위키를 만든다.
+func makePackWiki(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	files := map[string]string{
+		"engram.yaml": "preset: team\n",
+		"context/아크미-현황.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+			"sensitivity: internal\nindexable: true\ncreated: 2026-01-01\n---\n\n" +
+			"# 사내 현황\n\n아크미 이야기입니다.\n",
+		"context/secret.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+			"sensitivity: private-local-only\nindexable: true\ncreated: 2026-01-01\n---\n\n" +
+			"# 로컬 전용\n\n나가면 안 됩니다.\n",
+		"inbox/2026-08-01-rough.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
+			"indexable: false\ncreated: 2026-08-01\n---\n\n# 러프\n\n미검수입니다.\n",
+	}
+	for name, content := range files {
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return root
+}
+
+// bundleNames는 번들 디렉토리의 파일 상대 경로를 모은다.
+func bundleNames(t *testing.T, dir string) []string {
+	t.Helper()
+	var out []string
+	err := filepath.Walk(dir, func(p string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return err
+		}
+		rel, err := filepath.Rel(dir, p)
+		if err != nil {
+			return err
+		}
+		out = append(out, filepath.ToSlash(rel))
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+func TestPackWritesBundle(t *testing.T) {
+	root := makePackWiki(t)
+	out := filepath.Join(t.TempDir(), "bundle")
+	stdout, err := runPack(t, "pack", "--wiki", root, "--out", out)
+	if err != nil {
+		t.Fatalf("반출 실패: %v\n%s", err, stdout)
+	}
+	names := bundleNames(t, out)
+	if len(names) != 1 || names[0] != "context/아크미-현황.md" {
+		t.Fatalf("번들 = %v, 기대 context/아크미-현황.md 하나", names)
+	}
+	if !strings.Contains(stdout, "민감도") {
+		t.Errorf("민감도 안내가 없습니다:\n%s", stdout)
+	}
+	if !strings.Contains(stdout, "치환 파일을 주지 않아") {
+		t.Errorf("치환하지 않았다는 안내가 없습니다:\n%s", stdout)
+	}
+}
+
+func TestPackDryRunWritesNothing(t *testing.T) {
+	root := makePackWiki(t)
+	out := filepath.Join(t.TempDir(), "bundle")
+	stdout, err := runPack(t, "pack", "--wiki", root, "--out", out, "--dry-run")
+	if err != nil {
+		t.Fatalf("dry-run 실패: %v\n%s", err, stdout)
+	}
+	if _, err := os.Stat(out); !os.IsNotExist(err) {
+		t.Error("dry-run 인데 출력 디렉토리를 만들었습니다")
+	}
+	if !strings.Contains(stdout, "dry-run") {
+		t.Errorf("dry-run 안내가 없습니다:\n%s", stdout)
+	}
+}
+
+func TestPackRejectsNonEmptyOutDir(t *testing.T) {
+	root := makePackWiki(t)
+	out := t.TempDir()
+	if err := os.WriteFile(filepath.Join(out, "잔재.md"), []byte("이전 반출물\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, err := runPack(t, "pack", "--wiki", root, "--out", out)
+	if err == nil || !strings.Contains(err.Error(), "비어 있지 않습니다") {
+		t.Fatalf("비어 있지 않은 디렉토리 오류 = %v", err)
+	}
+	if names := bundleNames(t, out); len(names) != 1 {
+		t.Errorf("거절했는데 파일을 썼습니다: %v", names)
+	}
+}
+
+func TestPackAppliesReplacements(t *testing.T) {
+	root := makePackWiki(t)
+	dict := filepath.Join(t.TempDir(), "repl.txt")
+	if err := os.WriteFile(dict, []byte("# 사전\n아크미==>사내조직\n안걸리는말==>X\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out := filepath.Join(t.TempDir(), "bundle")
+	stdout, err := runPack(t, "pack", "--wiki", root, "--out", out, "--replacements", dict)
+	if err != nil {
+		t.Fatalf("반출 실패: %v\n%s", err, stdout)
+	}
+	names := bundleNames(t, out)
+	if len(names) != 1 || names[0] != "context/사내조직-현황.md" {
+		t.Fatalf("파일명 치환 실패: %v", names)
+	}
+	body, err := os.ReadFile(filepath.Join(out, filepath.FromSlash(names[0])))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(body), "아크미") {
+		t.Error("본문에 원문이 남았습니다")
+	}
+	if !strings.Contains(stdout, "한 번도 걸리지 않은 치환 규칙") {
+		t.Errorf("미사용 규칙 경고가 없습니다:\n%s", stdout)
+	}
+}
+
+func TestPackRejectsBadReplacementFile(t *testing.T) {
+	root := makePackWiki(t)
+	dict := filepath.Join(t.TempDir(), "repl.txt")
+	if err := os.WriteFile(dict, []byte("구분자가 없는 줄\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, err := runPack(t, "pack", "--wiki", root, "--out", filepath.Join(t.TempDir(), "b"), "--replacements", dict)
+	if err == nil || !strings.Contains(err.Error(), "==>") {
+		t.Fatalf("형식 오류를 알리지 않았습니다: %v", err)
+	}
+}
+
+func TestPackRequiresOut(t *testing.T) {
+	root := makePackWiki(t)
+	_, err := runPack(t, "pack", "--wiki", root)
+	if err == nil || !strings.Contains(err.Error(), "--out") {
+		t.Fatalf("--out 없이 통과했습니다: %v", err)
+	}
+}
+
+func TestPackJSON(t *testing.T) {
+	root := makePackWiki(t)
+	out := filepath.Join(t.TempDir(), "bundle")
+	stdout, err := runPack(t, "pack", "--wiki", root, "--out", out, "--dry-run", "--json")
+	if err != nil {
+		t.Fatalf("반출 실패: %v\n%s", err, stdout)
+	}
+	var o packOutcome
+	if err := json.Unmarshal([]byte(stdout), &o); err != nil {
+		t.Fatalf("JSON 파싱 실패: %v\n%s", err, stdout)
+	}
+	if !o.DryRun || len(o.Files) != 1 {
+		t.Errorf("결과가 다릅니다: %+v", o)
+	}
+	if o.Excluded.Sensitive != 1 || o.Excluded.Inbox != 1 {
+		t.Errorf("제외 집계 = %+v, 기대 민감도 1 inbox 1", o.Excluded)
+	}
+	if o.Anonymized {
+		t.Error("치환 파일이 없는데 익명화했다고 보고했습니다")
+	}
+}

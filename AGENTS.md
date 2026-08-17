@@ -12,7 +12,7 @@
 
 - upstream 진실원은 별도 저장소인 `llm-wiki`이며 이 저장소는 그 체계를 특정 시점에 얼려 출판한 산물이다. upstream은 비공개다.
 - upstream을 건드릴 때는 반드시 그쪽 `AGENTS.md`의 계약을 먼저 읽는다.
-- 0.3 마일스톤까지의 커맨드가 동작한다. 스물이며 `engram --help`가 목록의 진실원이다. 넣기(`capture`, `source`), 올리기(`promote`, `new`, `demote`, `archive`), 조회(`search`, `recall`, `backlinks`, `lint`, `status`, `doctor`), 재발견(`resurface`, `bridge`, `digest`), 관리(`init`, `mv`, `update`, `reindex`, `version`)로 나뉜다.
+- 1.0 마일스톤까지의 커맨드가 동작한다. 스물여덟이며 `engram --help`가 목록의 진실원이다. 넣기(`capture`, `source`), 올리기(`promote`, `new`, `demote`, `archive`), 조회(`search`, `recall`, `backlinks`, `lint`, `status`, `doctor`), 재발견(`resurface`, `bridge`, `digest`), 관리(`init`, `mv`, `update`, `reindex`, `migrate`, `sync`, `rules show`, `eject`, `skills install`, `mcp`, `serve`, `pack`, `version`)로 나뉜다.
 
 ## 저장소 구조
 

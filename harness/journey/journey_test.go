@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -196,6 +197,26 @@ func TestJourney(t *testing.T) {
 	w.assertLintClean(t, "reindex")
 	assertFileExists(t, wiki, ".engram/index.json")
 
+	// 12. pack. 도구가 만든 위키를 도구 자신의 반출 커맨드에 태운다.
+	// 여정 끝 상태에서 context 에 남은 것은 doc-b-renamed 와 tech-talk 이고
+	// field-memo 는 demote 로 inbox 에, doc-a 는 archive 에 있다. 번들에
+	// inbox 문서가 섞이면 검수 경계가 반출에서 뚫린 것이다(ADR 0044, 0046).
+	bundle := filepath.Join(files, "bundle")
+	dict := filepath.Join(files, "repl.txt")
+	writeFile(t, dict, "# 반출 사전\ntech-talk==>lecture\n")
+	w.mustOK(t, w.run("pack",
+		"pack", "--wiki", wiki, "--out", bundle, "--replacements", dict))
+	w.assertLintClean(t, "pack")
+	assertBundle(t, bundle, []string{
+		"context/doc-b-renamed.md",
+		"context/lecture.md",
+		"index.md",
+	})
+	// 치환은 본문에도 걸린다. 파일명만 바뀌고 본문에 원문이 남으면
+	// 익명화가 반쪽이다.
+	assertFileAbsent(t, bundle, "context/tech-talk.md")
+	assertFileContains(t, bundle, "context/lecture.md", "lecture")
+
 	// 승급 문서가 재발견 대상에 들어가는지 본다. 기준 시각을 stale_days
 	// 기본값 90일보다 훨씬 뒤로 옮긴다. 승급 문서에 날짜가 없으면 후보가
 	// 비거나 skippedNoDate 가 늘어난다.
@@ -361,6 +382,33 @@ func assertFileAbsent(t *testing.T, wiki, rel string) {
 	t.Helper()
 	if _, err := os.Stat(filepath.Join(wiki, filepath.FromSlash(rel))); !errors.Is(err, fs.ErrNotExist) {
 		t.Fatalf("파일이 없어야 한다: %s (stat 오류: %v)", rel, err)
+	}
+}
+
+// assertBundle은 반출 번들의 파일 목록이 기대와 정확히 같은지 본다.
+// 부분 집합이 아니라 정확히 같은지 보는 이유는, 나가면 안 되는 문서가
+// 하나 더 들었을 때를 잡는 것이 이 단언의 목적이기 때문이다.
+func assertBundle(t *testing.T, dir string, want []string) {
+	t.Helper()
+	var got []string
+	err := filepath.WalkDir(dir, func(p string, e fs.DirEntry, err error) error {
+		if err != nil || e.IsDir() {
+			return err
+		}
+		rel, err := filepath.Rel(dir, p)
+		if err != nil {
+			return err
+		}
+		got = append(got, filepath.ToSlash(rel))
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("번들을 읽을 수 없음: %s: %v", dir, err)
+	}
+	sort.Strings(got)
+	sort.Strings(want)
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("번들 내용이 다르다.\n기대: %v\n실제: %v", want, got)
 	}
 }
 
