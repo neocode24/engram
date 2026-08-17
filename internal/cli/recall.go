@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/neocode24/engram/internal/chunk"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/index"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/spf13/cobra"
@@ -43,16 +45,9 @@ type recallResponse struct {
 func newRecallCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "recall <질의>",
-		Short: "질의에 맞는 원문 조각을 출처와 함께 냅니다",
-		Long: `검색 색인으로 질의에 맞는 문서를 찾고 헤딩 단위로 자른 원문 조각을 냅니다.
-
-각 조각에는 슬러그, 헤딩 경로, 줄 범위, 원문이 함께 나오므로
-조각을 컨텍스트에 넣고 [[슬러그]]로 인용할 수 있습니다.
-요약을 만들지 않고 원문만 냅니다. 문서 목록이 필요하면 engram search를 쓰세요.
-
-조회 커맨드이므로 색인 파일을 쓰지 않습니다. 색인이 없으면
-engram reindex를 먼저 돌리라고 안내하고 종료합니다.`,
-		Args: cobra.ExactArgs(1),
+		Short: i18n.T("cli.recall.short"),
+		Long:  i18n.T("cli.recall.long"),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			query := args[0]
 			root, cfg, err := ingestTarget(cmd)
@@ -61,7 +56,7 @@ engram reindex를 먼저 돌리라고 안내하고 종료합니다.`,
 			}
 			limit, err := cmd.Flags().GetInt(flagLimit)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagLimit, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.recall.flag_read_fail", flagLimit), err)
 			}
 
 			// 색인 파일이 없으면 즉석 색인을 만들지 않고 안내한다.
@@ -69,17 +64,16 @@ engram reindex를 먼저 돌리라고 안내하고 종료합니다.`,
 			// 색인이 필수다.
 			ix := index.Load(root)
 			if ix == nil {
-				return fmt.Errorf("검색 색인이 없습니다: %s\nengram reindex를 먼저 실행하세요", root)
+				return errors.New(i18n.T("cli.recall.no_index", root))
 			}
 			walked, err := walk.Files(root, cfg)
 			if err != nil {
-				return fmt.Errorf("위키를 순회할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.recall.walk_fail"), err)
 			}
 			status := indexFresh
 			if !ix.Fresh(walked, root) {
 				status = indexStale
-				fmt.Fprintf(cmd.ErrOrStderr(),
-					"경고: 색인이 낡았습니다. 낡은 색인으로 검색합니다. engram reindex로 갱신하세요\n")
+				fmt.Fprintln(cmd.ErrOrStderr(), i18n.T("cli.recall.warn_stale"))
 			}
 
 			scored, err := scoreChunks(root, ix.Search(query, limit), query)
@@ -118,8 +112,8 @@ engram reindex를 먼저 돌리라고 안내하고 종료합니다.`,
 			return nil
 		},
 	}
-	cmd.Flags().Int(flagLimit, 5, "낼 조각 수")
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().Int(flagLimit, 5, i18n.T("cli.recall.flag_limit"))
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.recall.flag_wiki"))
 	return cmd
 }
 
@@ -179,9 +173,8 @@ func scoreChunks(root string, candidates []index.SearchResult, query string) ([]
 // 읽을 수 있게 한다. 재료만 반환하고 요약을 만들지 않는다. ADR 0014.
 func printRecall(w io.Writer, query string, chunks []recallChunk) {
 	if len(chunks) == 0 {
-		fmt.Fprintf(w, "결과가 없습니다\n")
-		fmt.Fprintf(w, "질의 %q는 다음 토큰으로 검색했습니다: %s\n",
-			query, strings.Join(index.Tokenize(query), ", "))
+		fmt.Fprintln(w, i18n.T("cli.recall.no_results"))
+		fmt.Fprintln(w, i18n.T("cli.recall.query_tokens", query, strings.Join(index.Tokenize(query), ", ")))
 		return
 	}
 	for i, c := range chunks {
