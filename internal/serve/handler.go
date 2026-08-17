@@ -7,10 +7,10 @@ import (
 	"html/template"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/index"
 	"github.com/neocode24/engram/internal/status"
 )
@@ -135,7 +135,7 @@ func readOnly(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		default:
 			w.Header().Set("Allow", "GET, HEAD")
-			http.Error(w, "이 서버는 읽기 전용입니다. GET 과 HEAD 만 받습니다\n", http.StatusMethodNotAllowed)
+			http.Error(w, i18n.T("core.serve.readonly")+"\n", http.StatusMethodNotAllowed)
 		}
 	})
 }
@@ -163,15 +163,15 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := indexData{
-		Chrome: chrome{Title: "문서 목록", Section: secIndex, Exposure: v.exposure},
+		Chrome: chrome{Title: i18n.T("core.serve.title_docs"), Section: secIndex, Exposure: v.exposure},
 		Groups: []group{
-			{ID: locContext, Label: "context 문서", Docs: v.visibleDocs(locContext)},
-			{ID: locIndex, Label: "색인 문서", Docs: v.visibleDocs(locIndex)},
+			{ID: locContext, Label: i18n.T("core.serve.group_context"), Docs: v.visibleDocs(locContext)},
+			{ID: locIndex, Label: i18n.T("core.serve.group_index"), Docs: v.visibleDocs(locIndex)},
 		},
 	}
 	if s.opts.IncludeArchive {
 		data.Groups = append(data.Groups, group{
-			ID: locArchive, Label: "archive 문서", Docs: v.visibleDocs(locArchive),
+			ID: locArchive, Label: i18n.T("core.serve.group_archive"), Docs: v.visibleDocs(locArchive),
 		})
 	}
 	data.Notes = notesOf(v.exposure)
@@ -183,15 +183,13 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 func notesOf(e Exposure) []string {
 	var notes []string
 	if !e.IncludeArchive && e.ExcludedArchive > 0 {
-		notes = append(notes, "수명이 끝난 archive 문서 "+strconv.Itoa(e.ExcludedArchive)+"개는 이 서버에 나오지 않습니다.")
+		notes = append(notes, i18n.T("core.serve.note_archive_hidden", e.ExcludedArchive))
 	}
 	if e.SensitivityOn && e.ExcludedSensitive > 0 {
-		notes = append(notes, "민감도가 private-local-only 이거나 restricted 인 문서 "+
-			strconv.Itoa(e.ExcludedSensitive)+"개는 노출하지 않습니다.")
+		notes = append(notes, i18n.T("core.serve.note_sensitive_hidden", e.ExcludedSensitive))
 	}
 	if e.ExcludedUnparsed > 0 {
-		notes = append(notes, "프론트매터를 읽을 수 없어 노출하지 않은 문서가 "+
-			strconv.Itoa(e.ExcludedUnparsed)+"개 있습니다. engram lint 로 확인하세요.")
+		notes = append(notes, i18n.T("core.serve.note_unparsed", e.ExcludedUnparsed))
 	}
 	return notes
 }
@@ -267,7 +265,7 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
-	data := searchData{Chrome: chrome{Title: "검색", Section: secSearch, Query: q, Exposure: v.exposure}}
+	data := searchData{Chrome: chrome{Title: i18n.T("core.serve.title_search"), Section: secSearch, Query: q, Exposure: v.exposure}}
 	if q == "" {
 		s.render(w, http.StatusOK, "search.html", data)
 		return
@@ -284,9 +282,9 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 			s.fail(w, err)
 			return
 		}
-		data.Note = "색인이 없어 이번 요청에서만 문서를 읽었습니다. engram reindex 를 한 번 돌리면 검색이 빨라집니다"
+		data.Note = i18n.T("core.serve.note_no_index")
 	case !ix.Fresh(v.walked, s.root):
-		data.Note = "색인이 낡았습니다. 낡은 색인으로 검색한 결과입니다. engram reindex 로 갱신하세요"
+		data.Note = i18n.T("core.serve.note_stale_index")
 	}
 
 	// 상한을 검색 단계에서 걸지 않는다. 제외된 문서가 상위를 차지하면
@@ -320,7 +318,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.render(w, http.StatusOK, "status.html", statusData{
-		Chrome:     chrome{Title: "위키 현황", Section: secStatus, Exposure: v.exposure},
+		Chrome:     chrome{Title: i18n.T("core.serve.title_status"), Section: secStatus, Exposure: v.exposure},
 		Inbox:      res.Stages.Inbox,
 		Sources:    res.Stages.Source,
 		Context:    res.Stages.Context,
@@ -356,7 +354,7 @@ func (s *Server) handleNotFound(w http.ResponseWriter, r *http.Request) {
 // notFound는 404 화면을 낸다.
 func (s *Server) notFound(w http.ResponseWriter, v *view) {
 	s.render(w, http.StatusNotFound, "notfound.html", indexData{
-		Chrome: chrome{Title: "찾을 수 없습니다", Section: secIndex, Exposure: v.exposure},
+		Chrome: chrome{Title: i18n.T("core.serve.title_notfound"), Section: secIndex, Exposure: v.exposure},
 	})
 }
 
@@ -364,9 +362,9 @@ func (s *Server) notFound(w http.ResponseWriter, v *view) {
 // 않고 사유는 서버를 띄운 사람에게만 적는다.
 func (s *Server) fail(w http.ResponseWriter, err error) {
 	if s.opts.ErrorLog != nil {
-		fmt.Fprintf(s.opts.ErrorLog, "요청을 처리하지 못했습니다: %v\n", err)
+		fmt.Fprintln(s.opts.ErrorLog, i18n.T("core.serve.fail_log", err))
 	}
-	http.Error(w, "위키를 읽을 수 없습니다. 서버를 띄운 곳에서 engram doctor 로 확인하세요\n",
+	http.Error(w, i18n.T("core.serve.fail_read")+"\n",
 		http.StatusInternalServerError)
 }
 
@@ -375,7 +373,7 @@ func (s *Server) fail(w http.ResponseWriter, err error) {
 func (s *Server) render(w http.ResponseWriter, code int, name string, data any) {
 	var buf bytes.Buffer
 	if err := s.tmpl.ExecuteTemplate(&buf, name, data); err != nil {
-		http.Error(w, "화면을 만들 수 없습니다\n", http.StatusInternalServerError)
+		http.Error(w, i18n.T("core.serve.render_fail")+"\n", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

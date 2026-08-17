@@ -14,6 +14,8 @@ import (
 	"sort"
 
 	"github.com/goccy/go-yaml"
+
+	"github.com/neocode24/engram/internal/i18n"
 )
 
 // ConfigFileName은 위키 루트에 두는 설정 파일 이름이다. ADR 0017.
@@ -199,11 +201,11 @@ func LoadFile(path string) (Config, error) {
 		return defaults(), nil
 	}
 	if err != nil {
-		return Config{}, fmt.Errorf("설정 파일을 읽을 수 없음: %w", err)
+		return Config{}, fmt.Errorf("%s: %w", i18n.T("core.config.read_fail"), err)
 	}
 	var doc map[string]any
 	if err := yaml.Unmarshal(raw, &doc); err != nil {
-		return Config{}, fmt.Errorf("설정 파일 파싱 실패: %w", err)
+		return Config{}, fmt.Errorf("%s: %w", i18n.T("core.config.parse_fail"), err)
 	}
 	return build(doc)
 }
@@ -263,10 +265,10 @@ func build(doc map[string]any) (Config, error) {
 	if raw, ok := doc["preset"]; ok {
 		s, ok := raw.(string)
 		if !ok {
-			return Config{}, fmt.Errorf("preset 값이 문자열이 아님: %v", raw)
+			return Config{}, errors.New(i18n.T("core.config.preset_not_string", raw))
 		}
 		if !knownPreset(Preset(s)) {
-			return Config{}, fmt.Errorf("preset 값이 허용값이 아님: %q (허용값: minimal, personal, team)", s)
+			return Config{}, errors.New(i18n.T("core.config.preset_unknown", s))
 		}
 		cfg.Preset = Preset(s)
 		cfg.Axes = presetAxes(cfg.Preset)
@@ -282,7 +284,7 @@ func build(doc map[string]any) (Config, error) {
 		case "axes":
 			m, ok := val.(map[string]any)
 			if !ok {
-				return Config{}, fmt.Errorf("axes 값이 매핑이 아님: %v", val)
+				return Config{}, errors.New(i18n.T("core.config.axes_not_map", val))
 			}
 			for name, on := range m {
 				ax := Axis(name)
@@ -292,7 +294,7 @@ func build(doc map[string]any) (Config, error) {
 				}
 				b, ok := on.(bool)
 				if !ok {
-					return Config{}, fmt.Errorf("axes.%s 값이 참/거짓이 아님: %v", name, on)
+					return Config{}, errors.New(i18n.T("core.config.axis_not_bool", name, on))
 				}
 				cfg.Axes[ax] = b
 				cfg.Origins["axes."+name] = OriginFile
@@ -379,13 +381,13 @@ func build(doc map[string]any) (Config, error) {
 func stringListOf(key string, v any) ([]string, error) {
 	items, ok := v.([]any)
 	if !ok {
-		return nil, fmt.Errorf("%s 값이 문자열 목록이 아님: %v", key, v)
+		return nil, errors.New(i18n.T("core.config.not_string_list", key, v))
 	}
 	out := make([]string, 0, len(items))
 	for _, it := range items {
 		s, ok := it.(string)
 		if !ok {
-			return nil, fmt.Errorf("%s 항목이 문자열이 아님: %v", key, it)
+			return nil, errors.New(i18n.T("core.config.item_not_string", key, it))
 		}
 		out = append(out, s)
 	}
@@ -397,10 +399,10 @@ func stringListOf(key string, v any) ([]string, error) {
 func thresholdOf(key string, v any, min int) (int, error) {
 	n, ok := intValue(v)
 	if !ok {
-		return 0, fmt.Errorf("%s 값이 정수가 아님: %v", key, v)
+		return 0, errors.New(i18n.T("core.config.not_int", key, v))
 	}
 	if n < min {
-		return 0, fmt.Errorf("%s 값이 허용 범위 밖임: %d (최소 %d)", key, n, min)
+		return 0, errors.New(i18n.T("core.config.threshold_range", key, n, min))
 	}
 	return n, nil
 }

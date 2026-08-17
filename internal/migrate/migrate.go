@@ -25,6 +25,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
@@ -59,12 +60,6 @@ type Remainder struct {
 	Field  string `json:"field"`
 	Reason string `json:"reason"` // 채우지 못한 이유. 사용자가 읽는 문장이다
 }
-
-// 채우지 못한 이유의 문구다. 경어체다.
-const (
-	reasonSourcedAt       = "git 최초 커밋일이 진실원이라 migrate가 값을 지어내지 않습니다. engram sync가 채웁니다"
-	reasonCreatedNoPrefix = "파일명에 날짜 접두사가 없어 채우지 못했습니다. 원본이 기록된 날을 확인해 직접 넣으세요"
-)
 
 // DocResult는 문서 하나의 마이그레이션 결과다.
 type DocResult struct {
@@ -103,7 +98,7 @@ type Report struct {
 func Run(wikiRoot string, cfg config.Config, opts Options) (Report, error) {
 	walked, err := walk.Files(wikiRoot, cfg)
 	if err != nil {
-		return Report{}, fmt.Errorf("위키를 순회할 수 없음: %w", err)
+		return Report{}, fmt.Errorf("%s: %w", i18n.T("core.migrate.walk_fail"), err)
 	}
 	rep := Report{Applied: opts.Apply, Docs: len(walked), Advisories: []Advisory{}, Documents: []DocResult{}}
 	for _, w := range walked {
@@ -124,7 +119,7 @@ func Run(wikiRoot string, cfg config.Config, opts Options) (Report, error) {
 		if opts.Apply && len(res.Changes) > 0 {
 			path := filepath.Join(wikiRoot, filepath.FromSlash(w.Rel))
 			if err := os.WriteFile(path, doc.Render(fields, w.Parsed.Body), 0o644); err != nil {
-				return rep, fmt.Errorf("문서를 쓸 수 없음: %s: %w", path, err)
+				return rep, fmt.Errorf("%s: %w", i18n.T("core.migrate.write_fail", path), err)
 			}
 			res.Written = true
 			rep.Written++
@@ -141,7 +136,7 @@ func Run(wikiRoot string, cfg config.Config, opts Options) (Report, error) {
 	// 이후면 남은 상태가 나온다.
 	lintRes, err := lint.Run(wikiRoot, cfg)
 	if err != nil {
-		return rep, fmt.Errorf("위키 검사 실패: %w", err)
+		return rep, fmt.Errorf("%s: %w", i18n.T("core.migrate.lint_fail"), err)
 	}
 	seen := map[Advisory]bool{}
 	for _, v := range lintRes.Violations {
@@ -215,11 +210,11 @@ func planDoc(w walk.Doc, cfg config.Config, opts Options) (DocResult, []doc.Fiel
 					fields = append(fields, doc.Field{Key: "created", Kind: doc.KindDate, Str: prefix})
 					res.Changes = append(res.Changes, Change{Kind: KindFill, Field: "created", New: prefix})
 				} else {
-					res.Remainders = append(res.Remainders, Remainder{Field: "created", Reason: reasonCreatedNoPrefix})
+					res.Remainders = append(res.Remainders, Remainder{Field: "created", Reason: i18n.T("core.migrate.reason_created_no_prefix")})
 				}
 			}
 			if _, ok := indexOfField(fields, "sourced_at"); !ok {
-				res.Remainders = append(res.Remainders, Remainder{Field: "sourced_at", Reason: reasonSourcedAt})
+				res.Remainders = append(res.Remainders, Remainder{Field: "sourced_at", Reason: i18n.T("core.migrate.reason_sourced_at")})
 			}
 		}
 	}

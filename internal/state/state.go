@@ -13,6 +13,8 @@ import (
 	"strings"
 
 	"github.com/goccy/go-yaml"
+
+	"github.com/neocode24/engram/internal/i18n"
 )
 
 // StateFileName은 영구 상태 파일 이름이다. 위키 루트에 두고 git이 추적한다.
@@ -42,18 +44,19 @@ func Load(wikiRoot string) (State, error) {
 		return State{}, nil
 	}
 	if err != nil {
-		return State{}, fmt.Errorf("%s 파일을 읽을 수 없습니다: %w", path, err)
+		return State{}, fmt.Errorf("%s: %w", i18n.T("core.state.read_fail", path), err)
 	}
 	var w wireState
 	// 모르는 키가 있으면 에러로 막는다. 키를 모르는 채로 덮어쓰면 그 키가
 	// 담은 판단이 사라진다.
 	if err := yaml.UnmarshalWithOptions(raw, &w, yaml.DisallowUnknownField()); err != nil {
-		return State{}, fmt.Errorf("%s 파일을 해석할 수 없습니다: %w\n문법을 고쳐 주세요. 파일을 지우면 기각한 판단이 사라집니다", path, err)
+		return State{}, fmt.Errorf("%s: %w\n%s",
+			i18n.T("core.state.parse_fail_head", path), err, i18n.T("core.state.parse_fail_tail"))
 	}
 	var s State
 	for i, p := range w.BridgeRejections {
 		if len(p) != 2 {
-			return State{}, fmt.Errorf("%s 파일의 bridge_rejections %d번째 쌍이 슬러그 %d개를 가집니다. 슬러그 두 개여야 합니다", path, i+1, len(p))
+			return State{}, errors.New(i18n.T("core.state.pair_bad", path, i+1, len(p)))
 		}
 		s.BridgeRejections = append(s.BridgeRejections, [2]string{p[0], p[1]})
 	}

@@ -5,9 +5,12 @@ package gitdate
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
+
+	"github.com/neocode24/engram/internal/i18n"
 )
 
 // Dates는 문서 하나의 커밋 날짜다. 이력이 없으면 빈 값이다.
@@ -22,11 +25,11 @@ type Dates struct {
 // git 이 없거나 위키가 저장소가 아니면 안내를 담은 에러를 낸다.
 func History(wikiRoot string) (map[string]Dates, error) {
 	if _, err := exec.LookPath("git"); err != nil {
-		return nil, fmt.Errorf("git 을 찾을 수 없습니다. git 을 설치한 뒤 다시 시도하세요")
+		return nil, errors.New(i18n.T("core.gitdate.git_missing"))
 	}
 	prefixRaw, err := runGit(wikiRoot, "rev-parse", "--show-prefix")
 	if err != nil {
-		return nil, fmt.Errorf("위키가 git 저장소가 아닙니다: %s\n위키 루트에서 git init 으로 저장소를 만들고 커밋을 쌓으세요", wikiRoot)
+		return nil, errors.New(i18n.T("core.gitdate.not_repo", wikiRoot))
 	}
 	prefix := strings.TrimSpace(prefixRaw)
 
@@ -37,7 +40,7 @@ func History(wikiRoot string) (map[string]Dates, error) {
 		if strings.Contains(err.Error(), "does not have any commits") {
 			return map[string]Dates{}, nil
 		}
-		return nil, fmt.Errorf("git 이력을 읽을 수 없음: %w", err)
+		return nil, fmt.Errorf("%s: %w", i18n.T("core.gitdate.read_fail"), err)
 	}
 
 	hist := map[string]Dates{}
@@ -90,7 +93,7 @@ func runGit(root string, args ...string) (string, error) {
 	cmd.Stdout = &out
 	cmd.Stderr = &errb
 	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("git %s 실패: %w: %s", strings.Join(args, " "), err, strings.TrimSpace(errb.String()))
+		return "", fmt.Errorf("%s: %w: %s", i18n.T("core.gitdate.git_fail", strings.Join(args, " ")), err, strings.TrimSpace(errb.String()))
 	}
 	return out.String(), nil
 }
