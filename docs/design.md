@@ -177,7 +177,7 @@
 
 ## 열린 항목
 
-- 교육용 데모 위키의 내용. `engram init --preset education`으로 재생성 가능해야 하며 결과가 다르면 회귀로 본다.
+- ~~교육용 데모 위키의 내용.~~ `examples/education`으로 만들었다. 커맨드 시퀀스의 생성물이며 `harness/examples`가 재생성해 대조한다.
 - ~~`serve` 웹 UI의 쓰기 범위.~~ [0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md)가 읽기 전용으로 정했다. 제안 접수도 두지 않는다.
 - ~~MCP 노출 시 도구 단위 분해.~~ [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md)이 도구 열로 정했다. 쓰기는 `capture` 하나다.
 - `engram model`이 관리할 모델의 범위. 임베딩만인가, STT와 TTS까지인가. 커맨드 구조는 [0007](decisions/0007-platform-and-distribution.md)에 있고 사이드카라 근간과 충돌하지 않는다. 목록만 정하면 된다. 상세는 `roadmap.md`에 있다.

@@ -26,8 +26,8 @@
 | `docs/curriculum.md` | 교육 커리큘럼 |
 | `docs/course/` | 강의 자료. 공개 자산이며 사내 사례를 담지 않는다 (placeholder) |
 | `cmd/engram/`, `internal/` | Go 구현. 저장소 루트가 모듈 루트 |
-| `harness/` | 골든 픽스처, 여정 통합 테스트, upstream 동등성 검증. lint 축까지 마쳤다 |
-| `examples/` | 데모 위키. `init`의 생성물이므로 손으로 고치지 않는다 (placeholder) |
+| `harness/` | 골든 픽스처, 여정 통합 테스트, 데모 위키 재생성, upstream 동등성 검증. lint 축까지 마쳤다 |
+| `examples/` | 데모 위키. 커맨드 시퀀스의 생성물이므로 손으로 고치지 않는다. `go test ./harness/examples -update`로 재생성 |
 | `private/` | 공개 경계 밖 자료. **gitignore 대상이라 커밋되지 않는다** ([0024](docs/decisions/0024-public-boundary-and-private-directory.md)) |
 
 ## 작업 규칙

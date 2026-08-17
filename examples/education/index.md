@@ -1,0 +1,34 @@
+---
+type: system
+artifact_stage: context
+status: promoted
+indexable: true
+tags: []
+source_refs: []
+derived_from: []
+related: []
+source_channel: manual-prompt
+derived_context: []
+created: 2026-03-02
+sourced_at: 2026-03-02
+updated: 2026-03-02
+---
+# 데모 위키
+
+engram 이 만드는 위키의 모습을 보여주는 예제다. `engram init --preset education` 으로
+시작해 몇 개의 커맨드를 순서대로 돌린 결과이며, 손으로 고친 곳이 없다.
+
+무엇부터 볼지는 [[promotion-pipeline]] 이 정리해 두었다. 문서끼리 어떻게
+엮이는지는 [[wikilink-graph]] 에 있다.
+
+## 지금 이 위키의 상태
+
+| 단계 | 문서 | 뜻 |
+|---|---|---|
+| inbox | 1건 | 아직 처리하지 않은 메모 |
+| sources | 1건 | 고치지 않고 보존하는 원본 |
+| context | 4건 | 게이트를 지난 검수된 지식 |
+
+`engram status .` 를 돌리면 이 표를 도구가 직접 낸다. inbox 에 하나가
+남아 있는 것은 실수가 아니라 의도다. 적체가 0인 위키로는 status 가
+무엇을 보는지 보여줄 수 없다.

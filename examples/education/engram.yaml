@@ -1,0 +1,32 @@
+# engram 위키 설정. 스키마 축, 임계값, 디렉토리 매핑을 정의합니다.
+preset: education
+
+# 스키마 축. 프리셋(personal < education < team)이 시작점이며
+# 개별 축을 아래에서 따로 켜고 끌 수 있습니다.
+# 사용 가능한 축: type, artifact_stage, status, indexable, tags, source_refs,
+# derived_from, related, source_channel, derived_context, scope, sensitivity,
+# trigger_mode, workflow
+# axes:
+#   scope: true
+
+# 문서 종류(type 축의 허용값). 위키에 맞게 추가합니다.
+# types: [concept, project, system, decision, procedure, incident,
+#   meeting-summary, agent-workflow, source-summary, inbox-note]
+
+# taxonomy. topics는 개방 집합이고 forms는 폐쇄 집합입니다.
+# topics: [go, cli]
+# forms: [memo, report]
+
+# 임계값. min_wikilinks만 승급 거절 사유이고 나머지는 경고에 쓰입니다.
+min_wikilinks: 2    # promote 게이트. 0으로 두면 게이트가 꺼집니다
+stale_days: 90      # 재발견 대상 판정 기준 일수
+max_lines: 1000     # 문서 길이 경고 상한
+broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
+
+# 문서가 놓이는 디렉토리와 루트에 있어야 하는 파일
+page_dirs: [inbox, sources, context, archive]
+root_files: [index.md]
+
+# 문서가 아닌 마크다운. 같은 파일명이면 깊이와 무관하게 순회에서 뺍니다.
+# 기본값은 README.md 하나입니다. 비워 두면 README.md도 문서로 검사합니다.
+# ignore_files: [README.md]

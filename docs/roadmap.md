@@ -115,7 +115,7 @@ upstream 명세 동기화 과제와 coordinator/worker 실행 체제는 `private
 
 ## 미결정
 
-- 교육용 데모 위키 내용. `engram init --preset education`으로 재생성 가능해야 하며 결과가 다르면 회귀로 본다.
+- ~~교육용 데모 위키 내용.~~ `examples/education`을 만들었다. `init` 하나가 아니라 커맨드 시퀀스의 생성물이며 `harness/examples`가 재생성해 대조한다. 결과가 다르면 회귀다.
 - ~~`serve` 웹 UI의 쓰기 범위.~~ [0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md)가 읽기 전용으로 정했다.
 - ~~MCP 노출 시 도구 단위 분해.~~ [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md)이 도구 열로 정했다.
 - **`engram model`이 관리할 모델의 범위.** 커맨드 구조는 [0007](decisions/0007-platform-and-distribution.md)에 이미 있고 사이드카라 근간과 충돌하지 않는다. 정할 것은 목록 하나다.
@@ -141,6 +141,7 @@ Go 테스트 스위트가 생겼다. `go test ./...`가 정식 검증이다.
 | `harness` | 골든 위키에 대한 lint 출력 스냅샷 비교. `go test ./harness -update`로 갱신 |
 | `harness/journey` | 실제 바이너리로 `init`부터 `export`까지 열두 단계. 각 변경 뒤 `lint`의 `error`와 `reject`가 0인지, 승급 문서에 `created`가 남는지, `resurface` 후보에 승급 문서가 드는지, `export` 번들에 inbox 문서가 섞이지 않는지 |
 | `harness/parity` | upstream 스크립트와의 대조. lint 위반 목록과 `resurface` 선정 순위 두 축. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |
+| `harness/examples` | `examples/education` 데모 위키를 커맨드 시퀀스로 다시 만들어 커밋본과 바이트 대조. `-update`로 갱신 |
 | `harness/eject` | 내보낸 Python 린터와 `engram lint`의 판정 대조. 여덟 상황에서 출력과 종료 코드를 본다. **어긋나면 실패다.** CI에서 돈다 |
 | `harness/realdata` | 실운영 위키 306문서 스모크. 생존, 조회 커맨드의 무변경, 판정의 결정론, 시간 상한 넷만 단언하고 위반 수는 로그로 남긴다. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |
 | 릴리스 산출물 | `goreleaser release --snapshot --clean --skip=publish`로 아카이브 여섯과 `checksums.txt`를 만든다. 현재 플랫폼 바이너리의 `engram version`이 `dev`가 아니고 `strings`로 `/Users/` 경로가 안 박혔는지 본다 |
