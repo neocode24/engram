@@ -217,6 +217,12 @@ engram은 이 절차를 커맨드 둘로 이미 표현할 수 있다. `source`�
 
 실제로 확인한 것 둘을 적어 둔다. `inbox/_drop/`에 프론트매터 없는 마크다운을 두면 `frontmatter.missing`으로 `error`가 난다. engram이 그 하위 디렉토리도 문서로 훑기 때문이다. 반면 `inbox/<채널>/` 같은 중첩 디렉토리는 그대로 동작한다. 즉 빠진 것은 채널 구조가 아니라 **순회에서 빼는 디렉토리 개념** 하나다. 파일 단위로는 `ignore_files`가 있고([ADR 0036](decisions/0036-non-document-files-in-stage-dirs.md)) 디렉토리 단위는 없다. 위키 안에 드롭 폴더를 두겠다는 요구가 실제로 나오면 그때 `ignore_dirs`를 본다.
 
+여기서 upstream 과 갈라지는 지점이 하나 남는다. upstream 의 드롭 절차는 **에이전트가 원본을 `sources/`에 보존한다.** engram 은 에이전트의 쓰기 경계를 `inbox`까지로 못 박았으므로([ADR 0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md)) 에이전트가 `sources/`에 쓰지 않는다. MCP 도구 목록에도 `source`가 없다.
+
+그래서 engram 에서 같은 일은 이렇게 나뉜다. 에이전트가 원문을 그대로 `capture` 해서 `inbox`에 넣고, 원본으로 확정할지는 사람이 `source`로 정한다. 원본이 사라지지 않는다는 결과는 같고 그것을 확정하는 주체가 다르다.
+
+근거는 `--created`와 `--ref`다. 원본이 언제 쓰였고 어디서 왔는지는 **사실이어야 하는 값**이며 파일 안에 적혀 있지 않은 경우가 많다. 에이전트가 내용에서 짐작해 채우면 위키가 틀린 출처를 사실로 갖게 된다. ADR 0009 가 "정확도를 모르는데 날짜를 지어내게 만드는 스키마는 데이터를 오염시킨다"고 적은 것과 같은 자리다. 스킬 문서는 에이전트에게 `source` 커맨드를 **제안하고 멈추라고** 지시한다.
+
 음성 메모 인테이크는 여정 2와 같은 자리이며 바이너리 밖 동선이다([ADR 0014](decisions/0014-llm-boundary-agent-drives-binary.md)).
 
 `indexable`은 지금 `promote`가 context 문서에 참을, `capture`가 inbox 문서에 거짓을 초기값으로 쓰는 방식으로만 지켜진다. 사람이 프론트매터를 고쳐 값을 바꿔도 lint는 잡지 않는다. 결정할 시점은 검색 인덱스가 민감 자료를 걸러 내야 할 필요가 생겼을 때다. security-rules의 이행과 같은 때에 볼 문제다.
