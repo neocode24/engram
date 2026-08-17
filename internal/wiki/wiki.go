@@ -17,6 +17,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 )
 
 // Stage는 문서가 놓이는 단계다. 단계에 대응하는 디렉토리는 stageDirs
@@ -85,10 +86,10 @@ func Slug(title string) (string, error) {
 	// 점은 숨김 파일을 만들어 walk가 문서를 지나친다.
 	s = strings.Trim(s, "-.")
 	if s == "" {
-		return "", fmt.Errorf("제목 %q에서 슬러그를 만들 수 없습니다. 제목 대신 슬러그를 직접 지정하세요", title)
+		return "", errors.New(i18n.T("core.wiki.slug_from_title_fail", title))
 	}
 	if err := ValidateSlug(s); err != nil {
-		return "", fmt.Errorf("제목 %q에서 만든 슬러그를 파일명으로 쓸 수 없습니다: %w", title, err)
+		return "", fmt.Errorf("%s: %w", i18n.T("core.wiki.slug_unusable", title), err)
 	}
 	return s, nil
 }
@@ -106,30 +107,29 @@ func Slug(title string) (string, error) {
 // 취향인 규칙 하나부터 셋까지이고 제약인 규칙 넷은 아니다.
 func ValidateSlug(slug string) error {
 	if slug == "" {
-		return fmt.Errorf("슬러그가 비었습니다\n파일명으로 쓸 이름을 지정하세요")
+		return errors.New(i18n.T("core.wiki.slug_empty"))
 	}
 	if strings.ContainsAny(slug, `/\`) {
-		return fmt.Errorf("슬러그에 경로 구분자가 들어 있습니다: %q\n슬러그는 파일 이름 한 조각입니다. / 와 \\ 를 빼고 다시 지정하세요", slug)
+		return errors.New(i18n.T("core.wiki.slug_path_sep", slug))
 	}
 	for _, r := range slug {
 		if !unsafeFilenameRune(r) {
 			continue
 		}
 		if r < 0x20 || r == 0x7f {
-			return fmt.Errorf("슬러그에 제어 문자가 들어 있습니다: %q (U+%04X)\n보이지 않는 문자입니다. 빼고 다시 지정하세요", slug, r)
+			return errors.New(i18n.T("core.wiki.slug_control_char", slug, r))
 		}
-		return fmt.Errorf("슬러그에 파일명으로 쓸 수 없는 문자가 들어 있습니다: %q (문제 문자: %q)\nWindows에서 만들 수 없는 이름입니다. %s 를 빼고 다시 지정하세요",
-			slug, string(r), unsafeFilenameChars)
+		return errors.New(i18n.T("core.wiki.slug_unsafe_char", slug, string(r), unsafeFilenameChars))
 	}
 	runes := []rune(slug)
 	if last := runes[len(runes)-1]; last == '.' || unicode.IsSpace(last) {
-		return fmt.Errorf("슬러그가 점이나 공백으로 끝납니다: %q\nWindows가 이름 끝의 점과 공백을 지웁니다. 끝을 다듬어 다시 지정하세요", slug)
+		return errors.New(i18n.T("core.wiki.slug_trailing_dot", slug))
 	}
 	if runes[0] == '.' {
-		return fmt.Errorf("슬러그가 점으로 시작합니다: %q\n숨김 파일이 되어 engram이 문서를 찾지 못합니다. 앞의 점을 빼고 다시 지정하세요", slug)
+		return errors.New(i18n.T("core.wiki.slug_leading_dot", slug))
 	}
 	if isReservedName(slug) {
-		return fmt.Errorf("슬러그 %q가 Windows 예약 파일명입니다\nCON, PRN, AUX, NUL, COM1부터 COM9, LPT1부터 LPT9는 파일명으로 쓸 수 없습니다. 다른 이름을 지정하세요", slug)
+		return errors.New(i18n.T("core.wiki.slug_reserved", slug))
 	}
 	return nil
 }
@@ -166,7 +166,7 @@ func FilePath(cfg config.Config, stage Stage, date, slug string) (string, error)
 		}
 		return dir + "/" + date + "-" + slug + ".md", nil
 	}
-	return "", fmt.Errorf("알 수 없는 단계: %q (허용값: inbox, source, context)", string(stage))
+	return "", errors.New(i18n.T("core.wiki.unknown_stage", string(stage)))
 }
 
 // DirFor는 단계에 대응하는 디렉토리를 page_dirs에서 찾는다. 대응은
@@ -175,15 +175,14 @@ func FilePath(cfg config.Config, stage Stage, date, slug string) (string, error)
 func DirFor(cfg config.Config, stage Stage) (string, error) {
 	want, ok := stageDirs[stage]
 	if !ok {
-		return "", fmt.Errorf("알 수 없는 단계: %q (허용값: inbox, source, context, archive)", string(stage))
+		return "", errors.New(i18n.T("core.wiki.unknown_stage_all", string(stage)))
 	}
 	for _, d := range cfg.PageDirs {
 		if d == want {
 			return d, nil
 		}
 	}
-	return "", fmt.Errorf("설정의 page_dirs에 %s 단계 디렉토리가 없습니다: %q\nengram.yaml의 page_dirs에 %q를 추가하세요",
-		stage, want, want)
+	return "", errors.New(i18n.T("core.wiki.page_dir_missing", stage, want, want))
 }
 
 // StageForDir는 최상위 디렉토리 이름에 대응하는 단계를 반환한다.
@@ -206,7 +205,7 @@ func validDate(date string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("날짜 %q가 YYYY-MM-DD 또는 YYYY-MM 형식이 아닙니다", date)
+	return errors.New(i18n.T("core.wiki.bad_date", date))
 }
 
 // Create는 위키 루트 아래 단계에 맞는 자리에 문서를 만들고 만든 파일
@@ -219,21 +218,21 @@ func Create(wikiRoot string, cfg config.Config, stage Stage, date, slug string, 
 	}
 	path := filepath.Join(wikiRoot, filepath.FromSlash(rel))
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return "", fmt.Errorf("디렉토리를 만들 수 없음: %w", err)
+		return "", fmt.Errorf("%s: %w", i18n.T("core.wiki.mkdir_fail"), err)
 	}
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if errors.Is(err, fs.ErrExist) {
-		return "", fmt.Errorf("이미 문서가 있습니다: %s\n기존 문서를 덮어쓰지 않습니다. 슬러그를 다르게 지정하거나 기존 문서를 손으로 고치세요", path)
+		return "", errors.New(i18n.T("core.wiki.already_exists", path))
 	}
 	if err != nil {
-		return "", fmt.Errorf("문서를 만들 수 없음: %s: %w", path, err)
+		return "", fmt.Errorf("%s: %w", i18n.T("core.wiki.create_fail", path), err)
 	}
 	if _, err := f.Write(doc.RenderMap(fm, body)); err != nil {
 		f.Close()
-		return "", fmt.Errorf("문서를 쓸 수 없음: %s: %w", path, err)
+		return "", fmt.Errorf("%s: %w", i18n.T("core.wiki.write_fail", path), err)
 	}
 	if err := f.Close(); err != nil {
-		return "", fmt.Errorf("문서를 닫을 수 없음: %s: %w", path, err)
+		return "", fmt.Errorf("%s: %w", i18n.T("core.wiki.close_fail", path), err)
 	}
 	return path, nil
 }

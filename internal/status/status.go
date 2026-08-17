@@ -4,7 +4,7 @@
 package status
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"sort"
@@ -13,6 +13,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/neocode24/engram/internal/walk"
 )
@@ -74,7 +75,7 @@ type scannedDoc struct {
 // 전역 --now 파싱 결과를 받는 구조라 여기서 시계를 직접 읽지 않는다.
 func Run(wikiRoot string, now time.Time) (Result, error) {
 	if _, err := os.Stat(filepath.Join(wikiRoot, config.ConfigFileName)); err != nil {
-		return Result{}, fmt.Errorf("%s는 engram 위키가 아닙니다. engram init %s로 위키를 만듭니다", wikiRoot, wikiRoot)
+		return Result{}, errors.New(i18n.T("core.status.not_wiki", wikiRoot, wikiRoot))
 	}
 	cfg, err := config.Load(wikiRoot)
 	if err != nil {
@@ -222,27 +223,27 @@ func suggest(res Result, cfg config.Config) []Suggestion {
 	if res.Backlog.Promotable > 0 {
 		out = append(out, Suggestion{
 			Action: "engram promote " + res.Backlog.PromotablePaths[0],
-			Detail: fmt.Sprintf("지금 승급할 수 있는 inbox 문서 %d개. 오래된 것부터: %s",
+			Detail: i18n.T("core.status.suggest_promotable",
 				res.Backlog.Promotable, previewPaths(res.Backlog.PromotablePaths, 3)),
 		})
 	}
 	if res.Backlog.Stale > 0 {
 		out = append(out, Suggestion{
-			Action: "검토",
-			Detail: fmt.Sprintf("stale_days %d일을 넘긴 context 문서 %d개. 갱신하거나 archive로 옮기세요",
+			Action: i18n.T("core.status.action_review"),
+			Detail: i18n.T("core.status.suggest_stale",
 				cfg.Thresholds.StaleDays, res.Backlog.Stale),
 		})
 	}
 	if res.Lint.Error > 0 {
 		out = append(out, Suggestion{
 			Action: "engram lint",
-			Detail: fmt.Sprintf("error %d건이 승급을 막고 있습니다. 상세 위반은 engram lint가 보여줍니다", res.Lint.Error),
+			Detail: i18n.T("core.status.suggest_lint", res.Lint.Error),
 		})
 	}
 	if res.Backlog.Inbox == 0 {
 		out = append(out, Suggestion{
 			Action: "engram capture",
-			Detail: "inbox가 비었습니다. 새 메모를 받아 파이프라인을 돌리세요",
+			Detail: i18n.T("core.status.suggest_capture"),
 		})
 	}
 	if len(out) > 3 {
@@ -256,7 +257,7 @@ func previewPaths(paths []string, max int) string {
 	if len(paths) <= max {
 		return strings.Join(paths, ", ")
 	}
-	return strings.Join(paths[:max], ", ") + fmt.Sprintf(" 외 %d개", len(paths)-max)
+	return strings.Join(paths[:max], ", ") + i18n.T("core.status.more_paths", len(paths)-max)
 }
 
 // stageOfDir는 문서 위치의 첫 디렉토리로 단계를 잡는다.

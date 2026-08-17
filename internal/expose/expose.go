@@ -17,6 +17,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
 )
@@ -102,7 +103,7 @@ type Result struct {
 func Select(root string, cfg config.Config, opts Options) (Result, error) {
 	walked, err := walk.Files(root, cfg)
 	if err != nil {
-		return Result{}, fmt.Errorf("위키를 순회할 수 없음: %w", err)
+		return Result{}, fmt.Errorf("%s: %w", i18n.T("core.expose.walk_fail"), err)
 	}
 	res := Result{Walked: walked}
 	res.Exposure.SensitivityOn = cfg.Axes[config.AxisSensitivity]
@@ -214,17 +215,17 @@ func SensitivityOf(d doc.Doc) string {
 func ReasonText(reason string) string {
 	switch reason {
 	case ReasonInbox:
-		return "inbox 문서는 검수를 지나지 않아 반출하지 않습니다"
+		return i18n.T("core.expose.reason_inbox")
 	case ReasonSources:
-		return "sources 문서는 원본 보존 계층이라 반출하지 않습니다"
+		return i18n.T("core.expose.reason_sources")
 	case ReasonArchive:
-		return "archive 문서입니다. --include-archive 로 엽니다"
+		return i18n.T("core.expose.reason_archive")
 	case ReasonSensitivity:
-		return "민감도가 " + strings.Join(HiddenSensitivities, " 또는 ") + " 입니다. 반출하려면 문서의 값을 고치세요"
+		return i18n.T("core.expose.reason_sensitivity", strings.Join(HiddenSensitivities, i18n.T("core.expose.or_joiner")))
 	case ReasonUnparsed:
-		return "프론트매터를 읽을 수 없어 민감도를 판정하지 못했습니다 (engram lint 로 확인하세요)"
+		return i18n.T("core.expose.reason_unparsed")
 	case ReasonOutside:
-		return "단계 디렉토리 밖에 있는 문서입니다"
+		return i18n.T("core.expose.reason_outside")
 	}
-	return "노출 대상이 아닙니다"
+	return i18n.T("core.expose.reason_none")
 }

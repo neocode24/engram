@@ -15,6 +15,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/walk"
 )
 
@@ -76,7 +77,7 @@ func IsStale(d doc.Doc, now time.Time, staleDays int) bool {
 func Run(wikiRoot string, cfg config.Config, now time.Time, limit int, dryRun bool) (Result, error) {
 	walked, err := walk.Files(wikiRoot, cfg)
 	if err != nil {
-		return Result{}, fmt.Errorf("위키를 순회할 수 없음: %w", err)
+		return Result{}, fmt.Errorf("%s: %w", i18n.T("core.resurface.walk_fail"), err)
 	}
 	shown := LoadHistory(wikiRoot)
 
@@ -149,11 +150,11 @@ func Run(wikiRoot string, cfg config.Config, now time.Time, limit int, dryRun bo
 	if len(res.Candidates) == 0 {
 		switch {
 		case contextDocs == 0:
-			res.Reason = "context 단계 문서가 없습니다"
+			res.Reason = i18n.T("core.resurface.no_context")
 		case res.SkippedNoDate == contextDocs:
-			res.Reason = "기준 날짜를 알 수 있는 context 문서가 없습니다"
+			res.Reason = i18n.T("core.resurface.no_dated")
 		default:
-			res.Reason = fmt.Sprintf("stale_days %d일을 넘긴 context 문서가 없습니다", cfg.Thresholds.StaleDays)
+			res.Reason = i18n.T("core.resurface.none_stale", cfg.Thresholds.StaleDays)
 		}
 	}
 
@@ -210,16 +211,16 @@ func SaveHistory(wikiRoot string, shown map[string]time.Time) error {
 	}
 	dir := filepath.Join(wikiRoot, stateDir)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return fmt.Errorf("제시 이력 디렉토리를 만들 수 없음: %w", err)
+		return fmt.Errorf("%s: %w", i18n.T("core.resurface.mkdir_fail"), err)
 	}
 	data, err := json.MarshalIndent(f, "", "  ")
 	if err != nil {
-		return fmt.Errorf("제시 이력을 만들 수 없음: %w", err)
+		return fmt.Errorf("%s: %w", i18n.T("core.resurface.marshal_fail"), err)
 	}
 	data = append(data, '\n')
 	path := filepath.Join(dir, historyName)
 	if err := os.WriteFile(path, data, 0o644); err != nil {
-		return fmt.Errorf("제시 이력을 쓸 수 없음: %s: %w", path, err)
+		return fmt.Errorf("%s: %w", i18n.T("core.resurface.history_write_fail", path), err)
 	}
 	return nil
 }

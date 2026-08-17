@@ -11,6 +11,8 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/token"
+
+	"github.com/neocode24/engram/internal/i18n"
 )
 
 // ValueKind는 프론트매터 값의 종류를 구분한다.
@@ -73,7 +75,7 @@ func Parse(path string, content []byte) (Doc, error) {
 			}
 		}
 		if close < 0 {
-			return Doc{}, fmt.Errorf("%s: 프론트매터가 %d줄에서 시작하지만 닫는 ---가 없습니다", path, 1)
+			return Doc{}, errors.New(i18n.T("core.doc.fm_unclosed", path, 1))
 		}
 		d.HasFrontmatter = true
 		d.fmLines = lines[1:close]
@@ -94,12 +96,12 @@ func Parse(path string, content []byte) (Doc, error) {
 func parseFields(d *Doc, fmText string) error {
 	var ms yaml.MapSlice
 	if err := yaml.Unmarshal([]byte(fmText), &ms); err != nil {
-		return fmt.Errorf("%s: 프론트매터 YAML 파싱 실패 (줄 %d): %w", d.Path, fmErrorLine(err), err)
+		return fmt.Errorf("%s: %w", i18n.T("core.doc.fm_parse_fail", d.Path, fmErrorLine(err)), err)
 	}
 	for _, item := range ms {
 		key, ok := item.Key.(string)
 		if !ok {
-			return fmt.Errorf("%s: 프론트매터 키 %v가 문자열이 아닙니다", d.Path, item.Key)
+			return errors.New(i18n.T("core.doc.key_not_string", d.Path, item.Key))
 		}
 		d.Fields = append(d.Fields, toField(key, item.Value))
 	}

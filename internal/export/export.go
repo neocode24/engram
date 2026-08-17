@@ -9,7 +9,7 @@
 package export
 
 import (
-	"fmt"
+	"errors"
 	"path"
 	"sort"
 	"strings"
@@ -17,6 +17,7 @@ import (
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/expose"
 	"github.com/neocode24/engram/internal/graph"
+	"github.com/neocode24/engram/internal/i18n"
 )
 
 // Options는 반출 범위와 익명화 사전이다.
@@ -191,9 +192,9 @@ func notExportable(sel expose.Result, want, norm string, cfg config.Config, opts
 		}
 		loc := expose.Locate(wd)
 		reason := expose.Exclude(wd, loc, cfg, opts)
-		return fmt.Errorf("%s 는 반출할 수 없습니다: %s", want, expose.ReasonText(reason))
+		return errors.New(i18n.T("core.export.not_exportable", want, expose.ReasonText(reason)))
 	}
-	return fmt.Errorf("그런 문서가 없습니다: %s", want)
+	return errors.New(i18n.T("core.export.no_such_doc", want))
 }
 
 // sortRules는 적용 순서를 정한다. 원문이 긴 규칙이 먼저다. 겹치는 규칙이
@@ -249,10 +250,10 @@ func renameRel(rel string, rules []Rule) (string, []int, error) {
 	dir, base := path.Split(rel)
 	renamed, counts := apply(base, rules)
 	if renamed == "" {
-		return "", nil, fmt.Errorf("치환 결과 파일명이 비었습니다: %s", rel)
+		return "", nil, errors.New(i18n.T("core.export.rename_empty", rel))
 	}
 	if strings.ContainsAny(renamed, `/\`) {
-		return "", nil, fmt.Errorf("치환 결과 파일명에 경로 구분자가 들어갔습니다: %s -> %s", rel, renamed)
+		return "", nil, errors.New(i18n.T("core.export.rename_path_sep", rel, renamed))
 	}
 	return dir + renamed, counts, nil
 }
@@ -263,7 +264,7 @@ func checkCollisions(files []File) error {
 	seen := map[string]string{}
 	for _, f := range files {
 		if prev, dup := seen[f.Rel]; dup {
-			return fmt.Errorf("치환 뒤 두 문서가 같은 경로가 됩니다: %s 와 %s 가 모두 %s", prev, f.Source, f.Rel)
+			return errors.New(i18n.T("core.export.collision", prev, f.Source, f.Rel))
 		}
 		seen[f.Rel] = f.Source
 	}

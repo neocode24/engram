@@ -15,6 +15,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 )
 
 // ErrUnclosed 는 프론트매터가 닫는 구분자 없이 끝났음을 나타낸다.
@@ -127,7 +128,7 @@ func loadDoc(wikiRoot, rel string, cfg config.Config) (Doc, error) {
 	}
 	raw, err := os.ReadFile(filepath.Join(wikiRoot, filepath.FromSlash(rel)))
 	if err != nil {
-		return Doc{}, fmt.Errorf("문서를 읽을 수 없음: %s: %w", rel, err)
+		return Doc{}, fmt.Errorf("%s: %w", i18n.T("core.walk.read_fail", rel), err)
 	}
 	// BOM 과 CRLF 는 여기서 한 번만 정규화한다. doc.Parse 도 스스로
 	// 정규화하지만 닫는 구분자 검사가 원문을 보기 전에 끝나야 한다.

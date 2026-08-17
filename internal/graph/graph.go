@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/walk"
 )
 
@@ -28,15 +29,15 @@ const (
 func (k Kind) Label() string {
 	switch k {
 	case KindBody:
-		return "본문 링크"
+		return i18n.T("core.graph.label_body")
 	case KindRelated:
-		return "related 필드"
+		return i18n.T("core.graph.label_related")
 	case KindDerivedFrom:
-		return "derived_from 필드"
+		return i18n.T("core.graph.label_derived_from")
 	case KindDerivedContext:
-		return "derived_context 필드"
+		return i18n.T("core.graph.label_derived_context")
 	case KindSourceRefs:
-		return "source_refs 필드"
+		return i18n.T("core.graph.label_source_refs")
 	}
 	return string(k)
 }

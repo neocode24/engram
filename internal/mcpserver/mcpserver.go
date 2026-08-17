@@ -9,6 +9,8 @@ import (
 	"context"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+
+	"github.com/neocode24/engram/internal/i18n"
 )
 
 // New는 engram MCP 서버를 만든다. 도구 등록은 호출자가 한다.
@@ -18,7 +20,7 @@ func New(name, version string) *mcp.Server {
 	return mcp.NewServer(&mcp.Implementation{
 		Name:        name,
 		Title:       name,
-		Description: "승급 파이프라인을 지키는 지식관리 위키. 쓰기는 inbox 까지만 허용하고 승급 확정은 사람이 한다",
+		Description: i18n.T("core.mcpserver.description"),
 		Version:     version,
 	}, nil)
 }

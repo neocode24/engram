@@ -12,6 +12,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/neocode24/engram/internal/resurface"
 	"github.com/neocode24/engram/internal/walk"
@@ -48,7 +49,7 @@ func Run(wikiRoot string, cfg config.Config, now time.Time, days int) (Result, e
 
 	walked, err := walk.Files(wikiRoot, cfg)
 	if err != nil {
-		return res, fmt.Errorf("위키를 순회할 수 없음: %w", err)
+		return res, fmt.Errorf("%s: %w", i18n.T("core.digest.walk_fail"), err)
 	}
 	for _, w := range walked {
 		if w.Err != nil || !w.Parsed.HasFrontmatter {
@@ -69,7 +70,7 @@ func Run(wikiRoot string, cfg config.Config, now time.Time, days int) (Result, e
 	// 같은 위반에서 수를 낸다.
 	lintRes, err := lint.Run(wikiRoot, cfg)
 	if err != nil {
-		return res, fmt.Errorf("lint 를 실행할 수 없음: %w", err)
+		return res, fmt.Errorf("%s: %w", i18n.T("core.digest.lint_fail"), err)
 	}
 	for _, v := range lintRes.Violations {
 		if v.Rule == "graph.orphan" {
