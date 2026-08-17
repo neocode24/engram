@@ -63,7 +63,7 @@ func makeWiki(t *testing.T, engramYAML string) string {
 	return root
 }
 
-const healthyYAML = "preset: education\ntopics: [go]\nforms: [note]\n"
+const healthyYAML = "preset: personal\ntopics: [go]\nforms: [note]\n"
 
 func TestRun(t *testing.T) {
 	t.Run("위키가 아닌 디렉토리에서는 위키 항목이 skip 이다", func(t *testing.T) {

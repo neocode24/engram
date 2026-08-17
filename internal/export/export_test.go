@@ -20,8 +20,8 @@ func contextDoc(title, sensitivity, body string) string {
 	return fm + "# " + title + "\n\n" + body + "\n"
 }
 
-// wikiFiles는 시험용 위키다. team 프리셋은 sensitivity 축을 켜고
-// education 은 끈다.
+// wikiFiles는 시험용 위키다. team 프리셋은 sensitivity 속성을 켜고
+// personal 은 끈다.
 func wikiFiles(preset string) map[string]string {
 	return map[string]string{
 		"engram.yaml": "preset: " + preset + "\n",
@@ -114,8 +114,8 @@ func TestPlanIncludeArchive(t *testing.T) {
 }
 
 func TestPlanSensitivityAxisOff(t *testing.T) {
-	// education 프리셋은 sensitivity 축이 꺼져 있으므로 거를 값이 없다.
-	root, cfg := makeWiki(t, "education")
+	// personal 프리셋은 sensitivity 속성이 꺼져 있으므로 거를 값이 없다.
+	root, cfg := makeWiki(t, "personal")
 	res, err := Plan(root, cfg, Options{})
 	if err != nil {
 		t.Fatalf("계획을 만들 수 없습니다: %v", err)
@@ -124,7 +124,7 @@ func TestPlanSensitivityAxisOff(t *testing.T) {
 		t.Error("축이 꺼진 위키인데 민감도로 걸렀습니다")
 	}
 	if res.Exposure.SensitivityOn {
-		t.Error("education 프리셋에서 sensitivity 축이 켜졌다고 보고했습니다")
+		t.Error("personal 프리셋에서 sensitivity 속성이 켜졌다고 보고했습니다")
 	}
 }
 

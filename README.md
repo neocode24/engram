@@ -89,11 +89,11 @@ Start from an empty directory and reach the first promotion. Every line of outpu
 
 ### Create a wiki
 
-Gloss: "Initialized wiki: wiki (preset: education)", then the four directories, the three files (`engram.yaml`, `index.md`, `.gitignore`), and three next steps.
+Gloss: "Initialized wiki: wiki (preset: personal)", then the four directories, the three files (`engram.yaml`, `index.md`, `.gitignore`), and three next steps.
 
 ```
 $ engram init wiki
-위키를 초기화했습니다: wiki (프리셋: education)
+위키를 초기화했습니다: wiki (프리셋: personal)
 
 디렉토리:
   inbox/       새 자료가 들어오는 곳
@@ -102,13 +102,13 @@ $ engram init wiki
   archive/     승급에서 물러난 문서가 가는 곳
 
 파일:
-  engram.yaml  위키 설정. 축과 임계값을 여기서 조정하세요
+  engram.yaml  위키 설정. 속성과 임계값을 여기서 조정하세요
   index.md     첫 문서. 위키 소개로 채우세요
   .gitignore   .engram/ 캐시 디렉토리를 git에서 제외합니다
 
 다음 단계:
   1. inbox에 첫 자료를 넣으세요
-  2. engram.yaml을 열어 축과 임계값을 위키에 맞게 조정하세요
+  2. engram.yaml을 열어 속성과 임계값을 위키에 맞게 조정하세요
   3. index.md를 위키 소개로 채우세요
 ```
 
@@ -318,7 +318,7 @@ The split between `search` and `recall` is a design principle. `search` gives a 
 One file, `engram.yaml`, at the wiki root. It is committed to git and shared by the team.
 
 ```yaml
-preset: education
+preset: personal
 
 # taxonomy. topics is an open set, forms is a closed set.
 topics: [llm, gateway]
@@ -331,13 +331,13 @@ max_lines: 1000     # document length warning
 broad_topic_pct: 25 # warning when one topic covers this share of documents (percent)
 ```
 
-A preset decides how many schema axes are on. `personal` is contained in `education`, which is contained in `team`. The default is `education`.
+A preset decides how many frontmatter attributes are on. `minimal` is contained in `personal`, which is contained in `team`. The default is `personal`.
 
 | Preset | When |
 |---|---|
-| `personal` | A wiki for one person. Fewest axes |
-| `education` | When you want input channels and promotion tracking |
-| `team` | When work and personal material mix. Turns on the sensitivity axis |
+| `minimal` | The promotion pipeline and nothing else. Fewest attributes |
+| `personal` | Default. Keeps where things came from and what they derived into |
+| `team` | When work and personal material mix. Turns on the sensitivity attribute |
 
 Because the presets nest, moving up a preset only adds fields.
 

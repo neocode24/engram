@@ -59,7 +59,7 @@ func makeRulesWiki(t *testing.T, yaml string) string {
 func TestRulesShowCmd(t *testing.T) {
 	t.Run("프리셋 셋마다 켜진 축 수가 다릅니다", func(t *testing.T) {
 		counts := map[string]int{}
-		for _, preset := range []string{"personal", "education", "team"} {
+		for _, preset := range []string{"minimal", "personal", "team"} {
 			wiki := makeRulesWiki(t, "preset: "+preset+"\n")
 			out, err := runRules(t, "rules", "show", "--json", "--wiki", wiki)
 			if err != nil {
@@ -76,13 +76,13 @@ func TestRulesShowCmd(t *testing.T) {
 				}
 			}
 		}
-		if counts["personal"] != 8 || counts["education"] != 10 || counts["team"] != 14 {
-			t.Errorf("축 수 = %v, want personal 8, education 10, team 14", counts)
+		if counts["minimal"] != 8 || counts["personal"] != 10 || counts["team"] != 14 {
+			t.Errorf("속성 수 = %v, want minimal 8, personal 10, team 14", counts)
 		}
 	})
 
 	t.Run("사용자가 바꾼 임계값이 제품 기본값 대신 나옵니다", func(t *testing.T) {
-		wiki := makeRulesWiki(t, "preset: education\nmin_wikilinks: 5\nstale_days: 30\n")
+		wiki := makeRulesWiki(t, "preset: personal\nmin_wikilinks: 5\nstale_days: 30\n")
 		out, err := runRules(t, "rules", "show", "--wiki", wiki)
 		if err != nil {
 			t.Fatalf("실행 실패: %v\n%s", err, out)
@@ -107,7 +107,7 @@ func TestRulesShowCmd(t *testing.T) {
 	})
 
 	t.Run("꺼진 축이 꺼졌다고 나옵니다", func(t *testing.T) {
-		wiki := makeRulesWiki(t, "preset: education\n")
+		wiki := makeRulesWiki(t, "preset: personal\n")
 		out, err := runRules(t, "rules", "show", "--wiki", wiki)
 		if err != nil {
 			t.Fatalf("실행 실패: %v\n%s", err, out)
@@ -135,7 +135,7 @@ func TestRulesShowCmd(t *testing.T) {
 	})
 
 	t.Run("파일을 쓰지 않습니다", func(t *testing.T) {
-		wiki := makeRulesWiki(t, "preset: education\n")
+		wiki := makeRulesWiki(t, "preset: personal\n")
 		before := snapshotFiles(t, wiki)
 		out, err := runRules(t, "rules", "show", "--json", "--wiki", wiki)
 		if err != nil {
@@ -210,7 +210,7 @@ func snapshotFiles(t *testing.T, root string) string {
 // 내보내는 목록과 하나인지 확인한다. 규칙 메타데이터의 진실원은
 // lint.Rules 하나이므로 이 비교는 조립이 빠뜨리는 것을 잡는다.
 func TestRulesListMatchesLint(t *testing.T) {
-	wiki := makeRulesWiki(t, "preset: education\n")
+	wiki := makeRulesWiki(t, "preset: personal\n")
 	out, err := runRules(t, "rules", "show", "--json", "--wiki", wiki)
 	if err != nil {
 		t.Fatalf("실행 실패: %v\n%s", err, out)
@@ -312,7 +312,7 @@ func colAfterToken(line, tok string) (int, bool) {
 // 위치가 모든 행에서 같은지 검증한다. fmt 의 룬 수 폭으로는 한글이 섞인
 // 열이 화면에서 어긋난다.
 func TestRulesShowTableColumns(t *testing.T) {
-	wiki := makeRulesWiki(t, "preset: education\n")
+	wiki := makeRulesWiki(t, "preset: personal\n")
 	out, err := runRules(t, "rules", "show", "--wiki", wiki)
 	if err != nil {
 		t.Fatalf("실행 실패: %v\n%s", err, out)

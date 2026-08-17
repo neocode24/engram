@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// flagForce는 migrate가 값이 있는 꺼진 축 필드까지 지우는 플래그 이름이다.
+// flagForce는 migrate가 값이 있는 꺼진 속성 필드까지 지우는 플래그 이름이다.
 const flagForce = "force"
 
 // maxDetailDocs는 사람용 출력에서 문서별 상세를 보이는 상한이다. 수백 문서의
@@ -25,14 +25,14 @@ func newMigrateCmd() *cobra.Command {
 		Short: "기존 문서를 지금의 설정과 규칙에 맞게 정리합니다",
 		Long: `기존 문서를 지금의 engram.yaml과 지금의 규칙에 맞춥니다.
 
-켜진 축의 필수 필드를 단계별 초기값으로 채우고, 꺼진 축의 필드를 지우고,
+켜진 속성의 필수 필드를 단계별 초기값으로 채우고, 꺼진 속성의 필드를 지우고,
 문서가 놓인 디렉토리에 맞게 artifact_stage를 고칩니다.
 파일을 옮기지 않고 슬러그를 바꾸지 않습니다. 문서를 승급시키지도 않습니다.
 inbox에 있으면서 context라고 선언한 문서는 선언이 inbox로 내려갈 뿐입니다.
 올리려면 engram promote를 쓰세요.
 
 기본은 시험 실행입니다. 실제로 쓰려면 --apply를 주세요.
-꺼진 축의 필드에 값이 있으면 --force 없이는 지우지 않습니다. 값을 비운
+꺼진 속성의 필드에 값이 있으면 --force 없이는 지우지 않습니다. 값을 비운
 필드는 --force 없이도 지웁니다.
 승급 게이트 위반과 깨진 위키링크는 고치지 않고 보고합니다. 어떤 문서에
 이어야 하는지는 판단이므로 engram promote나 demote로 직접 정리하세요.`,
@@ -64,7 +64,7 @@ inbox에 있으면서 context라고 선언한 문서는 선언이 inbox로 내�
 		},
 	}
 	cmd.Flags().Bool(flagApply, false, "변경을 파일에 씁니다. 기본은 시험 실행입니다")
-	cmd.Flags().Bool(flagForce, false, "값이 있는 꺼진 축 필드도 지웁니다")
+	cmd.Flags().Bool(flagForce, false, "값이 있는 꺼진 속성 필드도 지웁니다")
 	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
 	return cmd
 }

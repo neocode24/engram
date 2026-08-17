@@ -110,7 +110,7 @@
 2단 구조에 우선순위는 전역, 위키, 환경변수와 플래그 순이다.
 
 - **사용자 전역** (`~/.config/engram`, Windows는 `%APPDATA%`): 관리 중인 위키 목록, 기본 에디터, 업데이트 채널, 모델 경로. 머신 고유이며 커밋 대상이 아니다.
-- **위키별** (위키 홈의 설정 파일): 스키마 축, 임계값, 디렉토리 매핑. git에 커밋되어 팀이 공유한다.
+- **위키별** (위키 홈의 설정 파일): 프론트매터 속성, 임계값, 디렉토리 매핑. git에 커밋되어 팀이 공유한다.
 
 `config list --origin`이 값의 출처를 함께 보여준다. 사내 지원에서 "왜 이 값이 이렇게 나오는가"가 가장 흔한 질문이다.
 
@@ -133,7 +133,7 @@
 
 ### 스키마 프리셋
 
-`personal`이 `education`에 포함되고 `education`이 `team`에 포함된다. 기본값은 `education`이다. 포함 관계를 유지하면 프리셋 상향이 필드 추가만으로 끝나 `migrate`가 단순해진다. 상세는 [0009](decisions/0009-schema-presets-and-thresholds.md)에 있다.
+`minimal`이 `personal`에 포함되고 `personal`이 `team`에 포함된다. 기본값은 `personal`이다. 포함 관계를 유지하면 프리셋 상향이 필드 추가만으로 끝나 `migrate`가 단순해진다. 상세는 [0009](decisions/0009-schema-presets-and-thresholds.md)에 있고 이름은 [0048](decisions/0048-preset-names-follow-attribute-sets.md)이 고쳤다.
 
 ### 날짜 필드
 
@@ -177,7 +177,7 @@
 
 ## 열린 항목
 
-- ~~교육용 데모 위키의 내용.~~ `examples/education`으로 만들었다. 커맨드 시퀀스의 생성물이며 `harness/examples`가 재생성해 대조한다.
+- ~~교육용 데모 위키의 내용.~~ `examples/personal`로 만들었다. 커맨드 시퀀스의 생성물이며 `harness/examples`가 재생성해 대조한다.
 - ~~`serve` 웹 UI의 쓰기 범위.~~ [0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md)가 읽기 전용으로 정했다. 제안 접수도 두지 않는다.
 - ~~MCP 노출 시 도구 단위 분해.~~ [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md)이 도구 열로 정했다. 쓰기는 `capture` 하나다.
 - `engram model`이 관리할 모델의 범위. 임베딩만인가, STT와 TTS까지인가. 커맨드 구조는 [0007](decisions/0007-platform-and-distribution.md)에 있고 사이드카라 근간과 충돌하지 않는다. 목록만 정하면 된다. 상세는 `roadmap.md`에 있다.

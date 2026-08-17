@@ -1,4 +1,4 @@
-preset: education
+preset: personal
 topics:
   - go
   - testing

@@ -15,7 +15,7 @@ import (
 func TestGateTargetAgreement(t *testing.T) {
 	root := t.TempDir()
 	files := map[string]string{
-		"engram.yaml": "preset: education\n",
+		"engram.yaml": "preset: personal\n",
 		// 색인. root_files 로 대상에 남는다.
 		"index.md": "---\ntype: system\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +

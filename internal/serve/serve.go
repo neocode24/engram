@@ -2,7 +2,7 @@
 //
 // 노출 범위는 ADR 0044가 정한다. context 와 root_files 만 보이고 inbox 와
 // sources 는 목록에도 URL 에도 없다. archive 는 기본으로 감추고 플래그로
-// 연다. sensitivity 축이 켜진 위키에서는 private-local-only 와 restricted 를
+// 연다. sensitivity 속성이 켜진 위키에서는 private-local-only 와 restricted 를
 // 뺀다. 그 제외를 뒤집는 플래그는 두지 않는다.
 //
 // 쓰기 경로가 없다. POST 계열은 라우팅에 닿기 전에 막힌다. 판정과 검색은
@@ -154,7 +154,7 @@ func titleOf(wd walk.Doc) string {
 	return strings.ReplaceAll(slug, "-", " ")
 }
 
-// metaKeys는 문서 화면에 내는 프론트매터 키다. 축 전부를 늘어놓지 않고
+// metaKeys는 문서 화면에 내는 프론트매터 키다. 속성 전부를 늘어놓지 않고
 // 읽는 사람에게 쓸모 있는 것만 doc.StandardKeys 순서로 낸다.
 var metaKeys = []string{
 	"type", "status", "sensitivity", "topics", "tags", "created", "updated",

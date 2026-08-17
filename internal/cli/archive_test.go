@@ -46,7 +46,7 @@ func makeArchiveWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	files := map[string]string{
-		"engram.yaml": "preset: education\n",
+		"engram.yaml": "preset: personal\n",
 		"context/hub.md": "---\n" +
 			"type: concept\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nrelated:\n  - \"[[peer]]\"\n" +

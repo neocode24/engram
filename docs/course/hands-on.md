@@ -14,7 +14,7 @@
 | 실습 단계 | 이 문서의 1단계부터 8단계까지. 수강생이 손으로 하는 순서 | 단위, 파트 |
 | 강의 세션 | [curriculum.md](../curriculum.md)의 여덟 세션. 시간이 배정된 진행 구획 | 단위. 한국어로 강의를 세는 말이 아닙니다 |
 | 실습 위키 | 수강생이 만들어 끝까지 쓰는 위키. `~/engram-wiki` | 랩, lab, 내 위키 |
-| 데모 위키 | 저장소의 `examples/education`. 6단계에서만 씁니다 | 씨앗 위키, seed, 예제 위키 |
+| 데모 위키 | 저장소의 `examples/personal`. 6단계에서만 씁니다 | 씨앗 위키, seed, 예제 위키 |
 | 실습 재료 | 저장소의 `examples/materials/`. 위키에 집어넣을 원재료 | 샘플, 교재, 데이터셋 |
 | 저장소 | engram 소스 저장소 | 레포, 리포지토리 |
 | 설치 방법 | 소스 빌드와 바이너리 내려받기 두 가지 | 갈래, 경로, 트랙 |
@@ -279,43 +279,51 @@ Windows는 `Remove-Item "$env:USERPROFILE\go\bin\engram.exe"` 입니다.
 ## 만들기
 
 ```
-engram init --preset education ~/engram-wiki
+engram init --preset personal ~/engram-wiki
 cd ~/engram-wiki
 ```
 
-`--preset`은 생략해도 `education`입니다. 그래도 적는 이유는 프리셋이라는 것이 있다는 사실을 여기서 알려야 하기 때문입니다.
+`--preset`은 생략해도 `personal`입니다. 그래도 적는 이유는 프리셋이라는 것이 있다는 사실을 여기서 알려야 하기 때문입니다.
 
-### 축이란
+### 속성이란
 
 먼저 이 말을 짚습니다. 앞으로 계속 나옵니다.
 
-**축은 문서 맨 위 프론트매터에 들어가는 필드 하나입니다.** engram이 다루는 축은 열넷이고, 각각이 문서를 한 가지 기준으로 가릅니다. `type`은 문서 종류로, `artifact_stage`는 성숙 단계로, `sensitivity`는 공개 범위로 가릅니다. 서로 겹치지 않는 독립된 기준이라 축이라고 부릅니다. 문서 하나가 열네 축에서 각각 어디쯤인지가 정해집니다.
+**속성은 문서 맨 위 프론트매터에 들어가는 필드 하나입니다.** engram이 다루는 속성은 열넷입니다.
 
-축은 **켜거나 끕니다.**
+```yaml
+---
+type: concept              # 속성
+artifact_stage: context    # 속성
+sensitivity: internal      # 속성
+---
+```
+
+각각이 문서를 한 가지 기준으로 가릅니다. `type`은 문서 종류로, `artifact_stage`는 성숙 단계로, `sensitivity`는 공개 범위로 가릅니다.
+
+속성은 **켜거나 끕니다.**
 
 - 켜면 그 필드가 단계별 필수 필드가 됩니다. 없으면 `lint`가 `frontmatter.missing-field`로 잡습니다.
 - 끄면 그 필드를 쓰면 안 됩니다. 있으면 `lint`가 `schema.axis-off`로 잡습니다.
 
-**프리셋은 어느 축을 켤지 정하는 시작점입니다.** 열네 줄을 매번 쓰지 않게 해 주는 것뿐이고, 축은 프리셋과 무관하게 `engram.yaml`에서 하나씩 켜고 끌 수 있습니다.
+**프리셋은 어느 속성을 켤지 정하는 시작점입니다.** 열네 줄을 매번 쓰지 않게 해 주는 것뿐이고, 속성은 프리셋과 무관하게 `engram.yaml`에서 하나씩 켜고 끌 수 있습니다.
 
 ### 프리셋 셋
 
-프리셋이 정하는 것은 축뿐입니다. 디렉토리 구성, 게이트, 임계값은 셋 다 같습니다. 포함 관계라 오른쪽이 왼쪽을 전부 담습니다.
+프리셋이 정하는 것은 속성뿐입니다. 디렉토리 구성, 게이트, 임계값은 셋 다 같습니다. 포함 관계라 오른쪽이 왼쪽을 전부 담습니다.
 
-| 프리셋 | 켜지는 축 | 더해지는 것 | 그래서 무엇이 되나 |
+| 프리셋 | 켜지는 속성 | 더해지는 것 | 그래서 무엇이 되나 |
 |---|---|---|---|
-| `personal` | 8 | `type`, `artifact_stage`, `status`, `indexable`, `tags`, `source_refs`, `derived_from`, `related` | 승급 파이프라인만 돕니다 |
-| `education` | 10 | `source_channel`, `derived_context` | 어디서 들어왔고 어디로 파생됐는지가 남습니다 |
+| `minimal` | 8 | `type`, `artifact_stage`, `status`, `indexable`, `tags`, `source_refs`, `derived_from`, `related` | 승급 파이프라인만 돕니다 |
+| `personal` | 10 | `source_channel`, `derived_context` | 어디서 들어왔고 어디로 파생됐는지가 남습니다 |
 | `team` | 14 | `scope`, `sensitivity`, `trigger_mode`, `workflow` | 업무 자료가 섞여도 반출 경계를 지킵니다. 자동화 기록이 남습니다 |
 
-**실습은 `education`으로만 합니다.** `personal`은 `derived_context` 축이 꺼져 있어서 4단계의 파생 왕복이 보이지 않고, `team`은 `sensitivity`와 `workflow`까지 필수라 3단계부터 채울 것이 늘어납니다. 프리셋을 실제로 바꾸는 것은 8단계에서 `migrate`로 해 봅니다.
-
-**교육이 끝난 뒤 자기 위키를 만들 때도 `education`을 그대로 쓰면 됩니다.** 이름이 강의를 가리키는 것처럼 보이지만 축 집합의 이름일 뿐입니다. `personal`은 이름과 달리 축이 가장 적어서 파생 추적이 빠집니다. 이 이름들이 오해를 부른다는 것은 [ADR 0009](../decisions/0009-schema-presets-and-thresholds.md)가 열린 항목으로 적어 둔 문제이며 1.1에서 다시 봅니다.
+**실습은 `personal`로만 합니다.** 기본값이고, 교육이 끝난 뒤 자기 위키를 만들 때 쓰는 것도 `personal`입니다. **배운 구성과 쓰는 구성이 같습니다.** `minimal`은 `derived_context` 속성이 꺼져 있어서 4단계의 파생 왕복이 보이지 않고, `team`은 `sensitivity`와 `workflow`까지 필수라 3단계부터 채울 것이 늘어납니다. 프리셋을 실제로 바꾸는 것은 8단계에서 `migrate`로 해 봅니다.
 
 출력이 만든 것을 그대로 알려 줍니다.
 
 ```
-위키를 초기화했습니다: /Users/사용자/engram-wiki (프리셋: education)
+위키를 초기화했습니다: /Users/사용자/engram-wiki (프리셋: personal)
 
 디렉토리:
   inbox/       새 자료가 들어오는 곳
@@ -324,7 +332,7 @@ cd ~/engram-wiki
   archive/     승급에서 물러난 문서가 가는 곳
 
 파일:
-  engram.yaml  위키 설정. 축과 임계값을 여기서 조정하세요
+  engram.yaml  위키 설정. 속성과 임계값을 여기서 조정하세요
   index.md     첫 문서. 위키 소개로 채우세요
   .gitignore   .engram/ 캐시 디렉토리를 git에서 제외합니다
 ```
@@ -404,7 +412,7 @@ engram rules show
 
 앞으로 여섯 단계에서 만날 것이 전부 여기 있습니다. 다 외우게 하지 않고 네 곳만 짚습니다.
 
-**축 14종.** `education`은 열 개가 켜져 있습니다. 꺼진 축의 필드를 문서에 쓰면 `lint`가 `schema.axis-off`로 잡습니다. 축은 `engram.yaml`에서 하나씩 켜고 끌 수 있습니다.
+**속성 14종.** `personal`은 열 개가 켜져 있습니다. 꺼진 속성을 문서에 쓰면 `lint`가 `schema.axis-off`로 잡습니다. 속성은 `engram.yaml`에서 하나씩 켜고 끌 수 있습니다.
 
 **단계별 필수 필드.** 네 단계가 요구하는 것이 다릅니다. `context`가 `related`를 요구하고 `inbox`는 요구하지 않는 것이 이 체계의 요약입니다. **올라갈수록 자격이 늘어납니다.**
 
@@ -487,15 +495,16 @@ git add -A && git commit -m "index 소개 작성"
 - `git init` 전후로 `doctor`를 한 번씩 돌리게 합니다. `skip` 두 개가 `ok`로 바뀌는 것을 눈으로 보면 설명이 필요 없습니다.
 - 네 디렉토리를 두고 묻습니다. "지금 여러분 노트 앱의 폴더는 무엇으로 나뉘어 있습니까." 주제로 나뉜다는 답이 나오면 그 차이가 이 체계의 출발점이라고 말합니다.
 - `min_wikilinks: 2`를 `engram.yaml`에서 직접 보게 합니다. 4단계에서 거절당할 때 이 숫자를 기억해야 합니다.
-- 프리셋 셋을 비교하지 않습니다. 여기서 `personal`과 `team`을 열어 보면 아직 쓰지 않은 축 이야기로 빠집니다. 8단계까지 미룹니다.
+- 프리셋 셋을 비교하지 않습니다. 여기서 `minimal`과 `team`을 열어 보면 아직 쓰지 않은 속성 이야기로 빠집니다. 8단계까지 미룹니다.
 
 ## 이 단계에서 확정한 것
 
 | 결정 | 내용 | 이유 |
 |---|---|---|
 | 위키 위치 | `~/engram-wiki` 하나 | 8단계까지 이것만 씁니다. 실습장을 늘리지 않습니다 |
-| 프리셋 | `education` 고정 | `personal`은 `derived_context` 축이 꺼져 있어 4단계의 파생 왕복이 보이지 않고, `team`은 필수 필드가 많아 3단계부터 채울 것이 늘어납니다 |
-| 프리셋 비교 | 표로만 보여 주고 직접 만들어 보지 않습니다 | 셋을 다 만들면 아직 쓰지 않은 축 이야기로 빠집니다. 8단계 `migrate`에서 실제로 바꿔 봅니다 |
+| 프리셋 | `personal` 고정. 기본값이자 수료 후에도 쓰는 값 | `minimal`은 `derived_context` 속성이 꺼져 있어 4단계의 파생 왕복이 보이지 않고, `team`은 필수 필드가 많아 3단계부터 채울 것이 늘어납니다 |
+| 용어 | 프론트매터 필드는 `속성`이라 부릅니다. `축`을 쓰지 않습니다 | 처음 만나는 사람이 무엇을 가리키는지 알 수 없습니다([0048](../decisions/0048-preset-names-follow-attribute-sets.md)) |
+| 프리셋 비교 | 표로만 보여 주고 직접 만들어 보지 않습니다 | 셋을 다 만들면 아직 쓰지 않은 속성 이야기로 빠집니다. 8단계 `migrate`에서 실제로 바꿔 봅니다 |
 | git | 2단계에서 `git init -b main`하고 매 단계 끝에 커밋합니다 | `doctor` 항목 둘이 git을 요구하고, 8단계 `sync`가 이력을 재료로 씁니다. `-b main`이 없으면 git 기본값인 `master`가 생깁니다 |
 | `index.md` 편집 | 에디터로 본문만 고칩니다. `update` 커맨드를 쓰지 않습니다 | `update`는 4단계 커맨드입니다. 여기서 커맨드를 늘리지 않습니다 |
 | 매 단계 마무리 | `doctor`, `lint`, `status` 셋을 돌리고 커밋합니다 | 불변식 확인을 습관으로 만듭니다 |

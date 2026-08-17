@@ -29,7 +29,7 @@ func contextDoc(title, sensitivity, body string) string {
 }
 
 // wikiFiles는 시험용 위키의 파일 집합이다. preset 은 호출자가 정한다.
-// team 프리셋은 sensitivity 축을 켜고 education 은 끈다.
+// team 프리셋은 sensitivity 속성을 켜고 personal 은 끈다.
 func wikiFiles(preset string) map[string]string {
 	return map[string]string{
 		"engram.yaml": "preset: " + preset + "\n",
@@ -210,13 +210,13 @@ func TestServeSensitivityFilter(t *testing.T) {
 	})
 
 	t.Run("축이 꺼진 위키는 그 필터가 걸리지 않습니다", func(t *testing.T) {
-		root := makeWiki(t, "education")
+		root := makeWiki(t, "personal")
 		cfg, err := config.Load(root)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if cfg.Axes[config.AxisSensitivity] {
-			t.Fatal("education 프리셋에서 sensitivity 축이 켜져 있습니다. 시험 전제가 깨졌습니다")
+			t.Fatal("personal 프리셋에서 sensitivity 속성이 켜져 있습니다. 시험 전제가 깨졌습니다")
 		}
 		h := New(root, cfg, Options{}).Handler()
 		for _, rel := range []string{"context/secret.md", "context/limited.md"} {

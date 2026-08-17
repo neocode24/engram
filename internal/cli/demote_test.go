@@ -61,7 +61,7 @@ func makeDemoteWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	files := map[string]string{
-		"engram.yaml":     "preset: education\n",
+		"engram.yaml":     "preset: personal\n",
 		"index.md":        "---\ntype: system\nartifact_stage: context\nstatus: promoted\nindexable: true\nsource_refs: []\nderived_from: []\nrelated: []\nsource_channel: manual\nderived_context: []\n---\n\n# 색인\n",
 		"context/note.md": contextDocFM("2026-01-15", "2026-02-01"),
 	}
@@ -124,7 +124,7 @@ func TestDemoteCmd(t *testing.T) {
 	t.Run("created 가 없으면 기준 시각 날짜를 씁니다", func(t *testing.T) {
 		root := t.TempDir()
 		files := map[string]string{
-			"engram.yaml":       "preset: education\n",
+			"engram.yaml":       "preset: personal\n",
 			"context/nodate.md": strings.Replace(contextDocFM("", ""), "created: \n", "", 1),
 		}
 		for name, content := range files {
@@ -149,7 +149,7 @@ func TestDemoteCmd(t *testing.T) {
 		if err := os.MkdirAll(filepath.Join(root, "inbox"), 0o755); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(filepath.Join(root, "engram.yaml"), []byte("preset: education\n"), 0o644); err != nil {
+		if err := os.WriteFile(filepath.Join(root, "engram.yaml"), []byte("preset: personal\n"), 0o644); err != nil {
 			t.Fatal(err)
 		}
 		if err := os.WriteFile(filepath.Join(root, "inbox", "memo.md"), []byte(inbox), 0o644); err != nil {

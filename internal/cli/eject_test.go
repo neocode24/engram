@@ -46,7 +46,7 @@ func makeEjectWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	p := filepath.Join(root, "engram.yaml")
-	if err := os.WriteFile(p, []byte("preset: education\n"), 0o644); err != nil {
+	if err := os.WriteFile(p, []byte("preset: personal\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	return root

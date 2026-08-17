@@ -48,7 +48,7 @@ func makeDigestWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	files := map[string]string{
-		"engram.yaml": "preset: education\n",
+		"engram.yaml": "preset: personal\n",
 		// 창 안 신규. old 와 서로 링크해 고아가 아니다.
 		"context/new.md": "---\ntype: concept\ncreated: 2026-08-01\nupdated: 2026-08-01\n---\n\n[[old]]\n",
 		// 창 밖 노후.
@@ -150,7 +150,7 @@ func TestDigestCmd(t *testing.T) {
 func TestDigestCmdManyNew(t *testing.T) {
 	// 신규가 11개면 사람용 목록은 10개와 남은 수로 줄인다.
 	root := t.TempDir()
-	files := map[string]string{"engram.yaml": "preset: education\n"}
+	files := map[string]string{"engram.yaml": "preset: personal\n"}
 	for i := 1; i <= 11; i++ {
 		files[fmt.Sprintf("inbox/2026-08-01-note%02d.md", i)] =
 			fmt.Sprintf("---\ntype: inbox-note\ncreated: 2026-08-01\n---\n\n본문 %d\n", i)

@@ -19,7 +19,7 @@ const (
 	flagType    = "type"
 )
 
-// defaultSourceType는 source 커맨드의 type 축 기본값이다.
+// defaultSourceType는 source 커맨드의 type 속성 기본값이다.
 const defaultSourceType = "source-summary"
 
 // newSourceCmd는 원본 자료를 sources에 넣는 source 커맨드를 반환한다.
@@ -103,7 +103,7 @@ func newSourceCmd() *cobra.Command {
 	cmd.Flags().String(flagSlug, "", "파일명 슬러그. 생략하면 제목에서 만듭니다")
 	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
 	cmd.Flags().String(flagCreated, "", "원본이 작성된 날(YYYY-MM-DD 또는 YYYY-MM)")
-	cmd.Flags().String(flagChannel, "", "입력 경로. source_channel 축 값")
+	cmd.Flags().String(flagChannel, "", "입력 경로. source_channel 속성 값")
 	cmd.Flags().StringArray(flagRef, nil, "원본 출처(경로나 URL). 여러 번 쓸 수 있습니다")
 	cmd.Flags().String(flagType, defaultSourceType, "문서 종류. 허용값은 위키 설정의 types입니다")
 	return cmd
@@ -137,7 +137,7 @@ func validDatePrecision(v string) bool {
 	return false
 }
 
-// applyChannel은 --channel 값을 프론트매터에 넣는다. 축이 꺼져 있으면
+// applyChannel은 --channel 값을 프론트매터에 넣는다. 속성이 꺼져 있으면
 // 값을 무시하고 경고를 낸다.
 func applyChannel(cmd *cobra.Command, cfg config.Config, fm map[string]any) error {
 	v, err := stringFlag(cmd, flagChannel)
@@ -152,12 +152,12 @@ func applyChannel(cmd *cobra.Command, cfg config.Config, fm map[string]any) erro
 		return nil
 	}
 	fmt.Fprintf(cmd.ErrOrStderr(),
-		"경고: source_channel 축이 꺼져 있어 --channel 값을 무시합니다. 켜려면 engram.yaml의 axes에서 source_channel을 true로 두세요\n")
+		"경고: source_channel 속성이 꺼져 있어 --channel 값을 무시합니다. 켜려면 engram.yaml의 axes에서 source_channel을 true로 두세요\n")
 	return nil
 }
 
 // applyRefs는 --ref 값을 프론트매터의 source_refs에 넣는다.
-// 축이 꺼져 있으면 값을 무시하고 경고를 낸다.
+// 속성이 꺼져 있으면 값을 무시하고 경고를 낸다.
 func applyRefs(cmd *cobra.Command, cfg config.Config, fm map[string]any) error {
 	refs, err := cmd.Flags().GetStringArray(flagRef)
 	if err != nil {
@@ -171,6 +171,6 @@ func applyRefs(cmd *cobra.Command, cfg config.Config, fm map[string]any) error {
 		return nil
 	}
 	fmt.Fprintf(cmd.ErrOrStderr(),
-		"경고: source_refs 축이 꺼져 있어 --ref 값을 무시합니다. 켜려면 engram.yaml의 axes에서 source_refs를 true로 두세요\n")
+		"경고: source_refs 속성이 꺼져 있어 --ref 값을 무시합니다. 켜려면 engram.yaml의 axes에서 source_refs를 true로 두세요\n")
 	return nil
 }

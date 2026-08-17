@@ -66,7 +66,7 @@ func newInitCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().String(flagPreset, string(config.DefaultPreset),
-		"스키마 프리셋. personal, education, team 중 하나")
+		"스키마 프리셋. minimal, personal, team 중 하나")
 	return cmd
 }
 
@@ -74,10 +74,10 @@ func newInitCmd() *cobra.Command {
 func parsePreset(raw string) (config.Preset, error) {
 	p := config.Preset(raw)
 	switch p {
-	case config.PresetPersonal, config.PresetEducation, config.PresetTeam:
+	case config.PresetMinimal, config.PresetPersonal, config.PresetTeam:
 		return p, nil
 	}
-	return "", fmt.Errorf("--preset 값이 허용값이 아님: %q (허용값: personal, education, team)", raw)
+	return "", fmt.Errorf("--preset 값이 허용값이 아님: %q (허용값: minimal, personal, team)", raw)
 }
 
 // runInit는 위키 루트에 초기 파일을 만든다. 기존 파일은 덮어쓰지 않으므로
@@ -177,18 +177,18 @@ func hasLine(data []byte, line string) bool {
 // configYAML은 init이 쓰는 engram.yaml 본문이다. 주석이 무엇을 고칠 수
 // 있는지를 알려준다. 임계값과 디렉토리는 기본값을 그대로 박는다.
 func configYAML(preset config.Preset) string {
-	return fmt.Sprintf(`# engram 위키 설정. 스키마 축, 임계값, 디렉토리 매핑을 정의합니다.
+	return fmt.Sprintf(`# engram 위키 설정. 프론트매터 속성, 임계값, 디렉토리 매핑을 정의합니다.
 preset: %s
 
-# 스키마 축. 프리셋(personal < education < team)이 시작점이며
-# 개별 축을 아래에서 따로 켜고 끌 수 있습니다.
-# 사용 가능한 축: type, artifact_stage, status, indexable, tags, source_refs,
+# 프론트매터 속성. 프리셋(minimal < personal < team)이 시작점이며
+# 개별 속성을 아래에서 따로 켜고 끌 수 있습니다.
+# 사용 가능한 속성: type, artifact_stage, status, indexable, tags, source_refs,
 # derived_from, related, source_channel, derived_context, scope, sensitivity,
 # trigger_mode, workflow
 # axes:
 #   scope: true
 
-# 문서 종류(type 축의 허용값). 위키에 맞게 추가합니다.
+# 문서 종류(type 속성의 허용값). 위키에 맞게 추가합니다.
 # types: [concept, project, system, decision, procedure, incident,
 #   meeting-summary, agent-workflow, source-summary, inbox-note]
 
@@ -212,7 +212,7 @@ root_files: [index.md]
 `, preset)
 }
 
-// indexAxisOrder는 index.md 프론트매터에 축을 놓는 순서다.
+// indexAxisOrder는 index.md 프론트매터에 속성을 놓는 순서다.
 func indexAxisOrder() []config.Axis {
 	return []config.Axis{
 		config.AxisType, config.AxisArtifactStage, config.AxisStatus,
@@ -223,7 +223,7 @@ func indexAxisOrder() []config.Axis {
 	}
 }
 
-// indexMD는 첫 문서 index.md 본문을 만든다. 프론트매터에는 켜진 축만
+// indexMD는 첫 문서 index.md 본문을 만든다. 프론트매터에는 켜진 속성만
 // 나오고 값은 index 문서에 맞게 채운다. 날짜는 기준 시각에서 온다.
 func indexMD(cfg config.Config, now time.Time) string {
 	values := map[config.Axis]string{
@@ -273,7 +273,7 @@ func printOnboarding(w io.Writer, res initResult) {
 		"archive": "승급에서 물러난 문서가 가는 곳",
 	}
 	fileGuide := map[string]string{
-		config.ConfigFileName: "위키 설정. 축과 임계값을 여기서 조정하세요",
+		config.ConfigFileName: "위키 설정. 속성과 임계값을 여기서 조정하세요",
 		"index.md":            "첫 문서. 위키 소개로 채우세요",
 		".gitignore":          ".engram/ 캐시 디렉토리를 git에서 제외합니다",
 	}
@@ -292,6 +292,6 @@ func printOnboarding(w io.Writer, res initResult) {
 	}
 	fmt.Fprintln(w, "\n다음 단계:")
 	fmt.Fprintln(w, "  1. inbox에 첫 자료를 넣으세요")
-	fmt.Fprintf(w, "  2. %s을 열어 축과 임계값을 위키에 맞게 조정하세요\n", config.ConfigFileName)
+	fmt.Fprintf(w, "  2. %s을 열어 속성과 임계값을 위키에 맞게 조정하세요\n", config.ConfigFileName)
 	fmt.Fprintln(w, "  3. index.md를 위키 소개로 채우세요")
 }

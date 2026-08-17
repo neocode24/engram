@@ -3,7 +3,7 @@
 //
 // 규칙은 ADR 0044가 정한다. context 와 root_files 만 나가고 inbox 와
 // sources 는 나가지 않는다. archive 는 기본으로 빠지고 옵션으로 연다.
-// sensitivity 축이 켜진 위키에서는 private-local-only 와 restricted 를
+// sensitivity 속성이 켜진 위키에서는 private-local-only 와 restricted 를
 // 뺀다. 그 제외를 뒤집는 수단은 없다.
 //
 // 이 판정을 serve 와 export 가 함께 부른다. 두 벌 두면 serve 가 감추는
@@ -69,7 +69,7 @@ type Exposure struct {
 	ExcludedUnparsed  int
 	ExcludedOutside   int
 
-	// SensitivityOn은 이 위키에서 sensitivity 축이 켜져 있는지다.
+	// SensitivityOn은 이 위키에서 sensitivity 속성이 켜져 있는지다.
 	// 꺼진 위키에는 거를 값이 없으므로 민감도 제외가 걸리지 않는다.
 	SensitivityOn bool
 	// IncludeArchive는 archive 를 열었는지다.

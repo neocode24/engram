@@ -14,7 +14,7 @@
 
 ## 무엇이 들어 있나
 
-`education` 프리셋으로 만든 위키에 문서 일곱이 있다.
+`personal` 프리셋으로 만든 위키에 문서 일곱이 있다.
 
 | 단계 | 문서 | 왜 여기 있나 |
 |---|---|---|
@@ -25,17 +25,17 @@
 | `inbox/` | `2026-03-02-talk-note` | **일부러 남긴 미처리 메모** |
 | 루트 | `index.md` | 색인 문서 |
 
-`inbox`에 하나를 남긴 것은 의도다. 적체가 0인 위키로는 `status`가 무엇을 보는지, `lint`가 고아 문서를 어떻게 잡는지 보여줄 수 없다. `engram lint examples/education`을 돌리면 `warn` 하나가 나오는데 그 메모가 아무와도 이어져 있지 않다는 경고다. **`error`와 `reject`는 0이다.**
+`inbox`에 하나를 남긴 것은 의도다. 적체가 0인 위키로는 `status`가 무엇을 보는지, `lint`가 고아 문서를 어떻게 잡는지 보여줄 수 없다. `engram lint examples/personal`을 돌리면 `warn` 하나가 나오는데 그 메모가 아무와도 이어져 있지 않다는 경고다. **`error`와 `reject`는 0이다.**
 
 ## 돌려 보기
 
 ```
-engram reindex examples/education     # 색인을 만든다. .engram/ 은 커밋되지 않으므로 한 번 필요하다
-engram status examples/education
-engram lint examples/education
-engram search --wiki examples/education 승급
-engram backlinks --wiki examples/education promotion-pipeline
-engram serve --wiki examples/education
+engram reindex examples/personal     # 색인을 만든다. .engram/ 은 커밋되지 않으므로 한 번 필요하다
+engram status examples/personal
+engram lint examples/personal
+engram search --wiki examples/personal 승급
+engram backlinks --wiki examples/personal promotion-pipeline
+engram serve --wiki examples/personal
 ```
 
 `serve`를 띄우면 `context/`와 색인 문서만 보인다. `inbox/`와 `sources/`는 목록에도 URL에도 나오지 않는다. 승급 파이프라인이 웹에서도 그대로 지켜지는지 여기서 확인할 수 있다.

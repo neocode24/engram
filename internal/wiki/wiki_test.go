@@ -304,7 +304,7 @@ func TestFrontmatter(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		cfg.Preset = config.PresetPersonal
+		cfg.Preset = config.PresetMinimal
 		cfg.Axes = map[config.Axis]bool{}
 		for _, a := range []config.Axis{
 			config.AxisType, config.AxisArtifactStage, config.AxisStatus, config.AxisIndexable,
@@ -324,7 +324,7 @@ func TestFrontmatter(t *testing.T) {
 	})
 
 	t.Run("켠 축은 단계별 기본값으로 채운다", func(t *testing.T) {
-		cfg, err := config.Load(t.TempDir()) // 기본 education
+		cfg, err := config.Load(t.TempDir()) // 기본 personal
 		if err != nil {
 			t.Fatal(err)
 		}

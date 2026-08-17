@@ -49,7 +49,7 @@ func makeResurfaceWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	files := map[string]string{
-		"engram.yaml":      "preset: education\n",
+		"engram.yaml":      "preset: personal\n",
 		"context/old-a.md": "---\ntype: concept\ncreated: 2026-01-01\n---\n\n# 첫 결정\n",
 		"context/old-b.md": "---\ntype: concept\ncreated: 2025-12-01\n---\n\n# 더 오래된 결정\n",
 		"context/fresh.md": "---\ntype: concept\ncreated: 2026-08-01\nupdated: 2026-08-10\n---\n\n본문\n",
@@ -158,7 +158,7 @@ func TestResurfaceCmd(t *testing.T) {
 		// fresh 위키: context 문서가 하나뿐이고 최근이다.
 		fresh := t.TempDir()
 		for name, content := range map[string]string{
-			"engram.yaml":      "preset: education\n",
+			"engram.yaml":      "preset: personal\n",
 			"context/fresh.md": "---\ntype: concept\ncreated: 2026-08-01\nupdated: 2026-08-10\n---\n\n본문\n",
 		} {
 			p := filepath.Join(fresh, filepath.FromSlash(name))

@@ -31,7 +31,7 @@ func agentsDoc(cfg config.Config, dirs map[string]string) string {
 	var b strings.Builder
 	b.WriteString("# AGENTS.md\n\n이 위키에서 작업하는 에이전트는 아래를 따른다.\n\n")
 	b.WriteString("## 규칙은 이 위키의 것이다\n\n")
-	b.WriteString("문서 규칙의 소유권은 이 위키에 있다. 규칙 명세는 meta/ 디렉토리의 문서에 있고 판정은 scripts/lint-frontmatter.py 가 한다. 규칙을 바꾸려면 그 둘을 직접 고친다. 축, 허용값, 임계값, 디렉토리는 engram.yaml 이 진실원이므로 스크립트는 그 파일을 실행 시점에 읽는다.\n\n")
+	b.WriteString("문서 규칙의 소유권은 이 위키에 있다. 규칙 명세는 meta/ 디렉토리의 문서에 있고 판정은 scripts/lint-frontmatter.py 가 한다. 규칙을 바꾸려면 그 둘을 직접 고친다. 속성, 허용값, 임계값, 디렉토리는 engram.yaml 이 진실원이므로 스크립트는 그 파일을 실행 시점에 읽는다.\n\n")
 	b.WriteString("커밋 전 검사는 .githooks/pre-commit 이 돌린다. 한 번 활성화한다.\n\n    git config core.hooksPath .githooks\n\n")
 	b.WriteString("## 연산은 engram 이 계속 수행한다\n\n")
 	b.WriteString("eject 는 규칙만 내보냈다. 검색 색인, 재발견, 링크 그래프 계산, 다이제스트는 파일로 표현되지 않는 연산이므로 engram 이 계속 맡는다. 아래 커맨드는 그대로 동작한다.\n\n")

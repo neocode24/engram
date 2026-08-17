@@ -49,6 +49,8 @@
 
 **게이트가 유일한 관문이라는 전제가 0.4까지 실제로는 성립하지 않았다.** `context/`에 손으로 둔 문서는 `artifact_stage`를 비우거나 낮춰 적으면 게이트를 지나지 않았다. 게이트만 프론트매터 선언을 보고 나머지 판정은 디렉토리를 봤기 때문이다. ADR [0040](decisions/0040-gate-follows-the-directory-not-the-declaration.md)이 게이트를 디렉토리 기준으로 바꿔 닫았다. 픽스처에 그 경로를 때리는 문서가 하나도 없어서 여태 안 잡혔다.
 
+**프리셋 이름을 1.0 전에 고쳤다.** [0009](decisions/0009-schema-presets-and-thresholds.md)가 열린 항목으로 남긴 것이 실제 오해를 불렀다. `personal`이 셋 중 속성이 가장 적은데 교육을 마친 사람이 자기 위키에 고를 이름이 그것이었다. `minimal`, `personal`, `team`으로 옮겼고 속성 구성은 그대로다. 한국어 표기도 축에서 속성으로 바꿨다. 근거는 [0048](decisions/0048-preset-names-follow-attribute-sets.md)에 있다. 공개 전이라 별칭 처리가 필요 없어서 지금이 가장 싸다.
+
 **다섯 결함 전부를 사람이 손으로 여정을 돌려서 찾았다.** 단위 테스트 팔천 줄이 하나도 못 잡았다. 커맨드를 하나씩만 보기 때문이다. `harness/journey`가 그 빈자리를 메운다. 실제 바이너리를 빌드해 열한 단계를 순서대로 돌고 각 변경 뒤에 `lint`를 다시 검사한다. 이 하니스는 **변이 시험으로 검증한다.** 과거 결함을 코드에 되돌려 놓고 테스트가 실제로 실패하는지 본다. 통과해 버리면 단언이 느슨한 것이다. 첫 판이 실제로 그랬다.
 
 ## 즉시 다음
@@ -79,21 +81,6 @@
 
 전사 결과 수용은 그다음이다. `capture`가 외부 전사 파일을 받아 위 첫째를 태우면 음성 없이도 루프가 닫힌다.
 
-### 프리셋 이름 재검토
-
-[0009](decisions/0009-schema-presets-and-thresholds.md)가 열린 항목으로 남긴 것이며 실제로 오해를 불렀다. 그 ADR은 `team`이 규모를 암시하는 것을 걱정했는데 더 큰 문제는 `personal`이다.
-
-**`personal`이 셋 중 축이 가장 적다.** 그런데 사용자가 교육을 마치고 본격적으로 자기 위키를 만들 때 고를 이름이 그것이다. 이름만 보고 고르면 `derived_context`와 `source_channel`이 빠진 위키를 쓰게 된다. 0009 자신이 "`personal`은 축이 너무 적어 승급 파이프라인의 가치를 체감하기 어렵다"고 적어 놓고 그 이름을 개인 사용자에게 준 셈이다.
-
-`education`도 문제다. 제품 설정값이 특정 강의를 가리키는 이름을 갖고 있다.
-
-후보는 `education`을 `personal`로, 지금의 `personal`을 `minimal`로 옮기는 것이다. 그러면 교육이 가르친 축 집합과 수료 후 쓰는 축 집합의 이름이 같아진다. 함께 볼 것 둘.
-
-- 지금의 `personal`(8축)이 남을 값어치가 있는지. `education`과 두 축 차이뿐이고 그중 `derived_context`는 `promote`의 역방향 기록이라 빠지면 기능이 준다. 프리셋을 둘로 줄이는 선택지가 있다.
-- `team`도 규모가 아니라 업무 자료 포함 여부가 기준이므로 같이 본다.
-
-옮기려면 옛 이름을 `migrate`가 받아 주어야 하고 `examples/education` 디렉토리 이름도 따라간다. 1.0 출하 뒤에 연다.
-
 ### 시맨틱 층과 model 커맨드
 
 [0007](decisions/0007-platform-and-distribution.md)이 `engram model pull`을 사이드카로 정해 두었으나 구현이 없고 어느 마일스톤에도 없다. **사이드카이므로 바이너리는 순수 Go로 남는다.** CGO나 LLM 경계와 충돌하지 않는다.
@@ -105,7 +92,7 @@
 - `page_dirs`는 디렉토리 이름 목록이라 단계와 디렉토리를 다르게 매핑할 수 없다. `inbox` 단계는 `inbox`라는 이름의 디렉토리를 요구한다. design.md는 이 키를 "디렉토리 매핑"이라 불렀으므로 표기가 어긋나 있다. 이름을 바꾸고 싶다는 요구가 실제로 나오면 맵으로 바꾼다.
 - `inbox/`와 `sources/` 문서의 슬러그에는 날짜 접두사가 들어간다. 그 문서를 위키링크로 가리키려면 접두사까지 써야 한다. `context/` 문서는 접두사가 없으므로 실사용에서 걸리는 일은 드물다.
 - `status`의 다음 행동 제안이 `reject`를 계기로 삼지 않는다. 현황 줄에는 `reject` 건수가 나오므로 정보 자체는 있다.
-- `digest`가 승급을 집계하지 않는다. `promote`가 승급 시각을 프론트매터에 남기지 않기 때문이다. 필드를 새로 만드는 것은 스키마 축이 느는 일이라 요구가 나올 때 결정한다.
+- `digest`가 승급을 집계하지 않는다. `promote`가 승급 시각을 프론트매터에 남기지 않기 때문이다. 필드를 새로 만드는 것은 프론트매터 속성이 느는 일이라 요구가 나올 때 결정한다.
 - ~~`updated` 필드를 아무도 채우지 않는다.~~ `update`가 채운다(ADR [0032](decisions/0032-update-writes-the-updated-field.md)). 손으로 고친 파일은 여전히 `sync`가 와야 정정된다.
 - `resurface`의 제시 이력이 무한히 쌓인다. 문서 수만큼이므로 지금 규모에서는 문제가 아니다.
 - **실운영 위키 306문서를 돌리면 `error`가 25건 남는다.** 열다섯은 upstream 위키가 자기 명세에 없는 값(`status: draft`, `trigger_mode: manual`, `sensitivity: public`)을 쓰거나 engram에 없는 `index` 단계를 쓴 것이고, 여덟은 프론트매터가 빠진 실제 문서, 둘은 `artifact_stage`가 없는 문서다. 전부 engram이 옳게 잡은 것이고 뒤의 둘은 `migrate`가 정리한다. 근거는 `docs/spec-map.md` 6절에 있다.
@@ -118,7 +105,7 @@ upstream 명세 동기화 과제와 coordinator/worker 실행 체제는 `private
 ## 문서 부채
 
 - **문체 정리.** AGENTS.md가 em dash와 화살표를 금지하는데 초기 문서 다수가 위반 상태다. 린터를 붙여 한 번에 정리한다. 사용자 대면 문자열의 경어체 전환(ADR 0027)은 끝났으나 같은 린터가 이 규칙도 지켜야 재발하지 않는다.
-- ~~**규칙 명세와 구현의 대응표.**~~ `docs/spec-map.md`로 만들었다. 명세 7종, lint 규칙 16종, 설정 축 14종의 대응이 전부 들어 있다.
+- ~~**규칙 명세와 구현의 대응표.**~~ `docs/spec-map.md`로 만들었다. 명세 7종, lint 규칙 16종, 설정 속성 14종의 대응이 전부 들어 있다.
 - ~~**`architecture.md`가 반출 경로를 담고 있지 않다.**~~ 11절을 더했다. `mcp`는 로컬이라 노출 판정을 거치지 않고 `serve`와 `export`만 거친다는 차이를 도식에 담았다.
 - **`curriculum.md` 재작성.** 여정 24개와 마일스톤이 확정되었으므로 강의 세션을 다시 매핑해야 한다. 현재 내용은 여정 5개 시절 기준이다.
 - ~~**`docs/parity.md`**~~ lint 축 측정을 마쳤다. 자동 생성이 아니라 로컬 실행 결과를 사람이 옮겨 적는다(ADR 0029).
@@ -130,7 +117,7 @@ upstream 명세 동기화 과제와 coordinator/worker 실행 체제는 `private
 
 ## 미결정
 
-- ~~교육용 데모 위키 내용.~~ `examples/education`을 만들었다. `init` 하나가 아니라 커맨드 시퀀스의 생성물이며 `harness/examples`가 재생성해 대조한다. 결과가 다르면 회귀다.
+- ~~교육용 데모 위키 내용.~~ `examples/personal`을 만들었다. `init` 하나가 아니라 커맨드 시퀀스의 생성물이며 `harness/examples`가 재생성해 대조한다. 결과가 다르면 회귀다.
 - ~~`serve` 웹 UI의 쓰기 범위.~~ [0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md)가 읽기 전용으로 정했다.
 - ~~MCP 노출 시 도구 단위 분해.~~ [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md)이 도구 열로 정했다.
 - **`engram model`이 관리할 모델의 범위.** 커맨드 구조는 [0007](decisions/0007-platform-and-distribution.md)에 이미 있고 사이드카라 근간과 충돌하지 않는다. 정할 것은 목록 하나다.
@@ -156,7 +143,7 @@ Go 테스트 스위트가 생겼다. `go test ./...`가 정식 검증이다.
 | `harness` | 골든 위키에 대한 lint 출력 스냅샷 비교. `go test ./harness -update`로 갱신 |
 | `harness/journey` | 실제 바이너리로 `init`부터 `export`까지 열두 단계. 각 변경 뒤 `lint`의 `error`와 `reject`가 0인지, 승급 문서에 `created`가 남는지, `resurface` 후보에 승급 문서가 드는지, `export` 번들에 inbox 문서가 섞이지 않는지 |
 | `harness/parity` | upstream 스크립트와의 대조. lint 위반 목록과 `resurface` 선정 순위 두 축. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |
-| `harness/examples` | `examples/education` 데모 위키를 커맨드 시퀀스로 다시 만들어 커밋본과 바이트 대조. `-update`로 갱신 |
+| `harness/examples` | `examples/personal` 데모 위키를 커맨드 시퀀스로 다시 만들어 커밋본과 바이트 대조. `-update`로 갱신 |
 | `harness/eject` | 내보낸 Python 린터와 `engram lint`의 판정 대조. 여덟 상황에서 출력과 종료 코드를 본다. **어긋나면 실패다.** CI에서 돈다 |
 | `harness/realdata` | 실운영 위키 306문서 스모크. 생존, 조회 커맨드의 무변경, 판정의 결정론, 시간 상한 넷만 단언하고 위반 수는 로그로 남긴다. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |
 | 릴리스 산출물 | `goreleaser release --snapshot --clean --skip=publish`로 아카이브 여섯과 `checksums.txt`를 만든다. 현재 플랫폼 바이너리의 `engram version`이 `dev`가 아니고 `strings`로 `/Users/` 경로가 안 박혔는지 본다 |

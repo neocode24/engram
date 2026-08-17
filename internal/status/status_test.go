@@ -58,7 +58,7 @@ func contextDoc(created, updated string) string {
 func TestRun(t *testing.T) {
 	t.Run("단계별 집계와 위키링크 수를 낸다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":           "preset: education\n",
+			"engram.yaml":           "preset: personal\n",
 			"inbox/2026-07-15-a.md": inboxDoc("2026-07-15", "[[hub]] 와 [[peer]]"),
 			"inbox/2026-08-01-b.md": inboxDoc("2026-08-01", ""),
 			"context/hub.md":        contextDoc("2026-01-01", "2026-08-01"),
@@ -80,7 +80,7 @@ func TestRun(t *testing.T) {
 
 	t.Run("들어오고 나가는 링크가 모두 없는 문서는 고아다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":           "preset: education\n",
+			"engram.yaml":           "preset: personal\n",
 			"inbox/2026-07-15-a.md": inboxDoc("2026-07-15", ""),
 		})
 		res, _ := Run(root, fixedNow)
@@ -137,7 +137,7 @@ func TestRun(t *testing.T) {
 
 	t.Run("lint 요약을 연동한다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml": "preset: education\nforms: [note]\n",
+			"engram.yaml": "preset: personal\nforms: [note]\n",
 			// form 이 폐쇄 집합에 없어 error 위반이 난다.
 			"inbox/2026-07-15-a.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\nsource_channel: manual\nform: memo\ncreated: 2026-07-15\n---\n\n[[hub]] [[peer]]\n",
 		})
@@ -152,7 +152,7 @@ func TestRun(t *testing.T) {
 
 	t.Run("inbox 최고령 나이를 기준 시각으로 잰다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":           "preset: education\n",
+			"engram.yaml":           "preset: personal\n",
 			"inbox/2026-07-15-a.md": inboxDoc("2026-07-15", ""),
 			"inbox/2026-08-10-b.md": inboxDoc("2026-08-10", ""),
 		})
@@ -169,7 +169,7 @@ func TestRun(t *testing.T) {
 
 	t.Run("날짜를 알 수 없는 inbox 문서는 따로 센다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":      "preset: education\n",
+			"engram.yaml":      "preset: personal\n",
 			"inbox/plain.md":   inboxDoc("", ""),
 			"inbox/dated-c.md": inboxDoc("2026-08-01", ""),
 		})
@@ -184,7 +184,7 @@ func TestRun(t *testing.T) {
 
 	t.Run("파일명 날짜 접두사로 나이를 잰다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":              "preset: education\n",
+			"engram.yaml":              "preset: personal\n",
 			"inbox/2026-07-01-nofm.md": inboxDoc("", ""),
 		})
 		res, _ := Run(root, fixedNow)
@@ -209,7 +209,7 @@ func TestRun(t *testing.T) {
 
 	t.Run("링크가 min_wikilinks 이상인 inbox 문서가 승급 대기다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml": "preset: education\n",
+			"engram.yaml": "preset: personal\n",
 			// related 와 본문에 서로 다른 슬러그 2개. min_wikilinks 기본 2 를 넘는다.
 			// 링크 대상은 context 문서 2개(과 hub2)다. peer 는 inbox 라 대상에서 빠진다.
 			"inbox/2026-07-15-ready.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
@@ -237,7 +237,7 @@ func TestRun(t *testing.T) {
 		// 링크 없는 inbox 문서는 승급 대기가 아니다. 대상은 context 문서와
 		// sources 문서다. inbox 문서는 대상에서 빠진다.
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":              "preset: education\n",
+			"engram.yaml":              "preset: personal\n",
 			"inbox/2026-08-01-memo.md": inboxDoc("2026-08-01", ""),
 			"inbox/2026-08-02-peer.md": inboxDoc("2026-08-02", ""),
 			"context/hub.md":           contextDoc("2026-01-01", "2026-08-10"),
@@ -254,7 +254,7 @@ func TestRun(t *testing.T) {
 		// 대상이 2가 되어 이 문서는 유예 없이 거절된다. 승급 대기 판정으로
 		// 대상 집계를 검증한다.
 		root := writeWiki(t, map[string]string{
-			"engram.yaml": "preset: education\n",
+			"engram.yaml": "preset: personal\n",
 			"index.md": "---\ntype: system\nartifact_stage: context\nstatus: promoted\n" +
 				"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
 				"source_channel: manual\nderived_context: []\n---\n\n# 색인\n",
@@ -271,7 +271,7 @@ func TestRun(t *testing.T) {
 	t.Run("대상이 부족한 위키에서는 링크가 적어도 승급 대기로 본다", func(t *testing.T) {
 		// 문서 하나뿐인 위키. 게이트가 유예되므로 promote 가능 목록에 오른다.
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":              "preset: education\n",
+			"engram.yaml":              "preset: personal\n",
 			"inbox/2026-08-01-memo.md": inboxDoc("2026-08-01", ""),
 		})
 		res, _ := Run(root, fixedNow)
@@ -300,7 +300,7 @@ func TestRun(t *testing.T) {
 
 	t.Run("같은 위키와 같은 기준 시각에 두 번 실행하면 JSON 이 바이트까지 같다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":           "preset: education\n",
+			"engram.yaml":           "preset: personal\n",
 			"inbox/2026-07-15-a.md": inboxDoc("2026-07-15", "[[hub]] [[peer]]"),
 			"context/hub.md":        contextDoc("2026-01-01", "2026-08-01"),
 			"inbox/peer.md":         inboxDoc("2026-08-01", ""),

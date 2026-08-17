@@ -238,8 +238,8 @@ func Create(wikiRoot string, cfg config.Config, stage Stage, date, slug string, 
 	return path, nil
 }
 
-// Frontmatter는 단계별 프론트매터 초기값을 만든다. config가 켠 축만 채우고
-// 꺼진 축의 키는 아예 넣지 않는다. 단계별 기본값은 upstream 계약
+// Frontmatter는 단계별 프론트매터 초기값을 만든다. config가 켠 속성만 채우고
+// 꺼진 속성의 키는 아예 넣지 않는다. 단계별 기본값은 upstream 계약
 // meta/frontmatter-schema.md를 따른다. 날짜 필드는 호출자가 넣는다.
 func Frontmatter(stage Stage, cfg config.Config) map[string]any {
 	fm := map[string]any{
@@ -263,7 +263,7 @@ func Frontmatter(stage Stage, cfg config.Config) map[string]any {
 	return fm
 }
 
-// setIfOn은 축이 켜져 있을 때만 키를 채운다.
+// setIfOn은 속성이 켜져 있을 때만 키를 채운다.
 func setIfOn(fm map[string]any, cfg config.Config, axis config.Axis, v any) {
 	if cfg.Axes[axis] {
 		fm[string(axis)] = v

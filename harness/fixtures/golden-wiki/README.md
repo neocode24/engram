@@ -6,7 +6,7 @@ ADR 0011이 정한 대로 사람이 의도적으로 관리한다. `engram init`�
 
 ## 구성
 
-`engram.yaml`은 education 프리셋을 기준으로 하고 topics 개방 집합과
+`engram.yaml`은 personal 프리셋을 기준으로 하고 topics 개방 집합과
 forms 폐쇄 집합을 명시했다. 나머지 키는 internal/config 기본값을 쓴다.
 프론트매터 필드와 허용값은 internal/config와 upstream 계약을 따랐다.
 taxonomy의 문서 필드는 설정의 복수 키에 맞춰 `form` 하나와 `topics` 목록으로 썼다.

@@ -75,12 +75,12 @@ func TestUpdateCmd(t *testing.T) {
 
 	t.Run("꺼진 축은 거절합니다", func(t *testing.T) {
 		root := makeDemoteWiki(t)
-		// education 프리셋은 scope 축이 꺼져 있다.
+		// personal 프리셋은 scope 속성이 꺼져 있다.
 		out, err := runDemoteUpdate(t, "update", "--wiki", root, "--set", "scope=work", "context/note.md")
 		if err == nil {
-			t.Fatal("꺼진 축은 거절이어야 합니다")
+			t.Fatal("꺼진 속성은 거절이어야 합니다")
 		}
-		if !strings.Contains(out, "꺼진 축") {
+		if !strings.Contains(out, "꺼진 속성") {
 			t.Errorf("거절 안내가 없음: %s", out)
 		}
 	})

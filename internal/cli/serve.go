@@ -47,7 +47,7 @@ func newServeCmd() *cobra.Command {
 
 검수를 지난 context 문서와 색인 문서만 보입니다. inbox 와 sources 는
 목록에도 URL 에도 없습니다. archive 는 --include-archive 로 엽니다.
-sensitivity 축이 켜진 위키에서는 private-local-only 와 restricted 문서를
+sensitivity 속성이 켜진 위키에서는 private-local-only 와 restricted 문서를
 빼며 이 제외를 뒤집는 플래그는 없습니다. 내보내야 하면 문서의 값을
 고치세요.
 
@@ -160,7 +160,7 @@ func printServeNotice(w io.Writer, root, host, addr string, e serve.Exposure) {
 		fmt.Fprintf(w, "민감도: private-local-only 와 restricted 문서 %d개를 제외했습니다. 뒤집는 플래그는 없습니다\n",
 			e.ExcludedSensitive)
 	} else {
-		fmt.Fprintf(w, "민감도: 이 위키는 sensitivity 축이 꺼져 있어 거를 값이 없습니다\n")
+		fmt.Fprintf(w, "민감도: 이 위키는 sensitivity 속성이 꺼져 있어 거를 값이 없습니다\n")
 	}
 	fmt.Fprintf(w, "쓰기 경로가 없습니다. GET 과 HEAD 외의 요청은 거절합니다\n")
 	if !loopbackHost(host) {

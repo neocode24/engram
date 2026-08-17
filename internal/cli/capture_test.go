@@ -109,7 +109,7 @@ func TestCapture(t *testing.T) {
 		if _, err := runIngestRoot(t, "", "capture", "--wiki", dir, "내용"); err != nil {
 			t.Fatal(err)
 		}
-		// 기본 프리셋 education은 source_channel을 켜고 scope를 끈다.
+		// 기본 프리셋 personal은 source_channel을 켜고 scope를 끈다.
 		entries, err := os.ReadDir(filepath.Join(dir, "inbox"))
 		if err != nil || len(entries) != 1 {
 			t.Fatalf("inbox 문서를 찾을 수 없음: %v", err)
@@ -298,7 +298,7 @@ func TestSource(t *testing.T) {
 		// personal 프리셋은 source_channel을 끈다. source_refs는 켜져 있어
 		// 함께 끄는 것을 설정에 명시한다.
 		cfgPath := filepath.Join(dir, "engram.yaml")
-		if err := os.WriteFile(cfgPath, []byte("preset: personal\naxes:\n  source_refs: false\n"), 0o644); err != nil {
+		if err := os.WriteFile(cfgPath, []byte("preset: minimal\naxes:\n  source_refs: false\n"), 0o644); err != nil {
 			t.Fatal(err)
 		}
 		out, err := runIngestRoot(t, "", "source", "--wiki", dir,
@@ -307,8 +307,8 @@ func TestSource(t *testing.T) {
 		if err != nil {
 			t.Fatalf("경고는 거절이 아닙니다: %v", err)
 		}
-		if !strings.Contains(out, "경고: source_channel 축이 꺼져 있어") ||
-			!strings.Contains(out, "경고: source_refs 축이 꺼져 있어") {
+		if !strings.Contains(out, "경고: source_channel 속성이 꺼져 있어") ||
+			!strings.Contains(out, "경고: source_refs 속성이 꺼져 있어") {
 			t.Errorf("경고가 출력되지 않음:\n%s", out)
 		}
 		raw := string(readWikiFile(t, filepath.Join(dir, "sources"), "2026-01-01-warn.md"))

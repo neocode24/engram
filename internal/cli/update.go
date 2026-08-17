@@ -28,12 +28,12 @@ func newUpdateCmd() *cobra.Command {
 		Short: "문서의 프론트매터와 본문을 갱신합니다",
 		Long: `문서의 프론트매터 키와 본문을 갱신합니다.
 
---set key=value 로 키를 설정합니다. 반복할 수 있습니다. 배열 축은 쉼표로
+--set key=value 로 키를 설정합니다. 반복할 수 있습니다. 배열 속성은 쉼표로
 여러 값을 줍니다. 예: --set topics=go,cli
 --unset key 로 키를 지웁니다. 반복할 수 있습니다.
 --body-from <파일> 로 본문을 통째로 바꿉니다. - 를 주면 표준 입력을 읽습니다.
 
-꺼진 축의 키와 허용값 밖의 값은 거절합니다. artifact_stage는 여기서
+꺼진 속성의 키와 허용값 밖의 값은 거절합니다. artifact_stage는 여기서
 바꾸지 못합니다. 단계 이동은 engram promote와 engram demote의 일입니다.
 키 순서는 파싱이 보존한 그대로 유지됩니다.`,
 		Args: cobra.ExactArgs(1),
@@ -88,7 +88,7 @@ func newUpdateCmd() *cobra.Command {
 					return fmt.Errorf("artifact_stage는 update로 지울 수 없습니다. 단계 이동은 engram promote와 engram demote가 합니다")
 				}
 				if axisOff(key, cfg) {
-					return fmt.Errorf("꺼진 축의 키는 지울 것도 없습니다: %s", key)
+					return fmt.Errorf("꺼진 속성의 키는 지울 것도 없습니다: %s", key)
 				}
 				fields = removeField(fields, key)
 			}
@@ -167,7 +167,7 @@ func arrayFields() []string {
 	return []string{"tags", "topics", "source_refs", "derived_from", "derived_context", "related"}
 }
 
-// knownAxes는 스키마가 다루는 축 이름 14종이다. 축 on/off 판정에 쓴다.
+// knownAxes는 스키마가 다루는 속성 이름 14종이다. 속성 on/off 판정에 쓴다.
 // internal/config 이 목록을 내보내지 않아 여기에 둔다.
 func knownAxes() []config.Axis {
 	return []config.Axis{
@@ -179,8 +179,8 @@ func knownAxes() []config.Axis {
 	}
 }
 
-// axisOff는 키가 축 이름이면서 설정에서 꺼져 있는지를 반환한다.
-// 축 이름이 아닌 키는 여기서 가리지 않는다.
+// axisOff는 키가 속성 이름이면서 설정에서 꺼져 있는지를 반환한다.
+// 속성 이름이 아닌 키는 여기서 가리지 않는다.
 func axisOff(key string, cfg config.Config) bool {
 	for _, ax := range knownAxes() {
 		if string(ax) == key {
@@ -218,7 +218,7 @@ func settableField(key, value string, cfg config.Config) (doc.Field, error) {
 		return doc.Field{}, fmt.Errorf("artifact_stage는 update로 바꿀 수 없습니다. 단계 이동은 engram promote와 engram demote가 합니다")
 	}
 	if axisOff(key, cfg) {
-		return doc.Field{}, fmt.Errorf("꺼진 축의 키는 설정할 수 없습니다: %s (프리셋 %s). engram.yaml의 axes에서 켜거나 문서에서 쓰지 않습니다", key, cfg.Preset)
+		return doc.Field{}, fmt.Errorf("꺼진 속성의 키는 설정할 수 없습니다: %s (프리셋 %s). engram.yaml의 axes에서 켜거나 문서에서 쓰지 않습니다", key, cfg.Preset)
 	}
 	for _, f := range arrayFields() {
 		if f != key {

@@ -31,7 +31,7 @@ func TestFiles(t *testing.T) {
 
 	t.Run("page_dirs 와 root_files 를 경로순으로 반환한다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":  "preset: education\n",
+			"engram.yaml":  "preset: personal\n",
 			"inbox/b.md":   doc,
 			"inbox/a.md":   doc,
 			"context/c.md": doc,
@@ -62,7 +62,7 @@ func TestFiles(t *testing.T) {
 
 	t.Run("숨김 디렉토리와 .engram 은 제외한다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":        "preset: education\n",
+			"engram.yaml":        "preset: personal\n",
 			"inbox/a.md":         doc,
 			"inbox/.hidden/b.md": doc,
 			"inbox/.engram/c.md": doc,
@@ -79,7 +79,7 @@ func TestFiles(t *testing.T) {
 	t.Run("ignore_files 의 파일명은 모든 깊이에서 순회를 제외한다", func(t *testing.T) {
 		// 기본값은 README.md 다. 하위 디렉토리의 README도 파일명으로 뺀다.
 		root := writeWiki(t, map[string]string{
-			"engram.yaml":        "preset: education\n",
+			"engram.yaml":        "preset: personal\n",
 			"inbox/a.md":         doc,
 			"context/README.md":  "context 디렉토리 설명\n",
 			"inbox/모음/README.md": "모음 디렉토리 설명\n",
@@ -125,7 +125,7 @@ func TestFiles(t *testing.T) {
 
 	t.Run("닫는 구분자가 없는 문서는 ErrUnclosed 를 싣는다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
-			"engram.yaml": "preset: education\n",
+			"engram.yaml": "preset: personal\n",
 			"inbox/a.md":  "---\ntype: inbox-note\n",
 		})
 		docs, err := Files(root, mustConfig(t, root))
@@ -140,7 +140,7 @@ func TestFiles(t *testing.T) {
 	t.Run("CRLF 와 BOM 을 정규화해 파싱한다", func(t *testing.T) {
 		crlf := "\xEF\xBB\xBF---\r\ntype: inbox-note\r\nartifact_stage: inbox\r\nstatus: inbox\r\nindexable: false\r\n---\r\n\r\n본문\r\n"
 		root := writeWiki(t, map[string]string{
-			"engram.yaml": "preset: education\n",
+			"engram.yaml": "preset: personal\n",
 			"inbox/a.md":  crlf,
 		})
 		docs, err := Files(root, mustConfig(t, root))

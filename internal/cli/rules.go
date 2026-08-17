@@ -47,7 +47,7 @@ type rulesReport struct {
 	Dirs           rulesDirs           `json:"dirs"`
 }
 
-// displayAxes는 축을 표기 순서에 따라 낸다. 순서는 config 의 축 상수
+// displayAxes는 속성을 표기 순서에 따라 낸다. 순서는 config 의 속성 상수
 // 순서를 따르며 맵 순회에 의존하지 않는다.
 func displayAxes() []config.Axis {
 	return []config.Axis{
@@ -83,7 +83,7 @@ func newRulesShowCmd() *cobra.Command {
 		Short: "이 위키에 적용되는 규칙 전부를 보여줍니다",
 		Long: `이 위키에 지금 적용되는 규칙 전부를 보여줍니다.
 
-프리셋과 축, 단계별 필수 필드, 허용값, 임계값, 승급 게이트, lint 규칙,
+프리셋과 프론트매터 속성, 단계별 필수 필드, 허용값, 임계값, 승급 게이트, lint 규칙,
 디렉토리를 절로 나눠 보여줍니다. 위키의 engram.yaml을 읽어 프리셋과
 사용자 설정이 합쳐진 결과를 냅니다. 제품 기본값이 아니라 이 위키의
 값입니다.
@@ -168,11 +168,11 @@ func printRules(w io.Writer, res rulesReport) {
 			off = append(off, string(ax))
 		}
 	}
-	fmt.Fprintf(w, "\n축 %d종 (켜짐 %d, 꺼짐 %d)\n", len(axes), len(on), len(off))
+	fmt.Fprintf(w, "\n프론트매터 속성 %d종 (켜짐 %d, 꺼짐 %d)\n", len(axes), len(on), len(off))
 	fmt.Fprintf(w, "  켜짐  %s\n", strings.Join(on, ", "))
 	if len(off) > 0 {
 		fmt.Fprintf(w, "  꺼짐  %s\n", strings.Join(off, ", "))
-		fmt.Fprintf(w, "  꺼진 축의 필드는 필수가 아니고, 문서에 있으면 schema.axis-off가 잡습니다\n")
+		fmt.Fprintf(w, "  꺼진 속성은 필수가 아니고, 문서에 있으면 schema.axis-off가 잡습니다\n")
 	}
 
 	fmt.Fprintf(w, "\n단계별 필수 필드\n")

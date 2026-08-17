@@ -114,7 +114,7 @@ func TestServeNotice(t *testing.T) {
 		e.ExcludedSensitive = 0
 		printServeNotice(&out, "/tmp/wiki", "localhost", "127.0.0.1:8420", e)
 		got := out.String()
-		if !strings.Contains(got, "sensitivity 축이 꺼져 있어") {
+		if !strings.Contains(got, "sensitivity 속성이 꺼져 있어") {
 			t.Errorf("축이 꺼진 안내가 없습니다:\n%s", got)
 		}
 		if strings.Contains(got, "경고:") {

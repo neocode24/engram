@@ -80,7 +80,7 @@ func makeSyncWiki(t *testing.T) string {
 	root := t.TempDir()
 	syncGitRun(t, root, "", "init")
 	files := map[string]string{
-		"engram.yaml": "preset: education\nmin_wikilinks: 0\n",
+		"engram.yaml": "preset: personal\nmin_wikilinks: 0\n",
 		"index.md": "---\ntype: system\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
 			"source_channel: manual\nderived_context: []\n---\n\n# 색인\n",

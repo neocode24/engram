@@ -19,7 +19,7 @@ import (
 func makeWiki(t *testing.T, files map[string]string) string {
 	t.Helper()
 	root := t.TempDir()
-	all := map[string]string{"engram.yaml": "preset: education\n"}
+	all := map[string]string{"engram.yaml": "preset: personal\n"}
 	for k, v := range files {
 		all[k] = v
 	}

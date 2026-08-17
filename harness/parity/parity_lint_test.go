@@ -232,12 +232,12 @@ func logPairs(t *testing.T, pcs []pairCount) {
 //
 // upstream 스크립트는 engram.yaml을 읽지 않고 자기 스키마를 하드코딩한다.
 // 그 스키마는 scope, sensitivity, source_channel, trigger_mode, workflow를
-// 전부 요구하는데 골든 픽스처의 education 프리셋은 그 축들을 끈다. 프리셋을
+// 전부 요구하는데 골든 픽스처의 personal 프리셋은 그 속성들을 끈다. 프리셋을
 // 맞추지 않으면 비교 결과가 축 on/off 차이로 뒤덮여 실제 규칙 차이가 묻힌다.
-// 측정으로는 education에서 error 4건이던 것이 team에서 48건이 되고, 늘어난
+// 측정으로는 personal에서 error 4건이던 것이 team에서 48건이 되고, 늘어난
 // 44건이 전부 upstream만 잡던 필드 누락이다.
 //
-// 원본 픽스처는 건드리지 않는다. lint_golden_test.go가 education 프리셋
+// 원본 픽스처는 건드리지 않는다. lint_golden_test.go가 personal 프리셋
 // 기준으로 스냅샷을 들고 있다.
 func usePresetTeam(t *testing.T, wiki string) {
 	t.Helper()
@@ -246,9 +246,9 @@ func usePresetTeam(t *testing.T, wiki string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	swapped := strings.Replace(string(raw), "preset: education", "preset: team", 1)
+	swapped := strings.Replace(string(raw), "preset: minimal", "preset: team", 1)
 	if swapped == string(raw) {
-		t.Fatalf("픽스처 engram.yaml에서 preset: education 을 찾지 못했다: %s", path)
+		t.Fatalf("픽스처 engram.yaml에서 preset: minimal 을 찾지 못했다: %s", path)
 	}
 	if err := os.WriteFile(path, []byte(swapped), 0o644); err != nil {
 		t.Fatal(err)

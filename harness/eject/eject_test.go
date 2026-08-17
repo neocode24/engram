@@ -282,7 +282,7 @@ func TestEjectMatchesEngramLint(t *testing.T) {
 		compareLinters(t, copyGoldenWiki(t))
 	})
 
-	for _, preset := range []string{"personal", "education", "team"} {
+	for _, preset := range []string{"minimal", "personal", "team"} {
 		t.Run("골든 위키를 "+preset+" 프리셋으로 검사하면 같다", func(t *testing.T) {
 			wiki := copyGoldenWiki(t)
 			setPreset(t, wiki, preset)
@@ -328,7 +328,7 @@ func TestEjectMatchesEngramLint(t *testing.T) {
 func warnOnlyWiki(t *testing.T) string {
 	t.Helper()
 	wiki := t.TempDir()
-	writeFile(t, wiki, "engram.yaml", "preset: education\n")
+	writeFile(t, wiki, "engram.yaml", "preset: minimal\n")
 	writeFile(t, wiki, "index.md",
 		"---\ntype: system\nartifact_stage: context\nstatus: promoted\n"+
 			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n"+

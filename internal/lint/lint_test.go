@@ -313,7 +313,7 @@ func TestRun(t *testing.T) {
 		// README는 순회에서 이미 빠진다. 남아 있었다면 frontmatter.missing
 		// 두 건과 고아 판정이 나온다(ADR 0036).
 		res := runLint(t, map[string]string{
-			"engram.yaml":        "preset: education\n",
+			"engram.yaml":        "preset: personal\n",
 			"context/README.md":  "context 디렉토리 설명입니다\n",
 			"inbox/모음/README.md": "모음 디렉토리 설명입니다\n",
 		})
@@ -332,7 +332,7 @@ func TestRun(t *testing.T) {
 		})
 		vs := findByRule(res, "schema.axis-off")
 		if len(vs) != 1 || !strings.Contains(vs[0].Message, "scope") {
-			t.Fatalf("education 프리셋에서 scope는 꺼진 축 위반이어야 함: %+v", res.Violations)
+			t.Fatalf("personal 프리셋에서 scope는 꺼진 속성 위반이어야 함: %+v", res.Violations)
 		}
 	})
 

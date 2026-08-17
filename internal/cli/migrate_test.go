@@ -47,7 +47,7 @@ func makeMigrateWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	files := map[string]string{
-		"engram.yaml": "preset: education\n",
+		"engram.yaml": "preset: personal\n",
 		"context/a.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nrelated:\n  - \"[[b]]\"\n  - \"[[c]]\"\n" +
 			"---\n\na 문서입니다.\n",
@@ -166,7 +166,7 @@ func TestMigrateCmd(t *testing.T) {
 		root := t.TempDir()
 		doc := "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nrelated: []\nsensitivity: internal\n---\n\n본문입니다.\n"
-		if err := os.WriteFile(filepath.Join(root, "engram.yaml"), []byte("preset: education\n"), 0o644); err != nil {
+		if err := os.WriteFile(filepath.Join(root, "engram.yaml"), []byte("preset: personal\n"), 0o644); err != nil {
 			t.Fatal(err)
 		}
 		p := filepath.Join(root, "context", "a.md")
@@ -196,7 +196,7 @@ func TestMigrateCmd(t *testing.T) {
 		// 고장 시나리오만 담은 위키에서 잰다.
 		root := t.TempDir()
 		files := map[string]string{
-			"engram.yaml": "preset: education\n",
+			"engram.yaml": "preset: personal\n",
 			"context/a.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
 				"indexable: true\ntags: []\nsource_refs: []\nderived_from: []\nrelated:\n  - \"[[b]]\"\n" +
 				"source_channel:\nderived_context: []\n---\n\na 문서입니다.\n",
@@ -232,7 +232,7 @@ func TestMigrateCmd(t *testing.T) {
 	t.Run("채우지 못한 필드가 남으면 보고가 모두 맞았다고 말하지 않습니다", func(t *testing.T) {
 		root := t.TempDir()
 		files := map[string]string{
-			"engram.yaml": "preset: education\n",
+			"engram.yaml": "preset: personal\n",
 			"sources/2026-04-01-talk.md": "---\ntype: source-summary\nartifact_stage: source\n" +
 				"status: sourced\nindexable: false\ncreated: 2026-04-01\n" +
 				"tags: []\nsource_refs: []\nderived_from: []\nrelated: []\n" +

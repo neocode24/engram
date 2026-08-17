@@ -51,7 +51,7 @@ func TestLoad(t *testing.T) {
 		},
 		{
 			name: "personal 프리셋은 하위 축만 켠다",
-			yaml: "preset: personal",
+			yaml: "preset: minimal",
 			check: func(t *testing.T, c Config) {
 				off := []Axis{AxisSourceChannel, AxisDerivedContext, AxisScope, AxisSensitivity, AxisTriggerMode, AxisWorkflow}
 				for _, a := range off {
@@ -65,8 +65,8 @@ func TestLoad(t *testing.T) {
 			},
 		},
 		{
-			name: "education 프리셋은 source_channel과 derived_context를 추가로 켠다",
-			yaml: "preset: education",
+			name: "personal 프리셋은 source_channel과 derived_context를 추가로 켠다",
+			yaml: "preset: personal",
 			check: func(t *testing.T, c Config) {
 				if !c.Axes[AxisSourceChannel] || !c.Axes[AxisDerivedContext] {
 					t.Error("source_channel과 derived_context는 켜져 있어야 함")
@@ -101,7 +101,7 @@ func TestLoad(t *testing.T) {
 		},
 		{
 			name: "프리셋 위에서 축을 개별적으로 켠다",
-			yaml: "preset: personal\naxes:\n  scope: true\n",
+			yaml: "preset: minimal\naxes:\n  scope: true\n",
 			check: func(t *testing.T, c Config) {
 				if !c.Axes[AxisScope] {
 					t.Error("scope를 켰는데 꺼져 있음")
@@ -127,7 +127,7 @@ func TestLoad(t *testing.T) {
 		{
 			name:    "잘못된 프리셋은 허용값과 함께 거절한다",
 			yaml:    "preset: hobby\n",
-			wantErr: "personal, education, team",
+			wantErr: "minimal, personal, team",
 		},
 		{
 			name:    "min_wikilinks 음수는 거절한다",

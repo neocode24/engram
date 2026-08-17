@@ -86,7 +86,7 @@ func Build(wikiRoot string, walked []walk.Doc, w FieldWeights) (*Index, error) {
 				addTokens(tf, Tokenize(strings.Join(f.List, " ")), w.Tags)
 			}
 		}
-		// 프론트매터의 다른 축은 색인하지 않는다. 필터링용이지 검색어가 아니다.
+		// 프론트매터의 다른 속성은 색인하지 않는다. 필터링용이지 검색어가 아니다.
 		length := 0.0
 		for _, n := range tf {
 			length += n

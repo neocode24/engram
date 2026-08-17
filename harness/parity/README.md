@@ -65,7 +65,7 @@ upstream 스크립트는 위키 루트를 인자로 받지 않고 자기 파일 
 (`frontmatter.missing`, `schema.allowed-value:artifact_stage`), upstream
 만 51쌍, engram 만 7쌍. upstream 만 잡은 것의 대부분은 픽스처가
 `scope`, `sensitivity`, `trigger_mode`, `workflow` 필드를 갖지 않는
-스키마 세대 차이다. engram 은 education 프리셋에서 이 축들을 요구하지
+스키마 세대 차이다. engram 은 personal 프리셋에서 이 속성들을 요구하지
 않는다. 매핑 표에 없는 규칙(unmapped)은 0건이었다.
 
 ## 무엇을 비교하지 않는가

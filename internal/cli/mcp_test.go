@@ -50,7 +50,7 @@ func makeMCPWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	files := map[string]string{
-		"engram.yaml": "preset: education\n",
+		"engram.yaml": "preset: personal\n",
 		"index.md": "---\ntype: system\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
 			"source_channel: manual\nderived_context: []\n---\n\n# 색인\n",

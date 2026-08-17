@@ -8,7 +8,7 @@ import (
 )
 
 // linterScript는 문서 단위 규칙을 판정하는 Python 린터를 낸다.
-// 판정에 쓰는 축, 허용값, 임계값, 디렉토리는 engram.yaml 을 실행 시점에
+// 판정에 쓰는 속성, 허용값, 임계값, 디렉토리는 engram.yaml 을 실행 시점에
 // 읽는다. 설정을 바꾸면 스크립트를 다시 만들지 않아도 판정이 따라간다.
 // engram.yaml 이 고칠 수 없는 값(고정 허용 집합, 단계와 디렉토리의
 // 대응)만 상수로 싣는다. 프리셋 이름은 주석에 남겨 어느 위키에서
@@ -37,7 +37,7 @@ func linterScript(cfg config.Config, dirs map[string]string) string {
 	return fmt.Sprintf(`#!/usr/bin/env python3
 """문서 단위 규칙을 판정하는 린터. engram eject 가 만들었다.
 
-축, 허용값, 임계값, 디렉토리는 engram.yaml 을 실행 시점에 읽는다.
+속성, 허용값, 임계값, 디렉토리는 engram.yaml 을 실행 시점에 읽는다.
 설정을 바꾸면 이 스크립트를 다시 만들지 않아도 판정이 따라간다.
 engram.yaml 이 고칠 수 없는 값은 아래 상수로 받았다. 고정 허용 집합과
 단계와 디렉토리의 대응이 그것이다.
@@ -81,14 +81,14 @@ TRIGGER_MODES = %s
 # 단계와 디렉토리의 대응.
 STAGE_DIRS = {%s}
 
-# 프리셋별 축 기본값. personal 이 education 에, education 이 team 에
-# 포함된다. engram.yaml 의 axes 가 개별 축을 덮어 쓴다.
+# 프리셋별 속성 기본값. minimal 이 personal 에, personal 이 team 에
+# 포함된다. engram.yaml 의 axes 가 개별 속성을 덮어 쓴다.
 BASE_AXES = %s
-EDUCATION_AXES = BASE_AXES + %s
-TEAM_AXES = EDUCATION_AXES + %s
+PERSONAL_AXES = BASE_AXES + %s
+TEAM_AXES = PERSONAL_AXES + %s
 PRESET_AXES = {
-    "personal": set(BASE_AXES),
-    "education": set(EDUCATION_AXES),
+    "minimal": set(BASE_AXES),
+    "personal": set(PERSONAL_AXES),
     "team": set(TEAM_AXES),
 }
 
@@ -457,7 +457,7 @@ def check_docs(root, cfg):
         for axis in AXIS_NAMES:
             if axis not in cfg["axes"] and axis in fields:
                 add(rel, line_of_key(text, axis), "schema.axis-off", "error",
-                    "설정에서 꺼진 축의 필드가 문서에 있습니다: %%s (프리셋 %%s)" %% (axis, cfg["preset"]),
+                    "설정에서 꺼진 속성이 문서에 있습니다: %%s (프리셋 %%s)" %% (axis, cfg["preset"]),
                     "engram.yaml의 axes에서 %%s를 켜거나 문서에서 %%s 필드를 지웁니다" %% (axis, axis))
 
         form = fields.get("form")
@@ -616,12 +616,12 @@ if __name__ == "__main__":
 		pyList(cfg.Schema.Scopes.Values), pyList(cfg.Schema.Sensitivities.Values),
 		pyList(cfg.Schema.TriggerModes.Values),
 		strings.Join(stageDirEntries, ",\n    "),
-		pyList(baseAxes()), pyList(educationExtra()), pyList(teamExtra()),
+		pyList(baseAxes()), pyList(personalExtra()), pyList(teamExtra()),
 		pyList(extraAxes()),
 		defaults)
 }
 
-// baseAxes는 모든 프리셋이 켜는 축이다. config 의 프리셋 정의에서 온다.
+// baseAxes는 모든 프리셋이 켜는 속성이다. config 의 프리셋 정의에서 온다.
 func baseAxes() []string {
 	return []string{
 		string(config.AxisType), string(config.AxisArtifactStage), string(config.AxisStatus),
@@ -630,20 +630,20 @@ func baseAxes() []string {
 	}
 }
 
-// educationExtra는 education 프리셋이 추가로 켜는 축이다.
-func educationExtra() []string {
+// personalExtra는 personal 프리셋이 추가로 켜는 속성이다.
+func personalExtra() []string {
 	return []string{string(config.AxisSourceChannel), string(config.AxisDerivedContext)}
 }
 
-// teamExtra는 team 프리셋이 추가로 켜는 축이다.
+// teamExtra는 team 프리셋이 추가로 켜는 속성이다.
 func teamExtra() []string {
 	return []string{string(config.AxisScope), string(config.AxisSensitivity),
 		string(config.AxisTriggerMode), string(config.AxisWorkflow)}
 }
 
-// extraAxes는 BASE_AXES 에 없는 나머지 축이다. 축 전체를 나열하는 데 쓴다.
+// extraAxes는 BASE_AXES 에 없는 나머지 속성이다. 속성 전체를 나열하는 데 쓴다.
 func extraAxes() []string {
-	return append(append([]string{}, educationExtra()...), teamExtra()...)
+	return append(append([]string{}, personalExtra()...), teamExtra()...)
 }
 
 // pyString은 문자열을 Python 문자열 리터럴로 낸다.

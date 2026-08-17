@@ -93,7 +93,7 @@ func runPython(t *testing.T, py string, args ...string) (string, int) {
 
 func TestPlan(t *testing.T) {
 	t.Run("산출물 다섯 종류를 전부 만든다", func(t *testing.T) {
-		root := writeWiki(t, map[string]string{"engram.yaml": "preset: education\n"})
+		root := writeWiki(t, map[string]string{"engram.yaml": "preset: personal\n"})
 		plan := Plan(loadCfg(t, root))
 		var kinds int
 		hasMeta, hasScript, hasHook, hasAgents, hasAttrs := false, false, false, false, false
@@ -122,7 +122,7 @@ func TestPlan(t *testing.T) {
 	})
 
 	t.Run("두 번 만들면 산출물이 바이트까지 같다", func(t *testing.T) {
-		root := writeWiki(t, map[string]string{"engram.yaml": "preset: education\n"})
+		root := writeWiki(t, map[string]string{"engram.yaml": "preset: personal\n"})
 		first := Plan(loadCfg(t, root))
 		second := Plan(loadCfg(t, root))
 		if !reflect.DeepEqual(first, second) {
@@ -131,8 +131,8 @@ func TestPlan(t *testing.T) {
 	})
 
 	t.Run("프리셋이 다르면 meta 문서와 린터가 다르다", func(t *testing.T) {
-		edu := writeWiki(t, map[string]string{"engram.yaml": "preset: education\n"})
-		personal := writeWiki(t, map[string]string{"engram.yaml": "preset: personal\n"})
+		edu := writeWiki(t, map[string]string{"engram.yaml": "preset: personal\n"})
+		personal := writeWiki(t, map[string]string{"engram.yaml": "preset: minimal\n"})
 		eduPlan := Plan(loadCfg(t, edu))
 		personalPlan := Plan(loadCfg(t, personal))
 		if artifactByPath(t, eduPlan, "meta/frontmatter-schema.md").Content ==
@@ -146,7 +146,7 @@ func TestPlan(t *testing.T) {
 	})
 
 	t.Run("임계값을 생성물에 반영한다", func(t *testing.T) {
-		root := writeWiki(t, map[string]string{"engram.yaml": "preset: education\n"})
+		root := writeWiki(t, map[string]string{"engram.yaml": "preset: personal\n"})
 		cfg := loadCfg(t, root)
 		cfg.Thresholds.MinWikilinks = 7
 		plan := Plan(cfg)
@@ -159,7 +159,7 @@ func TestPlan(t *testing.T) {
 	})
 
 	t.Run("훅과 린터에 실행 권한이 있다", func(t *testing.T) {
-		root := writeWiki(t, map[string]string{"engram.yaml": "preset: education\n"})
+		root := writeWiki(t, map[string]string{"engram.yaml": "preset: personal\n"})
 		plan := Plan(loadCfg(t, root))
 		for _, path := range []string{"scripts/lint-frontmatter.py", ".githooks/pre-commit"} {
 			if a := artifactByPath(t, plan, path); a.Mode != 0o755 {
@@ -169,7 +169,7 @@ func TestPlan(t *testing.T) {
 	})
 
 	t.Run("규칙 목록은 lint.Rules 에서 온다", func(t *testing.T) {
-		root := writeWiki(t, map[string]string{"engram.yaml": "preset: education\n"})
+		root := writeWiki(t, map[string]string{"engram.yaml": "preset: personal\n"})
 		doc := artifactByPath(t, Plan(loadCfg(t, root)), "meta/lint-rules.md").Content
 		for _, r := range lint.Rules() {
 			if !strings.Contains(doc, r.ID) {
@@ -194,7 +194,7 @@ func cleanWiki() map[string]string {
 			"---\n\n본문\n"
 	}
 	return map[string]string{
-		"engram.yaml": "preset: education\n",
+		"engram.yaml": "preset: personal\n",
 		"index.md": "---\ntype: system\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
 			"source_channel: manual\nderived_context: []\n---\n\n# 색인\n",
@@ -228,7 +228,7 @@ func violatingWiki() map[string]string {
 func TestLinter(t *testing.T) {
 	t.Run("python3 로 문법 오류 없이 로드된다", func(t *testing.T) {
 		py := needPython3(t)
-		root := writeWiki(t, map[string]string{"engram.yaml": "preset: education\n"})
+		root := writeWiki(t, map[string]string{"engram.yaml": "preset: personal\n"})
 		writePlan(t, root, Plan(loadCfg(t, root)))
 		// 인코딩을 명시한다. Windows 의 파이썬은 로케일 인코딩(cp1252 등)으로
 		// 파일을 열어서, 한글 주석이 든 이 스크립트를 UnicodeDecodeError 로
@@ -271,7 +271,7 @@ func TestLinter(t *testing.T) {
 		// 고아 문서 하나뿐인 위키다. 경고는 정상 상태이므로 커밋 훅이
 		// 이 위키를 막으면 안 된다. engram lint 의 HasBlocking 과 같다.
 		files := map[string]string{
-			"engram.yaml": "preset: education\n",
+			"engram.yaml": "preset: personal\n",
 			"index.md": "---\ntype: system\nartifact_stage: context\nstatus: promoted\n" +
 				"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
 				"source_channel: manual\nderived_context: []\n---\n\n# 색인\n",

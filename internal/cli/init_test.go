@@ -49,7 +49,7 @@ func TestInit(t *testing.T) {
 			}
 		}
 		cfg := readWikiFile(t, dir, "engram.yaml")
-		if !strings.Contains(cfg, "preset: education") {
+		if !strings.Contains(cfg, "preset: personal") {
 			t.Errorf("engram.yaml에 기본 프리셋이 없음:\n%s", cfg)
 		}
 		// 기본값이 있으므로 활성 설정이 아니라 주석으로 안내한다(ADR 0036).
@@ -64,7 +64,7 @@ func TestInit(t *testing.T) {
 
 	t.Run("프리셋별로 index.md 프론트매터 축이 달라집니다", func(t *testing.T) {
 		base := t.TempDir()
-		for _, preset := range []string{"personal", "education", "team"} {
+		for _, preset := range []string{"minimal", "personal", "team"} {
 			dir := filepath.Join(base, preset)
 			if _, err := runRoot(t, "init", dir, "--preset", preset); err != nil {
 				t.Fatalf("프리셋 %s init 실패: %v", preset, err)
@@ -74,19 +74,19 @@ func TestInit(t *testing.T) {
 				t.Errorf("프리셋 %s: artifact_stage나 status가 잘못됨:\n%s", preset, fm)
 			}
 			if !strings.Contains(fm, "type: system") {
-				t.Errorf("프리셋 %s: type 축이 없음", preset)
+				t.Errorf("프리셋 %s: type 속성이 없음", preset)
 			}
 			switch preset {
-			case "personal":
+			case "minimal":
 				if strings.Contains(fm, "source_channel:") || strings.Contains(fm, "scope:") {
-					t.Errorf("personal은 source_channel과 scope가 꺼져 있어야 함:\n%s", fm)
+					t.Errorf("minimal은 source_channel과 scope가 꺼져 있어야 함:\n%s", fm)
 				}
-			case "education":
+			case "personal":
 				if !strings.Contains(fm, "source_channel:") {
-					t.Errorf("education은 source_channel이 켜져 있어야 함:\n%s", fm)
+					t.Errorf("personal은 source_channel이 켜져 있어야 함:\n%s", fm)
 				}
 				if strings.Contains(fm, "scope:") {
-					t.Errorf("education은 scope가 꺼져 있어야 함:\n%s", fm)
+					t.Errorf("personal은 scope가 꺼져 있어야 함:\n%s", fm)
 				}
 			case "team":
 				if !strings.Contains(fm, "scope: mixed") || !strings.Contains(fm, "sensitivity: internal") {
@@ -194,7 +194,7 @@ func TestInit(t *testing.T) {
 		if err == nil {
 			t.Fatal("거절되어야 함")
 		}
-		if !strings.Contains(err.Error(), "personal, education, team") {
+		if !strings.Contains(err.Error(), "minimal, personal, team") {
 			t.Errorf("거절 메시지에 허용값이 없음: %v", err)
 		}
 	})

@@ -46,7 +46,7 @@ func linkyWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	files := map[string]string{
-		"engram.yaml": "preset: education\nmin_wikilinks: 0\n",
+		"engram.yaml": "preset: personal\nmin_wikilinks: 0\n",
 		// mv 대상. context 문서라 슬러그가 곧 파일명이다.
 		"context/old.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +

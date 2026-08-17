@@ -123,7 +123,7 @@ func TestPromote(t *testing.T) {
 		src := filepath.Join(dir, "sources", "2025-11-08-talk.md")
 		before := readWikiFile(t, filepath.Dir(src), filepath.Base(src))
 		if err := os.WriteFile(filepath.Join(dir, "engram.yaml"),
-			[]byte("preset: personal\n"), 0o644); err != nil {
+			[]byte("preset: minimal\n"), 0o644); err != nil {
 			t.Fatal(err)
 		}
 		if _, err := runPromoteRoot(t, "promote", "--wiki", dir, "sources/2025-11-08-talk.md"); err != nil {
@@ -369,7 +369,7 @@ func TestPromoteFillsContextFields(t *testing.T) {
 	t.Run("꺼진 축의 필드는 추가하지 않습니다", func(t *testing.T) {
 		dir := initWiki(t)
 		if err := os.WriteFile(filepath.Join(dir, "engram.yaml"),
-			[]byte("preset: personal\n"), 0o644); err != nil {
+			[]byte("preset: minimal\n"), 0o644); err != nil {
 			t.Fatal(err)
 		}
 		p := filepath.Join(dir, "inbox", "2026-01-01-plain.md")

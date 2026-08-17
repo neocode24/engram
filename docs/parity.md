@@ -23,7 +23,7 @@ upstream 저장소는 비공개이며 로컬에만 있다. 환경변수가 없�
 
 위 표는 lint 축의 조건이다. resurface 축의 조건은 아래 절에 따로 적는다.
 
-**프리셋을 `team`으로 올려서 비교한다.** upstream 스크립트는 `engram.yaml`을 읽지 않고 자기 스키마를 하드코딩하며, 그 스키마는 `scope`, `sensitivity`, `source_channel`, `trigger_mode`, `workflow`를 전부 요구한다. 픽스처의 기본 프리셋인 `education`은 그 축들을 끄므로, 맞추지 않으면 비교 결과가 축 on/off 차이로 뒤덮여 실제 규칙 차이가 묻힌다. 실제로 `education`에서 error 4건이던 것이 `team`에서 48건이 되고 늘어난 44건이 전부 그 필드 누락이었다.
+**프리셋을 `team`으로 올려서 비교한다.** upstream 스크립트는 `engram.yaml`을 읽지 않고 자기 스키마를 하드코딩하며, 그 스키마는 `scope`, `sensitivity`, `source_channel`, `trigger_mode`, `workflow`를 전부 요구한다. 픽스처의 기본 프리셋인 `personal`은 그 속성들을 끄므로, 맞추지 않으면 비교 결과가 속성 on/off 차이로 뒤덮여 실제 규칙 차이가 묻힌다. 실제로 `personal`에서 error 4건이던 것이 `team`에서 48건이 되고 늘어난 44건이 전부 그 필드 누락이었다.
 
 ## 결과
 
@@ -66,7 +66,7 @@ engram은 ADR [0020](decisions/0020-slug-and-filename-rules.md)에서 반대로 
 
 다만 슬러그는 되돌려도 원문이 아니다. 공백이 하이픈이 되고 대소문자와 구두점을 잃는다. 그래서 제목을 문서 본문의 첫 헤딩으로 남긴다. `new`와 `init`이 이미 그렇게 했고, `capture`와 `source`도 `--title`을 받으면 `# 제목`을 붙이도록 맞췄다. `index`의 `docTitle`이 본문 첫 헤딩을 우선해서 읽으므로 검색 순위도 이 값을 쓴다.
 
-프론트매터 축을 늘리지 않는 편을 택했다. 축을 늘리면 프리셋 세 벌과 lint 규칙이 함께 늘고, ADR [0018](decisions/0018-taxonomy-field-names.md)이 정한 스키마가 흔들린다. 제목이 파일명과 헤딩 두 곳에 이미 있는데 세 번째 자리를 만들 이유가 없다.
+프론트매터 속성을 늘리지 않는 편을 택했다. 속성을 늘리면 프리셋 세 벌과 lint 규칙이 함께 늘고, ADR [0018](decisions/0018-taxonomy-field-names.md)이 정한 스키마가 흔들린다. 제목이 파일명과 헤딩 두 곳에 이미 있는데 세 번째 자리를 만들 이유가 없다.
 
 `location.*` 두 규칙 중 `index.md`에 붙은 것은 의도된 차이다. ADR [0019](decisions/0019-index-documents-outside-the-gate.md)가 색인 문서를 게이트와 고아 검사 밖에 두기로 했다. 그러나 `inbox/wrong-stage.md`에 붙은 `location.stage-agreement`는 의도한 적이 없는 갭이다. engram은 그 문서를 `schema.allowed-value:artifact_stage`로만 잡아 위치 불일치를 별도로 보고하지 않는다.
 
@@ -108,7 +108,7 @@ engram은 ADR [0020](decisions/0020-slug-and-filename-rules.md)에서 반대로 
 | 상태 | 양쪽 모두 빈 상태에서 시작하고 쓰지 않는다. upstream `--no-state`, engram `--dry-run` |
 | 날짜 진실원 | upstream은 git 커밋 시각, engram은 프론트매터. 커밋 시각을 문서의 기준 날짜(`updated` 우선)로 맞춰 같은 사실을 가리키게 했다 |
 | 후보 수 상한 | 6. 픽스처 context 문서 전부가 후보가 되는 값 |
-| 프리셋 | 이 축은 임계값만 읽으므로 무관하다. 사본은 픽스처의 `education` 그대로다 |
+| 프리셋 | 이 축은 임계값만 읽으므로 무관하다. 사본은 픽스처의 `personal` 그대로다 |
 
 **비교가 성립한다.** 관문은 둘이었고 둘 다 통과했다. 첫째, upstream은 실행 시각을 고정할 수 없다. 커밋 시각을 고정해 순위가 초 단위 흔들림에 뒤집히지 않게 했다. 경과일 격차가 며칠 이상이므로 측정으로 안정성을 확인했다. 둘째, 상태 파일이다. upstream은 `meta/resurface-state.json`을 쓰지만 `--no-state`로 끄면 읽기만 하는 빈 상태로 돈다. engram은 `--dry-run`이 같은 역할을 한다.
 

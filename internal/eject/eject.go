@@ -24,7 +24,7 @@ type Artifact struct {
 	Content string
 }
 
-// axisOrder는 축을 표기하는 고정 순서다. config 이 순서를 정의하지
+// axisOrder는 속성을 표기하는 고정 순서다. config 이 순서를 정의하지
 // 않으므로 표기 순서만 여기서 정한다. 맵 순회에 의존하지 않기 위해서다.
 func axisOrder() []config.Axis {
 	return []config.Axis{
@@ -94,7 +94,7 @@ func pyInt(n int) string {
 	return strconv.Itoa(n)
 }
 
-// onAxes는 켜진 축 이름을 고정 순서로 낸다.
+// onAxes는 켜진 속성 이름을 고정 순서로 낸다.
 func onAxes(cfg config.Config) []string {
 	var out []string
 	for _, ax := range axisOrder() {
@@ -105,7 +105,7 @@ func onAxes(cfg config.Config) []string {
 	return out
 }
 
-// offAxes는 꺼진 축 이름을 고정 순서로 낸다.
+// offAxes는 꺼진 속성 이름을 고정 순서로 낸다.
 func offAxes(cfg config.Config) []string {
 	var out []string
 	for _, ax := range axisOrder() {
@@ -137,17 +137,17 @@ const excludedNote = `이 문서와 린터가 내보내지 않는 것:
   않는다. engram search, recall, resurface, bridge, digest, backlinks 가
   계속 수행한다.`
 
-// frontmatterSchemaDoc은 축과 단계별 필수 필드를 규정한다.
+// frontmatterSchemaDoc은 속성과 단계별 필수 필드를 규정한다.
 func frontmatterSchemaDoc(cfg config.Config) string {
 	var b strings.Builder
 	b.WriteString("# 프론트매터 스키마\n\n")
-	fmt.Fprintf(&b, "이 위키는 %s 프리셋을 쓴다. 프리셋은 축의 시작점이고 engram.yaml 의 axes 로 개별 축을 켜고 끌 수 있다.\n\n", cfg.Preset)
-	b.WriteString("## 켜진 축\n\n")
+	fmt.Fprintf(&b, "이 위키는 %s 프리셋을 쓴다. 프리셋은 속성의 시작점이고 engram.yaml 의 axes 로 개별 속성을 켜고 끌 수 있다.\n\n", cfg.Preset)
+	b.WriteString("## 켜진 속성\n\n")
 	for _, ax := range onAxes(cfg) {
 		b.WriteString("- " + ax + "\n")
 	}
 	if off := offAxes(cfg); len(off) > 0 {
-		b.WriteString("\n## 꺼진 축\n\n꺼진 축의 필드를 문서에 두면 위반이다.\n\n")
+		b.WriteString("\n## 꺼진 속성\n\n꺼진 속성을 문서에 두면 위반이다.\n\n")
 		for _, ax := range off {
 			b.WriteString("- " + ax + "\n")
 		}

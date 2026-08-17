@@ -15,7 +15,7 @@ updated: 2026-03-02
 ---
 # 데모 위키
 
-engram 이 만드는 위키의 모습을 보여주는 예제다. `engram init --preset education` 으로
+engram 이 만드는 위키의 모습을 보여주는 예제다. `engram init --preset personal` 으로
 시작해 몇 개의 커맨드를 순서대로 돌린 결과이며, 손으로 고친 곳이 없다.
 
 무엇부터 볼지는 [[promotion-pipeline]] 이 정리해 두었다. 문서끼리 어떻게

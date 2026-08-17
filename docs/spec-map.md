@@ -33,12 +33,12 @@ engram은 같은 규칙을 두 곳으로 옮겼다. **결정론적으로 판정�
 | 방향 | 무엇 | 어긴 결과 |
 |---|---|---|
 | 코드로 강제 | lint 규칙 16종과 승급 게이트 | 종료 코드 1. 승급이 막힌다 |
-| 설정으로 열어 둠 | `engram.yaml`의 축과 임계값 | 위키마다 다르게 정한다 |
+| 설정으로 열어 둠 | `engram.yaml`의 속성과 임계값 | 위키마다 다르게 정한다 |
 | 사람과 에이전트에 남김 | 판단이 필요한 것 | 도구가 관여하지 않는다 |
 
 가르는 기준은 한 문장이다. **같은 입력에 같은 출력이 나오는가.** 결정론적으로 판정되는 것만 코드가 강제한다. 이 선은 [ADR 0014](decisions/0014-llm-boundary-agent-drives-binary.md)가 LLM 경계를 긋던 기준과 같다. 결정론적 연산은 바이너리가, 판단은 사람이나 에이전트가 맡는다.
 
-설정 축은 이 분류의 완충지대다. `sensitivity` 같은 축은 값의 종류는 코드가 검사하지만 그 값을 무엇으로 정할지는 사람의 판단이다. 그래서 축은 "켜고 끈다"로만 코드가 관여하고 값 자체는 문서를 쓰는 사람이 정한다.
+설정 속성은 이 분류의 완충지대다. `sensitivity` 같은 축은 값의 종류는 코드가 검사하지만 그 값을 무엇으로 정할지는 사람의 판단이다. 그래서 축은 "켜고 끈다"로만 코드가 관여하고 값 자체는 문서를 쓰는 사람이 정한다.
 
 ## 4. 명세 7종 대응표
 
@@ -57,18 +57,18 @@ lint 규칙 16종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 | `frontmatter.yaml` | error | 프론트매터 YAML 문법 오류 |
 | `frontmatter.missing-field` | error | 단계별 필수 필드 누락 |
 | `schema.allowed-value` | error | `artifact_stage`, `status`, `scope`, `sensitivity`, `trigger_mode` 값이 허용 집합 밖 |
-| `schema.axis-off` | error | 설정이 끈 축의 필드가 문서에 있음 |
+| `schema.axis-off` | error | 설정이 끈 속성가 문서에 있음 |
 | `sources.updated` | warn | `sources/` 문서가 `updated` 필드를 가짐 |
 
 `promote`와 `new`는 이 명세의 단계별 필드를 채워 쓴다. 채우는 값의 진실원은 `internal/wiki`의 단계별 초기값이다.
 
-**설정으로 열어 둔 것.** 축 14종의 on/off(`axes`), 문서 종류 집합(`types`), 문서가 아닌 파일 목록(`ignore_files`, 기본 `README.md`). 꺼진 축의 필수성은 사라지고 `schema.axis-off`가 오히려 그 필드의 존재를 잡는다. 필수 필드 검사가 명세의 단계별 표를 그대로 옮기지 않고 프리셋에 따라 변형되는 것이 이 대응이다. 날짜 필드의 이름과 형식은 설정 키가 없이 코드에 고정되어 있다.
+**설정으로 열어 둔 것.** 속성 14종의 on/off(`axes`), 문서 종류 집합(`types`), 문서가 아닌 파일 목록(`ignore_files`, 기본 `README.md`). 꺼진 축의 필수성은 사라지고 `schema.axis-off`가 오히려 그 필드의 존재를 잡는다. 필수 필드 검사가 명세의 단계별 표를 그대로 옮기지 않고 프리셋에 따라 변형되는 것이 이 대응이다. 날짜 필드의 이름과 형식은 설정 키가 없이 코드에 고정되어 있다.
 
-**사람에게 남긴 것.** 검토 상태(review state)의 운용, `meta/templates/`의 템플릿 관리(Template Rule), "indexable: true인데 restricted인 문서 찾기" 같은 검토 뷰의 구성이다. engram에는 검토 상태 축이 없다.
+**사람에게 남긴 것.** 검토 상태(review state)의 운용, `meta/templates/`의 템플릿 관리(Template Rule), "indexable: true인데 restricted인 문서 찾기" 같은 검토 뷰의 구성이다. engram에는 검토 상태 속성이 없다.
 
 ### 4.2 wiki-artifact-schema.md
 
-**이 명세가 선언하는 것.** 채널, 계기, 워크플로, 단계 네 축으로 산출물을 분류하라고 정한다. 폴더를 늘리는 대신 축 값을 조합하라는 것이 핵심 주장이다. artifact 유형별 기본 위치와 인덱싱 기본값을 표로 정의하고, 품질 단계(inbox, source, context)를 나눈다.
+**이 명세가 선언하는 것.** 채널, 계기, 워크플로, 단계 네 속성으로 산출물을 분류하라고 정한다. 폴더를 늘리는 대신 축 값을 조합하라는 것이 핵심 주장이다. artifact 유형별 기본 위치와 인덱싱 기본값을 표로 정의하고, 품질 단계(inbox, source, context)를 나눈다.
 
 **코드로 강제하는 것.**
 
@@ -111,9 +111,9 @@ lint 규칙 16종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 고아 판정은 관계 필드(`derived_from`, `derived_context`, `source_refs`)를 위키링크와 같은 기준으로 센다. `promote`가 `sources/` 문서에서 파생을 만들 때 `derived_from`과 `derived_context`를 양방향으로 기록하므로([ADR 0022](decisions/0022-promote-moves-inbox-derives-sources.md)), 파이프라인의 산출물을 검사기가 못 보면 안 된다.
 
-**설정으로 열어 둔 것.** `related`, `source_refs`, `derived_from`, `derived_context` 축의 on/off.
+**설정으로 열어 둔 것.** `related`, `source_refs`, `derived_from`, `derived_context` 속성의 on/off.
 
-**사람에게 남긴 것.** 링크를 걸 만한 의미가 있는지의 판단, MOC를 만들고 갱신하는 시점, 승급 뒤 원본 문서의 `derived_context`를 갱신하는 운용. `supersedes`와 `superseded_by`는 축에 없어서 6절의 미이행 항목이다.
+**사람에게 남긴 것.** 링크를 걸 만한 의미가 있는지의 판단, MOC를 만들고 갱신하는 시점, 승급 뒤 원본 문서의 `derived_context`를 갱신하는 운용. `supersedes`와 `superseded_by`는 속성에 없어서 6절의 미이행 항목이다.
 
 ### 4.5 taxonomy.md
 
@@ -128,7 +128,7 @@ lint 규칙 16종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 **설정으로 열어 둔 것.** `topics`(개방 집합), `forms`(폐쇄 집합), `types` 집합. 미정의 값이 오류냐 경고냐로 갈리는 것이 두 집합의 차이고, 이 구분이 이 명세의 "초기 분류"가 위키마다 자라는 방식이다. 민감도와 스코프의 허용 집합은 `engram.yaml` 키가 없이 코드에 고정되어 있다.
 
-**사람에게 남긴 것.** 민감도 판단. "오직 public-reference와 안전한 internal만 승급 후보"라는 문장은 코드가 강제하지 않는다. 승급 심사에서 사람이 민감도 축 값을 읽고 판단한다. 스코프 미결정을 `unknown`으로 남기는 관행은 코드가 값으로 허용하는 것일 뿐 검사 대상이 아니다.
+**사람에게 남긴 것.** 민감도 판단. "오직 public-reference와 안전한 internal만 승급 후보"라는 문장은 코드가 강제하지 않는다. 승급 심사에서 사람이 민감도 속성 값을 읽고 판단한다. 스코프 미결정을 `unknown`으로 남기는 관행은 코드가 값으로 허용하는 것일 뿐 검사 대상이 아니다.
 
 ### 4.6 ingest-rules.md
 
@@ -192,7 +192,7 @@ LLM으로 승급 기준 전부를 판정하게 하면 그 판정은 재현되지
 
 | 항목 | upstream | engram |
 |---|---|---|
-| `supersedes` / `superseded_by` | wiki-graph-policy.md가 관계 필드로 선언 | 축 14종에 없다 |
+| `supersedes` / `superseded_by` | wiki-graph-policy.md가 관계 필드로 선언 | 속성 14종에 없다 |
 | `index` 단계와 MOC | `context/mocs/`를 별도 단계로 둔다 | 없다. 의도된 차이지만 실데이터에서 5건이 거절된다 |
 | 단계 디렉토리 안의 비문서 파일 | 명세에 개념이 없다. 실데이터에는 `README.md`가 네 자리에 있다 | ~~없었다~~ `ignore_files`로 순회에서 뺀다([ADR 0036](decisions/0036-non-document-files-in-stage-dirs.md)) |
 | security-rules.md 전체 | 커밋 금지 항목과 민감 자료 취급 | 코드로 강제하는 것이 하나도 없다. `sensitivity` 축만 있다 |

@@ -50,7 +50,7 @@ func makeDoctorWiki(t *testing.T, engramYAML string) string {
 
 func TestDoctorCmd(t *testing.T) {
 	t.Run("정상 위키는 종료 코드 0 이고 요약 줄을 냅니다", func(t *testing.T) {
-		out, err := runDoctor(t, "doctor", makeDoctorWiki(t, "preset: education\n"))
+		out, err := runDoctor(t, "doctor", makeDoctorWiki(t, "preset: personal\n"))
 		if err != nil {
 			t.Fatalf("fail 이 없으면 에러가 아니어야 합니다: %v\n%s", err, out)
 		}

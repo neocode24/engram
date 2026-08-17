@@ -92,7 +92,7 @@ var (
 	ruleSchemaAllowedValue = newRule("schema.allowed-value", "error",
 		"허용 집합 밖의 필드 값. artifact_stage, status, scope, sensitivity, trigger_mode")
 	ruleSchemaAxisOff = newRule("schema.axis-off", "error",
-		"설정이 끈 축의 필드가 문서에 있음")
+		"설정이 끈 속성이 문서에 있음")
 	ruleLocationStageAgreement = newRule("location.stage-agreement", "error 또는 warn",
 		"문서가 놓인 디렉토리와 artifact_stage 값의 불일치. context를 선언했는데 context/ 밖에 있으면 error, 그 밖의 불일치는 warn(ADR 0035)")
 	ruleTaxonomyForms = newRule("taxonomy.forms", "error",
@@ -303,7 +303,7 @@ func yamlErrorLine(msg string) int {
 	return 2
 }
 
-// axisFields는 축 이름과 프론트매터 키가 같은 14축을 반환한다.
+// axisFields는 속성 이름과 프론트매터 키가 같은 14종을 반환한다.
 func axisFields() []config.Axis {
 	return []config.Axis{
 		config.AxisType, config.AxisArtifactStage, config.AxisStatus,
@@ -315,7 +315,7 @@ func axisFields() []config.Axis {
 }
 
 // RequiredFields는 단계별 필수 필드를 반환한다. upstream 계약
-// meta/frontmatter-schema.md의 단계별 필수 정의에서 왔고, 꺼진 축의
+// meta/frontmatter-schema.md의 단계별 필수 정의에서 왔고, 꺼진 속성의
 // 필수성은 사라진다.
 func RequiredFields(stage string, cfg config.Config) []string {
 	req := []string{"type", "artifact_stage", "status", "indexable"}
@@ -368,7 +368,7 @@ func (s *scannedDoc) checkRequiredFields(cfg config.Config, add func(Severity, R
 	}
 }
 
-// valueFields는 허용값 검사 대상 필드와 그 축, 허용값 집합을 묶은 것이다.
+// valueFields는 허용값 검사 대상 필드와 그 속성, 허용값 집합을 묶은 것이다.
 type valueField struct {
 	key  string
 	axis config.Axis
@@ -390,7 +390,7 @@ func valueFields() []valueField {
 	}
 }
 
-// checkAllowedValues는 허용값 밖의 값을 검사한다. 축이 꺼져 있으면
+// checkAllowedValues는 허용값 밖의 값을 검사한다. 속성이 꺼져 있으면
 // checkAxisOff가 이미 잡으므로 여기서는 보지 않는다.
 func (s *scannedDoc) checkAllowedValues(cfg config.Config, add func(Severity, Rule, int, string, string)) {
 	for _, vf := range valueFields() {
@@ -443,7 +443,7 @@ func (s *scannedDoc) checkStageAgreement(cfg config.Config, add func(Severity, R
 	}
 }
 
-// checkAxisOff는 설정이 끈 축의 필드가 문서에 있는지 검사한다.
+// checkAxisOff는 설정이 끈 속성이 문서에 있는지 검사한다.
 func (s *scannedDoc) checkAxisOff(cfg config.Config, add func(Severity, Rule, int, string, string)) {
 	for _, ax := range axisFields() {
 		if cfg.Axes[ax] {
@@ -451,7 +451,7 @@ func (s *scannedDoc) checkAxisOff(cfg config.Config, add func(Severity, Rule, in
 		}
 		if _, ok := s.fields[string(ax)]; ok {
 			add(SevError, ruleSchemaAxisOff, lineOfKey(s.content, string(ax)),
-				fmt.Sprintf("설정에서 꺼진 축의 필드가 문서에 있습니다: %s (프리셋 %s)", ax, cfg.Preset),
+				fmt.Sprintf("설정에서 꺼진 속성이 문서에 있습니다: %s (프리셋 %s)", ax, cfg.Preset),
 				fmt.Sprintf("engram.yaml의 axes에서 %s를 켜거나 문서에서 %s 필드를 지웁니다", ax, ax))
 		}
 	}

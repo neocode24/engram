@@ -30,7 +30,7 @@ pandoc 같은 도구를 뒤에 붙이세요.
 
 나가는 것은 serve 와 같은 규칙입니다. context 문서와 색인 문서만 나가고
 inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
-엽니다. sensitivity 축이 켜진 위키에서는 private-local-only 와 restricted
+엽니다. sensitivity 속성이 켜진 위키에서는 private-local-only 와 restricted
 문서를 뺍니다. 슬러그로 지목해도 이 제외는 뚫리지 않습니다. 반출해야
 하면 문서의 값을 고치세요.
 
@@ -252,7 +252,7 @@ func printExport(w io.Writer, o exportOutcome) {
 		fmt.Fprintf(w, "민감도: private-local-only 와 restricted 문서 %d개를 제외했습니다. 뒤집는 플래그는 없습니다\n",
 			o.Excluded.Sensitive)
 	} else {
-		fmt.Fprintf(w, "민감도: 이 위키는 sensitivity 축이 꺼져 있어 거를 값이 없습니다\n")
+		fmt.Fprintf(w, "민감도: 이 위키는 sensitivity 속성이 꺼져 있어 거를 값이 없습니다\n")
 	}
 
 	if o.Anonymized {

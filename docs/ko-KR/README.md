@@ -87,7 +87,7 @@ go build ./cmd/engram
 
 ```
 $ engram init wiki
-위키를 초기화했습니다: wiki (프리셋: education)
+위키를 초기화했습니다: wiki (프리셋: personal)
 
 디렉토리:
   inbox/       새 자료가 들어오는 곳
@@ -96,13 +96,13 @@ $ engram init wiki
   archive/     승급에서 물러난 문서가 가는 곳
 
 파일:
-  engram.yaml  위키 설정. 축과 임계값을 여기서 조정하세요
+  engram.yaml  위키 설정. 속성과 임계값을 여기서 조정하세요
   index.md     첫 문서. 위키 소개로 채우세요
   .gitignore   .engram/ 캐시 디렉토리를 git에서 제외합니다
 
 다음 단계:
   1. inbox에 첫 자료를 넣으세요
-  2. engram.yaml을 열어 축과 임계값을 위키에 맞게 조정하세요
+  2. engram.yaml을 열어 속성과 임계값을 위키에 맞게 조정하세요
   3. index.md를 위키 소개로 채우세요
 ```
 
@@ -306,7 +306,7 @@ flowchart LR
 위키 루트의 `engram.yaml` 하나입니다. git에 커밋해서 팀이 같은 규칙을 씁니다.
 
 ```yaml
-preset: education
+preset: personal
 
 # taxonomy. topics는 개방 집합이고 forms는 폐쇄 집합이다.
 topics: [llm, gateway]
@@ -319,13 +319,13 @@ max_lines: 1000     # 문서 길이 경고 상한
 broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
 ```
 
-프리셋은 스키마 축을 몇 개 켤지 정합니다. `personal`이 `education`에 포함되고 `education`이 `team`에 포함되며, 기본값은 `education`입니다.
+프리셋은 프론트매터 속성을 몇 개 켤지 정합니다. `minimal`이 `personal`에 포함되고 `personal`이 `team`에 포함되며, 기본값은 `personal`입니다.
 
 | 프리셋 | 이럴 때 |
 |---|---|
-| `personal` | 혼자 쓰는 위키. 축이 가장 적습니다 |
-| `education` | 입력 경로와 승급 이력을 남기고 싶을 때 |
-| `team` | 업무 자료와 개인 자료가 섞일 때. 민감도 축이 켜집니다 |
+| `minimal` | 승급 파이프라인만. 속성이 가장 적습니다 |
+| `personal` | 기본값. 어디서 들어왔고 어디로 파생됐는지가 남습니다 |
+| `team` | 업무 자료와 개인 자료가 섞일 때. 민감도 속성이 켜집니다 |
 
 포함 관계를 지키기 때문에 프리셋을 올릴 때는 필드만 추가하면 됩니다.
 

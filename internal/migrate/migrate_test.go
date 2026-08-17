@@ -15,7 +15,7 @@ import (
 )
 
 // makeWiki는 파일 맵으로 임시 위키를 만든다. engram.yaml 을 주지 않으면
-// 기본값(education 프리셋)으로 돈다.
+// 기본값(personal 프리셋)으로 돈다.
 func makeWiki(t *testing.T, files map[string]string) string {
 	t.Helper()
 	root := t.TempDir()
@@ -341,11 +341,11 @@ func TestRequiredFieldsMatchLint(t *testing.T) {
 		path     string
 		expected []string // migrate 가 채우지 못해 lint 가 계속 잡는 필드
 	}{
-		{"inbox", "preset: education\n", "inbox/2026-01-01-note.md", nil},
-		{"context", "preset: education\n", "context/note.md", nil},
-		{"archive", "preset: education\n", "archive/note.md", nil},
-		{"source 접두사 있음", "preset: education\n", "sources/2026-01-01-note.md", []string{"sourced_at"}},
-		{"source 접두사 없음", "preset: education\n", "sources/note.md", []string{"created", "sourced_at"}},
+		{"inbox", "preset: personal\n", "inbox/2026-01-01-note.md", nil},
+		{"context", "preset: personal\n", "context/note.md", nil},
+		{"archive", "preset: personal\n", "archive/note.md", nil},
+		{"source 접두사 있음", "preset: personal\n", "sources/2026-01-01-note.md", []string{"sourced_at"}},
+		{"source 접두사 없음", "preset: personal\n", "sources/note.md", []string{"created", "sourced_at"}},
 		{"team 프리셋 source", "preset: team\n", "sources/2026-01-01-note.md", []string{"sourced_at"}},
 	}
 	for _, tc := range cases {

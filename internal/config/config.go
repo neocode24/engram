@@ -1,4 +1,4 @@
-// Package config는 위키별 설정 파일(engram.yaml)을 읽어 스키마 축, 임계값,
+// Package config는 위키별 설정 파일(engram.yaml)을 읽어 프론트매터 속성, 임계값,
 // 디렉토리 매핑이 확정된 구성을 반환한다.
 //
 // 병합 순서는 기본값, 프리셋, 파일이다. 파일에 없는 키는 기본값이 남는다.
@@ -19,20 +19,21 @@ import (
 // ConfigFileName은 위키 루트에 두는 설정 파일 이름이다. ADR 0017.
 const ConfigFileName = "engram.yaml"
 
-// Preset은 스키마 축의 시작점이 되는 프리셋이다. 포함 관계는
-// personal이 education에, education이 team에 포함된다. ADR 0009.
+// Preset은 프론트매터 속성의 시작점이 되는 프리셋이다. 포함 관계는
+// minimal이 personal에, personal이 team에 포함된다. ADR 0009, 0048.
 type Preset string
 
 const (
-	PresetPersonal  Preset = "personal"
-	PresetEducation Preset = "education"
-	PresetTeam      Preset = "team"
+	PresetMinimal  Preset = "minimal"
+	PresetPersonal Preset = "personal"
+	PresetTeam     Preset = "team"
 )
 
 // DefaultPreset은 프리셋을 지정하지 않았을 때의 기본값이다.
-const DefaultPreset = PresetEducation
+const DefaultPreset = PresetPersonal
 
-// Axis는 프론트매터 스키마의 축이다.
+// Axis는 프론트매터 스키마의 속성이다. 한국어 표기는 "속성"이고 코드
+// 식별자와 engram.yaml 키는 axis, axes 로 남는다. ADR 0048.
 type Axis string
 
 const (
@@ -52,7 +53,7 @@ const (
 	AxisWorkflow       Axis = "workflow"
 )
 
-// allAxes는 스키마가 다루는 축 14종을 반환한다.
+// allAxes는 스키마가 다루는 속성 14종을 반환한다.
 func allAxes() []Axis {
 	return []Axis{
 		AxisType, AxisArtifactStage, AxisStatus, AxisIndexable, AxisTags,
@@ -73,14 +74,14 @@ func knownAxis(a Axis) bool {
 
 func knownPreset(p Preset) bool {
 	switch p {
-	case PresetPersonal, PresetEducation, PresetTeam:
+	case PresetMinimal, PresetPersonal, PresetTeam:
 		return true
 	}
 	return false
 }
 
-// presetAxes는 프리셋이 켜는 축 집합을 새 맵으로 반환한다.
-// 포함 관계를 누적으로 구현해 personal이 education의, education이 team의
+// presetAxes는 프리셋이 켜는 속성 집합을 새 맵으로 반환한다.
+// 포함 관계를 누적으로 구현해 minimal이 personal의, personal이 team의
 // 부분집합이 되도록 한다.
 func presetAxes(p Preset) map[Axis]bool {
 	on := make(map[Axis]bool, 14)
@@ -90,12 +91,12 @@ func presetAxes(p Preset) map[Axis]bool {
 	} {
 		on[a] = true
 	}
-	if p == PresetPersonal {
+	if p == PresetMinimal {
 		return on
 	}
 	on[AxisSourceChannel] = true
 	on[AxisDerivedContext] = true
-	if p == PresetEducation {
+	if p == PresetPersonal {
 		return on
 	}
 	on[AxisScope] = true
@@ -181,7 +182,7 @@ type Config struct {
 	// UnknownKeys는 설정 파일에 있었지만 스키마가 모르는 키다.
 	// 오타를 조용히 삼키지 않기 위해 호출자에게 넘긴다.
 	UnknownKeys []string
-	// Origins는 키별 값 출처다. 축 키는 "axes.<축 이름>" 형태다.
+	// Origins는 키별 값 출처다. 속성 키는 "axes.<속성 이름>" 형태다.
 	Origins map[string]Origin
 }
 
@@ -219,7 +220,7 @@ func defaults() Config {
 		IgnoreFiles: []string{"README.md"},
 		Origins:     make(map[string]Origin),
 	}
-	// 프리셋 키 자체는 기본값에서 왔다. 축의 on/off는 프리셋이 정했다.
+	// 프리셋 키 자체는 기본값에서 왔다. 속성의 on/off는 프리셋이 정했다.
 	cfg.Origins["preset"] = OriginDefault
 	for _, k := range []string{"types", "topics", "forms", "min_wikilinks", "stale_days", "max_lines", "broad_topic_pct", "page_dirs", "root_files", "ignore_files"} {
 		cfg.Origins[k] = OriginDefault
@@ -258,14 +259,14 @@ func build(doc map[string]any) (Config, error) {
 		return cfg, nil
 	}
 
-	// preset을 먼저 적용한다. 축 개별 on/off가 나중에 덮어써야 하므로 순서가 필요하다.
+	// preset을 먼저 적용한다. 속성 개별 on/off가 나중에 덮어써야 하므로 순서가 필요하다.
 	if raw, ok := doc["preset"]; ok {
 		s, ok := raw.(string)
 		if !ok {
 			return Config{}, fmt.Errorf("preset 값이 문자열이 아님: %v", raw)
 		}
 		if !knownPreset(Preset(s)) {
-			return Config{}, fmt.Errorf("preset 값이 허용값이 아님: %q (허용값: personal, education, team)", s)
+			return Config{}, fmt.Errorf("preset 값이 허용값이 아님: %q (허용값: minimal, personal, team)", s)
 		}
 		cfg.Preset = Preset(s)
 		cfg.Axes = presetAxes(cfg.Preset)

@@ -1,7 +1,7 @@
 // Package migrate는 기존 문서를 지금의 설정과 규칙에 맞춘다. ADR 0038.
 //
-// 고치는 것은 셋이다. 켜진 축의 필수 필드를 단계별 초기값으로 채우고,
-// 꺼진 축의 필드를 지우고, 위치와 단계의 불일치를 프론트매터를 위치에
+// 고치는 것은 셋이다. 켜진 속성의 필수 필드를 단계별 초기값으로 채우고,
+// 꺼진 속성의 필드를 지우고, 위치와 단계의 불일치를 프론트매터를 위치에
 // 맞춰 고친다. 단계별 초기값과 단계-디렉토리 대응의 진실원은 internal/wiki
 // 다. 값을 따로 정의하지 않고 그것을 부른다.
 //
@@ -33,14 +33,14 @@ import (
 // Options는 migrate 실행 옵션이다.
 type Options struct {
 	Apply bool // 변경을 파일에 쓴다. 기본은 시험 실행이다
-	Force bool // 값이 있는 꺼진 축 필드도 지운다
+	Force bool // 값이 있는 꺼진 속성 필드도 지운다
 }
 
 // 변경 종류다. JSON 에 그대로 나간다.
 const (
 	KindStage  = "stage"  // artifact_stage 를 위치에 맞춘다
-	KindFill   = "fill"   // 켜진 축의 필수 필드를 단계별 초기값로 채운다
-	KindRemove = "remove" // 꺼진 축의 필드를 지운다
+	KindFill   = "fill"   // 켜진 속성의 필수 필드를 단계별 초기값로 채운다
+	KindRemove = "remove" // 꺼진 속성의 필드를 지운다
 )
 
 // Change는 문서 하나에 가할 변경 하나다. 필드 이름과 옛값, 새값을 함께
@@ -189,7 +189,7 @@ func planDoc(w walk.Doc, cfg config.Config, opts Options) (DocResult, []doc.Fiel
 		}
 	}
 
-	// 켜진 축의 필수 필드를 단계별 초기값으로 채운다. 단계를 고쳤으면
+	// 켜진 속성의 필수 필드를 단계별 초기값으로 채운다. 단계를 고쳤으면
 	// 고친 단계의 초기값을 쓴다. 그래야 적용 뒤 lint 의 필수 필드 판정과
 	// 어긋나지 않는다.
 	if stage, ok := wikiStage(effective); ok {
@@ -203,7 +203,7 @@ func planDoc(w walk.Doc, cfg config.Config, opts Options) (DocResult, []doc.Fiel
 			res.Changes = append(res.Changes, Change{Kind: KindFill, Field: key, New: displayValue(f)})
 		}
 
-		// source 단계의 날짜 필수 필드는 축이 아니므로 초기값에 없다.
+		// source 단계의 날짜 필수 필드는 속성이 아니므로 초기값에 없다.
 		// created 는 파일명의 날짜 접두사에서 뽑는다. promote 의
 		// fillCreated 와 같은 방식이다. sourced_at 은 채우지 않는다.
 		// git 최초 커밋일이 진실원이고 그것은 sync 의 일이다(ADR 0037).
@@ -224,7 +224,7 @@ func planDoc(w walk.Doc, cfg config.Config, opts Options) (DocResult, []doc.Fiel
 		}
 	}
 
-	// 꺼진 축의 필드를 지운다. 값이 비어 있으면 잃을 것이 없으므로 그대로
+	// 꺼진 속성의 필드를 지운다. 값이 비어 있으면 잃을 것이 없으므로 그대로
 	// 지운다. 값이 있으면 --force 가 필요하다. 보류해도 나머지 변경은
 	// 그대로 적용한다. 전체를 멈추지 않는다.
 	for _, ax := range axisNames() {
@@ -246,8 +246,8 @@ func planDoc(w walk.Doc, cfg config.Config, opts Options) (DocResult, []doc.Fiel
 	return res, fields
 }
 
-// axisNames는 스키마가 다루는 축 14종이다. 설정의 Axes 맵은 켜진 축만
-// 담으므로 꺼진 축을 찾으려면 전체 목록이 필요하다. config 이 목록을
+// axisNames는 스키마가 다루는 속성 14종이다. 설정의 Axes 맵은 켜진 속성만
+// 담으므로 꺼진 속성을 찾으려면 전체 목록이 필요하다. config 이 목록을
 // 내보내지 않아 lint 과 cli 와 같은 방식으로 여기에 둔다.
 func axisNames() []string {
 	return []string{

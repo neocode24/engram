@@ -58,7 +58,7 @@ func makeRecallWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	files := map[string]string{
-		"engram.yaml":        "preset: education\n",
+		"engram.yaml":        "preset: personal\n",
 		"context/gateway.md": recallGatewayDoc,
 	}
 	for name, content := range files {

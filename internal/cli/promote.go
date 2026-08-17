@@ -295,7 +295,7 @@ func promoteFields(src []doc.Field, related []string, derivedFrom string) []doc.
 // fillContextFields는 context 단계가 요구하는 필드 중 문서에 없는 것을
 // 빈 값으로 채운다. 필드 목록의 진실원은 wiki의 context 단계 초기값이라
 // 여기에 목록을 따로 두지 않는다. 이미 값이 있는 필드은 그대로 두고
-// 꺼진 축은 초기값에 애초에 없으므로 추가되지 않는다.
+// 꺼진 속성은 초기값에 애초에 없으므로 추가되지 않는다.
 // 결과는 internal/doc의 표준 키 순서를 따른다.
 func fillContextFields(src []doc.Field, cfg config.Config) []doc.Field {
 	byKey := map[string]doc.Field{}

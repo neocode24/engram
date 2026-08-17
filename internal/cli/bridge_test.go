@@ -40,7 +40,7 @@ func makeBridgeWiki(t *testing.T) string {
 		"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
 		"source_channel: manual\nderived_context: []\n---\n\n"
 	files := map[string]string{
-		"engram.yaml":  "preset: education\n",
+		"engram.yaml":  "preset: personal\n",
 		"context/go.md":   fm + "# Go 언어\n\nGo 는 컴파일 언어입니다. 고루틴으로 병행성을 다룹니다.",
 		"context/rust.md": fm + "# Rust 언어\n\nRust 는 컴파일 언어입니다. 소유권으로 메모리를 다룹니다.",
 		"context/tea.md":  fm + "# 차\n\n차는 끓여 마십니다. 음료입니다.",
@@ -125,7 +125,7 @@ func TestBridgeCmd(t *testing.T) {
 		if err := os.MkdirAll(filepath.Join(root, "context"), 0o755); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(filepath.Join(root, "engram.yaml"), []byte("preset: education\n"), 0o644); err != nil {
+		if err := os.WriteFile(filepath.Join(root, "engram.yaml"), []byte("preset: personal\n"), 0o644); err != nil {
 			t.Fatal(err)
 		}
 		out, errOut, err := runBridge(t, "bridge", "--wiki", root)

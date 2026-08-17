@@ -38,7 +38,7 @@ var binaryPath string
 var repoRoot = filepath.Join("..", "..")
 
 // demoDir는 데모 위키가 커밋되는 자리다.
-var demoDir = filepath.Join(repoRoot, "examples", "education")
+var demoDir = filepath.Join(repoRoot, "examples", "personal")
 
 // fixedNow는 생성 시각이다. 고정하지 않으면 재생성마다 날짜가 바뀌어
 // 회귀 비교가 성립하지 않는다.
@@ -99,7 +99,7 @@ func TestExamplesAreReproducible(t *testing.T) {
 	}
 	touchSources()
 
-	built := filepath.Join(t.TempDir(), "education")
+	built := filepath.Join(t.TempDir(), "personal")
 	buildDemo(t, built)
 
 	if *update {
@@ -109,7 +109,7 @@ func TestExamplesAreReproducible(t *testing.T) {
 		if err := copyTree(built, demoDir); err != nil {
 			t.Fatalf("데모 위키를 옮길 수 없음: %v", err)
 		}
-		t.Logf("examples/education 을 재생성했다")
+		t.Logf("examples/personal 을 재생성했다")
 		return
 	}
 
@@ -130,8 +130,8 @@ func buildDemo(t *testing.T, dir string) {
 	t.Helper()
 	r := runner{t: t}
 
-	// 1. 빈 위키. education 프리셋이 기본값이다.
-	r.run("init", dir, "--preset", "education")
+	// 1. 빈 위키. personal 프리셋이 기본값이다.
+	r.run("init", dir, "--preset", "personal")
 
 	// 2. context 문서 둘을 서로 잇는다. 게이트가 요구하는 링크를 관계
 	// 필드로 채운다. 먼저 만드는 쪽은 상대가 아직 없으므로 경고가 난다.
@@ -314,7 +314,7 @@ func diffTrees(t *testing.T, want, got map[string]string) {
 	for _, p := range changed {
 		fmt.Fprintf(&b, "  내용 바뀜: %s\n--- 커밋본 ---\n%s--- 재생성 ---\n%s\n", p, want[p], got[p])
 	}
-	t.Fatalf("examples/education 이 재생성 결과와 다르다. 의도한 변경이면 go test ./harness/examples -update 로 갱신한다.\n%s", b.String())
+	t.Fatalf("examples/personal 이 재생성 결과와 다르다. 의도한 변경이면 go test ./harness/examples -update 로 갱신한다.\n%s", b.String())
 }
 
 // writeFile은 생성 중 필요한 임시 본문 파일을 쓴다.
@@ -339,7 +339,7 @@ func init() {
 
 const indexBody = `# 데모 위키
 
-engram 이 만드는 위키의 모습을 보여주는 예제다. ` + "`engram init --preset education`" + ` 으로
+engram 이 만드는 위키의 모습을 보여주는 예제다. ` + "`engram init --preset personal`" + ` 으로
 시작해 몇 개의 커맨드를 순서대로 돌린 결과이며, 손으로 고친 곳이 없다.
 
 무엇부터 볼지는 [[promotion-pipeline]] 이 정리해 두었다. 문서끼리 어떻게

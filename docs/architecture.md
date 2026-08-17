@@ -120,7 +120,7 @@ sequenceDiagram
 
     U->>C: promote <page>
     C->>S: 프론트매터 검사
-    alt forms 축 위반
+    alt forms 속성 위반
         S-->>C: 오류
         C-->>U: 거절. 허용값 목록과 수정 명령 제시
     else topics 신규값
