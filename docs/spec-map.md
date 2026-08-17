@@ -1,6 +1,6 @@
 # 규칙 명세 대응 표
 
-> upstream 위키의 규칙 명세 7종이 engram의 무엇이 되었는지를 빠짐없이 적은 문서다. 명세 사본은 [harness/upstream/](../harness/upstream/)에 고정되어 있다. 이 문서를 읽으면 각 규칙이 코드로 강제되는지, 설정으로 열려 있는지, 사람에게 남아 있는지를 한 번에 알 수 있다.
+> upstream 위키의 규칙 명세가 engram의 무엇이 되었는지를 적은 문서다. 4.1부터 4.7까지가 upstream이 계약 파일로 선언한 일곱이고, 4.9가 그 선언 밖의 규범 문서다. 명세 사본은 [harness/upstream/](../harness/upstream/)에 고정되어 있다. 이 문서를 읽으면 각 규칙이 코드로 강제되는지, 설정으로 열려 있는지, 사람에게 남아 있는지를 한 번에 알 수 있다.
 
 ## 1. 이 문서가 답하는 것
 
@@ -161,6 +161,87 @@ lint 규칙 16종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 | `gate.deferred` | warn | 링크 가능한 대상 문서 자체가 부족해 게이트를 유예한다. 갓 만든 위키의 고립은 결함이 아니라 시작이라는 판단이다([ADR 0021](decisions/0021-gate-deferral-when-targets-are-scarce.md)) |
 | `body.max-lines` | warn | 문서 줄 수가 `max_lines`를 넘으면 경고한다 |
 | `wiki.broad-topic` | warn | 한 주제가 전체 문서의 `broad_topic_pct` 퍼센트를 넘게 붙으면 위키 단위 진단을 낸다 |
+
+### 4.9 계약 밖의 규범 문서
+
+**여기까지 4절이 다룬 일곱은 upstream이 스스로 "계약 파일"로 선언한 것이다.** upstream `AGENTS.md`가 괄호 안에 파일명을 나열하고 `scripts/upstream-sync.py`가 그 선언을 파싱해 대상 목록을 얻는다. 목록을 이 저장소에 박지 않는 것이 [ADR 0029](decisions/0029-upstream-vendoring-and-parity-execution.md)의 결정이다. `terminology-normalization.md`는 선언 안에 있으나 사전 전체가 조직 어휘라 공개 경계에서 제외한다.
+
+**그런데 계약 선언 밖에도 규범문이 있다.** 단계 디렉토리의 `README.md`와 upstream `AGENTS.md` 본문이다. 서술이 아니라 "Put material here when...", "Keep this layer small... source-backed" 같은 지시문이다. 이들은 upstream의 `meta/CHANGELOG.md` 규율 대상이 아니므로 **바뀌어도 통보되지 않는다.** 그래서 계약 파일처럼 고정하지 않고 여기에 내용을 옮겨 적는다. 갱신은 사람이 확인할 때 한다.
+
+**이 절이 뒤늦게 생긴 경위를 적어 둔다.** 핸즈온 4단계를 실제 에이전트로 검증하다가 `inbox`의 탈출 경로가 셋이라는 것이 `inbox/README.md`에만 적혀 있음을 발견했다. 계약 파일 일곱만 보고 있었기 때문에 그때까지 몰랐다.
+
+#### inbox/README.md
+
+**이 문서가 선언하는 것.** `inbox/`를 "처리 대기열이며 장기 보관소가 아니다"로 정의한다. 넣는 조건은 분류, 검증, 중복 제거, 승급 넷 중 **하나라도 아직 안 된 것**이다. 채널별 하위 디렉토리 여덟(`teams/`, `slack/`, `confluence/`, `jira/`, `voice-memos/`, `mobile/`, `web/`, `manual/`)을 둔다.
+
+**나가는 길이 셋이다.**
+
+> - delete the inbox item if it has no long-term value
+> - move evidence to `sources/` if it should be traceable
+> - promote durable knowledge to `context/`
+
+**코드로 강제하는 것.** 셋 중 하나뿐이다. `promote`가 `inbox`에서 `context`로 옮긴다([ADR 0022](decisions/0022-promote-moves-inbox-derives-sources.md)). 삭제는 사용자가 파일을 지우면 되고 커맨드가 없어도 성립한다.
+
+**미반영.** **`move evidence to sources/`에 해당하는 커맨드가 없다.** `source`는 표준 입력으로 새 문서를 만들 뿐 `inbox` 문서를 옮기지 않고, `demote`는 `context`에서만 내려간다. 그래서 `capture`로 `inbox`에 들어온 원본은 `sources`로 갈 길이 없다. 실제 에이전트가 이 자리에서 `engram source ... < inbox파일`이라는 잘못된 우회를 두 번 만들어 냈다. 프론트매터가 본문에 박히고 `inbox` 원본이 남아 같은 내용이 두 곳에 생긴다.
+
+**차이.** upstream은 채널별 하위 디렉토리를 두고 engram은 `source_channel` 속성 값으로만 남긴다. 4.6절에 이미 적은 차이다.
+
+#### sources/README.md
+
+**이 문서가 선언하는 것.** "provenance and evidence를 담는다. 좋은 지식 문서일 필요가 없다. 승급된 `context`를 나중에 검증하기 위해 존재한다." 하위 구조로 `manifests/`, `transcripts/`, `summaries/`를 제안한다.
+
+**반영 상태.** [ADR 0051](decisions/0051-sources-holds-originals-and-refined-summaries.md)이 이 문서를 인용해 `source-raw`와 `source-summary`를 갈랐다. 디렉토리를 나누지 않고 `type`으로 가른다. **이 README는 계약 밖이지만 이미 반영되어 있다.**
+
+#### context/README.md
+
+**이 문서가 선언하는 것.** `context/`를 "promoted knowledge"로 정의하고 **"Keep this layer small, current, and source-backed"**를 요구한다. 버킷 여섯(`concepts/`, `projects/`, `systems/`, `decisions/`, `procedures/`, `people/`)과 문서 형태 규약을 둔다.
+
+> ```markdown
+> # Title
+>
+> > One-line judgment or reusable conclusion.
+>
+> ## Context
+> ## Current Understanding
+> ## Evidence
+> ## Related
+> ```
+
+**코드로 강제하는 것.** 없다.
+
+**미반영.** **`source-backed` 요구가 강제되지 않는다.** `context` 단계의 필수 필드에 `source_refs`가 들어 있지만 **키가 있는지만 보고 값이 비었는지는 보지 않는다.** 그래서 `source_refs: []`인 `context` 문서가 lint를 통과한다. `promotion-rules.md`의 "the source is known"과 같은 규칙이며 그쪽도 강제되지 않는다(5절).
+
+**사람에게 남긴 것.** 버킷 여섯은 engram의 `type` 값(`concept`, `project`, `system`, `decision`, `procedure`)과 대체로 대응하지만 `people/`은 대응이 없다. 문서 형태 규약은 강제하지 않는다. 게이트가 형식을 막지 않는다는 원칙과 충돌하기 때문이다([ADR 0040](decisions/0040-gate-follows-the-directory-not-the-declaration.md)).
+
+#### upstream AGENTS.md
+
+**이 문서가 선언하는 것.** 계약 파일 목록과 `meta/CHANGELOG.md` 규율, 그리고 본문에 **Ingest Workflow 일곱 단계**를 둔다.
+
+> 1. Put new material under the matching `inbox/<channel>/` folder.
+> 2. Extract stable provenance into `sources/`.
+> 3. Summarize the material into a draft.
+> 4. Check for duplicates or conflicts with existing `context/`.
+> 5. Promote only durable knowledge into `context/`.
+> 6. Update `index.md`.
+> 7. Append the change to `log.md`.
+
+같은 문서가 다른 절에서 파이프라인을 `inbox→sources→context`로 표기한다.
+
+**`meta/ingest-rules.md`와 순서가 어긋난다.** 그쪽은 `sources` 보존(2단계)이 `inbox` 노트 작성(3단계)보다 앞이고, 이쪽은 `inbox` 투입(1단계)이 `sources` 추출(2단계)보다 앞이다. **upstream 안에서 두 문서가 다르게 적었다.** 둘 다 두 자리 모두에 무언가가 남는다는 점은 같다.
+
+**미반영.** 6단계(`index.md` 갱신)와 7단계(`log.md` 기록)에 해당하는 것이 engram에 없다. 색인을 자동으로 고치지 않는 것은 의도된 선택이다(색인이 전부를 가리키면 고아 판정이 무력해진다). `log.md`는 upstream 고유 운영 로그다.
+
+#### agents/README.md, mirror/README.md
+
+**engram의 범위 밖이다.** `agents/`는 프롬프트와 워크플로 보관 규약이고 `mirror/`는 iCloud Obsidian 미러 운용 규약이다. engram은 둘 다 다루지 않는다. `mirror/README.md`에는 사용자 홈 경로가 들어 있어 공개 경계 대상이기도 하다.
+
+#### 이 절에서 나온 미반영 규칙
+
+| 규칙 | 출처 | 상태 |
+|---|---|---|
+| `inbox`에서 `sources`로 증거를 옮긴다 | `inbox/README.md` | 커맨드 없음 |
+| `context`는 source-backed여야 한다 | `context/README.md`, `promotion-rules.md` | `source_refs`의 값이 비어도 통과 |
+| 문서 형태 규약(한 줄 판단 + 네 절) | `context/README.md`, `promotion-rules.md` | 강제하지 않음. 의도된 선택 |
 
 ## 5. 승급 규칙이 이 프로젝트의 핵심인 이유
 
