@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -22,6 +23,22 @@ func TestWikiFlagOnPathCommands(t *testing.T) {
 			}
 			if byArg != byFlag {
 				t.Errorf("출력이 다름\n위치 인자:\n%s\n--wiki:\n%s", byArg, byFlag)
+			}
+		})
+
+		t.Run(name+"은 파일을 주면 무엇이 잘못됐는지 알립니다", func(t *testing.T) {
+			dir := makeWiki(t)
+			doc := filepath.Join(dir, "context", "a.md")
+
+			out, err := runRoot(t, name, doc)
+			if err == nil {
+				t.Fatal("위키가 아니라 파일을 주면 실패해야 함")
+			}
+			// engram.yaml 을 파일 아래에서 찾다 깨지는 것이 아니라
+			// 파일이라는 사실 자체를 알려야 한다.
+			msg := err.Error() + out
+			if !strings.Contains(msg, "파일") || strings.Contains(msg, "engram.yaml") {
+				t.Errorf("파일이라는 안내가 아님: %v\n%s", err, out)
 			}
 		})
 

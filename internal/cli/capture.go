@@ -124,6 +124,19 @@ func stringFlag(cmd *cobra.Command, name string) (string, error) {
 // 것으로 보고 부르다 막혔다([ADR 0053]). 둘 다 주면 어느 쪽을 뜻하는지
 // 알 수 없으므로 거절한다.
 func pathOrWikiFlag(cmd *cobra.Command, args []string) (string, error) {
+	root, err := pickWikiPath(cmd, args)
+	if err != nil {
+		return "", err
+	}
+	// 파일을 주면 그대로 통과시켰다가 <파일>/engram.yaml 을 여는 데서
+	// 깨졌다. 에이전트가 문서 하나만 검사하려고 파일 경로를 준다.
+	if fi, err := os.Stat(root); err == nil && !fi.IsDir() {
+		return "", errors.New(i18n.T("cli.wiki_path.not_dir", root))
+	}
+	return root, nil
+}
+
+func pickWikiPath(cmd *cobra.Command, args []string) (string, error) {
 	if cmd.Flags().Changed(flagWiki) {
 		if len(args) == 1 {
 			return "", errors.New(i18n.T("cli.wiki_path.both_given"))
