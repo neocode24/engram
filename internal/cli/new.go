@@ -48,10 +48,11 @@ func newNewCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			related, err := cmd.Flags().GetStringArray(flagRelated)
+			relatedRaw, err := cmd.Flags().GetStringArray(flagRelated)
 			if err != nil {
 				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.flag_read_fail", flagRelated), err)
 			}
+			related := splitRelated(relatedRaw)
 			if len(related) > 0 {
 				values := make([]string, 0, len(related))
 				for _, s := range related {

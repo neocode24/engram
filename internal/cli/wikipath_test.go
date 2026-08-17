@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -53,5 +54,58 @@ func TestWikiFlagOnPathCommands(t *testing.T) {
 				t.Errorf("어느 쪽을 남기라는 안내가 없음: %v\n%s", err, out)
 			}
 		})
+	}
+}
+
+// TestResolveDocPathInsideWiki는 셸의 작업 디렉토리가 위키 루트일 때
+// 위키 루트 상대 경로와 절대 --wiki 를 함께 줘도 동작하는지 본다.
+// 그 조합에서 filepath.Rel 이 절대 경로와 상대 경로를 섞어 받아 깨졌다.
+func TestResolveDocPathInsideWiki(t *testing.T) {
+	dir := t.TempDir()
+	for _, sub := range []string{"inbox", "context"} {
+		if err := os.MkdirAll(filepath.Join(dir, sub), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	rel := filepath.Join("inbox", "memo.md")
+	if err := os.WriteFile(filepath.Join(dir, rel), []byte("메모\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("작업 디렉토리가 위키 루트여도 절대 경로를 낸다", func(t *testing.T) {
+		prev, err := os.Getwd()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chdir(dir); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = os.Chdir(prev) })
+
+		got, err := resolveDocPath(dir, rel)
+		if err != nil {
+			t.Fatalf("경로를 못 찾음: %v", err)
+		}
+		if !filepath.IsAbs(got) {
+			t.Fatalf("루트가 절대 경로면 문서 경로도 절대여야 함: %q", got)
+		}
+		if _, err := filepath.Rel(dir, got); err != nil {
+			t.Errorf("위키 루트 기준 상대 경로를 못 냄: %v", err)
+		}
+	})
+}
+
+// TestSplitRelated는 --related 가 쉼표로 나뉘는지 본다. 나누지 않으면
+// "a,b" 한 덩어리가 슬러그가 되어 [[a,b]] 라는 깨진 링크가 박힌다.
+func TestSplitRelated(t *testing.T) {
+	got := splitRelated([]string{"a,b", " c ", "", "d"})
+	want := []string{"a", "b", "c", "d"}
+	if len(got) != len(want) {
+		t.Fatalf("나눈 결과 = %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("나눈 결과 = %v, want %v", got, want)
+		}
 	}
 }

@@ -64,10 +64,11 @@ func newPromoteCmd() *cobra.Command {
 			if slug == "" {
 				slug = stripDatePrefix(filepath.Base(srcPath))
 			}
-			related, err := cmd.Flags().GetStringArray(flagRelated)
+			relatedRaw, err := cmd.Flags().GetStringArray(flagRelated)
 			if err != nil {
 				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.flag_read_fail", flagRelated), err)
 			}
+			related := splitRelated(relatedRaw)
 			// 문서 종류는 내용을 읽어야 아는 판단이라 도구가 정하지 못한다.
 			// 사용자가 준 값만 반영하고 추론하지 않는다. ADR 0014.
 			typeFlag, err := stringFlag(cmd, flagType)
@@ -214,12 +215,24 @@ func deferredNote(deferred bool) string {
 }
 
 // resolveDocPath는 인자로 받은 경로를 파일 경로로 확정한다.
-// 파일 경로가 아니면 위키 루트 상대 경로로 해석한다.
+// 위키 루트 상대 경로를 먼저 본다. 커맨드 안내와 문서가 전부 그 형태를
+// 쓰기 때문이다. 셸의 작업 디렉토리가 마침 위키 루트일 때 인자를 그대로
+// 돌려주면 뒤의 filepath.Rel 이 절대 경로인 루트와 상대 경로를 섞어 받아
+// 깨졌다. 어느 쪽을 골랐든 루트와 절대/상대를 맞춰서 낸다.
 func resolveDocPath(wikiRoot, arg string) (string, error) {
-	for _, c := range []string{arg, filepath.Join(wikiRoot, arg)} {
-		if st, err := os.Stat(c); err == nil && !st.IsDir() {
-			return c, nil
+	for _, c := range []string{filepath.Join(wikiRoot, arg), arg} {
+		st, err := os.Stat(c)
+		if err != nil || st.IsDir() {
+			continue
 		}
+		if filepath.IsAbs(wikiRoot) && !filepath.IsAbs(c) {
+			abs, err := filepath.Abs(c)
+			if err != nil {
+				return "", fmt.Errorf("%s: %w", i18n.T("cli.ingest.rel_fail"), err)
+			}
+			return abs, nil
+		}
+		return c, nil
 	}
 	return "", errors.New(i18n.T("cli.ingest.doc_not_found", arg))
 }

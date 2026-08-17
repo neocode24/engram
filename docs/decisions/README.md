@@ -69,6 +69,7 @@
 | [0052](0052-agent-prepares-the-promotion-and-the-human-decides-it.md) | 에이전트가 승급을 준비하고 사람은 승급을 결정한다 | 2026-08-17 | accepted |
 | [0053](0053-wiki-path-accepts-both-positional-and-flag.md) | 위키 경로는 네 커맨드에서도 --wiki로 받는다 | 2026-08-17 | accepted |
 | [0054](0054-gate-counts-only-links-that-resolve.md) | 승급 게이트는 실제로 이어지는 링크만 센다 | 2026-08-17 | accepted |
+| [0055](0055-agents-change-the-wiki-only-through-commands.md) | 에이전트는 커맨드로만 위키를 바꾼다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 
@@ -102,6 +103,7 @@
 | 0045 | 슬러그 안전 검사는 파일시스템 예약 문자를 본다 | [0050](0050-slugs-must-be-wikilink-safe.md) 위키링크 문법을 깨는 문자를 더한다 |
 | 0009 | 문서 종류 기본값은 열이다 | [0051](0051-sources-holds-originals-and-refined-summaries.md) `source-raw`를 더해 열하나가 된다 |
 | 0041 | 스킬 문서가 반드시 담는 것은 다섯이다 | [0052](0052-agent-prepares-the-promotion-and-the-human-decides-it.md) 승급 준비 지시 셋을 더해 여덟이 된다 |
+| 0041 | 쓰기 경계는 단계로 말한다 | [0055](0055-agents-change-the-wiki-only-through-commands.md) 도구로도 말한다. 파일 직접 편집을 금지한다 |
 | 0009 | 게이트는 문서의 고유 위키링크 수를 센다 | [0054](0054-gate-counts-only-links-that-resolve.md) 대상이 실재하는 링크만 센다 |
 
 ## 근거만 갱신된 경우
