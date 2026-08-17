@@ -344,7 +344,7 @@ body.read #hint{display:none}
       <div>
         <h3>세 층</h3>
         <table>
-          <tr><td><strong>raw sources</strong></td><td>불변의 원본. LLM은 읽기만 하고 고치지 않는다</td></tr>
+          <tr><td><strong>raw sources</strong></td><td>불변의 원본. LLM은 읽기만 하고 고치지 않는다. 정제본을 함께 두더라도 원본은 남는다</td></tr>
           <tr><td><strong>the wiki</strong></td><td>LLM이 만든 마크다운. 요약, 개체 페이지, 개념 페이지, 상호 링크</td></tr>
           <tr><td><strong>the schema</strong></td><td>구조와 절차를 정한 문서(예: CLAUDE.md). 사람과 에이전트 사이의 계약</td></tr>
         </table>
@@ -582,7 +582,8 @@ body.read #hint{display:none}
       <div class="card acc">
         <span class="tag acc">이 체계</span>
         <h3>위키에는 성숙 단계가 있고, 위로 갈수록 자격이 필요하다</h3>
-        <p><code>inbox</code>는 아무거나 받는다. <code>sources</code>는 원본을 보존한다. <code>context</code>는 <strong>검수된 지식</strong>만 들어온다. 러프한 것이 <code>context</code>로 올라가는 행위가 <strong>승급</strong>이고, 승급에는 기준이 있다.</p>
+        <p><code>inbox</code>는 아무거나 받는다. <code>sources</code>는 나중에 검증할 근거를 보존한다. <code>context</code>는 <strong>검수된 지식</strong>만 들어온다. 러프한 것이 <code>context</code>로 올라가는 행위가 <strong>승급</strong>이고, 승급에는 기준이 있다.</p>
+        <p class="small"><code>sources</code>에는 원문 그대로(<code>source-raw</code>)와 정제본(<code>source-summary</code>)이 함께 온다. 좋은 문서일 필요가 없다. <strong>지식이 아니라 증거</strong>이기 때문이다.</p>
         <p class="small">위키에 들어갈 자격은 "사람이 검수했고 연결되어 있는가"다.</p>
       </div>
     </div>

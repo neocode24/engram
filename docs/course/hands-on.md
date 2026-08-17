@@ -671,12 +671,32 @@ created: 2026-08-17
 
 ```
 engram source \
+  --type source-raw \
   --title "캐시 무효화를 설계하는 네 가지 방법" \
   --created 2026-02-18 \
   --channel web \
   --ref "https://example.com/cache-invalidation" \
   < $MATERIALS/기술문서-원문.md
 ```
+
+### sources 에는 원본과 정제본이 함께 옵니다
+
+여기가 이 단계에서 제일 헷갈리는 자리입니다.
+
+`sources`는 **지식이 아니라 증거**입니다. `context`가 주장하는 것이 맞는지 나중에 확인하려면 근거가 그 자리에 있어야 합니다. 그래서 잘 쓴 문서일 필요가 없습니다.
+
+두 가지가 들어옵니다.
+
+| `type` | 무엇 | 누가 만드나 |
+|---|---|---|
+| `source-raw` | **원문 그대로.** 손대지 않았습니다 | 사람이 파일을 그대로 넣습니다 |
+| `source-summary` | **정제본.** 읽고 추린 결과 | 사람 또는 에이전트가 만듭니다 |
+
+디렉토리를 나누지 않습니다. `sources/` 하나에 두고 `type`이 어느 쪽인지 말합니다. 디렉토리는 성숙 단계를 뜻하지 종류를 뜻하지 않습니다.
+
+**`--type`의 기본값은 `source-summary`입니다.** 실제 위키에서 정제본이 훨씬 흔하기 때문입니다. 지금은 원문을 그대로 넣으므로 `--type source-raw`를 명시했습니다. **안 주면 원문에 "요약"이라는 종류가 붙어 프론트매터가 거짓이 됩니다.**
+
+정제본을 만드는 것은 engram의 일이 아닙니다. engram에 요약 기능이 없습니다. 사람이 읽고 쓰거나 에이전트가 만들어 넣습니다. 근거는 [ADR 0051](../decisions/0051-sources-holds-originals-and-refined-summaries.md)에 있습니다.
 
 표준 입력으로 파일을 통째로 넣습니다. `capture`도 같은 방식을 받습니다.
 

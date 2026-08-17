@@ -239,7 +239,8 @@ func defaultSchema() Schema {
 	return Schema{
 		Types: []string{
 			"concept", "project", "system", "decision", "procedure", "incident",
-			"meeting-summary", "agent-workflow", "source-summary", "inbox-note",
+			"meeting-summary", "agent-workflow", "source-raw", "source-summary",
+			"inbox-note",
 		},
 		ArtifactStages: ClosedSet{Values: []string{"inbox", "source", "context", "archive"}},
 		Statuses:       ClosedSet{Values: []string{"inbox", "sourced", "promoted", "archived", "superseded"}},

@@ -136,7 +136,9 @@ lint 규칙 16종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 **코드로 강제하는 것.** lint 규칙은 없다. 절차의 두 단계가 커맨드로 굳어 있다. `capture`가 검증 없이 `inbox/`에 받는 3단계이고, `source`가 원본 필드를 확정해 `sources/`에 두는 2단계다. 나머지 단계는 판단을 포함하므로 커맨드가 대신할 수 없다.
 
-**설정으로 열어 둔 것.** `source_channel` 축. `source`의 `--channel` 플래그가 이 값을 받는다.
+**설정으로 열어 둔 것.** `source_channel` 속성. `source`의 `--channel` 플래그가 이 값을 받는다. 문서 종류 집합(`types`)도 위키별로 넓힐 수 있다.
+
+**`sources/`는 원본과 정제본을 함께 담는다.** 이 명세가 원본 보존(2단계)과 처리 노트 작성(3단계)을 나눠 놓았지만, 실물에서는 정제된 요약도 `sources/`에 남는다. upstream `sources/README.md`가 그 성격을 "지식 문서일 필요가 없다. 승급된 context 를 나중에 검증하기 위해 존재한다"고 적었다. engram은 디렉토리를 나누지 않고 `type`으로 가른다. `source-raw`가 원문 그대로이고 `source-summary`가 정제본이다([ADR 0051](decisions/0051-sources-holds-originals-and-refined-summaries.md)).
 
 **사람에게 남긴 것.** 6단계 중 판단 단계 전부(남을 사실 뽑기, 중복 확인, 승급 대상 제안). 채널별 메타데이터 선호(Teams는 회의 제목과 참가자, Slack은 스레드와 permalink)도 남아 있다. 원본 음성을 보존할지 결정하는 일과 `sources/raw-private/` 운용도 이 명세의 범위다. upstream이 `inbox/<channel>/` 하위 디렉토리를 만드는 것과 달리 engram은 채널을 플래그 값으로만 남긴다.
 
@@ -198,6 +200,7 @@ LLM으로 승급 기준 전부를 판정하게 하면 그 판정은 재현되지
 | security-rules.md 전체 | 커밋 금지 항목과 민감 자료 취급 | 코드로 강제하는 것이 하나도 없다. `sensitivity` 축만 있다 |
 | `indexable` 단계 기본값 | wiki-artifact-schema.md가 유형별 인덱싱 기본값으로 선언. upstream lint는 위반을 검사 | 강제 규칙이 없다. 쓰기 커맨드가 단계별 초기값으로만 채운다 |
 | `agents/workflows/` 전체 | 에이전트 절차 명세. 텍스트 드롭 인테이크, 음성 메모 인테이크 등 | 대응표가 `meta/` 명세만 덮어서 **아예 보지 않았다**. 아래에 적는다 |
+| `transcript`, `source-manifest` 종류 | wiki-artifact-schema.md 의 Artifact Types 표가 선언 | 기본 종류에 없다. `source-raw`가 전자의 일반형이고([ADR 0051](decisions/0051-sources-holds-originals-and-refined-summaries.md)) 후자는 개념 자체가 없다 |
 
 `supersedes`와 `superseded_by`는 지금 사람이 `related`나 본문 링크로 대신 표현한다. 결정할 시점은 대체 이력을 코드가 다뤄야 할 때다. 폐기와 개정의 이력 관리가 `archive` 너머로 확장되거나, 동등성 검증에서 이 필드를 쓰는 문서가 걸릴 때다.
 

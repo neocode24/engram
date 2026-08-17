@@ -44,11 +44,13 @@ Directories are not categories. They are **maturity stages**. The further down t
 | Directory | Stage | Character | Checked by |
 |---|---|---|---|
 | `inbox/` | rough capture | temporary; emptied as items are processed | nothing |
-| `sources/` | preserved originals | append-only; the body is never edited | schema |
+| `sources/` | evidence you can check later | append-only; the body is never edited | schema |
 | `context/` | curated knowledge | conclusions you can reuse | schema + **gate** |
 | `archive/` | end of life | kept as history; links do not break | schema |
 
 `sources/` documents never carry an `updated` field. Fixing one typo would make the document look fresh when it is not.
+
+`sources/` holds both verbatim originals (`type: source-raw`) and refined summaries (`type: source-summary`). They do not have to be good documents. They exist so that a promoted `context/` claim can be checked later.
 
 Every document carries its state in YAML frontmatter.
 

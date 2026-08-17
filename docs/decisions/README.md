@@ -65,6 +65,7 @@
 | [0048](0048-preset-names-follow-attribute-sets.md) | 프리셋 이름을 속성 집합에 맞추고 축을 속성으로 부른다 | 2026-08-17 | accepted |
 | [0049](0049-cli-output-language.md) | 출력 언어는 사용자 환경이 정하고 카탈로그는 바이너리에 묶는다 | 2026-08-17 | accepted |
 | [0050](0050-slugs-must-be-wikilink-safe.md) | 슬러그는 파일시스템뿐 아니라 위키링크 문법에도 안전해야 한다 | 2026-08-17 | accepted |
+| [0051](0051-sources-holds-originals-and-refined-summaries.md) | sources는 원본과 정제본을 함께 담고 type이 그 둘을 가른다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 
@@ -96,6 +97,7 @@
 | 0046 | 커맨드 이름을 `pack`으로 한다 | [0047](0047-export-not-pack.md) `export`로 정정. 동작은 그대로다 |
 | 0009 | 프리셋 이름은 `personal`, `education`, `team`이다 | [0048](0048-preset-names-follow-attribute-sets.md) `minimal`, `personal`, `team`으로 정정. 속성 구성은 그대로다 |
 | 0045 | 슬러그 안전 검사는 파일시스템 예약 문자를 본다 | [0050](0050-slugs-must-be-wikilink-safe.md) 위키링크 문법을 깨는 문자를 더한다 |
+| 0009 | 문서 종류 기본값은 열이다 | [0051](0051-sources-holds-originals-and-refined-summaries.md) `source-raw`를 더해 열하나가 된다 |
 
 ## 근거만 갱신된 경우
 
