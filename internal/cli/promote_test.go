@@ -170,12 +170,44 @@ func TestPromote(t *testing.T) {
 		rel := captureMemo(t, dir)
 		addContextDocs(t, dir)
 		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel,
-			"--related", "a-doc", "--related", "없는문서")
+			"--related", "a-doc", "--related", "b-doc", "--related", "없는문서")
 		if err != nil {
 			t.Fatalf("경고는 거절이 아닙니다: %v", err)
 		}
 		if !strings.Contains(out, "경고: --related 슬러그") {
 			t.Errorf("경고가 없음:\n%s", out)
+		}
+	})
+
+	t.Run("존재하지 않는 슬러그로는 게이트를 넘지 못합니다", func(t *testing.T) {
+		// 게이트가 해석되지 않는 슬러그를 세면 아무 데도 안 이어진 문서가
+		// context 로 올라간다. 실제 에이전트가 이 경로를 탔다(ADR 0054).
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+		addContextDocs(t, dir)
+		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel,
+			"--related", "없는문서하나", "--related", "없는문서둘")
+		if err == nil {
+			t.Fatalf("없는 슬러그 둘로 통과하면 안 됩니다:\n%s", out)
+		}
+		if !strings.Contains(err.Error(), "위키링크가 0개") {
+			t.Errorf("이어지는 링크가 0개라고 알려야 합니다: %v", err)
+		}
+	})
+
+	t.Run("inbox 문서를 가리키는 링크는 게이트에서 세지 않습니다", func(t *testing.T) {
+		// inbox 문서는 승급하면 날짜 접두사가 떨어져 슬러그가 바뀐다.
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+		addContextDocs(t, dir)
+		if _, err := runPromoteRoot(t, "capture", "--wiki", dir,
+			"--now", "2026-01-01T00:00:00Z", "--slug", "peer", "이웃 메모"); err != nil {
+			t.Fatalf("capture 실패: %v", err)
+		}
+		_, err := runPromoteRoot(t, "promote", "--wiki", dir, rel,
+			"--related", "a-doc", "--related", "2026-01-01-peer")
+		if err == nil {
+			t.Fatal("inbox 문서를 세면 안 됩니다")
 		}
 	})
 

@@ -53,21 +53,12 @@ func linkSlugs(d doc.Doc) map[string]bool {
 	return out
 }
 
-// countTargets는 게이트의 링크 대상 수를 센다. 자기 자신에 해당하는
-// 문서는 뺀다. 대상이 될 수 있는지는 lint.Linkable 이 판정한다.
-// 세 곳(lint, status, 이곳)이 같은 집계를 쓰지 않으면 커맨드로 통과한
-// 문서를 lint 가 거절하는 상태가 생긴다.
-func countTargets(walked []walk.Doc, skipRel, skipSlug string) int {
-	n := 0
-	for _, w := range walked {
-		if w.Rel == skipRel || slugOfRel(w.Rel) == skipSlug {
-			continue
-		}
-		if lint.Linkable(w) {
-			n++
-		}
-	}
-	return n
+// gateInputs는 게이트에 넣을 두 수를 낸다. 실제로 이어지는 링크 수와
+// 링크 대상 수다. 자기 자신은 뺀다. 세 곳(lint, status, 이곳)이 같은
+// 집계를 쓰지 않으면 커맨드로 통과한 문서를 lint 가 거절하는 상태가 생긴다.
+func gateInputs(links map[string]bool, walked []walk.Doc, skipRel, skipSlug string) (int, int) {
+	targets := lint.LinkableSlugs(walked, skipRel, skipSlug)
+	return lint.ResolvedLinks(links, targets), len(targets)
 }
 
 // slugOfRel는 순회 경로에서 문서 슬러그를 낸다.

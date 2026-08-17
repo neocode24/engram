@@ -495,7 +495,7 @@ func TestRun(t *testing.T) {
 		// 문서가 3개면 대상이 2개로 min_wikilinks 기본값과 같아 게이트가 동작한다.
 		res := runLint(t, map[string]string{
 			"context/thin.md": cleanContextDoc("b", "b"),
-			"context/b.md":    cleanContextDoc("thin", "없는문서"),
+			"context/b.md":    cleanContextDoc("thin", "c"),
 			"context/c.md":    cleanContextDoc("thin", "b"),
 		})
 		vs := findByRule(res, "gate.min-wikilinks")
@@ -584,7 +584,7 @@ func TestRun(t *testing.T) {
 	t.Run("문서가 min_wikilinks 만큼 쌓이면 게이트가 동작한다", func(t *testing.T) {
 		files := map[string]string{
 			"context/thin.md": cleanContextDoc("b", "b"),
-			"context/b.md":    cleanContextDoc("thin", "없는문서"),
+			"context/b.md":    cleanContextDoc("thin", "c"),
 		}
 		// 문서 2개에서는 유예다.
 		before := runLint(t, files)
@@ -847,9 +847,11 @@ func TestRun(t *testing.T) {
 			"engram.yaml":  "root_files: [home.md]\n",
 			"home.md":      indexDoc,
 			"context/x.md": indexDoc,
-			// y 는 실재하지 않는 슬러그로 링크 수를 채운다. x 가 고아
-			// 판정에 남도록 들어오는 링크를 만들지 않기 위해서다.
-			"context/y.md": cleanContextDoc("home", "없는문서"),
+			// y 와 z 가 서로를 가리켜 링크 수를 채운다. x 가 고아 판정에
+			// 남도록 x 로는 들어오는 링크를 만들지 않는다. 실재하지 않는
+			// 슬러그로 채우는 방법은 게이트가 막는다(ADR 0054).
+			"context/y.md": cleanContextDoc("home", "z"),
+			"context/z.md": cleanContextDoc("home", "y"),
 		})
 		if got := findByRule(res, "gate.min-wikilinks"); len(got) != 1 {
 			t.Fatalf("page_dirs 안의 색인형 문서는 게이트 대상이어야 함: %+v", res.Violations)

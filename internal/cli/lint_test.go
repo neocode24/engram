@@ -109,17 +109,19 @@ func TestLintCmd(t *testing.T) {
 		if err := os.MkdirAll(filepath.Join(dir, "context"), 0o755); err != nil {
 			t.Fatal(err)
 		}
-		doc := "---\n" +
-			"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
-			"indexable: true\nsource_refs: []\nderived_from: []\n" +
-			"related:\n  - \"[[peer]]\"\nsource_channel: manual\nderived_context: []\n" +
-			"---\n\n본문 [[peer2]] 링크\n"
-		inboxDoc := "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
-			"indexable: false\nsource_channel: manual\n---\n\n메모\n"
+		// 셋이 서로를 가리켜 각자 링크 2개를 갖는다. inbox 문서를
+		// 가리키면 게이트가 세지 않는다(ADR 0054).
+		ctxDoc := func(related, body string) string {
+			return "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"related:\n  - \"[[" + related + "]]\"\nsource_channel: manual\nderived_context: []\n" +
+				"---\n\n본문 [[" + body + "]] 링크\n"
+		}
 		for name, content := range map[string]string{
-			"context/a.md":   doc,
-			"inbox/peer.md":  inboxDoc,
-			"inbox/peer2.md": inboxDoc,
+			"context/a.md":     ctxDoc("peer", "peer2"),
+			"context/peer.md":  ctxDoc("a", "peer2"),
+			"context/peer2.md": ctxDoc("a", "peer"),
 		} {
 			p := filepath.Join(dir, filepath.FromSlash(name))
 			if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {

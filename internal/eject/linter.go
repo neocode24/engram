@@ -520,6 +520,15 @@ def linkable(doc):
     return doc["stage"] != "inbox"
 
 
+def linkable_slugs(docs, self_rel):
+    out = set()
+    for d in docs:
+        if d["rel"] == self_rel or not linkable(d):
+            continue
+        out.add(os.path.basename(d["rel"])[:-3])
+    return out
+
+
 def evaluate_gate(links, targets, min_wikilinks):
     if min_wikilinks <= 0:
         return True, False
@@ -575,8 +584,9 @@ def graph_rules(docs, cfg):
 		"eject.linter.orphan.fix", " % slug", "))\n"))
 	b.WriteString(i18n.T("eject.linter.gate_dir_comment"))
 	b.WriteString(`        if context_dir and doc["rel"].startswith(context_dir + "/") and min_wikilinks > 0:
-            n = len(outgoing)
-            targets = sum(1 for d in docs if d["rel"] != doc["rel"] and linkable(d))
+            target_slugs = linkable_slugs(docs, doc["rel"])
+            targets = len(target_slugs)
+            n = len(outgoing & target_slugs)
             passed, deferred = evaluate_gate(n, targets, min_wikilinks)
 `)
 	b.WriteString(i18n.T("eject.linter.gate_line_comment"))

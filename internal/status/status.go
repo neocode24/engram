@@ -175,7 +175,9 @@ func buildResult(docs []scannedDoc, walked []walk.Doc, cfg config.Config, lintRe
 			// 승급 가능 여부는 lint 의 게이트 판정과 같은 함수와 같은
 			// 대상 집계로 본다. promote 가 유예로 통과시키는 문서를 여기서
 			// 못 넘는다고 말하면 status 가 거짓 미리보기가 된다. ADR 0021.
-			if lint.EvaluateGate(len(outgoing[s.rel]), lint.LinkableTargets(walked, s.rel), cfg.Thresholds.MinWikilinks).Passed {
+			targets := lint.LinkableSlugs(walked, s.rel, "")
+			resolved := lint.ResolvedLinks(outgoing[s.rel], targets)
+			if lint.EvaluateGate(resolved, len(targets), cfg.Thresholds.MinWikilinks).Passed {
 				promotable = append(promotable, aged{rel: s.rel, age: ageOf(now, created, createdKnown), known: createdKnown})
 			}
 		} else {

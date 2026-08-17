@@ -117,7 +117,8 @@ func newPromoteCmd() *cobra.Command {
 				return errors.New(i18n.T("cli.ingest.dest_exists", destPath))
 			}
 
-			g := lint.EvaluateGate(len(linkSlugs(updated)), countTargets(walked, rel, slug), cfg.Thresholds.MinWikilinks)
+			resolved, targets := gateInputs(linkSlugs(updated), walked, rel, slug)
+			g := lint.EvaluateGate(resolved, targets, cfg.Thresholds.MinWikilinks)
 			if !g.Passed {
 				return gateRejectError(g)
 			}

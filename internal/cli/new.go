@@ -71,7 +71,8 @@ func newNewCmd() *cobra.Command {
 			for _, s := range related {
 				links[s] = true
 			}
-			g := lint.EvaluateGate(len(links), countTargets(walked, "", slug), cfg.Thresholds.MinWikilinks)
+			resolved, targets := gateInputs(links, walked, "", slug)
+			g := lint.EvaluateGate(resolved, targets, cfg.Thresholds.MinWikilinks)
 			if !g.Passed {
 				return gateRejectError(g)
 			}

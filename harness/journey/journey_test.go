@@ -130,12 +130,13 @@ func TestJourney(t *testing.T) {
 		"--created", "2026-04-01", "--ref", "https://example.com/talk", "강연 필사 원본"))
 	w.assertLintClean(t, "source")
 
-	// 4. new. context 문서 둘을 서로 위키링크로 잇는다. doc-a 를 만드는
-	// 시점에 doc-b 는 아직 없다. 없는 슬러그는 경고만 나고 만들 수 있으므로
-	// 이 순서로 상호 연결을 만든다.
+	// 4. new. context 문서 둘을 서로 위키링크로 잇는다. 게이트는 실재하는
+	// 문서를 가리키는 링크만 세므로(ADR 0054) doc-a 는 그 시점에 이미 있는
+	// sources 원본과 index 에 건다. sources 슬러그는 날짜 접두사를 포함한
+	// 파일 이름 그대로다. doc-b 가 생기면서 상호 연결이 완성된다.
 	w.mustOK(t, w.run("new 문서A",
 		"new", "문서 A", "--wiki", wiki, "--slug", "doc-a",
-		"--related", "doc-b", "--related", "index"))
+		"--related", "2026-04-01-tech-talk", "--related", "index"))
 	w.assertLintClean(t, "new 문서A")
 	w.mustOK(t, w.run("new 문서B",
 		"new", "문서 B", "--wiki", wiki, "--slug", "doc-b",

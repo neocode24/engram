@@ -584,11 +584,39 @@ func Linkable(w walk.Doc) bool {
 	return false
 }
 
+// LinkableSlugs는 유효 연결 대상이 되는 문서의 슬러그 집합을 낸다.
+// skipRel 은 판정 대상 문서의 순회 경로이고 skipSlug 는 그 문서가 갖게
+// 될 슬러그다. 아직 파일이 없는 new 는 슬러그로만 자기를 뺀다.
+// 위키링크 해석과 같은 기준이어야 하므로 슬러그는 날짜 접두사를 포함한
+// 파일 이름 그대로다.
+func LinkableSlugs(walked []walk.Doc, skipRel, skipSlug string) map[string]bool {
+	out := map[string]bool{}
+	for _, w := range walked {
+		if w.Rel == skipRel || !Linkable(w) {
+			continue
+		}
+		slug := strings.TrimSuffix(filepath.Base(w.Rel), ".md")
+		if skipSlug != "" && slug == skipSlug {
+			continue
+		}
+		out[slug] = true
+	}
+	return out
+}
+
 // LinkableTargets는 판정 대상 문서 self 를 뺀 유효 연결 대상 수를 센다.
 func LinkableTargets(walked []walk.Doc, self string) int {
+	return len(LinkableSlugs(walked, self, ""))
+}
+
+// ResolvedLinks는 문서가 가진 링크 슬러그 중 실제로 이어지는 것만 센다.
+// 위키에 없는 슬러그와 링크 대상이 못 되는 문서(inbox 단계)를 뺀다.
+// **게이트가 해석되지 않는 슬러그를 세면 아무것도 막지 못한다.** 없는
+// 슬러그 둘을 적으면 아무 데도 안 이어진 문서가 context 로 올라간다([ADR 0054]).
+func ResolvedLinks(links, targets map[string]bool) int {
 	n := 0
-	for _, w := range walked {
-		if w.Rel != self && Linkable(w) {
+	for s := range links {
+		if targets[s] {
 			n++
 		}
 	}
@@ -669,8 +697,9 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 				i18n.T("lint.violation.orphan.fix", slug))
 		}
 		if gateOn && strings.HasPrefix(s.rel, contextDir+"/") {
-			n := len(outgoing)
-			g := EvaluateGate(n, LinkableTargets(walked, s.rel), cfg.Thresholds.MinWikilinks)
+			targets := LinkableSlugs(walked, s.rel, "")
+			n := ResolvedLinks(outgoing, targets)
+			g := EvaluateGate(n, len(targets), cfg.Thresholds.MinWikilinks)
 			// 유예는 링크가 부족해 게이트에 걸렸을 문서만 알린다.
 			// 링크가 기준을 채운 문서는 유예와 무관하게 스스로 통과한다.
 			if g.Deferred && n < cfg.Thresholds.MinWikilinks {

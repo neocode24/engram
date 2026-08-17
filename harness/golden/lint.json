@@ -29,8 +29,8 @@
       "severity": "reject",
       "path": "context/go-table-driven-tests.md",
       "line": 12,
-      "message": "위키링크가 1개로 min_wikilinks 2개에 못 미칩니다",
-      "fix": "related 필드나 본문에 위키링크를 1개 더 추가하세요"
+      "message": "위키링크가 0개로 min_wikilinks 2개에 못 미칩니다",
+      "fix": "related 필드나 본문에 위키링크를 2개 더 추가하세요"
     },
     {
       "rule": "link.broken",

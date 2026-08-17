@@ -52,11 +52,23 @@ func TestGateTargetAgreement(t *testing.T) {
 	}
 
 	// cli 의 집계와 lint 의 집계는 같은 수를 낸다. 대상은 색인, context, sources 셋.
-	if got := countTargets(walked, "", ""); got != 3 {
-		t.Errorf("cli 대상 수 = %d, want 3", got)
+	_, cliTargets := gateInputs(map[string]bool{}, walked, "", "")
+	if cliTargets != 3 {
+		t.Errorf("cli 대상 수 = %d, want 3", cliTargets)
 	}
-	if got := lint.LinkableTargets(walked, ""); got != countTargets(walked, "", "") {
-		t.Errorf("lint 대상 수 %d 와 cli 대상 수 %d 가 다릅니다", got, countTargets(walked, "", ""))
+	if got := lint.LinkableTargets(walked, ""); got != cliTargets {
+		t.Errorf("lint 대상 수 %d 와 cli 대상 수 %d 가 다릅니다", got, cliTargets)
+	}
+
+	// 게이트는 실제로 이어지는 링크만 센다. 없는 슬러그 둘로는 못 넘는다.
+	ghosts := map[string]bool{"없는문서하나": true, "없는문서둘": true}
+	if resolved, _ := gateInputs(ghosts, walked, "", ""); resolved != 0 {
+		t.Errorf("존재하지 않는 슬러그가 %d개 세어졌습니다. 0이어야 합니다", resolved)
+	}
+	// inbox 문서를 가리키는 링크도 세지 않는다. 승급하면 슬러그가 바뀐다.
+	toInbox := map[string]bool{"2026-03-05-memo": true, "index": true}
+	if resolved, _ := gateInputs(toInbox, walked, "", ""); resolved != 1 {
+		t.Errorf("이어지는 링크 = %d, want 1 (index 만)", resolved)
 	}
 	// 판정 대상 문서 자신은 대상 수에서 빠진다.
 	if got := lint.LinkableTargets(walked, "context/a.md"); got != 2 {

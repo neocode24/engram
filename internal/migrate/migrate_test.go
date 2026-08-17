@@ -239,13 +239,16 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("게이트 위반 문서는 고치지 않고 보고만 한다", func(t *testing.T) {
-		full := "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
-			"indexable: true\nrelated:\n  - \"[[b]]\"\n  - \"[[c]]\"\n---\n\n본문입니다.\n"
+		// 자기 자신을 가리키는 링크는 세지 않으므로 a 와 b 를 나눠 쓴다(ADR 0054).
+		linked := func(one, two string) string {
+			return "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nrelated:\n  - \"[[" + one + "]]\"\n  - \"[[" + two + "]]\"\n---\n\n본문입니다.\n"
+		}
 		loner := "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
 			"indexable: true\nrelated: []\n---\n\n링크가 없는 문서입니다.\n"
 		root := makeWiki(t, map[string]string{
-			"context/a.md": full,
-			"context/b.md": full,
+			"context/a.md": linked("b", "c"),
+			"context/b.md": linked("a", "c"),
 			"context/c.md": loner,
 		})
 		rep := run(t, root, load(t, root), Options{Apply: true})

@@ -211,9 +211,10 @@ func TestRun(t *testing.T) {
 		root := writeWiki(t, map[string]string{
 			"engram.yaml": "preset: personal\n",
 			// related 와 본문에 서로 다른 슬러그 2개. min_wikilinks 기본 2 를 넘는다.
-			// 링크 대상은 context 문서 2개(과 hub2)다. peer 는 inbox 라 대상에서 빠진다.
+			// 둘 다 context 문서여야 센다. inbox 를 가리키는 링크는 승급하면
+			// 슬러그가 바뀌므로 게이트가 세지 않는다(ADR 0054).
 			"inbox/2026-07-15-ready.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
-				"indexable: false\nsource_channel: manual\ncreated: 2026-07-15\nrelated:\n  - \"[[hub]]\"\n---\n\n[[peer]] 도 본다\n",
+				"indexable: false\nsource_channel: manual\ncreated: 2026-07-15\nrelated:\n  - \"[[hub]]\"\n---\n\n[[hub2]] 도 본다\n",
 			"inbox/2026-08-01-notyet.md": inboxDoc("2026-08-01", "[[hub]]"),
 			"context/hub.md":             contextDoc("2026-01-01", "2026-08-01"),
 			"context/hub2.md":            contextDoc("2026-01-01", "2026-08-01"),
