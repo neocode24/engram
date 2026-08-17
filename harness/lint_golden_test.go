@@ -28,8 +28,8 @@ var wikiRoot = filepath.Join("fixtures", "golden-wiki")
 
 // snapshots는 비교 축 하나와 스냅샷 파일 둘의 대응이다.
 var snapshots = []struct {
-	name string // 하위 테스트 이름
-	file string // 스냅샷 파일 이름
+	name string   // 하위 테스트 이름
+	file string   // 스냅샷 파일 이름
 	args []string // lint 커맨드에 넘길 인자
 }{
 	{name: "텍스트 출력", file: "lint.txt", args: []string{"lint", wikiRoot}},
@@ -52,6 +52,17 @@ func runLint(t *testing.T, args []string) string {
 	}
 	os.Stdout = outW
 
+	// 파이프를 읽는 쪽을 먼저 띄운다. 쓰기가 끝난 뒤에 읽으면 출력이
+	// 파이프 버퍼보다 클 때 쓰기가 블록되어 영원히 멈춘다. 버퍼 크기는
+	// 플랫폼마다 다르고 Windows 가 작아서, 이 하니스는 Windows CI 에서만
+	// 10분 타임아웃으로 죽고 있었다. 골든 출력이 커질수록 다른 플랫폼도
+	// 같은 자리에 닿는다.
+	done := make(chan []byte, 1)
+	go func() {
+		b, _ := io.ReadAll(outR)
+		done <- b
+	}()
+
 	code := cli.Execute()
 
 	os.Args = oldArgs
@@ -59,8 +70,8 @@ func runLint(t *testing.T, args []string) string {
 	if err := outW.Close(); err != nil {
 		t.Fatal(err)
 	}
-	out, err := io.ReadAll(outR)
-	if err != nil {
+	out := <-done
+	if err := outR.Close(); err != nil {
 		t.Fatal(err)
 	}
 	if code != 1 {
