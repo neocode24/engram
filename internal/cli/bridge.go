@@ -31,8 +31,8 @@ type bridgePairJSON struct {
 
 // bridgeResponse는 후보 탐색의 --json 출력이다.
 type bridgeResponse struct {
-	Min        float64         `json:"min"`
-	IndexStale bool            `json:"indexStale"`
+	Min        float64          `json:"min"`
+	IndexStale bool             `json:"indexStale"`
 	Pairs      []bridgePairJSON `json:"pairs"`
 }
 

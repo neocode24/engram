@@ -133,10 +133,10 @@ func TestHandEditedFileIsCanonicalized(t *testing.T) {
 
 func TestBrokenFileIsError(t *testing.T) {
 	cases := map[string]string{
-		"문법 오류":   "bridge_rejections:\n  - [a\n",
-		"원소 세 개":  "bridge_rejections:\n  - [a, b, c]\n",
-		"모르는 키":   "bridge_rejctions:\n  - [a, b]\n",
-		"원소 하나":   "bridge_rejections:\n  - [a]\n",
+		"문법 오류":  "bridge_rejections:\n  - [a\n",
+		"원소 세 개": "bridge_rejections:\n  - [a, b, c]\n",
+		"모르는 키":  "bridge_rejctions:\n  - [a, b]\n",
+		"원소 하나":  "bridge_rejections:\n  - [a]\n",
 	}
 	for name, raw := range cases {
 		t.Run(name, func(t *testing.T) {

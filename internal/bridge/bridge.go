@@ -35,8 +35,8 @@ type Result struct {
 
 // candDoc는 후보 비교에 쓰는 문서 하나분의 재료다.
 type candDoc struct {
-	slug string        // 색인 슬러그. 화면에 내는 값이다
-	key  string        // 링크 비교용 정규화 슬러그
+	slug string // 색인 슬러그. 화면에 내는 값이다
+	key  string // 링크 비교용 정규화 슬러그
 	tf   map[string]float64
 	out  map[string]bool // 이 문서가 거는 링크의 정규화 슬러그
 }

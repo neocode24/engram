@@ -211,10 +211,10 @@ func LoadFile(path string) (Config, error) {
 // defaults는 프리셋과 파일 어디에도 없을 때의 기본 구성이다.
 func defaults() Config {
 	cfg := Config{
-		Preset:     DefaultPreset,
-		Axes:       presetAxes(DefaultPreset),
-		Schema:     defaultSchema(),
-		Thresholds: Thresholds{MinWikilinks: 2, StaleDays: 90, MaxLines: 1000, BroadTopicPct: 25},
+		Preset:      DefaultPreset,
+		Axes:        presetAxes(DefaultPreset),
+		Schema:      defaultSchema(),
+		Thresholds:  Thresholds{MinWikilinks: 2, StaleDays: 90, MaxLines: 1000, BroadTopicPct: 25},
 		PageDirs:    []string{"inbox", "sources", "context", "archive"},
 		RootFiles:   []string{"index.md"},
 		IgnoreFiles: []string{"README.md"},

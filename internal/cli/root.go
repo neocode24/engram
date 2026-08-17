@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/spf13/cobra"
 )
 
@@ -13,6 +14,7 @@ import (
 const (
 	flagJSON = "json"
 	flagNow  = "now"
+	flagLang = "lang"
 )
 
 // nowKey는 커맨드 context에 기준 시각을 담기 위한 키 타이다.
@@ -48,6 +50,17 @@ func newRootCmd() *cobra.Command {
 고정해 결정론적인 결과를 얻을 수 있습니다.`,
 		SilenceUsage: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// 언어를 가장 먼저 정한다. 이 뒤의 에러 메시지부터 그 언어로 나온다.
+			langRaw, err := cmd.Flags().GetString(flagLang)
+			if err != nil {
+				return err
+			}
+			lang, err := i18n.Resolve(langRaw)
+			if err != nil {
+				return err
+			}
+			i18n.SetLang(lang)
+
 			raw, err := cmd.Flags().GetString(flagNow)
 			if err != nil {
 				return err
@@ -62,6 +75,7 @@ func newRootCmd() *cobra.Command {
 	}
 	root.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력합니다")
 	root.PersistentFlags().String(flagNow, "", "기준 시각(RFC3339). 빈 값이면 현재 시각")
+	root.PersistentFlags().String(flagLang, "", "출력 언어(ko, en). 빈 값이면 "+i18n.EnvVar+" 환경변수, 그다음 ko")
 
 	root.AddCommand(newArchiveCmd())
 	root.AddCommand(newBridgeCmd())

@@ -42,6 +42,11 @@ var excludedRules = []string{"wiki.broad-topic"}
 
 // TestMain은 실제 바이너리를 만들고 python3 를 찾는다.
 func TestMain(m *testing.M) {
+	// 출력 언어를 못 박는다. 골든과 동등성 비교는 바이트 단위라
+	// 개발자 환경의 ENGRAM_LANG 이 새어 들어오면 통째로 어긋난다.
+	if err := os.Setenv("ENGRAM_LANG", "ko"); err != nil {
+		panic(err)
+	}
 	goBin, err := exec.LookPath("go")
 	if err != nil {
 		fmt.Println("go 가 PATH 에 없어 eject 대조 테스트를 건너뛴다")

@@ -54,6 +54,11 @@ const timeLimit = 30 * time.Second
 // TestMain 은 실제 바이너리를 만든다. 검증 대상이 종료 코드와 표준
 // 출력이기 때문에 in-process 로 커맨드 계층을 부르지 않는다.
 func TestMain(m *testing.M) {
+	// 출력 언어를 못 박는다. 골든과 동등성 비교는 바이트 단위라
+	// 개발자 환경의 ENGRAM_LANG 이 새어 들어오면 통째로 어긋난다.
+	if err := os.Setenv("ENGRAM_LANG", "ko"); err != nil {
+		panic(err)
+	}
 	goBin, err := exec.LookPath("go")
 	if err != nil {
 		fmt.Println("go 가 PATH 에 없어 realdata 테스트를 건너뛴다")

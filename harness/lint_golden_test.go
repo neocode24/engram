@@ -42,6 +42,9 @@ var snapshots = []struct {
 // 있으므로 종료 코드 1이 정상이다.
 func runLint(t *testing.T, args []string) string {
 	t.Helper()
+	// 출력 언어를 못 박는다. 스냅샷은 바이트 비교라 개발자 환경의
+	// ENGRAM_LANG 이 새어 들어오면 통째로 어긋난다.
+	t.Setenv("ENGRAM_LANG", "ko")
 
 	oldArgs := os.Args
 	oldStdout := os.Stdout

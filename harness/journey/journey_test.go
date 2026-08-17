@@ -37,6 +37,11 @@ var repoRoot = filepath.Join("..", "..")
 // 실행 파일이 필요하다. go build 실패는 테스트 실패다. 빌드가 깨졌는데
 // 조용히 넘어가면 이 하니스는 아무것도 지키지 못한다.
 func TestMain(m *testing.M) {
+	// 출력 언어를 못 박는다. 골든과 동등성 비교는 바이트 단위라
+	// 개발자 환경의 ENGRAM_LANG 이 새어 들어오면 통째로 어긋난다.
+	if err := os.Setenv("ENGRAM_LANG", "ko"); err != nil {
+		panic(err)
+	}
 	goBin, err := exec.LookPath("go")
 	if err != nil {
 		fmt.Println("go 가 PATH 에 없어 journey 테스트를 건너뛴다")

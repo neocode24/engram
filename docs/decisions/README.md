@@ -63,6 +63,7 @@
 | [0046](0046-pack-exports-files-and-anonymizes-by-user-dictionary.md) | pack은 파일을 그대로 내보내고 익명화는 사용자 사전으로 한다 | 2026-08-17 | amended |
 | [0047](0047-export-not-pack.md) | 반출 커맨드의 이름을 export로 정정한다 | 2026-08-17 | accepted |
 | [0048](0048-preset-names-follow-attribute-sets.md) | 프리셋 이름을 속성 집합에 맞추고 축을 속성으로 부른다 | 2026-08-17 | accepted |
+| [0049](0049-cli-output-language.md) | 출력 언어는 사용자 환경이 정하고 카탈로그는 바이너리에 묶는다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 
