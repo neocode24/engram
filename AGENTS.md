@@ -18,7 +18,7 @@
 
 | 경로 | 역할 |
 |---|---|
-| `docs/architecture.md` | 동작 구조 전체. mermaid 도식 10종 |
+| `docs/architecture.md` | 동작 구조 전체. mermaid 도식 11종 |
 | `docs/decisions/` | ADR. 번호순, 소급 수정 금지. `README.md`가 색인 |
 | `docs/spec-map.md` | upstream 규칙 명세와 구현의 대응. 무엇을 코드가 강제하고 무엇을 사람에게 남겼는지 |
 | `docs/design.md` | 커맨드 체계, 설정, 마일스톤 |
