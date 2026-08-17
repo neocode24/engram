@@ -4,6 +4,8 @@ package cli
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/neocode24/engram/internal/i18n"
@@ -120,8 +122,31 @@ func Execute() int {
 	// Windows 콘솔이면 출력 코드페이지를 UTF-8 로 바꾸고 끝나면 되돌린다.
 	// 다른 플랫폼은 no-op 이다. ADR 0026.
 	defer setupConsole()()
+
+	// 커맨드 트리를 만들기 전에 언어를 정한다. Short 와 Long 과 플래그
+	// 설명은 트리를 만드는 시점에 굳으므로, PersistentPreRunE 까지
+	// 기다리면 help 출력만 언어가 안 바뀐다. 여기서는 값이 틀려도
+	// 조용히 넘긴다. 에러 보고는 PersistentPreRunE 가 맡는다.
+	if lang, err := i18n.Resolve(langFromArgs(os.Args[1:])); err == nil {
+		i18n.SetLang(lang)
+	}
+
 	if err := newRootCmd().Execute(); err != nil {
 		return 1
 	}
 	return 0
+}
+
+// langFromArgs는 인자에서 --lang 값을 꺼낸다. cobra 가 파싱하기 전이라
+// 직접 훑는다. 값이 없거나 형식이 틀리면 빈 문자열을 낸다.
+func langFromArgs(args []string) string {
+	for i, a := range args {
+		if v, ok := strings.CutPrefix(a, "--lang="); ok {
+			return v
+		}
+		if a == "--lang" && i+1 < len(args) {
+			return args[i+1]
+		}
+	}
+	return ""
 }
