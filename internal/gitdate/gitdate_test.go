@@ -137,3 +137,48 @@ func TestHistory(t *testing.T) {
 		}
 	})
 }
+
+// TestHistoryWithQuotedPaths는 core.quotepath 가 켜진 저장소에서 한글
+// 파일명의 이력을 읽는지 본다.
+//
+// git 의 기본값이 켜짐이고, 켜져 있으면 비ASCII 경로가
+// "sources/\354\233\220\353\263\270.md" 처럼 이스케이프되어 나온다. 그
+// 상태에서 경로 대조가 깨지면 sync 가 한글 문서를 조용히 건너뛴다.
+//
+// 이 결함은 작성자 기계의 시스템 git 설정에 core.quotepath=false 가 있어
+// 로컬에서만 통과했고 CI 에서만 실패했다. 그래서 저장소에 값을 명시로
+// 박아 환경과 무관하게 재현한다. 환경변수로 흉내내면 그 환경변수를
+// 지원하지 않는 git 버전에서 검사가 조용히 사라진다.
+func TestHistoryWithQuotedPaths(t *testing.T) {
+	needGit(t)
+	root := t.TempDir()
+	gitRun(t, root, "", "init")
+	// CI 기본값을 저장소에 못 박는다. 작성자 기계에서도 실패가 재현된다.
+	gitRun(t, root, "", "config", "core.quotepath", "true")
+
+	korean := filepath.Join("sources", "2026-01-01-원본.md")
+	writeFile(t, filepath.Join(root, korean), "원본\n")
+	writeFile(t, filepath.Join(root, "context", "ascii.md"), "ascii\n")
+	commitAll(t, root, "2026-01-01", "첫 커밋")
+
+	hist, err := History(root)
+	if err != nil {
+		t.Fatalf("이력을 읽을 수 없음: %v", err)
+	}
+
+	rel := filepath.ToSlash(korean)
+	d, ok := hist[rel]
+	if !ok {
+		var keys []string
+		for k := range hist {
+			keys = append(keys, k)
+		}
+		t.Fatalf("한글 파일명 문서가 이력에 없다: %s\n실제 키: %v", rel, keys)
+	}
+	if d.First != "2026-01-01" || d.Last != "2026-01-01" {
+		t.Errorf("한글 문서 날짜 = %+v, 기대 2026-01-01", d)
+	}
+	if _, ok := hist["context/ascii.md"]; !ok {
+		t.Error("ascii 문서가 이력에 없다")
+	}
+}

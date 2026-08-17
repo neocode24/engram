@@ -77,8 +77,15 @@ func day(iso string) string {
 
 // runGit는 git 을 위키 루트에서 돌리고 표준 출력을 반환한다. 프로세스의
 // 작업 디렉토리는 바꾸지 않는다.
+//
+// core.quotepath 를 끈다. git 의 기본값은 켜짐이고, 켜져 있으면 비ASCII
+// 경로를 따옴표로 감싸고 8진 이스케이프로 바꿔서 낸다. 한글 파일명이
+// "sources/\354\233\220\353\263\270.md" 로 나오면 위키 문서 경로와
+// 대조가 되지 않아 sync 가 그 문서를 조용히 건너뛴다. 한국어 위키가 주
+// 대상이므로 여기서 못 박는다. 사용자 설정에 기대지 않는다.
 func runGit(root string, args ...string) (string, error) {
-	cmd := exec.Command("git", append([]string{"-C", root}, args...)...)
+	full := append([]string{"-C", root, "-c", "core.quotepath=false"}, args...)
+	cmd := exec.Command("git", full...)
 	var out, errb bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &errb
