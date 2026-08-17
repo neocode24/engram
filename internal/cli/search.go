@@ -7,6 +7,7 @@ import (
 	"math"
 	"strings"
 
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/index"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/spf13/cobra"
@@ -42,13 +43,9 @@ type searchResponse struct {
 func newSearchCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "search <질의>",
-		Short: "위키를 검색합니다",
-		Long: `검색 색인으로 위키를 검색합니다.
-
-색인이 신선하면 색인으로 검색합니다. 낡았으면 낡은 색인 그대로 검색하되
-경고를 냅니다. 색인이 없거나 깨졌으면 이번 실행에서만 문서를 읽어 검색합니다.
-어느 쪽이든 색인 파일을 쓰지 않습니다. 색인을 만드는 것은 reindex뿐입니다.`,
-		Args: cobra.ExactArgs(1),
+		Short: i18n.T("cli.search.short"),
+		Long:  i18n.T("cli.search.long"),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			query := args[0]
 			root, cfg, err := ingestTarget(cmd)
@@ -57,7 +54,7 @@ func newSearchCmd() *cobra.Command {
 			}
 			limit, err := cmd.Flags().GetInt(flagLimit)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagLimit, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.search.flag_read_fail", flagLimit), err)
 			}
 
 			// 색인 파일을 읽고 신선도를 판정한다. 조회는 파일을 쓰지 않는다.
@@ -66,27 +63,25 @@ func newSearchCmd() *cobra.Command {
 			if ix != nil {
 				walked, err := walk.Files(root, cfg)
 				if err != nil {
-					return fmt.Errorf("위키를 순회할 수 없음: %w", err)
+					return fmt.Errorf("%s: %w", i18n.T("cli.search.walk_fail"), err)
 				}
 				if ix.Fresh(walked, root) {
 					status = indexFresh
 				} else {
 					status = indexStale
-					fmt.Fprintf(cmd.ErrOrStderr(),
-						"경고: 색인이 낡았습니다. 낡은 색인으로 검색합니다. engram reindex로 갱신하세요\n")
+					fmt.Fprintln(cmd.ErrOrStderr(), i18n.T("cli.search.warn_stale"))
 				}
 			}
 			if ix == nil {
 				walked, err := walk.Files(root, cfg)
 				if err != nil {
-					return fmt.Errorf("위키를 순회할 수 없음: %w", err)
+					return fmt.Errorf("%s: %w", i18n.T("cli.search.walk_fail"), err)
 				}
 				ix, err = index.Build(root, walked, index.DefaultWeights())
 				if err != nil {
-					return fmt.Errorf("즉석 색인을 만들 수 없음: %w", err)
+					return fmt.Errorf("%s: %w", i18n.T("cli.search.index_build_fail"), err)
 				}
-				fmt.Fprintf(cmd.ErrOrStderr(),
-					"안내: 색인이 없어 이번 실행에서만 문서를 읽었습니다. engram reindex를 한 번 돌리면 검색이 빨라집니다\n")
+				fmt.Fprintln(cmd.ErrOrStderr(), i18n.T("cli.search.notice_memory_index"))
 			}
 
 			results := ix.Search(query, limit)
@@ -105,8 +100,8 @@ func newSearchCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().Int(flagLimit, 10, "결과 상한")
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().Int(flagLimit, 10, i18n.T("cli.search.flag_limit"))
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.search.flag_wiki"))
 	return cmd
 }
 
@@ -115,9 +110,8 @@ func newSearchCmd() *cobra.Command {
 func printSearch(w io.Writer, query string, results []index.SearchResult) {
 	if len(results) == 0 {
 		tokens := index.Tokenize(query)
-		fmt.Fprintf(w, "결과가 없습니다\n")
-		fmt.Fprintf(w, "질의 %q는 다음 토큰으로 검색했습니다: %s\n",
-			query, strings.Join(tokens, ", "))
+		fmt.Fprintln(w, i18n.T("cli.search.no_results"))
+		fmt.Fprintln(w, i18n.T("cli.search.query_tokens", query, strings.Join(tokens, ", ")))
 		return
 	}
 	for i, r := range results {
