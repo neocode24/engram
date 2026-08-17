@@ -118,6 +118,24 @@ func stringFlag(cmd *cobra.Command, name string) (string, error) {
 	return v, nil
 }
 
+// pathOrWikiFlag는 위치 인자와 --wiki 플래그 중 실제로 주어진 것을 위키
+// 경로로 고른다. 커맨드 스물이 --wiki를 받는데 lint, status, reindex,
+// doctor 넷만 위치 인자였다. 에이전트가 플래그를 전 커맨드에 통하는
+// 것으로 보고 부르다 막혔다([ADR 0053]). 둘 다 주면 어느 쪽을 뜻하는지
+// 알 수 없으므로 거절한다.
+func pathOrWikiFlag(cmd *cobra.Command, args []string) (string, error) {
+	if cmd.Flags().Changed(flagWiki) {
+		if len(args) == 1 {
+			return "", errors.New(i18n.T("cli.wiki_path.both_given"))
+		}
+		return stringFlag(cmd, flagWiki)
+	}
+	if len(args) == 1 {
+		return args[0], nil
+	}
+	return ".", nil
+}
+
 // readContent는 인자로 받은 내용이나 파이프로 연결된 표준 입력을 읽는다.
 // 인자가 우선이다. 둘 다 없으면 사용법을 함께 안내한다.
 // 실제 파일인 입력은 캐릭터 장치(터미널)가 아닐 때만 읽는다. 테스트가

@@ -20,9 +20,9 @@ func newDoctorCmd() *cobra.Command {
 		Long:  i18n.T("cli.doctor.long"),
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			root := "."
-			if len(args) == 1 {
-				root = args[0]
+			root, err := pathOrWikiFlag(cmd, args)
+			if err != nil {
+				return err
 			}
 			res := doctor.Run(root)
 			if jsonOutput(cmd) {
@@ -43,6 +43,7 @@ func newDoctorCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
 }
 

@@ -67,6 +67,7 @@
 | [0050](0050-slugs-must-be-wikilink-safe.md) | 슬러그는 파일시스템뿐 아니라 위키링크 문법에도 안전해야 한다 | 2026-08-17 | accepted |
 | [0051](0051-sources-holds-originals-and-refined-summaries.md) | sources는 원본과 정제본을 함께 담고 type이 그 둘을 가른다 | 2026-08-17 | accepted |
 | [0052](0052-agent-prepares-the-promotion-and-the-human-decides-it.md) | 에이전트가 승급을 준비하고 사람은 승급을 결정한다 | 2026-08-17 | accepted |
+| [0053](0053-wiki-path-accepts-both-positional-and-flag.md) | 위키 경로는 네 커맨드에서도 --wiki로 받는다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 

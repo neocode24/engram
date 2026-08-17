@@ -20,9 +20,9 @@ func newStatusCmd() *cobra.Command {
 		Long:  i18n.T("cli.status.long"),
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			root := "."
-			if len(args) == 1 {
-				root = args[0]
+			root, err := pathOrWikiFlag(cmd, args)
+			if err != nil {
+				return err
 			}
 			res, err := status.Run(root, Now(cmd))
 			if err != nil {
@@ -37,6 +37,7 @@ func newStatusCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
 }
 

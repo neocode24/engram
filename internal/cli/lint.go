@@ -21,9 +21,9 @@ func newLintCmd() *cobra.Command {
 		Long:  i18n.T("cli.lint.long"),
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			root := "."
-			if len(args) == 1 {
-				root = args[0]
+			root, err := pathOrWikiFlag(cmd, args)
+			if err != nil {
+				return err
 			}
 			cfg, err := config.Load(root)
 			if err != nil {
@@ -51,6 +51,7 @@ func newLintCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
 }
 
