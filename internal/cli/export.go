@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/neocode24/engram/internal/export"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/spf13/cobra"
 )
 
@@ -22,26 +23,8 @@ const (
 func newExportCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export [슬러그...]",
-		Short: "검수된 문서를 익명화해 반출 번들로 내보냅니다",
-		Long: `검수를 지난 문서를 --out 디렉토리에 마크다운 그대로 내보냅니다.
-
-병합도 압축도 포맷 변환도 하지 않습니다. 보고서나 발표자료로 만들려면
-pandoc 같은 도구를 뒤에 붙이세요.
-
-나가는 것은 serve 와 같은 규칙입니다. context 문서와 색인 문서만 나가고
-inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
-엽니다. sensitivity 속성이 켜진 위키에서는 private-local-only 와 restricted
-문서를 뺍니다. 슬러그로 지목해도 이 제외는 뚫리지 않습니다. 반출해야
-하면 문서의 값을 고치세요.
-
-슬러그를 주면 그 문서만 나갑니다. 링크를 따라가지 않으므로 함께
-내보낼 문서는 함께 적으세요.
-
-익명화는 --replacements 파일로 합니다. 한 줄에 하나씩 원문==>대체어
-형식이며 # 으로 시작하는 줄은 건너뜁니다. 본문과 프론트매터와 파일명
-전부에 적용합니다. 파일을 주지 않으면 치환하지 않습니다.
-
---dry-run 은 무엇이 나갈지 봅니다. 파일을 쓰지 않습니다.`,
+		Short: i18n.T("cli.export.short"),
+		Long:  i18n.T("cli.export.long"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
 			if err != nil {
@@ -52,7 +35,7 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 				return err
 			}
 			if out == "" {
-				return fmt.Errorf("--%s 로 내보낼 디렉토리를 지정하세요", flagExportOut)
+				return fmt.Errorf("%s", i18n.T("cli.export.out_required", flagExportOut))
 			}
 			replPath, err := stringFlag(cmd, flagExportReplacements)
 			if err != nil {
@@ -60,11 +43,11 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 			}
 			includeArchive, err := cmd.Flags().GetBool(flagIncludeArchive)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagIncludeArchive, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.export.flag_read_fail", flagIncludeArchive), err)
 			}
 			dryRun, err := cmd.Flags().GetBool(flagExportDryRun)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagExportDryRun, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.export.flag_read_fail", flagExportDryRun), err)
 			}
 
 			rules, err := loadReplacements(replPath)
@@ -81,7 +64,7 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 				return err
 			}
 			if len(res.Files) == 0 {
-				return fmt.Errorf("반출할 문서가 없습니다")
+				return fmt.Errorf("%s", i18n.T("cli.export.no_files"))
 			}
 
 			if !dryRun {
@@ -126,11 +109,11 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 			return nil
 		},
 	}
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
-	cmd.Flags().String(flagExportOut, "", "번들을 내보낼 디렉토리")
-	cmd.Flags().String(flagExportReplacements, "", "익명화 치환 파일. 한 줄에 원문==>대체어")
-	cmd.Flags().Bool(flagIncludeArchive, false, "archive 문서도 반출합니다")
-	cmd.Flags().Bool(flagExportDryRun, false, "무엇이 나갈지 봅니다. 파일을 쓰지 않습니다")
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.export.flag_wiki"))
+	cmd.Flags().String(flagExportOut, "", i18n.T("cli.export.flag_out"))
+	cmd.Flags().String(flagExportReplacements, "", i18n.T("cli.export.flag_replacements"))
+	cmd.Flags().Bool(flagIncludeArchive, false, i18n.T("cli.export.flag_include_archive"))
+	cmd.Flags().Bool(flagExportDryRun, false, i18n.T("cli.export.flag_dry_run"))
 	return cmd
 }
 
@@ -141,14 +124,14 @@ func loadReplacements(path string) ([]export.Rule, error) {
 	}
 	b, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("치환 파일을 읽을 수 없음: %w", err)
+		return nil, fmt.Errorf("%s: %w", i18n.T("cli.export.repl_read_fail"), err)
 	}
 	rules, err := export.ParseReplacements(string(b))
 	if err != nil {
-		return nil, fmt.Errorf("치환 파일 %s: %w", path, err)
+		return nil, fmt.Errorf("%s: %w", i18n.T("cli.export.repl_parse_fail", path), err)
 	}
 	if len(rules) == 0 {
-		return nil, fmt.Errorf("치환 파일에 규칙이 없습니다: %s", path)
+		return nil, fmt.Errorf("%s", i18n.T("cli.export.repl_empty", path))
 	}
 	return rules, nil
 }
@@ -161,10 +144,11 @@ func requireEmptyDir(dir string) error {
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("출력 디렉토리를 확인할 수 없음: %w", err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.export.outdir_check_fail"), err)
 	}
 	if len(entries) > 0 {
-		return fmt.Errorf("출력 디렉토리가 비어 있지 않습니다: %s\n이전 반출물이 섞이지 않도록 비우고 다시 실행하세요", dir)
+		return fmt.Errorf("%s\n%s",
+			i18n.T("cli.export.outdir_not_empty", dir), i18n.T("cli.export.outdir_not_empty_hint"))
 	}
 	return nil
 }
@@ -173,10 +157,10 @@ func requireEmptyDir(dir string) error {
 func writeExportFile(out string, f export.File) error {
 	path := filepath.Join(out, filepath.FromSlash(f.Rel))
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("디렉토리를 만들 수 없음: %w", err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.export.mkdir_fail"), err)
 	}
 	if err := os.WriteFile(path, []byte(f.Content), 0o644); err != nil {
-		return fmt.Errorf("번들 파일을 쓸 수 없음: %s: %w", path, err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.export.write_fail", path), err)
 	}
 	return nil
 }
@@ -228,49 +212,45 @@ func ruleTexts(rules []export.Rule) []string {
 // 반출은 되돌릴 수 없으므로 매번 전부 알린다.
 func printExport(w io.Writer, o exportOutcome) {
 	if o.DryRun {
-		fmt.Fprintf(w, "내보낼 문서 %d개 (dry-run. 아직 쓰지 않았습니다)\n", len(o.Files))
+		fmt.Fprint(w, i18n.T("cli.export.outcome_dryrun", len(o.Files))+"\n")
 	} else {
-		fmt.Fprintf(w, "내보냈습니다. 문서 %d개 -> %s\n", len(o.Files), o.Out)
+		fmt.Fprint(w, i18n.T("cli.export.outcome_done", len(o.Files), o.Out)+"\n")
 	}
 	for _, p := range o.Files {
 		fmt.Fprintf(w, "  %s\n", p)
 	}
 
-	fmt.Fprintf(w, "제외: inbox %d개, sources %d개, archive %d개\n",
-		o.Excluded.Inbox, o.Excluded.Sources, o.Excluded.Archive)
+	fmt.Fprint(w, i18n.T("cli.export.excluded_summary",
+		o.Excluded.Inbox, o.Excluded.Sources, o.Excluded.Archive)+"\n")
 	if o.ExcludedByFilter > 0 {
-		fmt.Fprintf(w, "제외: 지목한 슬러그에 들지 않은 문서 %d개\n", o.ExcludedByFilter)
+		fmt.Fprint(w, i18n.T("cli.export.excluded_filter", o.ExcludedByFilter)+"\n")
 	}
 	if o.Excluded.Outside > 0 {
-		fmt.Fprintf(w, "제외: 단계 디렉토리 밖에 있는 문서 %d개\n", o.Excluded.Outside)
+		fmt.Fprint(w, i18n.T("cli.export.excluded_outside", o.Excluded.Outside)+"\n")
 	}
 	if o.Excluded.Unparsed > 0 {
-		fmt.Fprintf(w, "제외: 프론트매터를 읽을 수 없어 판정하지 못한 문서 %d개 (engram lint 로 확인하세요)\n",
-			o.Excluded.Unparsed)
+		fmt.Fprint(w, i18n.T("cli.export.excluded_unparsed", o.Excluded.Unparsed)+"\n")
 	}
 	if o.SensitivityOn {
-		fmt.Fprintf(w, "민감도: private-local-only 와 restricted 문서 %d개를 제외했습니다. 뒤집는 플래그는 없습니다\n",
-			o.Excluded.Sensitive)
+		fmt.Fprint(w, i18n.T("cli.export.sensitivity_on", o.Excluded.Sensitive)+"\n")
 	} else {
-		fmt.Fprintf(w, "민감도: 이 위키는 sensitivity 속성이 꺼져 있어 거를 값이 없습니다\n")
+		fmt.Fprint(w, i18n.T("cli.export.sensitivity_off")+"\n")
 	}
 
 	if o.Anonymized {
-		fmt.Fprintf(w, "익명화: %d건을 치환했습니다\n", o.Replaced)
+		fmt.Fprint(w, i18n.T("cli.export.anonymized_count", o.Replaced)+"\n")
 		if len(o.UnusedRules) > 0 {
-			fmt.Fprintf(w, "경고: 한 번도 걸리지 않은 치환 규칙이 %d건 있습니다. 사전의 오타를 확인하세요\n",
-				len(o.UnusedRules))
+			fmt.Fprint(w, i18n.T("cli.export.unused_rules_warning", len(o.UnusedRules))+"\n")
 			for _, r := range o.UnusedRules {
 				fmt.Fprintf(w, "  %s\n", r)
 			}
 		}
 	} else {
-		fmt.Fprintf(w, "익명화: 치환 파일을 주지 않아 원문 그대로 나갑니다\n")
+		fmt.Fprint(w, i18n.T("cli.export.anonymized_none")+"\n")
 	}
 
 	if o.DanglingLinks > 0 {
-		fmt.Fprintf(w, "번들 밖을 가리키는 위키링크 %d개 (문서 %d개). 본문은 고치지 않았습니다\n",
-			o.DanglingLinks, len(o.DanglingSlugs))
+		fmt.Fprint(w, i18n.T("cli.export.dangling_links", o.DanglingLinks, len(o.DanglingSlugs))+"\n")
 		for _, s := range o.DanglingSlugs {
 			fmt.Fprintf(w, "  %s\n", s)
 		}
