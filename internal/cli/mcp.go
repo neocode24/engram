@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/digest"
 	"github.com/neocode24/engram/internal/graph"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/index"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/neocode24/engram/internal/mcpserver"
@@ -29,20 +31,8 @@ import (
 func newMCPCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "mcp",
-		Short: "위키를 MCP 서버로 노출합니다",
-		Long: `위키를 MCP 서버로 stdio 로 노출합니다.
-
-도구는 열이고 쓰기는 capture 하나뿐이다. capture 는 inbox 에만 쓴다.
-승급(promote, demote, archive)은 사람이 확정하므로 도구로 내보내지
-않는다. 이것이 다른 PKM MCP 와의 차별점이다.
-
-위키 경로는 --wiki 로 시작 시 고정한다. 도구는 경로를 인자로 받지
-않는다. 도구 인자로 경로를 받으면 에이전트가 임의의 디렉토리를 읽을
-수 있기 때문이다.
-
-도구 결과는 각 커맨드의 --json 출력과 같은 구조다. 조회 도구는 재료를
-낼 뿐 요약하지 않는다. 기준 시각은 실제 시계를 쓰고 --now 를 받지
-않는다. 재현이 필요하면 CLI 를 쓰세요.`,
+		Short: i18n.T("cli.mcp.short"),
+		Long:  i18n.T("cli.mcp.long"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// 시작 시 위키가 유효한지 확인한다. 서버가 뜬 뒤에 매번
 			// 실패하는 것보다 낫다. 안내는 stderr 로만 낸다.
@@ -52,11 +42,11 @@ func newMCPCmd() *cobra.Command {
 			}
 			s := mcpserver.New("engram", version)
 			registerMCPTools(s, root)
-			fmt.Fprintf(cmd.ErrOrStderr(), "engram MCP 서버를 띄웁니다: %s\n", root)
+			fmt.Fprint(cmd.ErrOrStderr(), i18n.T("cli.mcp.starting", root)+"\n")
 			return mcpserver.RunStdio(cmd.Context(), s)
 		},
 	}
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.mcp.flag_wiki"))
 	return cmd
 }
 
@@ -99,10 +89,8 @@ type mcpDigestArgs struct {
 // 위키 경로는 여기서 고정되고 어떤 도구도 경로를 인자로 받지 않는다.
 func registerMCPTools(s *mcp.Server, root string) {
 	mcp.AddTool[mcpCaptureArgs, any](s, &mcp.Tool{
-		Name: "capture",
-		Description: "새 메모를 inbox 에 넣는다. 이 도구는 inbox 에만 쓴다. " +
-			"context 로 올리는 승급은 게이트를 지나야 하고 확정은 사람이 한다. " +
-			"승급을 제안하려면 사용자에게 engram promote 실행을 맡겨라.",
+		Name:        "capture",
+		Description: i18n.T("cli.mcp.tool_capture"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpCaptureArgs) (*mcp.CallToolResult, any, error) {
 		cfg, err := config.Load(root)
 		if err != nil {
@@ -127,7 +115,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 
 	mcp.AddTool[mcpQueryArgs, any](s, &mcp.Tool{
 		Name:        "search",
-		Description: "위키를 검색해 문서 목록을 재료로 낸다. 요약하지 않는다. 문장은 네가 만든다.",
+		Description: i18n.T("cli.mcp.tool_search"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpQueryArgs) (*mcp.CallToolResult, any, error) {
 		limit := in.Limit
 		if limit <= 0 {
@@ -142,7 +130,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 
 	mcp.AddTool[mcpQueryArgs, any](s, &mcp.Tool{
 		Name:        "recall",
-		Description: "질의에 맞는 원문 조각을 출처와 함께 낸다. 요약하지 않는다. 조각을 인용해 네가 문장을 만든다.",
+		Description: i18n.T("cli.mcp.tool_recall"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpQueryArgs) (*mcp.CallToolResult, any, error) {
 		limit := in.Limit
 		if limit <= 0 {
@@ -157,7 +145,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 
 	mcp.AddTool[mcpSlugArgs, any](s, &mcp.Tool{
 		Name:        "backlinks",
-		Description: "슬러그를 가리키는 링크를 본문 링크와 관계 필드로 구분해 낸다.",
+		Description: i18n.T("cli.mcp.tool_backlinks"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpSlugArgs) (*mcp.CallToolResult, any, error) {
 		cfg, err := config.Load(root)
 		if err != nil {
@@ -184,7 +172,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 
 	mcp.AddTool[struct{}, any](s, &mcp.Tool{
 		Name:        "status",
-		Description: "위키 현황을 수치로 낸다. 단계별 문서 수, 링크 수, 고아 수, lint 요약.",
+		Description: i18n.T("cli.mcp.tool_status"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
 		res, err := status.Run(root, time.Now())
 		if err != nil {
@@ -195,7 +183,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 
 	mcp.AddTool[struct{}, any](s, &mcp.Tool{
 		Name:        "lint",
-		Description: "규칙 위반 목록을 낸다. 규칙 ID, 등급, 고치는 법이 함께 나온다. 재료일 뿐 판단하지 않는다.",
+		Description: i18n.T("cli.mcp.tool_lint"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
 		cfg, err := config.Load(root)
 		if err != nil {
@@ -209,9 +197,8 @@ func registerMCPTools(s *mcp.Server, root string) {
 	})
 
 	mcp.AddTool[struct{}, any](s, &mcp.Tool{
-		Name: "rules",
-		Description: "이 위키에 지금 적용되는 규칙 전부를 낸다. 임계값과 허용값을 지어내지 말고 " +
-			"이 도구로 얻어라. 위키마다 값이 다르다.",
+		Name:        "rules",
+		Description: i18n.T("cli.mcp.tool_rules"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
 		cfg, err := config.Load(root)
 		if err != nil {
@@ -222,7 +209,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 
 	mcp.AddTool[mcpLimitArgs, any](s, &mcp.Tool{
 		Name:        "resurface",
-		Description: "오래 안 본 context 문서 후보를 재료로 낸다. 제시 이력을 쓰지 않는다.",
+		Description: i18n.T("cli.mcp.tool_resurface"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpLimitArgs) (*mcp.CallToolResult, any, error) {
 		cfg, err := config.Load(root)
 		if err != nil {
@@ -243,7 +230,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 
 	mcp.AddTool[mcpBridgeArgs, any](s, &mcp.Tool{
 		Name:        "bridge",
-		Description: "연결되지 않은 문서 쌍을 유사도와 함께 낸다. 기각을 기록하지 않는다.",
+		Description: i18n.T("cli.mcp.tool_bridge"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpBridgeArgs) (*mcp.CallToolResult, any, error) {
 		cfg, err := config.Load(root)
 		if err != nil {
@@ -259,7 +246,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 		}
 		ix := index.Load(root)
 		if ix == nil {
-			return nil, nil, fmt.Errorf("검색 색인이 없습니다. engram reindex 로 색인을 만든 뒤 다시 실행하세요")
+			return nil, nil, errors.New(i18n.T("cli.mcp.index_missing_build"))
 		}
 		walked, err := walk.Files(root, cfg)
 		if err != nil {
@@ -280,7 +267,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 
 	mcp.AddTool[mcpDigestArgs, any](s, &mcp.Tool{
 		Name:        "digest",
-		Description: "기간 집계를 재료로 낸다. 신규 문서, 노후 문서, 고아 목록. 다이제스트 산문은 네가 쓴다.",
+		Description: i18n.T("cli.mcp.tool_digest"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpDigestArgs) (*mcp.CallToolResult, any, error) {
 		cfg, err := config.Load(root)
 		if err != nil {
@@ -342,7 +329,7 @@ func searchJSON(root, query string, limit int) (searchResponse, error) {
 func recallJSON(root, query string, limit int) (recallResponse, error) {
 	ix := index.Load(root)
 	if ix == nil {
-		return recallResponse{}, fmt.Errorf("검색 색인이 없습니다. engram reindex 를 먼저 실행하세요")
+		return recallResponse{}, errors.New(i18n.T("cli.mcp.index_missing_first"))
 	}
 	cfg, err := config.Load(root)
 	if err != nil {
