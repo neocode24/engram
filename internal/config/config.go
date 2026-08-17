@@ -81,7 +81,7 @@ func knownPreset(p Preset) bool {
 
 // presetAxes는 프리셋이 켜는 축 집합을 새 맵으로 반환한다.
 // 포함 관계를 누적으로 구현해 personal이 education의, education이 team의
-// 상위 집합이 되도록 한다.
+// 부분집합이 되도록 한다.
 func presetAxes(p Preset) map[Axis]bool {
 	on := make(map[Axis]bool, 14)
 	for _, a := range []Axis{

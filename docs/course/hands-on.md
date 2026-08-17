@@ -283,7 +283,19 @@ engram init --preset education ~/engram-wiki
 cd ~/engram-wiki
 ```
 
-`--preset`은 생략해도 `education`입니다. 그래도 적는 이유는 프리셋이라는 것이 있다는 사실을 여기서 알려야 하기 때문입니다. `personal`, `education`, `team` 셋이 있고 오른쪽으로 갈수록 스키마 축이 늘어납니다. **실습은 `education`으로만 합니다.** 프리셋을 바꾸는 것은 8단계에서 `migrate`로 실제로 해 봅니다.
+`--preset`은 생략해도 `education`입니다. 그래도 적는 이유는 프리셋이라는 것이 있다는 사실을 여기서 알려야 하기 때문입니다.
+
+프리셋은 셋이고 **스키마 축의 시작점만 정합니다.** 디렉토리 구성, 게이트, 임계값은 셋 다 같습니다. 포함 관계라 오른쪽이 왼쪽을 전부 담습니다.
+
+| 프리셋 | 켜지는 축 | `personal`에 더해지는 것 |
+|---|---|---|
+| `personal` | 8 | (기준) `type`, `artifact_stage`, `status`, `indexable`, `tags`, `source_refs`, `derived_from`, `related` |
+| `education` | 10 | `source_channel`, `derived_context` |
+| `team` | 14 | 위에 더해 `scope`, `sensitivity`, `trigger_mode`, `workflow` |
+
+축이 켜지면 그 필드가 단계별 필수 필드에 들어가고, 꺼진 축의 필드를 문서에 쓰면 `lint`가 `schema.axis-off`로 잡습니다. 축은 프리셋과 무관하게 `engram.yaml`에서 하나씩 켜고 끌 수 있습니다. 프리셋은 매번 열네 줄을 쓰지 않게 해 주는 시작점일 뿐입니다.
+
+**실습은 `education`으로만 합니다.** `personal`은 `derived_context` 축이 꺼져 있어서 4단계의 파생 왕복이 보이지 않고, `team`은 `sensitivity`와 `workflow`까지 필수라 3단계부터 채울 것이 늘어납니다. 프리셋을 실제로 바꾸는 것은 8단계에서 `migrate`로 해 봅니다.
 
 출력이 만든 것을 그대로 알려 줍니다.
 
@@ -307,10 +319,28 @@ cd ~/engram-wiki
 ## git 저장소로 만들기
 
 ```
-git init
+git init -b main
 git add -A
 git commit -m "위키 시작"
 ```
+
+**`-b main`을 반드시 붙입니다.** git 자체의 기본 브랜치 이름은 아직도 `master`입니다. GitHub가 `main`으로 바꾼 것은 GitHub에서 만든 저장소 이야기이고, 로컬 `git init`은 별개입니다. 그냥 `git init`을 치면 `master`가 생기고 아래 안내가 함께 나옵니다.
+
+```
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+```
+
+git 버전 문제가 아닙니다. `init.defaultBranch` 설정이 비어 있으면 어느 버전이든 `master`를 씁니다. 한 번 정해 두면 이후 모든 저장소에 적용됩니다.
+
+```
+git config --global init.defaultBranch main
+```
+
+`-b` 플래그는 git 2.28부터 있습니다. 그보다 낮으면 `git branch -m main`으로 이름을 바꿉니다.
 
 **위키는 git 저장소여야 합니다.** 세 가지 이유입니다.
 
@@ -449,9 +479,9 @@ git add -A && git commit -m "index 소개 작성"
 | 결정 | 내용 | 이유 |
 |---|---|---|
 | 위키 위치 | `~/engram-wiki` 하나 | 8단계까지 이것만 씁니다. 실습장을 늘리지 않습니다 |
-| 프리셋 | `education` 고정 | `personal`은 `derived_context` 축이 꺼져 있어 4단계의 파생 왕복이 보이지 않습니다 |
-| 프리셋 비교 | 2단계에서 하지 않습니다 | 아직 쓰지 않은 축 이야기로 빠집니다. 8단계 `migrate`에서 실제로 바꿔 봅니다 |
-| git | 2단계에서 `git init`하고 매 단계 끝에 커밋합니다 | `doctor` 항목 둘이 git을 요구하고, 8단계 `sync`가 이력을 재료로 씁니다 |
+| 프리셋 | `education` 고정 | `personal`은 `derived_context` 축이 꺼져 있어 4단계의 파생 왕복이 보이지 않고, `team`은 필수 필드가 많아 3단계부터 채울 것이 늘어납니다 |
+| 프리셋 비교 | 표로만 보여 주고 직접 만들어 보지 않습니다 | 셋을 다 만들면 아직 쓰지 않은 축 이야기로 빠집니다. 8단계 `migrate`에서 실제로 바꿔 봅니다 |
+| git | 2단계에서 `git init -b main`하고 매 단계 끝에 커밋합니다 | `doctor` 항목 둘이 git을 요구하고, 8단계 `sync`가 이력을 재료로 씁니다. `-b main`이 없으면 git 기본값인 `master`가 생깁니다 |
 | `index.md` 편집 | 에디터로 본문만 고칩니다. `update` 커맨드를 쓰지 않습니다 | `update`는 4단계 커맨드입니다. 여기서 커맨드를 늘리지 않습니다 |
 | 매 단계 마무리 | `doctor`, `lint`, `status` 셋을 돌리고 커밋합니다 | 불변식 확인을 습관으로 만듭니다 |
 
