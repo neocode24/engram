@@ -31,7 +31,7 @@ type backlinksResponse struct {
 // 반환한다. 조회는 판정이 아니므로 결과가 없어도 종료 코드는 0이다.
 func newBacklinksCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "backlinks <슬러그>",
+		Use:   "backlinks " + i18n.T("usage.args.slug"),
 		Short: i18n.T("cli.backlinks.short"),
 		Long:  i18n.T("cli.backlinks.long"),
 		Args:  cobra.ExactArgs(1),

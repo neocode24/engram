@@ -42,7 +42,7 @@ type searchResponse struct {
 // 조회 커맨드는 색인 파일을 갱신하지 않는다. ADR 0025.
 func newSearchCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "search <질의>",
+		Use:   "search " + i18n.T("usage.args.query"),
 		Short: i18n.T("cli.search.short"),
 		Long:  i18n.T("cli.search.long"),
 		Args:  cobra.ExactArgs(1),

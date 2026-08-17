@@ -28,7 +28,7 @@ const defaultSourceType = "source-summary"
 // 이 계층은 원본 보존이 계약이므로 updated 필드를 쓰지 않는다. ADR 0009.
 func newSourceCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "source [내용]",
+		Use:   "source " + i18n.T("usage.args.content"),
 		Short: i18n.T("cli.source.short"),
 		Long:  i18n.T("cli.source.long"),
 		Args:  cobra.ArbitraryArgs,

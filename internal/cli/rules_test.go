@@ -215,7 +215,15 @@ func TestRulesListMatchesLint(t *testing.T) {
 	if err != nil {
 		t.Fatalf("실행 실패: %v\n%s", err, out)
 	}
-	var res rulesReport
+	// lint.Rule 은 등급과 설명을 메시지 ID 로 담고 JSON 에는 푼 문자열을
+	// 낸다(ADR 0049). 그래서 lint.Rule 로 되받지 않고 낸 형태 그대로 읽는다.
+	var res struct {
+		Rules []struct {
+			ID       string `json:"id"`
+			Severity string `json:"severity"`
+			Desc     string `json:"desc"`
+		} `json:"rules"`
+	}
 	jsonPart := out[strings.Index(out, "{"):]
 	if err := json.Unmarshal([]byte(strings.TrimSpace(jsonPart)), &res); err != nil {
 		t.Fatalf("JSON 파싱 실패: %v\n출력: %s", err, out)
@@ -224,9 +232,13 @@ func TestRulesListMatchesLint(t *testing.T) {
 	if len(res.Rules) != len(want) {
 		t.Fatalf("규칙 수가 다름: 출력 %d, lint.Rules %d", len(res.Rules), len(want))
 	}
+	// Rule 은 등급과 설명을 메시지 ID 로 담고 JSON 에는 푼 문자열을 낸다.
+	// 그래서 값 비교가 아니라 푼 결과끼리 대조한다. ADR 0049.
 	for i, r := range want {
-		if res.Rules[i] != r {
-			t.Errorf("규칙 %d번이 다름: 출력 %+v, want %+v", i, res.Rules[i], r)
+		got := res.Rules[i]
+		if got.ID != r.ID || got.Severity != r.Severity() || got.Desc != r.Desc() {
+			t.Errorf("규칙 %d번이 다름: 출력 %+v, want {ID:%s Severity:%s Desc:%s}",
+				i, got, r.ID, r.Severity(), r.Desc())
 		}
 	}
 }

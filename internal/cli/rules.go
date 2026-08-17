@@ -218,12 +218,12 @@ func printRules(w io.Writer, res rulesReport) {
 		if w := displayWidth(r.ID); w > idWidth {
 			idWidth = w
 		}
-		if w := displayWidth(r.Severity); w > sevWidth {
+		if w := displayWidth(r.Severity()); w > sevWidth {
 			sevWidth = w
 		}
 	}
 	for _, r := range res.Rules {
-		fmt.Fprintf(w, "  [%s] %s  %s\n", padRight(r.Severity, sevWidth), padRight(r.ID, idWidth), r.Desc)
+		fmt.Fprintf(w, "  [%s] %s  %s\n", padRight(r.Severity(), sevWidth), padRight(r.ID, idWidth), r.Desc())
 	}
 	fmt.Fprint(w, "  "+i18n.T("cli.rules.lint_severity_note")+"\n")
 	fmt.Fprint(w, "  "+i18n.T("cli.rules.lint_reject_note")+"\n")

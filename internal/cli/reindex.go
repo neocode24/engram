@@ -27,7 +27,7 @@ type reindexResult struct {
 // reindex가 인덱스를 만드는 유일한 커맨드다. ADR 0025.
 func newReindexCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "reindex [경로]",
+		Use:   "reindex " + i18n.T("usage.args.path_opt"),
 		Short: i18n.T("cli.reindex.short"),
 		Long:  i18n.T("cli.reindex.long"),
 		Args:  cobra.MaximumNArgs(1),

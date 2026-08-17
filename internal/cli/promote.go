@@ -26,7 +26,7 @@ import (
 // 본문은 절대 고치지 않는다. ADR 0009.
 func newPromoteCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "promote <경로>",
+		Use:   "promote " + i18n.T("usage.args.path"),
 		Short: i18n.T("cli.promote.short"),
 		Long:  i18n.T("cli.promote.long"),
 		Args:  cobra.ExactArgs(1),

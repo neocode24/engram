@@ -5,6 +5,7 @@
 package lint
 
 import (
+	"encoding/json"
 	"errors"
 	"path/filepath"
 	"regexp"
@@ -29,10 +30,30 @@ const (
 
 // Rule은 lint 규칙 하나의 메타데이터다. ID 는 동등성 검증의 정규화
 // 표가 짝짓는 문자열 그대로다.
+// 등급과 설명은 메시지 ID 로 담고 읽을 때 푼다. 규칙 목록은 패키지
+// 초기화 시점에 만들어지는데 그때는 아직 출력 언어가 정해지기 전이라,
+// 여기서 문자열로 굳히면 rules show 가 늘 기본 언어로 나온다. ADR 0049.
 type Rule struct {
-	ID       string `json:"id"`
-	Severity string `json:"severity"` // error, warn, reject. 조건에 따라 갈리면 그 사실을 적는다
-	Desc     string `json:"desc"`     // 무엇을 판정하는지 한 줄
+	ID string `json:"id"`
+	// SeverityID와 DescID는 카탈로그 메시지 ID 다. JSON 에는 푼 값을 낸다.
+	SeverityID string `json:"-"`
+	DescID     string `json:"-"`
+}
+
+// Severity는 등급 표기를 지금 언어로 낸다. 조건에 따라 갈리는 규칙은
+// 그 사실을 담은 문구가 나온다.
+func (r Rule) Severity() string { return i18n.T(r.SeverityID) }
+
+// Desc는 무엇을 판정하는지 한 줄로 낸다.
+func (r Rule) Desc() string { return i18n.T(r.DescID) }
+
+// MarshalJSON은 푼 문자열을 낸다. --json 소비자는 ID 가 아니라 문장을 받는다.
+func (r Rule) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		ID       string `json:"id"`
+		Severity string `json:"severity"`
+		Desc     string `json:"desc"`
+	}{r.ID, r.Severity(), r.Desc()})
 }
 
 // registry는 정의된 규칙 전부다. newRule 이 정의 시점에 채운다.
@@ -48,11 +69,11 @@ var ruleIndex = map[string]bool{}
 // 한몸이므로 메타데이터 없는 규칙이 존재할 수 없고 목록이 규칙과
 // 어긋날 수 없다. 소스 텍스트를 긁어 대조하는 방식은 새 접두어를
 // 놓친 적이 있어 쓰지 않는다.
-func newRule(id, severity, desc string) Rule {
+func newRule(id, severityID, descID string) Rule {
 	if ruleIndex[id] {
 		panic("규칙 ID가 중복 정의되었습니다: " + id)
 	}
-	r := Rule{ID: id, Severity: severity, Desc: desc}
+	r := Rule{ID: id, SeverityID: severityID, DescID: descID}
 	ruleIndex[id] = true
 	registry = append(registry, r)
 	return r
@@ -79,38 +100,38 @@ func newViolation(sev Severity, r Rule, path string, line int, msg, fix string) 
 
 // 규칙 정의. 나열 순서는 게이트의 거절 사유를 먼저 읽히는 순서다.
 var (
-	ruleGateMinWikilinks = newRule("gate.min-wikilinks", "reject",
-		i18n.T("lint.rule.gate_min_wikilinks"))
-	ruleFrontmatterMissing = newRule("frontmatter.missing", "error",
-		i18n.T("lint.rule.frontmatter_missing"))
-	ruleFrontmatterUnclosed = newRule("frontmatter.unclosed", "error",
-		i18n.T("lint.rule.frontmatter_unclosed"))
-	ruleFrontmatterYAML = newRule("frontmatter.yaml", "error",
-		i18n.T("lint.rule.frontmatter_yaml"))
-	ruleFrontmatterMissingField = newRule("frontmatter.missing-field", "error",
-		i18n.T("lint.rule.frontmatter_missing_field"))
-	ruleSchemaAllowedValue = newRule("schema.allowed-value", "error",
-		i18n.T("lint.rule.schema_allowed_value"))
-	ruleSchemaAxisOff = newRule("schema.axis-off", "error",
-		i18n.T("lint.rule.schema_axis_off"))
-	ruleLocationStageAgreement = newRule("location.stage-agreement", "error 또는 warn",
-		i18n.T("lint.rule.location_stage_agreement"))
-	ruleTaxonomyForms = newRule("taxonomy.forms", "error",
-		i18n.T("lint.rule.taxonomy_forms"))
-	ruleSourcesUpdated = newRule("sources.updated", "warn",
-		i18n.T("lint.rule.sources_updated"))
-	ruleTaxonomyTopics = newRule("taxonomy.topics", "warn",
-		i18n.T("lint.rule.taxonomy_topics"))
-	ruleBodyMaxLines = newRule("body.max-lines", "warn",
-		i18n.T("lint.rule.body_max_lines"))
-	ruleLinkBroken = newRule("link.broken", "warn",
-		i18n.T("lint.rule.link_broken"))
-	ruleGraphOrphan = newRule("graph.orphan", "warn",
-		i18n.T("lint.rule.graph_orphan"))
-	ruleGateDeferred = newRule("gate.deferred", "warn",
-		i18n.T("lint.rule.gate_deferred"))
-	ruleWikiBroadTopic = newRule("wiki.broad-topic", "warn",
-		i18n.T("lint.rule.wiki_broad_topic"))
+	ruleGateMinWikilinks = newRule("gate.min-wikilinks", "lint.severity.reject",
+		"lint.rule.gate_min_wikilinks")
+	ruleFrontmatterMissing = newRule("frontmatter.missing", "lint.severity.error",
+		"lint.rule.frontmatter_missing")
+	ruleFrontmatterUnclosed = newRule("frontmatter.unclosed", "lint.severity.error",
+		"lint.rule.frontmatter_unclosed")
+	ruleFrontmatterYAML = newRule("frontmatter.yaml", "lint.severity.error",
+		"lint.rule.frontmatter_yaml")
+	ruleFrontmatterMissingField = newRule("frontmatter.missing-field", "lint.severity.error",
+		"lint.rule.frontmatter_missing_field")
+	ruleSchemaAllowedValue = newRule("schema.allowed-value", "lint.severity.error",
+		"lint.rule.schema_allowed_value")
+	ruleSchemaAxisOff = newRule("schema.axis-off", "lint.severity.error",
+		"lint.rule.schema_axis_off")
+	ruleLocationStageAgreement = newRule("location.stage-agreement", "lint.severity.error_or_warn",
+		"lint.rule.location_stage_agreement")
+	ruleTaxonomyForms = newRule("taxonomy.forms", "lint.severity.error",
+		"lint.rule.taxonomy_forms")
+	ruleSourcesUpdated = newRule("sources.updated", "lint.severity.warn",
+		"lint.rule.sources_updated")
+	ruleTaxonomyTopics = newRule("taxonomy.topics", "lint.severity.warn",
+		"lint.rule.taxonomy_topics")
+	ruleBodyMaxLines = newRule("body.max-lines", "lint.severity.warn",
+		"lint.rule.body_max_lines")
+	ruleLinkBroken = newRule("link.broken", "lint.severity.warn",
+		"lint.rule.link_broken")
+	ruleGraphOrphan = newRule("graph.orphan", "lint.severity.warn",
+		"lint.rule.graph_orphan")
+	ruleGateDeferred = newRule("gate.deferred", "lint.severity.warn",
+		"lint.rule.gate_deferred")
+	ruleWikiBroadTopic = newRule("wiki.broad-topic", "lint.severity.warn",
+		"lint.rule.wiki_broad_topic")
 )
 
 // Violation은 위반 하나다. 모든 위반은 경로와 줄, 무엇이 잘못됐는지,

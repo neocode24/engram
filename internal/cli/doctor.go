@@ -15,7 +15,7 @@ import (
 // 진단만 하고 고치지 않는다. ok 가 아닌 항목에는 조치를 함께 출력한다.
 func newDoctorCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "doctor [경로]",
+		Use:   "doctor " + i18n.T("usage.args.path_opt"),
 		Short: i18n.T("cli.doctor.short"),
 		Long:  i18n.T("cli.doctor.long"),
 		Args:  cobra.MaximumNArgs(1),

@@ -7,6 +7,12 @@ package i18n
 
 func init() {
 	Register(LangKO, map[string]string{
+		// lint 규칙 등급 표기.
+		"lint.severity.error":         "error",
+		"lint.severity.warn":          "warn",
+		"lint.severity.reject":        "reject",
+		"lint.severity.error_or_warn": "error 또는 warn",
+
 		// lint 규칙 설명. rules show 와 meta/lint-rules.md 이 낸다.
 		"lint.rule.gate_min_wikilinks":        "context 디렉토리 아래 문서의 고유 위키링크 수가 min_wikilinks 미달. 게이트의 유일한 거절 사유(ADR 0040)",
 		"lint.rule.frontmatter_missing":       "프론트매터 블록이 아예 없는 문서",
@@ -281,6 +287,12 @@ engram.yaml 이 고칠 수 없는 값은 아래 상수로 받았다. 고정 허�
 	})
 
 	Register(LangEN, map[string]string{
+		// lint rule severity labels.
+		"lint.severity.error":         "error",
+		"lint.severity.warn":          "warn",
+		"lint.severity.reject":        "reject",
+		"lint.severity.error_or_warn": "error or warn",
+
 		// lint rule descriptions, shown by rules show and meta/lint-rules.md.
 		"lint.rule.gate_min_wikilinks":        "Unique wikilinks in a document under the context directory fall below min_wikilinks. The gate's only rejection reason (ADR 0040)",
 		"lint.rule.frontmatter_missing":       "Document with no frontmatter block at all",
@@ -288,7 +300,7 @@ engram.yaml 이 고칠 수 없는 값은 아래 상수로 받았다. 고정 허�
 		"lint.rule.frontmatter_yaml":          "Frontmatter YAML syntax error",
 		"lint.rule.frontmatter_missing_field": "Missing stage-required field",
 		"lint.rule.schema_allowed_value":      "Field value outside the allowed set: artifact_stage, status, scope, sensitivity, trigger_mode",
-		"lint.rule.schema_axis_off":           "Document carries an axis the config turned off",
+		"lint.rule.schema_axis_off":           "Document carries an attribute the config turned off",
 		"lint.rule.location_stage_agreement":  "Mismatch between the document's directory and its artifact_stage value. Declaring context while outside context/ is an error; other mismatches are warns (ADR 0035)",
 		"lint.rule.taxonomy_forms":            "form value not in the closed forms set",
 		"lint.rule.sources_updated":           "updated field that breaks source preservation in a sources document",
@@ -314,8 +326,8 @@ engram.yaml 이 고칠 수 없는 값은 아래 상수로 받았다. 고정 허�
 		"lint.violation.allowed_value.fix":            "Change the %s value to one of the allowed values",
 		"lint.violation.stage_agreement.message":      "Document is in the %s directory but artifact_stage is %q",
 		"lint.violation.stage_agreement.fix":          "Move the document to the directory matching its artifact_stage, or change artifact_stage to %s. Use engram promote, demote, or archive to move documents",
-		"lint.violation.axis_off.message":             "The document carries an axis the config turned off: %s (preset %s)",
-		"lint.violation.axis_off.fix":                 "Turn on %s in the axes of engram.yaml, or remove the %s field from the document",
+		"lint.violation.axis_off.message":             "The document carries an attribute the config turned off: %s (preset %s)",
+		"lint.violation.axis_off.fix":                 "Turn %s on under axes in engram.yaml, or remove the %s field from the document",
 		"lint.violation.forms.message":                "form value is not in the closed forms set: %q (allowed: %s)",
 		"lint.violation.forms.fix":                    "Change the form value to one of the allowed values",
 		"lint.violation.topics.message":               "topics value is not defined in config: %q (topics is an open set)",
@@ -400,9 +412,9 @@ engram.yaml 이 고칠 수 없는 값은 아래 상수로 받았다. 고정 허�
   backlinks keep performing them.`,
 
 		"eject.schema_doc.heading":          "# Frontmatter schema\n\n",
-		"eject.schema_doc.intro":            "This wiki uses the %s preset. The preset is the starting point for axes; engram.yaml's axes can turn each one on or off.\n\n",
-		"eject.schema_doc.on_heading":       "## Enabled axes\n\n",
-		"eject.schema_doc.off_heading":      "\n## Disabled axes\n\nA document carrying a disabled axis is a violation.\n\n",
+		"eject.schema_doc.intro":            "This wiki uses the %s preset. The preset is the starting point for attributes; the axes key in engram.yaml turns each one on or off.\n\n",
+		"eject.schema_doc.on_heading":       "## Enabled attributes\n\n",
+		"eject.schema_doc.off_heading":      "\n## Disabled attributes\n\nA document carrying a disabled attribute is a violation.\n\n",
 		"eject.schema_doc.required_heading": "\n## Required fields by stage\n\n",
 		"eject.schema_doc.dates": `
 ## Date fields
@@ -532,8 +544,8 @@ calling this script must not block a wiki that only has warnings.
 		"eject.linter.allowed_value.fix":        "Change the %s value to one of the allowed values",
 		"eject.linter.stage_agreement.message":  `Document is in the %s directory but artifact_stage is "%s"`,
 		"eject.linter.stage_agreement.fix":      "Move the document to the directory matching its artifact_stage, or change artifact_stage to %s. Use engram promote, demote, or archive to move documents",
-		"eject.linter.axis_off.message":         "The document carries an axis the config turned off: %s (preset %s)",
-		"eject.linter.axis_off.fix":             "Turn on %s in the axes of engram.yaml, or remove the %s field from the document",
+		"eject.linter.axis_off.message":         "The document carries an attribute the config turned off: %s (preset %s)",
+		"eject.linter.axis_off.fix":             "Turn %s on under axes in engram.yaml, or remove the %s field from the document",
 		"eject.linter.forms.message":            `form value is not in the closed forms set: "%s" (allowed: %s)`,
 		"eject.linter.forms.fix":                "Change the form value to one of the allowed values",
 		"eject.linter.topics.message":           `topics value is not defined in config: "%s" (topics is an open set)`,

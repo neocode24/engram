@@ -24,7 +24,7 @@ const flagTo = "to"
 // 신뢰가 깨지므로 링크가 깨져도 경고로만 알리고 진행한다.
 func newDemoteCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "demote <경로>",
+		Use:   "demote " + i18n.T("usage.args.path"),
 		Short: i18n.T("cli.demote.short"),
 		Long:  i18n.T("cli.demote.long"),
 		Args:  cobra.ExactArgs(1),

@@ -26,7 +26,7 @@ const flagDryRun = "dry-run"
 // 않으면 링크 무결성이 즉시 깨지고 게이트의 의미가 사라진다.
 func newMvCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mv <옛슬러그> <새슬러그>",
+		Use:   "mv " + i18n.T("usage.args.slug_rename"),
 		Short: i18n.T("cli.mv.short"),
 		Long:  i18n.T("cli.mv.long"),
 		Args:  cobra.ExactArgs(2),

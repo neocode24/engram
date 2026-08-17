@@ -29,7 +29,7 @@ type archiveOutcome struct {
 // 쓴다. 슬러그를 바꾸지 않으므로 들어오는 링크는 깨지지 않는다. ADR 0028.
 func newArchiveCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "archive <경로>",
+		Use:   "archive " + i18n.T("usage.args.path"),
 		Short: i18n.T("cli.archive.short"),
 		Long:  i18n.T("cli.archive.long"),
 		Args:  cobra.ExactArgs(1),

@@ -22,7 +22,7 @@ const (
 // newExportCmd는 위키의 일부를 밖으로 내보낼 번들을 만드는 export 커맨드를 반환한다.
 func newExportCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "export [슬러그...]",
+		Use:   "export " + i18n.T("usage.args.slugs_opt"),
 		Short: i18n.T("cli.export.short"),
 		Long:  i18n.T("cli.export.long"),
 		RunE: func(cmd *cobra.Command, args []string) error {

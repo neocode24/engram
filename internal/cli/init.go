@@ -33,7 +33,7 @@ type initResult struct {
 // newInitCmd는 새 위키를 만드는 init 커맨드를 반환한다.
 func newInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "init [경로]",
+		Use:   "init " + i18n.T("usage.args.path_opt"),
 		Short: i18n.T("cli.init.short"),
 		Long:  i18n.T("cli.init.long"),
 		Args:  cobra.MaximumNArgs(1),

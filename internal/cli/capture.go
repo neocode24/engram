@@ -35,7 +35,7 @@ type ingestResult struct {
 // 같은 이름의 파일이 이미 있을 때다.
 func newCaptureCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "capture [내용]",
+		Use:   "capture " + i18n.T("usage.args.content"),
 		Short: i18n.T("cli.capture.short"),
 		Long:  i18n.T("cli.capture.long"),
 		Args:  cobra.ArbitraryArgs,

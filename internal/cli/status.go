@@ -15,7 +15,7 @@ import (
 // status 는 진단이지 판정이 아니다. 정상 종료 코드는 항상 0 이고 판정은 lint 가 한다.
 func newStatusCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "status [경로]",
+		Use:   "status " + i18n.T("usage.args.path_opt"),
 		Short: i18n.T("cli.status.short"),
 		Long:  i18n.T("cli.status.long"),
 		Args:  cobra.MaximumNArgs(1),

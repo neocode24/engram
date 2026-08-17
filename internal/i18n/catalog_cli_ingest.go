@@ -226,13 +226,13 @@ Content comes from arguments or piped standard input.
 (YYYY-MM) precision is allowed; when omitted the global --now date is used.
 This layer is preservation-by-contract: documents are never edited and the updated field is never written.`,
 		"cli.source.flag_created":     "Day the original was written (YYYY-MM-DD or YYYY-MM)",
-		"cli.source.flag_channel":     "Input channel. Value of the source_channel axis",
+		"cli.source.flag_channel":     "Input channel. Value of the source_channel attribute",
 		"cli.source.flag_ref":         "Origin of the source (path or URL). Can be repeated",
 		"cli.source.flag_type":        "Document type. Allowed values are the types in the wiki config",
 		"cli.source.created_invalid":  "--created value is not in YYYY-MM-DD or YYYY-MM format: %q",
 		"cli.source.next_hint":        "When the tidy-up is done, write a context document citing this source",
-		"cli.source.warn_channel_off": "Warning: the source_channel axis is off, so --channel is ignored. Turn source_channel on in the axes of engram.yaml to use it",
-		"cli.source.warn_refs_off":    "Warning: the source_refs axis is off, so --ref is ignored. Turn source_refs on in the axes of engram.yaml to use it",
+		"cli.source.warn_channel_off": "Warning: the source_channel attribute is off, so --channel is ignored. Turn source_channel on under axes in engram.yaml to use it",
+		"cli.source.warn_refs_off":    "Warning: the source_refs attribute is off, so --ref is ignored. Turn source_refs on under axes in engram.yaml to use it",
 		"cli.promote.short":           "Promote an existing document to the context stage",
 		"cli.promote.long": `Checks an existing document against the promotion gate and moves it up to the context stage.
 
@@ -348,12 +348,12 @@ links end up pointing at the old name, and re-running mv recovers.
 		"cli.update.short":        "Update a document's frontmatter and body",
 		"cli.update.long": `Updates a document's frontmatter keys and body.
 
---set key=value sets a key. Repeatable. Array axes take comma-separated
+--set key=value sets a key. Repeatable. Array attributes take comma-separated
 values. Example: --set topics=go,cli
 --unset key removes a key. Repeatable.
 --body-from <file> replaces the whole body. Pass - to read standard input.
 
-Keys of disabled axes and values out of range are rejected. artifact_stage
+Keys of disabled attributes and values outside the allowed set are rejected. artifact_stage
 cannot be changed here. Stage moves belong to engram promote and engram demote.
 Key order is kept exactly as parsing preserved it.`,
 		"cli.update.flag_set":              "Set a frontmatter key. key=value. Repeatable",
@@ -362,11 +362,11 @@ Key order is kept exactly as parsing preserved it.`,
 		"cli.update.no_changes":            "Nothing to update\nUse one of --set key=value, --unset key, --body-from <file|->",
 		"cli.update.set_invalid":           "--set value is not in key=value form: %q",
 		"cli.update.unset_stage_forbidden": "artifact_stage cannot be removed with update. Stage moves belong to engram promote and engram demote",
-		"cli.update.unset_axis_off":        "nothing to unset for a disabled axis key: %s",
+		"cli.update.unset_axis_off":        "nothing to unset for a disabled attribute: %s",
 		"cli.update.warn_sources_body":     "Warning: sources is a preservation layer. Remember that the body was changed",
 		"cli.update.write_fail":            "cannot write document: %s",
 		"cli.update.set_stage_forbidden":   "artifact_stage cannot be changed with update. Stage moves belong to engram promote and engram demote",
-		"cli.update.set_axis_off":          "cannot set a disabled axis key: %s (preset %s). Turn it on in the axes of engram.yaml or stop using it in documents",
+		"cli.update.set_axis_off":          "cannot set a disabled attribute: %s (preset %s). Turn it on under axes in engram.yaml, or stop using it in documents",
 		"cli.update.set_empty_item":        "--set %s=%s value contains an empty item",
 		"cli.update.set_not_bool":          "--set %s=%s value is not a boolean (true or false)",
 		"cli.update.set_not_allowed":       "--set %s=%s value is not allowed (allowed: %s)",

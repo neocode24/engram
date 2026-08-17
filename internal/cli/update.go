@@ -26,7 +26,7 @@ const (
 // 슬러그와 파일명은 바꾸지 않는다. 단계 이동은 promote와 demote의 일이다.
 func newUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update <경로>",
+		Use:   "update " + i18n.T("usage.args.path"),
 		Short: i18n.T("cli.update.short"),
 		Long:  i18n.T("cli.update.long"),
 		Args:  cobra.ExactArgs(1),

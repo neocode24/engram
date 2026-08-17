@@ -343,6 +343,17 @@ Because the presets nest, moving up a preset only adds fields.
 
 `topics` is open and `forms` is closed. lint treats an unknown `form` as an error and a new `topic` as a warning. Without that distinction, a typo quietly becomes a category.
 
+### Output language
+
+Command output is Korean by default. Switch it with a flag or an environment variable.
+
+```
+engram --lang en status
+ENGRAM_LANG=en engram status
+```
+
+`ko` and `en` are the accepted values. The setting is deliberately not part of `engram.yaml`: that file is committed and shared by the team, while the output language belongs to whoever is reading. See [ADR 0049](docs/decisions/0049-cli-output-language.md).
+
 ## Where it stands
 
 **0.1 through 1.0 are done.** All twenty-eight commands above work. The first release ships together with making the repository public.

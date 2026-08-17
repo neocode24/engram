@@ -44,7 +44,7 @@ type recallResponse struct {
 // 인용할 조각을 낸다. 둘 다 요약을 만들지 않는다. ADR 0014, 0028.
 func newRecallCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "recall <질의>",
+		Use:   "recall " + i18n.T("usage.args.query"),
 		Short: i18n.T("cli.recall.short"),
 		Long:  i18n.T("cli.recall.long"),
 		Args:  cobra.ExactArgs(1),

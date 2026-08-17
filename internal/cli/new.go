@@ -24,7 +24,7 @@ const (
 // newNewCmd는 처음부터 검수된 지식으로 context에 쓰는 new 커맨드를 반환한다.
 func newNewCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "new <제목>",
+		Use:   "new " + i18n.T("usage.args.title"),
 		Short: i18n.T("cli.new.short"),
 		Long:  i18n.T("cli.new.long"),
 		Args:  cobra.ExactArgs(1),

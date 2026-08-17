@@ -317,18 +317,18 @@ the existing wiki.`,
 		"cli.init.file_write_fail":      "Cannot write file: %s",
 		"cli.init.gitignore_read_fail":  "Cannot read .gitignore",
 		"cli.init.gitignore_write_fail": "Cannot update .gitignore",
-		"cli.init.config_yaml": `# engram wiki config. Defines frontmatter axes, thresholds, and directory mapping.
+		"cli.init.config_yaml": `# engram wiki config. Defines frontmatter attributes, thresholds, and directory mapping.
 preset: %s
 
-# Frontmatter axes. A preset (minimal < personal < team) is the starting point
-# and each axis can be turned on or off below.
-# Available axes: type, artifact_stage, status, indexable, tags, source_refs,
+# Frontmatter attributes. A preset (minimal < personal < team) is the starting
+# point and each attribute can be turned on or off below.
+# Available attributes: type, artifact_stage, status, indexable, tags, source_refs,
 # derived_from, related, source_channel, derived_context, scope, sensitivity,
 # trigger_mode, workflow
 # axes:
 #   scope: true
 
-# Document types (allowed values of the type axis). Add ones that fit the wiki.
+# Document types (allowed values of the type attribute). Add ones that fit the wiki.
 # types: [concept, project, system, decision, procedure, incident,
 #   meeting-summary, agent-workflow, source-summary, inbox-note]
 
@@ -359,7 +359,7 @@ root_files: [index.md]
 		"cli.init.dir_context":     "Where organized documents live",
 		"cli.init.dir_archive":     "Where documents retired from promotion go",
 		"cli.init.dir_other":       "Document directory",
-		"cli.init.file_config":     "Wiki config. Adjust axes and thresholds here",
+		"cli.init.file_config":     "Wiki config. Adjust attributes and thresholds here",
 		"cli.init.file_index":      "First document. Fill it with a wiki introduction",
 		"cli.init.file_gitignore":  "Excludes the .engram/ cache directory from git",
 		"cli.init.done":            "Initialized wiki: %s (preset: %s)",
@@ -367,7 +367,7 @@ root_files: [index.md]
 		"cli.init.files_header":    "Files:",
 		"cli.init.next_header":     "Next steps:",
 		"cli.init.step_inbox":      "Put your first material in inbox",
-		"cli.init.step_config":     "Open %s and adjust axes and thresholds for your wiki",
+		"cli.init.step_config":     "Open %s and adjust attributes and thresholds for your wiki",
 		"cli.init.step_fill_index": "Fill index.md with a wiki introduction",
 
 		// reindex
@@ -390,21 +390,21 @@ update the index file. Without a path, the current directory.`,
 		"cli.migrate.short": "Align existing documents with the current config and rules",
 		"cli.migrate.long": `Aligns existing documents with the current engram.yaml and the current rules.
 
-Fills required fields of enabled axes with stage defaults, removes fields of
-disabled axes, and fixes artifact_stage to match the document's directory.
+Fills required fields of enabled attributes with stage defaults, removes fields
+of disabled attributes, and fixes artifact_stage to match the document's directory.
 It moves no files and changes no slugs. It does not promote documents.
 A document sitting in inbox while declaring context only gets its declaration
 lowered to inbox. Use engram promote to raise it.
 
 The default is a dry run. Pass --apply to write.
-Fields of disabled axes that hold a value are not removed without --force.
+Fields of disabled attributes that hold a value are not removed without --force.
 Empty fields are removed even without --force.
 Promotion gate violations and broken wikilinks are reported, not fixed. Which
 document should link where is a judgment, so settle it with engram promote
 or demote.`,
 		"cli.migrate.flag_read_fail":  "Cannot read the --%s flag",
 		"cli.migrate.flag_apply":      "Write changes to files. Default is a dry run",
-		"cli.migrate.flag_force":      "Also remove disabled-axis fields that hold a value",
+		"cli.migrate.flag_force":      "Also remove disabled-attribute fields that hold a value",
 		"cli.migrate.flag_wiki":       "Target wiki path",
 		"cli.migrate.all_ok":          "All %d checked documents conform to the rules.",
 		"cli.migrate.applied_summary": "Of %d checked documents, %d did not conform and %d were fixed.",
@@ -412,7 +412,7 @@ or demote.`,
 		"cli.migrate.dry_summary":     "Of %d checked documents, %d do not conform to the rules.",
 		"cli.migrate.dry_partial":     "Migrate cannot fully align %d of them. Remaining fields are listed below.",
 		"cli.migrate.dry_notice":      "This was a dry run, so no files were written. Pass --apply to apply.",
-		"cli.migrate.unparsed":        "%d documents were skipped because their frontmatter could not be read. Fix the frontmatter first.",
+		"cli.migrate.unparsed":        "documents skipped because their frontmatter could not be read: %d. Fix the frontmatter first.",
 		"cli.migrate.more_detail":     "... details of %d more documents are in --json.",
 		"cli.migrate.change_stage":    "artifact_stage: %s -> %s (matches the document's directory)",
 		"cli.migrate.change_fill":     "%s: (none) -> %s",
@@ -456,7 +456,7 @@ without eject.`,
 		"cli.rules.show_short": "Show every rule applied to this wiki",
 		"cli.rules.show_long": `Shows every rule currently applied to this wiki.
 
-Preset and frontmatter axes, per-stage required fields, allowed values,
+Preset and frontmatter attributes, per-stage required fields, allowed values,
 thresholds, the promotion gate, lint rules, and directories, each in its own
 section. Reads the wiki's engram.yaml and reports the merged result of the
 preset and user settings, not the product defaults but this wiki's values.
@@ -465,7 +465,7 @@ Changes nothing. Rules are for reading.`,
 		"cli.rules.flag_wiki":          "Target wiki path",
 		"cli.rules.header":             "Rules of this wiki (preset: %s)",
 		"cli.rules.header_note":        "The merged result of the preset and engram.yaml settings. Not the product defaults but this wiki's values.",
-		"cli.rules.axes_header":        "%d frontmatter axes (%d on, %d off)",
+		"cli.rules.axes_header":        "%d frontmatter attributes (%d on, %d off)",
 		"cli.rules.axes_on":            "on",
 		"cli.rules.axes_off":           "off",
 		"cli.rules.axes_off_note":      "Disabled axes are not required; schema.axis-off flags them when present in a document",
@@ -517,14 +517,14 @@ separately.`,
 		"cli.eject.flag_wiki":           "Target wiki path",
 		"cli.eject.dir_mkdir_fail":      "Cannot create directory",
 		"cli.eject.artifact_write_fail": "Cannot write artifact: %s",
-		"cli.eject.dry_run":             "%d files to create (dry-run. Nothing written yet)",
-		"cli.eject.done":                "Created. %d files",
-		"cli.eject.overwritten":         "%d files overwritten",
+		"cli.eject.dry_run":             "Files to create: %d (dry-run. Nothing written yet)",
+		"cli.eject.done":                "Created. Files: %d",
+		"cli.eject.overwritten":         "Overwritten files: %d",
 		"cli.eject.guide_header":        "Notes:",
 		"cli.eject.hook_enable":         "To enable the hook: git config core.hooksPath .githooks",
 		"cli.eject.still_works":         "After eject, search, recall, resurface, bridge, digest, and backlinks keep working",
 		"cli.eject.python_note":         "The linter and hook need python3. Windows does not ship it, so install it",
-		"cli.eject.conflicts_count":     "%d files already exist",
+		"cli.eject.conflicts_count":     "Files that already exist: %d",
 
 		// skills
 		"cli.skills.short": "Manage agent skills",
@@ -561,10 +561,10 @@ and stops. Pass --force to overwrite.`,
 		"cli.skills.flag_dir":        "Point at the install location directly. Skips detection",
 		"cli.skills.flag_force":      "Overwrite existing files",
 		"cli.skills.flag_dry_run":    "Show where and what would be planted. Writes nothing",
-		"cli.skills.dry_run":         "%d files to plant (dry-run. Nothing written yet)",
-		"cli.skills.done":            "Planted. %d files",
-		"cli.skills.overwritten":     "%d files overwritten",
+		"cli.skills.dry_run":         "Files to plant: %d (dry-run. Nothing written yet)",
+		"cli.skills.done":            "Planted. Files: %d",
+		"cli.skills.overwritten":     "Overwritten files: %d",
 		"cli.skills.restart_note":    "Restart the agent for the skill to be picked up",
-		"cli.skills.conflicts_count": "%d files already exist",
+		"cli.skills.conflicts_count": "Files that already exist: %d",
 	})
 }

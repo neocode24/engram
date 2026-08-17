@@ -317,7 +317,7 @@ pin the reference time with --now.
 		"cli.resurface.flag_wiki":       "target wiki path",
 		"cli.resurface.no_candidates":   "No documents to resurface",
 		"cli.resurface.reason":          "  Reason: %s",
-		"cli.resurface.header":          "%d documents to resurface (stale_days %d days, as of %s)",
+		"cli.resurface.header":          "Documents to resurface: %d (stale_days %d days, as of %s)",
 		"cli.resurface.never_shown":     "never shown",
 		"cli.resurface.last_shown":      "last shown %s",
 		"cli.resurface.candidate_line":  "  - %s%s: last updated %d days ago, %s",
@@ -384,7 +384,7 @@ frontmatter.`,
 		// gate (promote와 new가 함께 쓰는 게이트 보조)
 		"cli.gate.reject": "Promotion gate not passed: %d wikilinks fall short of min_wikilinks %d\n" +
 			"Add %d more wikilinks in the related field or the body.\nTo add them here, repeat --related <slug>",
-		"cli.gate.deferred":        "warning: linkable documents are %d, below min_wikilinks %d, so the gate was deferred. The gate applies again as the wiki grows",
+		"cli.gate.deferred":        "warning: linkable target documents: %d, fewer than min_wikilinks %d. The gate was deferred and applies again as the wiki grows",
 		"cli.gate.unknown_related": "warning: no document in the wiki matches --related slug %q. It may be a document you are about to create",
 		"cli.gate.mkdir_fail":      "cannot create the directory",
 		"cli.gate.dest_exists":     "a document already exists at the destination: %s\nExisting documents are not overwritten. Pick a different slug",

@@ -16,7 +16,7 @@ import (
 // newLintCmd는 위키의 스키마와 링크 무결성을 검사하는 lint 커맨드를 반환한다.
 func newLintCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "lint [경로]",
+		Use:   "lint " + i18n.T("usage.args.path_opt"),
 		Short: i18n.T("cli.lint.short"),
 		Long:  i18n.T("cli.lint.long"),
 		Args:  cobra.MaximumNArgs(1),

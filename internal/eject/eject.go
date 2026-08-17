@@ -212,7 +212,7 @@ func lintRulesDoc(cfg config.Config) string {
 	b.WriteString(i18n.T("eject.lint_rules_doc.table_heading"))
 	b.WriteString(i18n.T("eject.lint_rules_doc.table_header"))
 	for _, r := range lint.Rules() {
-		fmt.Fprintf(&b, "| %s | %s | %s |\n", r.ID, r.Severity, r.Desc)
+		fmt.Fprintf(&b, "| %s | %s | %s |\n", r.ID, r.Severity(), r.Desc())
 	}
 	b.WriteString(i18n.T("eject.lint_rules_doc.script_heading"))
 	b.WriteString(i18n.T("eject.lint_rules_doc.script_note"))

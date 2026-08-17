@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-**1.0의 커맨드 범위가 닫혔다.** 커맨드 스물여덟, ADR 47건, 동작 구조 도식 11종, 여정 24개가 문서로 있고, 코드는 패키지 스물셋이다. 남은 것은 저장소 공개 전환과 첫 릴리스이며 둘 다 코드 작업이 아니다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
+**1.0의 커맨드 범위가 닫혔다.** 커맨드 스물여덟, ADR 49건, 동작 구조 도식 11종, 여정 24개가 문서로 있고, 코드는 패키지 스물넷이다. 남은 것은 저장소 공개 전환과 첫 릴리스이며 둘 다 코드 작업이 아니다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
 
 ## 끝난 것
 
@@ -39,7 +39,7 @@
 | `serve` | 읽기 전용 웹 뷰어. `context/`와 색인만 보여주고 민감도 선언을 뒤집지 않는다 | [0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md) |
 | `export` | 문서 반출. 노출 규칙은 `serve`와 같은 함수를 부르고 익명화는 사용자 사전으로 한다 | [0046](decisions/0046-pack-exports-files-and-anonymizes-by-user-dictionary.md), [0047](decisions/0047-export-not-pack.md) |
 
-패키지는 스물셋이다. 판정과 저장이 `config`(설정과 프리셋), `doc`(파싱과 직렬화), `walk`(순회), `graph`(링크 관계), `lint`(규칙과 게이트), `wiki`(문서 쓰기), `index`(색인과 BM25), `chunk`(헤딩 청킹), `state`(영구 상태), `gitdate`(git 이력 날짜)다. 재발견이 `resurface`, `digest`, `bridge`다. 조회와 운영이 `status`, `doctor`, `migrate`다. 밖으로 내보내는 것이 `expose`(노출 판정), `serve`(웹 뷰어), `export`(문서 반출), `mcpserver`, `skills`, `eject`다. 커맨드 계층이 `cli`다.
+패키지는 스물넷이다. 판정과 저장이 `config`(설정과 프리셋), `doc`(파싱과 직렬화), `walk`(순회), `graph`(링크 관계), `lint`(규칙과 게이트), `wiki`(문서 쓰기), `index`(색인과 BM25), `chunk`(헤딩 청킹), `state`(영구 상태), `gitdate`(git 이력 날짜)다. 재발견이 `resurface`, `digest`, `bridge`다. 조회와 운영이 `status`, `doctor`, `migrate`다. 밖으로 내보내는 것이 `expose`(노출 판정), `serve`(웹 뷰어), `export`(문서 반출), `mcpserver`, `skills`, `eject`다. 커맨드 계층이 `cli`이고 출력 언어가 `i18n`이다.
 
 **같은 판정을 두 벌 두지 않는다.** 게이트 판정, 링크 대상 집계, 고아 판정, 노후 판정, 노출 판정은 각각 단일 함수이며 커맨드가 그것을 부른다. 같은 판정이 두 곳에 생기면 커맨드로 통과한 문서를 `lint`가 거절하거나, `status`와 `digest`가 서로 다른 고아 수를 말하는 상태가 된다.
 
