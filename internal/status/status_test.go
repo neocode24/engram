@@ -254,7 +254,7 @@ func TestRun(t *testing.T) {
 		if len(res.Suggestions) != 1 {
 			t.Fatalf("제안이 하나여야 한다: %+v", res.Suggestions)
 		}
-		if !strings.Contains(res.Suggestions[0].Detail, "위키링크가 2개 필요합니다") {
+		if !strings.Contains(res.Suggestions[0].Detail, "가리키는 링크가 2개 필요합니다") {
 			t.Errorf("게이트 기준을 알려야 한다: %+v", res.Suggestions[0])
 		}
 	})

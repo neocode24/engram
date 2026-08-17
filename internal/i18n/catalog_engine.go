@@ -14,7 +14,7 @@ func init() {
 		"lint.severity.error_or_warn": "error 또는 warn",
 
 		// lint 규칙 설명. rules show 와 meta/lint-rules.md 이 낸다.
-		"lint.rule.gate_min_wikilinks":        "context 디렉토리 아래 문서의 고유 위키링크 수가 min_wikilinks 미달. 게이트의 유일한 거절 사유(ADR 0040)",
+		"lint.rule.gate_min_wikilinks":        "context 디렉토리 아래 문서에서 위키에 실제로 있는 문서를 가리키는 고유 위키링크 수가 min_wikilinks 미달. 게이트의 유일한 거절 사유(ADR 0040, 0054)",
 		"lint.rule.frontmatter_missing":       "프론트매터 블록이 아예 없는 문서",
 		"lint.rule.frontmatter_unclosed":      "닫는 --- 없이 끝난 프론트매터",
 		"lint.rule.frontmatter_yaml":          "프론트매터 YAML 문법 오류",
@@ -62,8 +62,8 @@ func init() {
 		"lint.violation.orphan.fix":                   "다른 문서의 related나 본문에서 [[%s]]로 연결하거나 관계 필드로 잇으세요",
 		"lint.violation.gate_deferred.message":        "링크 가능한 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예합니다. 대상 문서가 %d개가 되면 게이트가 동작합니다",
 		"lint.violation.gate_deferred.fix":            "연결할 문서를 만들어 대상을 늘리세요. 기준은 engram.yaml의 min_wikilinks로 조정하세요",
-		"lint.violation.gate_reject.message":          "위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다",
-		"lint.violation.gate_reject.fix":              "related 필드나 본문에 위키링크를 %d개 더 추가하세요",
+		"lint.violation.gate_reject.message":          "이어지는 위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다",
+		"lint.violation.gate_reject.fix":              "위키에 있는 문서를 가리키는 링크를 related 필드나 본문에 %d개 더 추가하세요. 없는 슬러그, 자기 자신, inbox 문서는 세지 않습니다",
 		"lint.wiki.broad_topic.fix":                   "주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요",
 
 		// doctor 항목 문구.
@@ -155,7 +155,7 @@ func init() {
 		"eject.values_doc.open_note":      "\ntopics 에 정의되지 않은 값을 쓰면 경고다. 값 자체는 허용된다.\n\n",
 
 		"eject.promotion_doc.heading":          "# 승급 게이트와 위치 규칙\n\n",
-		"eject.promotion_doc.intro":            "min_wikilinks 는 %d다. context 디렉토리 아래 문서의 고유 위키링크 수가 이 값에 못 미치면 게이트가 문서를 거절한다. 0이면 게이트가 꺼진다. 게이트는 선언이 아니라 문서가 놓인 디렉토리로 발동한다.\n\n",
+		"eject.promotion_doc.intro":            "min_wikilinks 는 %d다. context 디렉토리 아래 문서에서 위키에 실제로 있는 문서를 가리키는 고유 위키링크 수가 이 값에 못 미치면 게이트가 문서를 거절한다. 없는 슬러그, 자기 자신, inbox 문서를 가리키는 링크는 세지 않는다. 0이면 게이트가 꺼진다. 게이트는 선언이 아니라 문서가 놓인 디렉토리로 발동한다.\n\n",
 		"eject.promotion_doc.sole_reason":      "거절 사유는 gate.min-wikilinks 하나뿐이다. 게이트를 통과하려면 관련 문서에 위키링크로 연결되어 있어야 한다.\n\n",
 		"eject.promotion_doc.deferred":         "링크 가능한 대상은 문서 수가 충분해야 센다. 대상 문서가 min_wikilinks 보다 적으면 게이트를 유예하고 경고만 낸다. 위키가 자라면 게이트가 다시 동작한다. inbox 단계 문서는 대상에서 뺀다. promote 되면 슬러그가 바뀌어 링크가 깨지기 때문이다.\n\n",
 		"eject.promotion_doc.location_heading": "## 위치와 단계의 일치\n\n문서가 놓인 최상위 디렉토리와 artifact_stage 값이 일치해야 한다.\n\n",
@@ -280,8 +280,8 @@ engram.yaml 이 고칠 수 없는 값은 아래 상수로 받았다. 고정 허�
 		"eject.linter.orphan.fix":               "다른 문서의 related나 본문에서 [[%s]]로 연결하거나 관계 필드로 잇으세요",
 		"eject.linter.gate_deferred.message":    "링크 가능한 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예합니다. 대상 문서가 %d개가 되면 게이트가 동작합니다",
 		"eject.linter.gate_deferred.fix":        "연결할 문서를 만들어 대상을 늘리세요. 기준은 engram.yaml의 min_wikilinks로 조정하세요",
-		"eject.linter.gate_reject.message":      "위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다",
-		"eject.linter.gate_reject.fix":          "related 필드나 본문에 위키링크를 %d개 더 추가하세요",
+		"eject.linter.gate_reject.message":      "이어지는 위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다",
+		"eject.linter.gate_reject.fix":          "위키에 있는 문서를 가리키는 링크를 related 필드나 본문에 %d개 더 추가하세요. 없는 슬러그, 자기 자신, inbox 문서는 세지 않습니다",
 		"eject.linter.print_fix":                "    고치는 법: %s",
 		"eject.linter.summary":                  "검사한 파일 %d개, error %d, warn %d, reject %d",
 	})
@@ -294,7 +294,7 @@ engram.yaml 이 고칠 수 없는 값은 아래 상수로 받았다. 고정 허�
 		"lint.severity.error_or_warn": "error or warn",
 
 		// lint rule descriptions, shown by rules show and meta/lint-rules.md.
-		"lint.rule.gate_min_wikilinks":        "Unique wikilinks in a document under the context directory fall below min_wikilinks. The gate's only rejection reason (ADR 0040)",
+		"lint.rule.gate_min_wikilinks":        "Unique wikilinks that resolve to an existing document, in a document under the context directory, fall below min_wikilinks. The gate's only rejection reason (ADR 0040, 0054)",
 		"lint.rule.frontmatter_missing":       "Document with no frontmatter block at all",
 		"lint.rule.frontmatter_unclosed":      "Frontmatter that ends without a closing ---",
 		"lint.rule.frontmatter_yaml":          "Frontmatter YAML syntax error",
@@ -342,8 +342,8 @@ engram.yaml 이 고칠 수 없는 값은 아래 상수로 받았다. 고정 허�
 		"lint.violation.orphan.fix":                   "Link to it from another document's related or body with [[%s]], or connect via relation fields",
 		"lint.violation.gate_deferred.message":        "Only %d linkable target documents versus min_wikilinks of %d, so the gate is deferred. The gate activates once there are %d target documents",
 		"lint.violation.gate_deferred.fix":            "Create documents to link to. Adjust the threshold with min_wikilinks in engram.yaml",
-		"lint.violation.gate_reject.message":          "%d wikilinks fall short of min_wikilinks %d",
-		"lint.violation.gate_reject.fix":              "Add %d more wikilinks in the related field or the body",
+		"lint.violation.gate_reject.message":          "%d resolving wikilinks fall short of min_wikilinks %d",
+		"lint.violation.gate_reject.fix":              "Add %d more links to documents that exist, in the related field or the body. Missing slugs, self-links, and inbox documents do not count",
 		"lint.wiki.broad_topic.fix":                   "Split the topic further. Adjust the threshold with broad_topic_pct in engram.yaml",
 
 		// doctor finding texts.
@@ -435,7 +435,7 @@ engram.yaml 이 고칠 수 없는 값은 아래 상수로 받았다. 고정 허�
 		"eject.values_doc.open_note":      "\nA topics value not defined here is a warning. The value itself is allowed.\n\n",
 
 		"eject.promotion_doc.heading":          "# Promotion gate and location rules\n\n",
-		"eject.promotion_doc.intro":            "min_wikilinks is %d. The gate rejects a document under the context directory whose unique wikilink count falls below it. 0 disables the gate. The gate triggers on the document's directory, not its declaration.\n\n",
+		"eject.promotion_doc.intro":            "min_wikilinks is %d. The gate rejects a document under the context directory whose count of unique wikilinks resolving to an existing document falls below it. Missing slugs, self-links, and inbox documents do not count. 0 disables the gate. The gate triggers on the document's directory, not its declaration.\n\n",
 		"eject.promotion_doc.sole_reason":      "gate.min-wikilinks is the only rejection reason. To pass the gate, the document must be wikilinked to related documents.\n\n",
 		"eject.promotion_doc.deferred":         "Linkable targets are counted only when there are enough documents. If target documents are fewer than min_wikilinks, the gate is deferred and only a warning is issued. The gate reactivates as the wiki grows. inbox-stage documents are excluded because promote changes their slug and breaks links.\n\n",
 		"eject.promotion_doc.location_heading": "## Location and stage agreement\n\nThe document's top-level directory must match its artifact_stage value.\n\n",
@@ -560,8 +560,8 @@ calling this script must not block a wiki that only has warnings.
 		"eject.linter.orphan.fix":               "Link to it from another document's related or body with [[%s]], or connect via relation fields",
 		"eject.linter.gate_deferred.message":    "Only %d linkable target documents versus min_wikilinks of %d, so the gate is deferred. The gate activates once there are %d target documents",
 		"eject.linter.gate_deferred.fix":        "Create documents to link to. Adjust the threshold with min_wikilinks in engram.yaml",
-		"eject.linter.gate_reject.message":      "%d wikilinks fall short of min_wikilinks %d",
-		"eject.linter.gate_reject.fix":          "Add %d more wikilinks in the related field or the body",
+		"eject.linter.gate_reject.message":      "%d resolving wikilinks fall short of min_wikilinks %d",
+		"eject.linter.gate_reject.fix":          "Add %d more links to documents that exist, in the related field or the body. Missing slugs, self-links, and inbox documents do not count",
 		"eject.linter.print_fix":                "    How to fix: %s",
 		"eject.linter.summary":                  "Files checked %d, error %d, warn %d, reject %d",
 	})

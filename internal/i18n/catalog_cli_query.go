@@ -184,8 +184,8 @@ stale_days를 넘긴 context 문서, 고아는 링크가 0개인 문서입니다
 		"cli.digest.more_slugs":     " 외 %d개",
 
 		// gate (promote와 new가 함께 쓰는 게이트 보조)
-		"cli.gate.reject": "승급 게이트를 넘지 못했습니다: 위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다\n" +
-			"related 필드나 본문에 위키링크를 %d개 더 추가하세요.\n이 자리에서 채우려면 --related <슬러그>를 반복해 주세요",
+		"cli.gate.reject": "승급 게이트를 넘지 못했습니다: 이어지는 위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다\n" +
+			"위키에 있는 문서를 가리키는 링크를 %d개 더 추가하세요. 없는 슬러그와 inbox 문서는 세지 않습니다\n이 자리에서 채우려면 --related <슬러그>를 반복해 주세요",
 		"cli.gate.deferred":        "경고: 링크 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예했습니다. 위키가 자라면 게이트가 다시 적용됩니다",
 		"cli.gate.unknown_related": "경고: --related 슬러그 %q에 해당하는 문서가 위키에 없습니다. 곧 만들 문서일 수 있습니다",
 		"cli.gate.mkdir_fail":      "디렉토리를 만들 수 없음",
@@ -384,7 +384,7 @@ frontmatter.`,
 		"cli.digest.more_slugs":     " and %d more",
 
 		// gate (promote와 new가 함께 쓰는 게이트 보조)
-		"cli.gate.reject": "Promotion gate not passed: %d wikilinks fall short of min_wikilinks %d\n" +
+		"cli.gate.reject": "Promotion gate not passed: %d resolving wikilinks fall short of min_wikilinks %d\n" +
 			"Add %d more wikilinks in the related field or the body.\nTo add them here, repeat --related <slug>",
 		"cli.gate.deferred":        "warning: linkable target documents: %d, fewer than min_wikilinks %d. The gate was deferred and applies again as the wiki grows",
 		"cli.gate.unknown_related": "warning: no document in the wiki matches --related slug %q. It may be a document you are about to create",
