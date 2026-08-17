@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -46,7 +47,13 @@ func TestMain(m *testing.M) {
 		fmt.Fprintf(os.Stderr, "임시 디렉토리를 만들 수 없음: %v\n", err)
 		os.Exit(1)
 	}
-	bin := filepath.Join(dir, "engram")
+	// Windows 는 확장자 없는 파일을 실행하지 못한다. .exe 를 붙이지 않으면
+	// exec 이 "executable file not found" 로 죽는다.
+	name := "engram"
+	if runtime.GOOS == "windows" {
+		name += ".exe"
+	}
+	bin := filepath.Join(dir, name)
 	build := exec.Command(goBin, "build", "-o", bin, "./cmd/engram")
 	build.Dir = repoRoot
 	build.Env = append(os.Environ(), "CGO_ENABLED=0")
