@@ -59,11 +59,12 @@
 | [0042](0042-release-artifacts-and-workflow.md) | 릴리스는 goreleaser로 만들고 태그 푸시가 유일한 계기다 | 2026-08-17 | accepted |
 | [0043](0043-mcp-exposes-one-write-tool-and-omits-promote.md) | MCP는 쓰기 도구를 하나만 노출하고 promote를 내보내지 않는다 | 2026-08-17 | accepted |
 | [0044](0044-serve-is-read-only-and-shows-only-vetted-knowledge.md) | serve는 읽기 전용이고 검수된 지식만 보여준다 | 2026-08-17 | accepted |
-| [0045](0045-explicit-slug-must-still-be-filesystem-safe.md) | 명시한 슬러그도 파일시스템 안전 검사를 받는다 | 2026-08-17 | accepted |
+| [0045](0045-explicit-slug-must-still-be-filesystem-safe.md) | 명시한 슬러그도 파일시스템 안전 검사를 받는다 | 2026-08-17 | amended |
 | [0046](0046-pack-exports-files-and-anonymizes-by-user-dictionary.md) | pack은 파일을 그대로 내보내고 익명화는 사용자 사전으로 한다 | 2026-08-17 | amended |
 | [0047](0047-export-not-pack.md) | 반출 커맨드의 이름을 export로 정정한다 | 2026-08-17 | accepted |
 | [0048](0048-preset-names-follow-attribute-sets.md) | 프리셋 이름을 속성 집합에 맞추고 축을 속성으로 부른다 | 2026-08-17 | accepted |
 | [0049](0049-cli-output-language.md) | 출력 언어는 사용자 환경이 정하고 카탈로그는 바이너리에 묶는다 | 2026-08-17 | accepted |
+| [0050](0050-slugs-must-be-wikilink-safe.md) | 슬러그는 파일시스템뿐 아니라 위키링크 문법에도 안전해야 한다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 
@@ -94,6 +95,7 @@
 | 0031 | 등급은 `error`다 | [0035](0035-stage-mismatch-severity-by-direction.md) 불일치 방향에 따라 `error`와 `warn`으로 나눈다 |
 | 0046 | 커맨드 이름을 `pack`으로 한다 | [0047](0047-export-not-pack.md) `export`로 정정. 동작은 그대로다 |
 | 0009 | 프리셋 이름은 `personal`, `education`, `team`이다 | [0048](0048-preset-names-follow-attribute-sets.md) `minimal`, `personal`, `team`으로 정정. 속성 구성은 그대로다 |
+| 0045 | 슬러그 안전 검사는 파일시스템 예약 문자를 본다 | [0050](0050-slugs-must-be-wikilink-safe.md) 위키링크 문법을 깨는 문자를 더한다 |
 
 ## 근거만 갱신된 경우
 

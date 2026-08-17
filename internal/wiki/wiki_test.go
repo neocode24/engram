@@ -401,3 +401,38 @@ func TestLinkable(t *testing.T) {
 		t.Errorf("링크 가능 슬러그 = %v, want %v", got, want)
 	}
 }
+
+// TestSlugStripsLinkBreakingChars는 파생 슬러그가 위키링크 문법을 깨는
+// 문자를 지우는지 본다. 대괄호가 남으면 [[슬러그]] 의 짝이 어긋나
+// 본문 링크가 파싱되지 않고, lint 가 깨진 링크로도 잡지 못해 조용히
+// 사라진다. ADR 0050.
+func TestSlugStripsLinkBreakingChars(t *testing.T) {
+	cases := []struct{ in, want string }{
+		{"[자동 전사 결과] 회의", "자동-전사-결과-회의"},
+		{"메모 #1", "메모-1"},
+		{"[개발 뉴스레터 발췌]", "개발-뉴스레터-발췌"},
+	}
+	for _, c := range cases {
+		got, err := Slug(c.in)
+		if err != nil {
+			t.Errorf("Slug(%q) 실패: %v", c.in, err)
+			continue
+		}
+		if got != c.want {
+			t.Errorf("Slug(%q) = %q, want %q", c.in, got, c.want)
+		}
+		if strings.ContainsAny(got, "[]#") {
+			t.Errorf("Slug(%q) = %q 에 링크를 깨는 문자가 남았다", c.in, got)
+		}
+	}
+}
+
+// TestValidateSlugRejectsLinkBreakingChars는 명시 슬러그가 같은 문자를
+// 거절하는지 본다. 파생은 지우고 명시는 거절한다(ADR 0045, 0050).
+func TestValidateSlugRejectsLinkBreakingChars(t *testing.T) {
+	for _, s := range []string{"메모[1]", "note#1", "a]b"} {
+		if err := ValidateSlug(s); err == nil {
+			t.Errorf("ValidateSlug(%q) 가 통과했다. 거절해야 한다", s)
+		}
+	}
+}

@@ -46,12 +46,22 @@ var stageDirs = map[Stage]string{
 // 플랫폼이므로(ADR 0007) Windows 예약 문자를 포함한다.
 const unsafeFilenameChars = `<>:"/\|?*`
 
-// unsafeFilenameRune은 파일명에 쓸 수 없는 문자인지 판정한다. 예약 문자와
-// 제어 문자가 대상이다. 파생 경로는 이 문자를 지우고 명시 경로는 거절하지만
-// 무엇이 위험한지의 판정은 이 함수 하나가 한다(ADR 0045). 판정을 두 벌
-// 두면 한쪽만 고치는 사고가 난다.
+// unsafeLinkChars는 파일명으로는 쓸 수 있으나 위키링크 문법을 깨는
+// 문자다. 슬러그에 대괄호가 들어가면 [[슬러그]] 의 짝이 어긋나 본문
+// 링크가 파싱되지 않고, # 는 [[슬러그#헤딩]] 의 구분자와 겹친다.
+// 파싱이 실패해도 링크로 인식되지 않을 뿐이라 lint 가 깨진 링크로도
+// 잡지 못한다. 조용히 사라지므로 슬러그 단계에서 막는다. ADR 0050.
+const unsafeLinkChars = "[]#"
+
+// unsafeFilenameRune은 슬러그에 쓸 수 없는 문자인지 판정한다. 파일시스템
+// 예약 문자와 제어 문자, 그리고 위키링크 문법을 깨는 문자가 대상이다.
+// 파생 경로는 이 문자를 지우고 명시 경로는 거절하지만 무엇이 위험한지의
+// 판정은 이 함수 하나가 한다(ADR 0045, 0050). 판정을 두 벌 두면 한쪽만
+// 고치는 사고가 난다.
 func unsafeFilenameRune(r rune) bool {
-	return r < 0x20 || r == 0x7f || strings.ContainsRune(unsafeFilenameChars, r)
+	return r < 0x20 || r == 0x7f ||
+		strings.ContainsRune(unsafeFilenameChars, r) ||
+		strings.ContainsRune(unsafeLinkChars, r)
 }
 
 // Slug는 제목에서 파일명으로 쓸 슬러그를 만든다.
@@ -118,6 +128,9 @@ func ValidateSlug(slug string) error {
 		}
 		if r < 0x20 || r == 0x7f {
 			return errors.New(i18n.T("core.wiki.slug_control_char", slug, r))
+		}
+		if strings.ContainsRune(unsafeLinkChars, r) {
+			return errors.New(i18n.T("core.wiki.slug_link_char", slug, string(r), unsafeLinkChars))
 		}
 		return errors.New(i18n.T("core.wiki.slug_unsafe_char", slug, string(r), unsafeFilenameChars))
 	}

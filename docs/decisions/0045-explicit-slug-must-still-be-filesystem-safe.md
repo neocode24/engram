@@ -2,7 +2,7 @@
 number: 0045
 title: 명시한 슬러그도 파일시스템 안전 검사를 받는다
 date: 2026-08-17
-status: accepted
+status: amended
 ---
 
 # 명시 슬러그의 안전 검사
