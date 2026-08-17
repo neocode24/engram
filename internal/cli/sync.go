@@ -10,6 +10,7 @@ import (
 
 	"github.com/neocode24/engram/internal/doc"
 	"github.com/neocode24/engram/internal/gitdate"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
 	"github.com/spf13/cobra"
@@ -24,18 +25,8 @@ const flagApply = "apply"
 func newSyncCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "sync",
-		Short: "git 이력에서 updated와 sourced_at을 정정합니다",
-		Long: `git 이력에서 날짜 필드를 정정합니다.
-
-updated 는 그 파일의 마지막 커밋 날짜로, sourced_at 은 최초 커밋
-날짜로 채웁니다. created 는 git 이 모르는 필드라 건드리지 않습니다.
-sources 계층 문서에는 updated 를 넣지 않습니다. 원본 보존 계층이라
-updated 가 최신이 되면 신선도를 오해하게 만들기 때문입니다.
-
-기본은 dry-run 입니다. 실제로 쓰려면 --apply 를 주세요.
-값이 이미 같으면 쓰지 않으므로 두 번 돌려도 같은 결과입니다.
-커밋되지 않은 파일은 이력이 없으므로 건너뛰고 개수를 알립니다.
-워킹트리가 더러워도 판정 근거가 커밋 이력이라 그대로 돕니다.`,
+		Short: i18n.T("cli.sync.short"),
+		Long:  i18n.T("cli.sync.long"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
 			if err != nil {
@@ -43,7 +34,7 @@ updated 가 최신이 되면 신선도를 오해하게 만들기 때문입니다
 			}
 			apply, err := cmd.Flags().GetBool(flagApply)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagApply, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.sync.flag_read_fail", flagApply), err)
 			}
 			hist, err := gitdate.History(root)
 			if err != nil {
@@ -51,7 +42,7 @@ updated 가 최신이 되면 신선도를 오해하게 만들기 때문입니다
 			}
 			walked, err := walk.Files(root, cfg)
 			if err != nil {
-				return fmt.Errorf("위키를 순회할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.sync.walk_fail"), err)
 			}
 
 			var changes []syncChange
@@ -87,8 +78,8 @@ updated 가 최신이 되면 신선도를 오해하게 만들기 때문입니다
 			return nil
 		},
 	}
-	cmd.Flags().Bool(flagApply, false, "변경을 파일에 씁니다. 기본은 dry-run 입니다")
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().Bool(flagApply, false, i18n.T("cli.sync.flag_apply"))
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.sync.flag_wiki"))
 	return cmd
 }
 
@@ -134,7 +125,7 @@ func writeDates(root, rel string, d doc.Doc, cs []syncChange) error {
 	}
 	path := filepath.Join(root, filepath.FromSlash(rel))
 	if err := os.WriteFile(path, doc.Render(fields, d.Body), 0o644); err != nil {
-		return fmt.Errorf("문서를 쓸 수 없음: %s: %w", path, err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.sync.doc_write_fail", path), err)
 	}
 	return nil
 }
@@ -153,20 +144,20 @@ func printSync(w io.Writer, res syncOutcome) {
 	}
 	switch {
 	case len(res.Changed) == 0:
-		fmt.Fprintf(w, "정정할 문서가 없습니다\n")
+		fmt.Fprint(w, i18n.T("cli.sync.none")+"\n")
 	case res.Applied:
-		fmt.Fprintf(w, "정정했습니다. 문서 %d개, 필드 %d개\n", len(docs), len(res.Changed))
+		fmt.Fprint(w, i18n.T("cli.sync.applied", len(docs), len(res.Changed))+"\n")
 	default:
-		fmt.Fprintf(w, "정정 대상 문서 %d개, 필드 %d개. 아직 dry-run 입니다. 적용하려면 --apply 를 주세요\n", len(docs), len(res.Changed))
+		fmt.Fprint(w, i18n.T("cli.sync.dry_run", len(docs), len(res.Changed))+"\n")
 	}
 	for _, c := range res.Changed {
 		from := c.From
 		if from == "" {
-			from = "(없음)"
+			from = i18n.T("cli.sync.field_absent")
 		}
-		fmt.Fprintf(w, "  %s %s=%s (현재 %s)\n", c.Path, c.Field, c.To, from)
+		fmt.Fprintf(w, "  %s %s=%s (%s)\n", c.Path, c.Field, c.To, i18n.T("cli.sync.current", from))
 	}
 	if res.Uncommitted > 0 {
-		fmt.Fprintf(w, "커밋되지 않은 문서 %d개는 건너뛰었습니다\n", res.Uncommitted)
+		fmt.Fprint(w, i18n.T("cli.sync.uncommitted", res.Uncommitted)+"\n")
 	}
 }

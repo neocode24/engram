@@ -44,12 +44,9 @@ func Now(cmd *cobra.Command) time.Time {
 
 func newRootCmd() *cobra.Command {
 	root := &cobra.Command{
-		Use:   "engram",
-		Short: "지식관리 위키의 승급 파이프라인을 다루는 CLI",
-		Long: `engram은 지식관리 위키의 문서 상태와 승급 파이프라인을 다루는 CLI입니다.
-
-모든 조회 커맨드는 --json으로 JSON 출력을 지원하고, --now로 기준 시각을
-고정해 결정론적인 결과를 얻을 수 있습니다.`,
+		Use:          "engram",
+		Short:        i18n.T("cli.root.short"),
+		Long:         i18n.T("cli.root.long"),
 		SilenceUsage: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// 언어를 가장 먼저 정한다. 이 뒤의 에러 메시지부터 그 언어로 나온다.
@@ -75,9 +72,9 @@ func newRootCmd() *cobra.Command {
 			return nil
 		},
 	}
-	root.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력합니다")
-	root.PersistentFlags().String(flagNow, "", "기준 시각(RFC3339). 빈 값이면 현재 시각")
-	root.PersistentFlags().String(flagLang, "", "출력 언어(ko, en). 빈 값이면 "+i18n.EnvVar+" 환경변수, 그다음 ko")
+	root.PersistentFlags().Bool(flagJSON, false, i18n.T("cli.root.flag_json"))
+	root.PersistentFlags().String(flagNow, "", i18n.T("cli.root.flag_now"))
+	root.PersistentFlags().String(flagLang, "", i18n.T("cli.root.flag_lang", i18n.EnvVar))
 
 	root.AddCommand(newArchiveCmd())
 	root.AddCommand(newBridgeCmd())

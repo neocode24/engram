@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/neocode24/engram/internal/config"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/index"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/spf13/cobra"
@@ -27,12 +28,9 @@ type reindexResult struct {
 func newReindexCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reindex [경로]",
-		Short: "검색 색인을 만듭니다",
-		Long: `위키를 순회해 검색 색인을 만들고 .engram/index.json에 씁니다.
-
-reindex가 인덱스를 만드는 유일한 커맨드입니다. 조회 커맨드는 색인 파일을
-갱신하지 않습니다. 경로를 생략하면 현재 디렉토리입니다.`,
-		Args: cobra.MaximumNArgs(1),
+		Short: i18n.T("cli.reindex.short"),
+		Long:  i18n.T("cli.reindex.long"),
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root := "."
 			if len(args) == 1 {
@@ -44,19 +42,19 @@ reindex가 인덱스를 만드는 유일한 커맨드입니다. 조회 커맨드
 			}
 			walked, err := walk.Files(root, cfg)
 			if err != nil {
-				return fmt.Errorf("위키를 순회할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.reindex.walk_fail"), err)
 			}
 			ix, err := index.Build(root, walked, index.DefaultWeights())
 			if err != nil {
-				return fmt.Errorf("색인을 만들 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.reindex.build_fail"), err)
 			}
 			if err := ix.Save(root); err != nil {
-				return fmt.Errorf("색인을 쓸 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.reindex.save_fail"), err)
 			}
 			path := filepath.Join(root, index.IndexDirName, index.IndexFileName)
 			fi, err := os.Stat(path)
 			if err != nil {
-				return fmt.Errorf("색인 파일을 확인할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.reindex.stat_fail"), err)
 			}
 			res := reindexResult{
 				Docs:       len(ix.Docs),
@@ -69,9 +67,8 @@ reindex가 인덱스를 만드는 유일한 커맨드입니다. 조회 커맨드
 				enc.SetIndent("", "  ")
 				return enc.Encode(res)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "색인을 만들었습니다: %s\n", res.Path)
-			fmt.Fprintf(cmd.OutOrStdout(), "문서 %d개, 토큰 %d개, 크기 %d 바이트\n",
-				res.Docs, res.Tokens, res.IndexBytes)
+			fmt.Fprint(cmd.OutOrStdout(), i18n.T("cli.reindex.done", res.Path)+"\n")
+			fmt.Fprint(cmd.OutOrStdout(), i18n.T("cli.reindex.summary", res.Docs, res.Tokens, res.IndexBytes)+"\n")
 			return nil
 		},
 	}
@@ -83,13 +80,13 @@ reindex가 인덱스를 만드는 유일한 커맨드입니다. 조회 커맨드
 func loadWikiAt(root string) (config.Config, error) {
 	if _, err := os.Stat(filepath.Join(root, config.ConfigFileName)); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return config.Config{}, fmt.Errorf("위키가 아닌 디렉토리입니다: %s\n먼저 engram init을 실행하세요", root)
+			return config.Config{}, fmt.Errorf("%s", i18n.T("cli.reindex.not_wiki", root))
 		}
-		return config.Config{}, fmt.Errorf("대상 경로를 확인할 수 없음: %w", err)
+		return config.Config{}, fmt.Errorf("%s: %w", i18n.T("cli.reindex.path_check_fail"), err)
 	}
 	cfg, err := config.Load(root)
 	if err != nil {
-		return config.Config{}, fmt.Errorf("위키 설정을 읽을 수 없음: %w", err)
+		return config.Config{}, fmt.Errorf("%s: %w", i18n.T("cli.reindex.config_load_fail"), err)
 	}
 	return cfg, nil
 }
