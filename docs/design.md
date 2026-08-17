@@ -101,7 +101,7 @@
 | `serve` | 웹 UI | |
 | `model pull` | 시맨틱 검색용 모델 내려받기 | 선택 층 ([0007](decisions/0007-platform-and-distribution.md)) |
 | `self-update` | 릴리스 체크섬 검증 후 갱신 | |
-| `pack` | 반출 번들. 노출 규칙은 `serve`와 같고 익명화는 사용자 사전으로 한다 | 여정 14 ([0046](decisions/0046-pack-exports-files-and-anonymizes-by-user-dictionary.md)) |
+| `export` | 문서 반출. 노출 규칙은 `serve`와 같고 익명화는 사용자 사전으로 한다 | 여정 14 ([0046](decisions/0046-pack-exports-files-and-anonymizes-by-user-dictionary.md), [0047](decisions/0047-export-not-pack.md)) |
 
 `attach`와 `seal`은 커맨드로 두지 않는다. `attach`는 위키 루트에 `.engram/`이 있으면 자동으로 일어나는 기본 동작이고, `seal`은 폐기했다.
 
@@ -169,7 +169,7 @@
 | 0.2 | `search`, `backlinks`, `reindex`, `demote`, `mv`, `update` | 1, 19, 22 |
 | 0.3 | `resurface`, `bridge`, `digest`, `recall`, `archive` | 9, 10, 11, 20 |
 | 0.4 | `eject`, `rules show`, `migrate`, `sync` (완료) | 12, 13, 16 |
-| 1.0 | `skills install`, MCP, `serve`, `pack`, 배포 (완료) | 8, 14, 15, 17, 21, 23 |
+| 1.0 | `skills install`, MCP, `serve`, `export`, 배포 (완료) | 8, 14, 15, 17, 21, 23 |
 
 여정 2(음성)는 외부 전사기 의존이라 별도 트랙이다. 바이너리는 "외부 전사 결과를 수용하는 인터페이스"만 정의하고 전사 자체를 내장하지 않는다.
 

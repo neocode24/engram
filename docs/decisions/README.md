@@ -60,7 +60,8 @@
 | [0043](0043-mcp-exposes-one-write-tool-and-omits-promote.md) | MCP는 쓰기 도구를 하나만 노출하고 promote를 내보내지 않는다 | 2026-08-17 | accepted |
 | [0044](0044-serve-is-read-only-and-shows-only-vetted-knowledge.md) | serve는 읽기 전용이고 검수된 지식만 보여준다 | 2026-08-17 | accepted |
 | [0045](0045-explicit-slug-must-still-be-filesystem-safe.md) | 명시한 슬러그도 파일시스템 안전 검사를 받는다 | 2026-08-17 | accepted |
-| [0046](0046-pack-exports-files-and-anonymizes-by-user-dictionary.md) | pack은 파일을 그대로 내보내고 익명화는 사용자 사전으로 한다 | 2026-08-17 | accepted |
+| [0046](0046-pack-exports-files-and-anonymizes-by-user-dictionary.md) | pack은 파일을 그대로 내보내고 익명화는 사용자 사전으로 한다 | 2026-08-17 | amended |
+| [0047](0047-export-not-pack.md) | 반출 커맨드의 이름을 export로 정정한다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 
@@ -89,6 +90,7 @@
 | 0024 | 패턴 목록이 없으면 경계 검사를 건너뛴다 | [0033](0033-private-backup-and-fail-closed-boundary.md) 커밋 훅에서는 `--require`로 막는다 |
 | 0020 | 사용자는 언제든 슬러그를 명시해 파생을 덮어쓸 수 있다 | [0045](0045-explicit-slug-must-still-be-filesystem-safe.md) 파생은 덮어쓰되 파일시스템 안전 검사는 못 덮는다 |
 | 0031 | 등급은 `error`다 | [0035](0035-stage-mismatch-severity-by-direction.md) 불일치 방향에 따라 `error`와 `warn`으로 나눈다 |
+| 0046 | 커맨드 이름을 `pack`으로 한다 | [0047](0047-export-not-pack.md) `export`로 정정. 동작은 그대로다 |
 
 ## 근거만 갱신된 경우
 

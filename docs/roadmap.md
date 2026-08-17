@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-**1.0의 커맨드 범위가 닫혔다.** 커맨드 스물여덟, ADR 46건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 스물셋이다. 남은 것은 저장소 공개 전환과 첫 릴리스이며 둘 다 코드 작업이 아니다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
+**1.0의 커맨드 범위가 닫혔다.** 커맨드 스물여덟, ADR 47건, 동작 구조 도식 10종, 여정 24개가 문서로 있고, 코드는 패키지 스물셋이다. 남은 것은 저장소 공개 전환과 첫 릴리스이며 둘 다 코드 작업이 아니다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
 
 ## 끝난 것
 
@@ -37,9 +37,9 @@
 | `skills install` | 에이전트에 정적 스킬 문서를 심는다. 위키별 규칙은 `rules show`가 낸다 | [0041](decisions/0041-skills-install-embeds-one-static-skill.md), [0014](decisions/0014-llm-boundary-agent-drives-binary.md) |
 | `mcp` | 위키를 MCP 서버로 노출한다. 도구 열 중 쓰기는 `capture` 하나이고 `promote`는 없다 | [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md) |
 | `serve` | 읽기 전용 웹 뷰어. `context/`와 색인만 보여주고 민감도 선언을 뒤집지 않는다 | [0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md) |
-| `pack` | 반출 번들. 노출 규칙은 `serve`와 같은 함수를 부르고 익명화는 사용자 사전으로 한다 | [0046](decisions/0046-pack-exports-files-and-anonymizes-by-user-dictionary.md) |
+| `export` | 문서 반출. 노출 규칙은 `serve`와 같은 함수를 부르고 익명화는 사용자 사전으로 한다 | [0046](decisions/0046-pack-exports-files-and-anonymizes-by-user-dictionary.md), [0047](decisions/0047-export-not-pack.md) |
 
-패키지는 스물셋이다. 판정과 저장이 `config`(설정과 프리셋), `doc`(파싱과 직렬화), `walk`(순회), `graph`(링크 관계), `lint`(규칙과 게이트), `wiki`(문서 쓰기), `index`(색인과 BM25), `chunk`(헤딩 청킹), `state`(영구 상태), `gitdate`(git 이력 날짜)다. 재발견이 `resurface`, `digest`, `bridge`다. 조회와 운영이 `status`, `doctor`, `migrate`다. 밖으로 내보내는 것이 `expose`(노출 판정), `serve`(웹 뷰어), `pack`(반출 번들), `mcpserver`, `skills`, `eject`다. 커맨드 계층이 `cli`다.
+패키지는 스물셋이다. 판정과 저장이 `config`(설정과 프리셋), `doc`(파싱과 직렬화), `walk`(순회), `graph`(링크 관계), `lint`(규칙과 게이트), `wiki`(문서 쓰기), `index`(색인과 BM25), `chunk`(헤딩 청킹), `state`(영구 상태), `gitdate`(git 이력 날짜)다. 재발견이 `resurface`, `digest`, `bridge`다. 조회와 운영이 `status`, `doctor`, `migrate`다. 밖으로 내보내는 것이 `expose`(노출 판정), `serve`(웹 뷰어), `export`(문서 반출), `mcpserver`, `skills`, `eject`다. 커맨드 계층이 `cli`다.
 
 **같은 판정을 두 벌 두지 않는다.** 게이트 판정, 링크 대상 집계, 고아 판정, 노후 판정, 노출 판정은 각각 단일 함수이며 커맨드가 그것을 부른다. 같은 판정이 두 곳에 생기면 커맨드로 통과한 문서를 `lint`가 거절하거나, `status`와 `digest`가 서로 다른 고아 수를 말하는 상태가 된다.
 
@@ -75,7 +75,7 @@
 | 사전과 어긋난 표기를 잡는 lint 규칙 | `taxonomy.forms`와 같은 성격 |
 | 사전에 없는데 반복 등장하는 표기 제안 | 세어서 낼 뿐 **등재는 사람이 한다** |
 
-셋 다 순수 Go 텍스트 처리다. 모델도 음성도 필요 없다. **사전 파서는 `pack`이 이미 갖고 있다.** `원문==>대체어` 형식이며 [0046](decisions/0046-pack-exports-files-and-anonymizes-by-user-dictionary.md)이 그 형식을 정했다. 재사용 지점이다.
+셋 다 순수 Go 텍스트 처리다. 모델도 음성도 필요 없다. **사전 파서는 `export`가 이미 갖고 있다.** `원문==>대체어` 형식이며 [0046](decisions/0046-pack-exports-files-and-anonymizes-by-user-dictionary.md)이 그 형식을 정했다. 재사용 지점이다.
 
 전사 결과 수용은 그다음이다. `capture`가 외부 전사 파일을 받아 위 첫째를 태우면 음성 없이도 루프가 닫힌다.
 
@@ -104,7 +104,7 @@ upstream 명세 동기화 과제와 coordinator/worker 실행 체제는 `private
 
 - **문체 정리.** AGENTS.md가 em dash와 화살표를 금지하는데 초기 문서 다수가 위반 상태다. 린터를 붙여 한 번에 정리한다. 사용자 대면 문자열의 경어체 전환(ADR 0027)은 끝났으나 같은 린터가 이 규칙도 지켜야 재발하지 않는다.
 - ~~**규칙 명세와 구현의 대응표.**~~ `docs/spec-map.md`로 만들었다. 명세 7종, lint 규칙 16종, 설정 축 14종의 대응이 전부 들어 있다.
-- **`architecture.md`가 반출 경로를 담고 있지 않다.** 도식 10종은 0.3 시점 구조이고 1.0에서 늘어난 `mcp`, `serve`, `pack` 셋이 빠져 있다. 셋이 `internal/expose`라는 같은 노출 판정을 부른다는 사실이 그림에 없다. 도식 하나를 더한다.
+- **`architecture.md`가 반출 경로를 담고 있지 않다.** 도식 10종은 0.3 시점 구조이고 1.0에서 늘어난 `mcp`, `serve`, `export` 셋이 빠져 있다. 셋이 `internal/expose`라는 같은 노출 판정을 부른다는 사실이 그림에 없다. 도식 하나를 더한다.
 - **`curriculum.md` 재작성.** 여정 24개와 마일스톤이 확정되었으므로 강의 단위를 다시 매핑해야 한다. 현재 내용은 여정 5개 시절 기준이다.
 - ~~**`docs/parity.md`**~~ lint 축 측정을 마쳤다. 자동 생성이 아니라 로컬 실행 결과를 사람이 옮겨 적는다(ADR 0029).
 - ~~**README 재작성.**~~ 0.3 완료 시점으로 다시 썼다. 커맨드 스물을 다섯 갈래 표로 정리했고 실린 출력은 전부 실제 실행 결과다. 남은 축은 둘이다.
@@ -139,7 +139,7 @@ Go 테스트 스위트가 생겼다. `go test ./...`가 정식 검증이다.
 | `internal/lint` | 규칙별 판정, 종료 코드, 출력 결정론 |
 | `internal/cli` | `init` 생성물과 멱등성, `--now` 고정 시 바이트 동일 |
 | `harness` | 골든 위키에 대한 lint 출력 스냅샷 비교. `go test ./harness -update`로 갱신 |
-| `harness/journey` | 실제 바이너리로 `init`부터 `pack`까지 열두 단계. 각 변경 뒤 `lint`의 `error`와 `reject`가 0인지, 승급 문서에 `created`가 남는지, `resurface` 후보에 승급 문서가 드는지, `pack` 번들에 inbox 문서가 섞이지 않는지 |
+| `harness/journey` | 실제 바이너리로 `init`부터 `export`까지 열두 단계. 각 변경 뒤 `lint`의 `error`와 `reject`가 0인지, 승급 문서에 `created`가 남는지, `resurface` 후보에 승급 문서가 드는지, `export` 번들에 inbox 문서가 섞이지 않는지 |
 | `harness/parity` | upstream 스크립트와의 대조. lint 위반 목록과 `resurface` 선정 순위 두 축. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |
 | `harness/eject` | 내보낸 Python 린터와 `engram lint`의 판정 대조. 여덟 상황에서 출력과 종료 코드를 본다. **어긋나면 실패다.** CI에서 돈다 |
 | `harness/realdata` | 실운영 위키 306문서 스모크. 생존, 조회 커맨드의 무변경, 판정의 결정론, 시간 상한 넷만 단언하고 위반 수는 로그로 남긴다. `ENGRAM_UPSTREAM`이 있을 때만 돈다 |

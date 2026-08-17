@@ -7,21 +7,21 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/neocode24/engram/internal/pack"
+	"github.com/neocode24/engram/internal/export"
 	"github.com/spf13/cobra"
 )
 
-// pack 커맨드의 플래그 이름이다.
+// export 커맨드의 플래그 이름이다.
 const (
-	flagPackOut          = "out"
-	flagPackReplacements = "replacements"
-	flagPackDryRun       = "dry-run"
+	flagExportOut          = "out"
+	flagExportReplacements = "replacements"
+	flagExportDryRun       = "dry-run"
 )
 
-// newPackCmd는 위키의 일부를 밖으로 내보낼 번들을 만드는 pack 커맨드를 반환한다.
-func newPackCmd() *cobra.Command {
+// newExportCmd는 위키의 일부를 밖으로 내보낼 번들을 만드는 export 커맨드를 반환한다.
+func newExportCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "pack [슬러그...]",
+		Use:   "export [슬러그...]",
 		Short: "검수된 문서를 익명화해 반출 번들로 내보냅니다",
 		Long: `검수를 지난 문서를 --out 디렉토리에 마크다운 그대로 내보냅니다.
 
@@ -47,14 +47,14 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 			if err != nil {
 				return err
 			}
-			out, err := stringFlag(cmd, flagPackOut)
+			out, err := stringFlag(cmd, flagExportOut)
 			if err != nil {
 				return err
 			}
 			if out == "" {
-				return fmt.Errorf("--%s 로 내보낼 디렉토리를 지정하세요", flagPackOut)
+				return fmt.Errorf("--%s 로 내보낼 디렉토리를 지정하세요", flagExportOut)
 			}
-			replPath, err := stringFlag(cmd, flagPackReplacements)
+			replPath, err := stringFlag(cmd, flagExportReplacements)
 			if err != nil {
 				return err
 			}
@@ -62,9 +62,9 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 			if err != nil {
 				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagIncludeArchive, err)
 			}
-			dryRun, err := cmd.Flags().GetBool(flagPackDryRun)
+			dryRun, err := cmd.Flags().GetBool(flagExportDryRun)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagPackDryRun, err)
+				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagExportDryRun, err)
 			}
 
 			rules, err := loadReplacements(replPath)
@@ -72,7 +72,7 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 				return err
 			}
 
-			res, err := pack.Plan(root, cfg, pack.Options{
+			res, err := export.Plan(root, cfg, export.Options{
 				IncludeArchive: includeArchive,
 				Slugs:          args,
 				Rules:          rules,
@@ -91,13 +91,13 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 					return err
 				}
 				for _, f := range res.Files {
-					if err := writePackFile(out, f); err != nil {
+					if err := writeExportFile(out, f); err != nil {
 						return err
 					}
 				}
 			}
 
-			o := packOutcome{
+			o := exportOutcome{
 				DryRun:           dryRun,
 				Out:              out,
 				Files:            filePaths(res.Files),
@@ -107,7 +107,7 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 				DanglingLinks:    res.DanglingLinks,
 				DanglingSlugs:    res.DanglingSlugs,
 				ExcludedByFilter: res.ExcludedByFilter,
-				Excluded: packExcluded{
+				Excluded: exportExcluded{
 					Inbox:     res.Exposure.ExcludedInbox,
 					Sources:   res.Exposure.ExcludedSources,
 					Archive:   res.Exposure.ExcludedArchive,
@@ -122,20 +122,20 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 				enc.SetIndent("", "  ")
 				return enc.Encode(o)
 			}
-			printPack(cmd.OutOrStdout(), o)
+			printExport(cmd.OutOrStdout(), o)
 			return nil
 		},
 	}
 	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
-	cmd.Flags().String(flagPackOut, "", "번들을 내보낼 디렉토리")
-	cmd.Flags().String(flagPackReplacements, "", "익명화 치환 파일. 한 줄에 원문==>대체어")
+	cmd.Flags().String(flagExportOut, "", "번들을 내보낼 디렉토리")
+	cmd.Flags().String(flagExportReplacements, "", "익명화 치환 파일. 한 줄에 원문==>대체어")
 	cmd.Flags().Bool(flagIncludeArchive, false, "archive 문서도 반출합니다")
-	cmd.Flags().Bool(flagPackDryRun, false, "무엇이 나갈지 봅니다. 파일을 쓰지 않습니다")
+	cmd.Flags().Bool(flagExportDryRun, false, "무엇이 나갈지 봅니다. 파일을 쓰지 않습니다")
 	return cmd
 }
 
 // loadReplacements는 치환 파일을 읽는다. 경로가 없으면 규칙이 없다.
-func loadReplacements(path string) ([]pack.Rule, error) {
+func loadReplacements(path string) ([]export.Rule, error) {
 	if path == "" {
 		return nil, nil
 	}
@@ -143,7 +143,7 @@ func loadReplacements(path string) ([]pack.Rule, error) {
 	if err != nil {
 		return nil, fmt.Errorf("치환 파일을 읽을 수 없음: %w", err)
 	}
-	rules, err := pack.ParseReplacements(string(b))
+	rules, err := export.ParseReplacements(string(b))
 	if err != nil {
 		return nil, fmt.Errorf("치환 파일 %s: %w", path, err)
 	}
@@ -169,8 +169,8 @@ func requireEmptyDir(dir string) error {
 	return nil
 }
 
-// writePackFile은 번들 파일 하나를 쓴다.
-func writePackFile(out string, f pack.File) error {
+// writeExportFile은 번들 파일 하나를 쓴다.
+func writeExportFile(out string, f export.File) error {
 	path := filepath.Join(out, filepath.FromSlash(f.Rel))
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("디렉토리를 만들 수 없음: %w", err)
@@ -181,8 +181,8 @@ func writePackFile(out string, f pack.File) error {
 	return nil
 }
 
-// packExcluded는 노출 규칙이 무엇을 걸렀는지다.
-type packExcluded struct {
+// exportExcluded는 노출 규칙이 무엇을 걸렀는지다.
+type exportExcluded struct {
 	Inbox     int `json:"inbox"`
 	Sources   int `json:"sources"`
 	Archive   int `json:"archive"`
@@ -191,23 +191,23 @@ type packExcluded struct {
 	Outside   int `json:"outside"`
 }
 
-// packOutcome은 pack 의 결과다. DryRun 이면 Files 는 내보낼 예정이다.
-type packOutcome struct {
-	DryRun           bool         `json:"dryRun"`
-	Out              string       `json:"out"`
-	Files            []string     `json:"files"`
-	Replaced         int          `json:"replaced"`
-	Anonymized       bool         `json:"anonymized"`
-	UnusedRules      []string     `json:"unusedRules,omitempty"`
-	DanglingLinks    int          `json:"danglingLinks"`
-	DanglingSlugs    []string     `json:"danglingSlugs,omitempty"`
-	ExcludedByFilter int          `json:"excludedByFilter"`
-	Excluded         packExcluded `json:"excluded"`
-	SensitivityOn    bool         `json:"sensitivityOn"`
+// exportOutcome은 export 의 결과다. DryRun 이면 Files 는 내보낼 예정이다.
+type exportOutcome struct {
+	DryRun           bool           `json:"dryRun"`
+	Out              string         `json:"out"`
+	Files            []string       `json:"files"`
+	Replaced         int            `json:"replaced"`
+	Anonymized       bool           `json:"anonymized"`
+	UnusedRules      []string       `json:"unusedRules,omitempty"`
+	DanglingLinks    int            `json:"danglingLinks"`
+	DanglingSlugs    []string       `json:"danglingSlugs,omitempty"`
+	ExcludedByFilter int            `json:"excludedByFilter"`
+	Excluded         exportExcluded `json:"excluded"`
+	SensitivityOn    bool           `json:"sensitivityOn"`
 }
 
 // filePaths는 번들 경로만 낸다.
-func filePaths(files []pack.File) []string {
+func filePaths(files []export.File) []string {
 	out := make([]string, 0, len(files))
 	for _, f := range files {
 		out = append(out, f.Rel)
@@ -216,7 +216,7 @@ func filePaths(files []pack.File) []string {
 }
 
 // ruleTexts는 규칙을 사람이 읽을 한 줄로 만든다.
-func ruleTexts(rules []pack.Rule) []string {
+func ruleTexts(rules []export.Rule) []string {
 	out := make([]string, 0, len(rules))
 	for _, r := range rules {
 		out = append(out, r.From)
@@ -224,9 +224,9 @@ func ruleTexts(rules []pack.Rule) []string {
 	return out
 }
 
-// printPack은 무엇이 나갔고 무엇이 빠졌는지, 치환이 몇 건 걸렸는지 낸다.
+// printExport은 무엇이 나갔고 무엇이 빠졌는지, 치환이 몇 건 걸렸는지 낸다.
 // 반출은 되돌릴 수 없으므로 매번 전부 알린다.
-func printPack(w io.Writer, o packOutcome) {
+func printExport(w io.Writer, o exportOutcome) {
 	if o.DryRun {
 		fmt.Fprintf(w, "내보낼 문서 %d개 (dry-run. 아직 쓰지 않았습니다)\n", len(o.Files))
 	} else {

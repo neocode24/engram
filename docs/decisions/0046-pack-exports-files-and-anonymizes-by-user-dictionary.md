@@ -2,7 +2,7 @@
 number: 0046
 title: pack은 파일을 그대로 내보내고 익명화는 사용자 사전으로 한다
 date: 2026-08-17
-status: accepted
+status: amended
 ---
 
 # pack의 반출 범위와 익명화

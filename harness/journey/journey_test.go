@@ -197,16 +197,16 @@ func TestJourney(t *testing.T) {
 	w.assertLintClean(t, "reindex")
 	assertFileExists(t, wiki, ".engram/index.json")
 
-	// 12. pack. 도구가 만든 위키를 도구 자신의 반출 커맨드에 태운다.
+	// 12. export. 도구가 만든 위키를 도구 자신의 반출 커맨드에 태운다.
 	// 여정 끝 상태에서 context 에 남은 것은 doc-b-renamed 와 tech-talk 이고
 	// field-memo 는 demote 로 inbox 에, doc-a 는 archive 에 있다. 번들에
 	// inbox 문서가 섞이면 검수 경계가 반출에서 뚫린 것이다(ADR 0044, 0046).
 	bundle := filepath.Join(files, "bundle")
 	dict := filepath.Join(files, "repl.txt")
 	writeFile(t, dict, "# 반출 사전\ntech-talk==>lecture\n")
-	w.mustOK(t, w.run("pack",
-		"pack", "--wiki", wiki, "--out", bundle, "--replacements", dict))
-	w.assertLintClean(t, "pack")
+	w.mustOK(t, w.run("export",
+		"export", "--wiki", wiki, "--out", bundle, "--replacements", dict))
+	w.assertLintClean(t, "export")
 	assertBundle(t, bundle, []string{
 		"context/doc-b-renamed.md",
 		"context/lecture.md",

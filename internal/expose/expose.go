@@ -6,8 +6,9 @@
 // sensitivity 축이 켜진 위키에서는 private-local-only 와 restricted 를
 // 뺀다. 그 제외를 뒤집는 수단은 없다.
 //
-// 이 판정을 serve 와 pack 이 함께 부른다. 두 벌 두면 serve 가 감추는
-// 문서를 pack 이 내보내는 상태가 되고 민감도 선언이 무의미해진다(ADR 0046).
+// 이 판정을 serve 와 export 가 함께 부른다. 두 벌 두면 serve 가 감추는
+// 문서를 export 가 내보내는 상태가 되고 민감도 선언이 무의미해진다
+// (ADR 0046, 0047).
 package expose
 
 import (

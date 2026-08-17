@@ -11,14 +11,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runPack은 pack 커맨드를 루트 등록 없이 시험한다. 전역 플래그는 테스트용
+// runExport은 export 커맨드를 루트 등록 없이 시험한다. 전역 플래그는 테스트용
 // 부모 커맨드에 붙인다.
-func runPack(t *testing.T, args ...string) (string, error) {
+func runExport(t *testing.T, args ...string) (string, error) {
 	t.Helper()
 	parent := &cobra.Command{Use: "engram", SilenceUsage: true}
 	parent.PersistentFlags().Bool(flagJSON, false, "결과를 JSON으로 출력합니다")
 	parent.PersistentFlags().String(flagNow, "", "기준 시각(RFC3339)")
-	parent.AddCommand(newPackCmd())
+	parent.AddCommand(newExportCmd())
 	var out bytes.Buffer
 	parent.SetOut(&out)
 	parent.SetErr(&out)
@@ -27,8 +27,8 @@ func runPack(t *testing.T, args ...string) (string, error) {
 	return out.String(), err
 }
 
-// makePackWiki는 반출 대상이 있는 임시 위키를 만든다.
-func makePackWiki(t *testing.T) string {
+// makeExportWiki는 반출 대상이 있는 임시 위키를 만든다.
+func makeExportWiki(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	files := map[string]string{
@@ -75,10 +75,10 @@ func bundleNames(t *testing.T, dir string) []string {
 	return out
 }
 
-func TestPackWritesBundle(t *testing.T) {
-	root := makePackWiki(t)
+func TestExportWritesBundle(t *testing.T) {
+	root := makeExportWiki(t)
 	out := filepath.Join(t.TempDir(), "bundle")
-	stdout, err := runPack(t, "pack", "--wiki", root, "--out", out)
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out)
 	if err != nil {
 		t.Fatalf("반출 실패: %v\n%s", err, stdout)
 	}
@@ -94,10 +94,10 @@ func TestPackWritesBundle(t *testing.T) {
 	}
 }
 
-func TestPackDryRunWritesNothing(t *testing.T) {
-	root := makePackWiki(t)
+func TestExportDryRunWritesNothing(t *testing.T) {
+	root := makeExportWiki(t)
 	out := filepath.Join(t.TempDir(), "bundle")
-	stdout, err := runPack(t, "pack", "--wiki", root, "--out", out, "--dry-run")
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--dry-run")
 	if err != nil {
 		t.Fatalf("dry-run 실패: %v\n%s", err, stdout)
 	}
@@ -109,13 +109,13 @@ func TestPackDryRunWritesNothing(t *testing.T) {
 	}
 }
 
-func TestPackRejectsNonEmptyOutDir(t *testing.T) {
-	root := makePackWiki(t)
+func TestExportRejectsNonEmptyOutDir(t *testing.T) {
+	root := makeExportWiki(t)
 	out := t.TempDir()
 	if err := os.WriteFile(filepath.Join(out, "잔재.md"), []byte("이전 반출물\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	_, err := runPack(t, "pack", "--wiki", root, "--out", out)
+	_, err := runExport(t, "export", "--wiki", root, "--out", out)
 	if err == nil || !strings.Contains(err.Error(), "비어 있지 않습니다") {
 		t.Fatalf("비어 있지 않은 디렉토리 오류 = %v", err)
 	}
@@ -124,14 +124,14 @@ func TestPackRejectsNonEmptyOutDir(t *testing.T) {
 	}
 }
 
-func TestPackAppliesReplacements(t *testing.T) {
-	root := makePackWiki(t)
+func TestExportAppliesReplacements(t *testing.T) {
+	root := makeExportWiki(t)
 	dict := filepath.Join(t.TempDir(), "repl.txt")
 	if err := os.WriteFile(dict, []byte("# 사전\n아크미==>사내조직\n안걸리는말==>X\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	out := filepath.Join(t.TempDir(), "bundle")
-	stdout, err := runPack(t, "pack", "--wiki", root, "--out", out, "--replacements", dict)
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--replacements", dict)
 	if err != nil {
 		t.Fatalf("반출 실패: %v\n%s", err, stdout)
 	}
@@ -151,34 +151,34 @@ func TestPackAppliesReplacements(t *testing.T) {
 	}
 }
 
-func TestPackRejectsBadReplacementFile(t *testing.T) {
-	root := makePackWiki(t)
+func TestExportRejectsBadReplacementFile(t *testing.T) {
+	root := makeExportWiki(t)
 	dict := filepath.Join(t.TempDir(), "repl.txt")
 	if err := os.WriteFile(dict, []byte("구분자가 없는 줄\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	_, err := runPack(t, "pack", "--wiki", root, "--out", filepath.Join(t.TempDir(), "b"), "--replacements", dict)
+	_, err := runExport(t, "export", "--wiki", root, "--out", filepath.Join(t.TempDir(), "b"), "--replacements", dict)
 	if err == nil || !strings.Contains(err.Error(), "==>") {
 		t.Fatalf("형식 오류를 알리지 않았습니다: %v", err)
 	}
 }
 
-func TestPackRequiresOut(t *testing.T) {
-	root := makePackWiki(t)
-	_, err := runPack(t, "pack", "--wiki", root)
+func TestExportRequiresOut(t *testing.T) {
+	root := makeExportWiki(t)
+	_, err := runExport(t, "export", "--wiki", root)
 	if err == nil || !strings.Contains(err.Error(), "--out") {
 		t.Fatalf("--out 없이 통과했습니다: %v", err)
 	}
 }
 
-func TestPackJSON(t *testing.T) {
-	root := makePackWiki(t)
+func TestExportJSON(t *testing.T) {
+	root := makeExportWiki(t)
 	out := filepath.Join(t.TempDir(), "bundle")
-	stdout, err := runPack(t, "pack", "--wiki", root, "--out", out, "--dry-run", "--json")
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--dry-run", "--json")
 	if err != nil {
 		t.Fatalf("반출 실패: %v\n%s", err, stdout)
 	}
-	var o packOutcome
+	var o exportOutcome
 	if err := json.Unmarshal([]byte(stdout), &o); err != nil {
 		t.Fatalf("JSON 파싱 실패: %v\n%s", err, stdout)
 	}

@@ -304,7 +304,7 @@ flowchart LR
 | `skills install` | Install the skill document into an agent. The whole of the LLM integration |
 | `mcp` | Expose the wiki as an MCP server. The only write tool is `capture` |
 | `serve` | Read-only web viewer. Shows `context/` only |
-| `pack` | Export a bundle. Same exposure rules as `serve`, plus anonymization from a dictionary you supply |
+| `export` | Export a bundle of documents. Same exposure rules as `serve`, plus anonymization from a dictionary you supply |
 | `version` | Version and build info |
 
 There are two global flags. `--json` gives machine-readable output; `--now` pins the reference time so results are deterministic.
@@ -353,7 +353,7 @@ Because the presets nest, moving up a preset only adds fields.
 | 0.2 | `search`, `backlinks`, `reindex`, `demote`, `mv`, `update` | done |
 | 0.3 | `resurface`, `bridge`, `digest`, `recall`, `archive` | done |
 | 0.4 | `eject`, `rules show`, `migrate`, `sync` | done |
-| 1.0 | `skills install`, MCP, `serve`, `pack`, release pipeline | done |
+| 1.0 | `skills install`, MCP, `serve`, `export`, release pipeline | done |
 
 `eject` hands the rules to the user but keeps the computation. After ejecting, `search`, `recall`, `resurface`, `bridge`, `digest`, and `backlinks` keep working. CI checks that the exported Python linter reaches the same verdicts as `engram lint`. Milestone scope is in [design.md](docs/design.md).
 

@@ -292,7 +292,7 @@ flowchart LR
 | `skills install` | 에이전트에 스킬 문서를 심습니다 |
 | `mcp` | 위키를 MCP 서버로 노출합니다. 쓰기 도구는 `capture` 하나입니다 |
 | `serve` | 읽기 전용 웹 뷰어입니다. `context/`만 보여 줍니다 |
-| `pack` | 반출 번들을 만듭니다. 노출 규칙은 `serve`와 같고, 사용자가 준 사전으로 익명화합니다 |
+| `export` | 문서를 반출합니다. 노출 규칙은 `serve`와 같고, 사용자가 준 사전으로 익명화합니다 |
 | `version` | 버전과 빌드 정보 |
 
 전역 플래그는 둘입니다. `--json`은 기계가 읽는 출력이고, `--now`는 기준 시각을 고정해서 같은 입력에 늘 같은 결과가 나오게 합니다.
@@ -341,7 +341,7 @@ broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
 | 0.2 | `search`, `backlinks`, `reindex`, `demote`, `mv`, `update` | 완료 |
 | 0.3 | `resurface`, `bridge`, `digest`, `recall`, `archive` | 완료 |
 | 0.4 | `eject`, `rules show`, `migrate`, `sync` | 완료 |
-| 1.0 | `skills install`, MCP 노출, `serve`, `pack`, 릴리스 배포 | 완료 |
+| 1.0 | `skills install`, MCP 노출, `serve`, `export`, 릴리스 배포 | 완료 |
 
 `eject`는 규칙을 사용자에게 넘기지만 연산은 넘기지 않습니다. 내보낸 뒤에도 `search`, `recall`, `resurface`, `bridge`, `digest`, `backlinks`는 그대로 동작합니다. 내보낸 Python 린터가 `engram lint`와 같은 판정을 내는지는 CI에서 매번 대조합니다. 마일스톤별 범위는 [design.md](../design.md)에 있습니다.
 
