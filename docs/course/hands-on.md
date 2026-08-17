@@ -11,25 +11,30 @@
 
 | 쓰는 말 | 뜻 | 쓰지 않는 말 |
 |---|---|---|
-| 실습 단계 | 이 문서의 1단계부터 8단계까지. 손으로 하는 순서 | 단위. 강의 단위와 헷갈립니다 |
-| 강의 단위 | [curriculum.md](../curriculum.md)의 여덟 단위. 강의 구성 | 챕터, 세션 |
+| 실습 단계 | 이 문서의 1단계부터 8단계까지. 수강생이 손으로 하는 순서 | 단위, 파트 |
+| 강의 세션 | [curriculum.md](../curriculum.md)의 여덟 세션. 시간이 배정된 진행 구획 | 단위. 한국어로 강의를 세는 말이 아닙니다 |
 | 실습 위키 | 수강생이 만들어 끝까지 쓰는 위키. `~/engram-wiki` | 랩, lab, 내 위키 |
 | 데모 위키 | 저장소의 `examples/education`. 6단계에서만 씁니다 | 씨앗 위키, seed, 예제 위키 |
 | 실습 재료 | 저장소의 `examples/materials/`. 위키에 집어넣을 원재료 | 샘플, 교재, 데이터셋 |
 | 저장소 | engram 소스 저장소 | 레포, 리포지토리 |
+| 설치 방법 | 소스 빌드와 바이너리 내려받기 두 가지 | 갈래, 경로, 트랙 |
 
-실습 단계와 강의 단위는 번호가 어긋납니다. 강의 1단위는 덱이라 손을 쓰지 않고, 실습 1단계는 설치입니다. 대응은 아래와 같습니다.
+`갈래`는 커맨드 분류(넣기, 올리기, 조회, 재발견, 관리 다섯 갈래)에만 씁니다. 설치나 선택지를 가리키는 데 쓰지 않습니다.
 
-| 실습 단계 | 강의 단위 |
+**강의는 세션으로 세고 실습은 단계로 셉니다.** 세션은 시간이 배정된 진행 구획이라 강사가 쓰는 말이고, 단계는 순서가 있는 작업이라 수강생이 쓰는 말입니다. 자료 안의 장 구분을 가리킬 때만 챕터를 씁니다.
+
+실습 단계와 강의 세션은 번호가 어긋납니다. 강의 1세션은 덱이라 손을 쓰지 않고, 실습 1단계는 설치입니다. 대응은 아래와 같습니다.
+
+| 실습 단계 | 강의 세션 |
 |---|---|
-| (없음) | 1단위 오리엔테이션 |
-| 1단계 설치와 준비, 2단계 첫 위키 | 2단위 설치와 첫 위키 |
-| 3단계 | 3단위 넣기 |
-| 4단계 | 4단위 올리기 |
-| 5단계 | 5단위 꺼내 쓰기 |
-| 6단계 | 6단위 다시 만나기 |
-| 7단계 | 7단위 에이전트 연동 |
-| 8단계 | 8단위 운영과 공유 |
+| (없음) | 1세션 오리엔테이션 |
+| 1단계 설치와 준비, 2단계 첫 위키 | 2세션 설치와 첫 위키 |
+| 3단계 | 3세션 넣기 |
+| 4단계 | 4세션 올리기 |
+| 5단계 | 5세션 꺼내 쓰기 |
+| 6단계 | 6세션 다시 만나기 |
+| 7단계 | 7세션 에이전트 연동 |
+| 8단계 | 8세션 운영과 공유 |
 
 ## 진행 상태
 
@@ -66,54 +71,57 @@
 
 engram이 어디서든 실행되는 상태를 만들고, 실습 재료를 손에 넣습니다.
 
-## 갈래 둘
+## 설치 방법 둘
 
-수강생이 처한 상황이 다르므로 두 갈래로 나눕니다. 어느 쪽이든 저장소가 필요합니다. 실습 재료가 거기 있기 때문입니다.
+수강생이 처한 상황이 다르므로 두 가지로 나눕니다. 어느 쪽이든 저장소가 필요합니다. 실습 재료가 거기 있기 때문입니다.
 
-| 갈래 | 고르는 사람 | 얻는 것 |
+| 방법 | 고르는 사람 | 얻는 것 |
 |---|---|---|
 | A. 소스 빌드 | Go를 이미 쓰거나 설치할 수 있는 사람 | 바이너리, 실습 재료, 데모 위키를 한 번에 |
-| B. 바이너리 설치 | Go를 깔고 싶지 않은 사람 | 바이너리만. 실습 재료는 저장소를 따로 받습니다 |
+| B. 바이너리 내려받기 | Go를 깔고 싶지 않은 사람 | 바이너리만. 실습 재료는 저장소를 따로 받습니다 |
 
 강사는 A를 기본으로 안내하고, Go 설치에서 막히는 수강생에게 B로 넘어가게 합니다.
 
-## 갈래 A. 소스 빌드
+## 방법 A. 소스 빌드
 
 전제는 둘입니다. **Go 1.26 이상**과 **git**입니다.
 
 ```
 git clone https://github.com/neocode24/engram.git
 cd engram
+go install ./cmd/engram
 ```
 
-빌드와 배치는 운영체제마다 다릅니다.
+운영체제와 상관없이 이 세 줄이 전부입니다. **`sudo`를 쓰지 않습니다.** 관리자 권한을 요구하는 설치는 사내 기기에서 막히는 경우가 있고, 실습을 위해 시스템 디렉토리를 건드릴 이유가 없습니다.
 
-### macOS, Linux
+`go install`은 `go env GOPATH`가 가리키는 곳의 `bin`에 넣습니다.
+
+| 운영체제 | 들어가는 위치 |
+|---|---|
+| macOS, Linux | `~/go/bin/engram` |
+| Windows | `%USERPROFILE%\go\bin\engram.exe` |
+
+### PATH에 넣기
+
+**이 디렉토리는 PATH에 자동으로 들어가지 않습니다.** Go 설치 프로그램은 Go 자신의 `bin`만 PATH에 넣습니다. 한 번 넣어 두면 이후 `go install`로 받는 모든 도구에 통합니다.
+
+먼저 위치를 확인합니다.
 
 ```
-go build -o engram ./cmd/engram
-sudo mkdir -p /usr/local/bin
-sudo mv engram /usr/local/bin/
+go env GOPATH
 ```
 
-`/usr/local/bin`에 두는 이유는 macOS의 `/etc/paths` 첫 줄이 그것이고 Linux 배포판 대부분도 기본 PATH에 넣기 때문입니다. `~/bin`은 macOS에서 PATH에 들어 있지 않고 디렉토리도 없습니다.
+macOS와 Linux의 zsh입니다. bash면 `~/.zshrc`를 `~/.bashrc`로 바꿉니다.
 
-**`go build`를 sudo로 돌리지 않습니다.** 빌드 캐시가 root 소유로 만들어져서 다음부터 일반 사용자 빌드가 실패합니다. 빌드는 사용자 권한으로 하고 옮기는 것만 sudo로 합니다.
+```
+echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
+source ~/.zshrc
+```
 
-### Windows
-
-PowerShell에서 진행합니다.
+Windows PowerShell입니다. 사용자 범위로만 바꾸므로 관리자 권한이 필요 없습니다.
 
 ```powershell
-go build -o engram.exe .\cmd\engram
-New-Item -ItemType Directory -Force "$env:LOCALAPPDATA\Programs\engram"
-Move-Item engram.exe "$env:LOCALAPPDATA\Programs\engram\"
-```
-
-PATH에 넣습니다. 사용자 범위로만 바꾸므로 관리자 권한이 필요 없습니다.
-
-```powershell
-$dir = "$env:LOCALAPPDATA\Programs\engram"
+$dir = Join-Path (go env GOPATH) "bin"
 $cur = [Environment]::GetEnvironmentVariable("Path", "User")
 [Environment]::SetEnvironmentVariable("Path", "$cur;$dir", "User")
 ```
@@ -122,15 +130,7 @@ $cur = [Environment]::GetEnvironmentVariable("Path", "User")
 
 터미널을 닫았다 다시 엽니다. PATH 변경은 새 프로세스부터 적용됩니다.
 
-### sudo나 PATH 편집을 피하고 싶은 경우 (전 운영체제)
-
-```
-go install ./cmd/engram
-```
-
-`go env GOPATH`가 가리키는 곳의 `bin`에 들어갑니다. 보통 `~/go/bin`이고 Windows는 `%USERPROFILE%\go\bin`입니다. **이 디렉토리는 PATH에 자동으로 들어가지 않습니다.** `go env GOPATH`로 위치를 확인하고 PATH에 직접 넣어야 합니다.
-
-## 갈래 B. 바이너리 설치
+## 방법 B. 바이너리 내려받기
 
 ### 내려받기
 
@@ -152,25 +152,33 @@ shasum -a 256 engram_1.0.0_darwin_arm64.tar.gz
 
 출력이 `checksums.txt`의 해당 줄과 같아야 합니다.
 
-### 배치
-
-압축을 풀면 `engram`(Windows는 `engram.exe`)이 나옵니다. 갈래 A와 같은 자리에 둡니다.
-
-- macOS, Linux: `sudo mv engram /usr/local/bin/`
-- Windows: `%LOCALAPPDATA%\Programs\engram\`에 두고 사용자 PATH에 추가
-
-macOS에서 처음 실행하면 서명되지 않은 바이너리라 Gatekeeper가 막습니다. 시스템 설정의 개인정보 보호 및 보안에서 한 번 허용하거나 아래를 돌립니다.
-
-```
-xattr -d com.apple.quarantine /usr/local/bin/engram
-```
-
-### Homebrew
+### Homebrew (macOS, Linux)
 
 tap이 켜지면 아래 한 줄이 됩니다. **지금은 꺼져 있습니다.** 저장소 공개 전환과 함께 켭니다.
 
 ```
 brew install neocode24/tap/engram
+```
+
+Homebrew가 알아서 PATH 위에 놓으므로 따로 할 일이 없습니다. 위치는 Apple Silicon이 `/opt/homebrew/bin/engram`, Intel Mac과 Linux가 `/usr/local/bin/engram`입니다.
+
+### 아카이브 직접 배치
+
+Homebrew를 쓰지 않거나 Windows인 경우입니다. 압축을 풀면 `engram`(Windows는 `engram.exe`)이 나옵니다.
+
+방법 A와 **같은 자리에 둡니다.** 설치 방법이 둘이어도 실행 파일이 있는 곳은 하나로 맞춥니다.
+
+```
+mkdir -p ~/go/bin
+mv engram ~/go/bin/
+```
+
+Go가 깔려 있지 않아도 상관없습니다. 그냥 디렉토리 하나입니다. 그 뒤 방법 A의 PATH 설정을 그대로 따릅니다. Windows도 `%USERPROFILE%\go\bin`에 둡니다.
+
+macOS에서 처음 실행하면 서명되지 않은 바이너리라 Gatekeeper가 막습니다. 시스템 설정의 개인정보 보호 및 보안에서 한 번 허용하거나 아래를 돌립니다.
+
+```
+xattr -d com.apple.quarantine ~/go/bin/engram
 ```
 
 ### 실습 재료 받기
@@ -183,7 +191,7 @@ git clone https://github.com/neocode24/engram.git
 
 ## 확인
 
-갈래와 운영체제에 상관없이 아래 셋이 통과해야 1단계가 끝납니다.
+설치 방법과 운영체제에 상관없이 아래 셋이 통과해야 1단계가 끝납니다.
 
 ```
 engram version
@@ -191,11 +199,42 @@ engram --help
 engram doctor
 ```
 
-- `version`이 버전과 빌드 정보를 냅니다. 갈래 A로 빌드하면 버전이 `dev`로 나오는 것이 정상입니다.
+- `version`이 버전과 빌드 정보를 냅니다. 방법 A로 빌드하면 버전이 `dev`로 나오는 것이 정상입니다.
 - `--help`가 커맨드 스물여덟을 냅니다. **이 목록이 진실원입니다.** 문서와 다르면 문서가 틀린 것입니다.
 - `doctor`가 환경을 진단합니다. 아직 위키가 없으므로 위키 관련 항목은 건너뜁니다.
 
 `command not found`가 나면 PATH 문제입니다. 터미널을 새로 열었는지부터 확인합니다.
+
+## 설치가 겹쳤을 때
+
+**설치 방법은 하나만 고릅니다.** 그런데 실습 중에 방법을 바꾸거나, 이전에 Homebrew로 깔아 둔 것이 남아 있으면 두 개가 공존합니다. 이때 어느 쪽이 실행되는지는 **PATH에 먼저 나오는 디렉토리**가 정합니다. Homebrew는 자기 디렉토리를 PATH 앞에 붙이고 `~/go/bin`은 보통 뒤에 붙이므로 Homebrew 쪽이 이깁니다. 수강생이 소스를 고치고 `go install`을 다시 돌려도 바뀐 것이 실행되지 않는 상황이 여기서 나옵니다.
+
+전부 찾습니다.
+
+```
+which -a engram          # macOS, Linux
+where.exe engram         # Windows
+```
+
+지금 실행되는 것이 어느 쪽인지는 버전으로 구분합니다.
+
+```
+engram version
+```
+
+| 출력 | 어느 설치인가 |
+|---|---|
+| `dev` | 소스 빌드(`go install`). 릴리스 빌드만 버전을 새겨 넣습니다 |
+| `1.0.0` 같은 번호 | Homebrew나 릴리스 아카이브 |
+
+정리하려면 안 쓸 쪽을 지웁니다.
+
+```
+brew uninstall engram             # Homebrew 쪽을 버릴 때
+rm "$(go env GOPATH)/bin/engram"  # 소스 빌드 쪽을 버릴 때
+```
+
+Windows는 `Remove-Item "$env:USERPROFILE\go\bin\engram.exe"` 입니다.
 
 ## Windows 수강생에게 추가로 안내할 것
 
@@ -205,7 +244,7 @@ engram doctor
 
 ## 강사 노트
 
-- 1단계는 15분을 넘기지 않습니다. Go 설치에서 막히는 수강생이 나오면 그 자리에서 갈래 B로 넘깁니다. 전원이 같은 갈래일 필요가 없습니다.
+- 1단계는 15분을 넘기지 않습니다. Go 설치에서 막히는 수강생이 나오면 그 자리에서 방법 B로 넘깁니다. 전원이 같은 방법일 필요가 없습니다.
 - 실습 재료 위치를 각자 적어 두게 합니다. 3단계에서 계속 참조합니다.
 - `engram --help` 출력을 다 같이 한 번 훑습니다. 커맨드가 넣기, 올리기, 조회, 재발견, 관리 다섯 갈래로 나뉜다는 것만 짚고 넘어갑니다. 개별 커맨드는 각 단계에서 다룹니다.
 
@@ -213,9 +252,11 @@ engram doctor
 
 | 결정 | 내용 | 이유 |
 |---|---|---|
-| 설치 위치 | macOS와 Linux는 `/usr/local/bin`, Windows는 `%LOCALAPPDATA%\Programs\engram` | 기본 PATH에 들어 있거나 사용자 권한으로 넣을 수 있습니다. `~/bin`은 macOS에서 둘 다 아닙니다 |
-| 빌드 권한 | `go build`는 사용자 권한, 배치만 sudo | root 소유 빌드 캐시가 생기면 이후 빌드가 깨집니다 |
-| 설치 갈래 | 소스 빌드와 바이너리 설치 둘로 나눕니다 | Go 설치가 진입 장벽이 되면 안 됩니다 |
+| 설치 방법 | 소스 빌드와 바이너리 내려받기 둘로 나눕니다 | Go 설치가 진입 장벽이 되면 안 됩니다 |
+| 소스 빌드 | `go install` 하나만 안내합니다. `go build`와 수동 배치는 쓰지 않습니다 | 운영체제 셋에서 같은 한 줄이고 옮기는 단계가 없습니다 |
+| sudo | 안내하지 않습니다. `/usr/local/bin`에 직접 넣지 않습니다 | 관리자 권한이 막힌 기기가 있고, 실습이 시스템 디렉토리를 건드릴 이유가 없습니다 |
+| 실행 파일 위치 | 설치 방법과 무관하게 `~/go/bin`(Windows는 `%USERPROFILE%\go\bin`)으로 통일합니다 | 설치 방법이 둘이어도 자리는 하나여야 뒤섞이지 않습니다. Homebrew만 예외로 자기 자리를 씁니다 |
+| 겹침 처리 | `which -a`로 찾고 `engram version`으로 구분합니다 | 소스 빌드는 `dev`, 릴리스는 번호가 나오므로 구분이 확실합니다 |
 | 실습 재료 배포 | 저장소 클론으로만 얻습니다 | 바이너리에 임베드하면 위키 도구가 위키 아닌 파일을 뿌리게 됩니다 |
 | Windows PATH | PowerShell의 `SetEnvironmentVariable`을 씁니다 | `setx`는 PATH를 자르거나 날립니다 |
 
@@ -251,7 +292,7 @@ engram doctor
 
 ## 관련
 
-- [curriculum.md](../curriculum.md) 강의 단위와 이수 기준
-- [index.html](index.html) 1단위 오리엔테이션 덱
+- [curriculum.md](../curriculum.md) 강의 세션과 이수 기준
+- [index.html](index.html) 1세션 오리엔테이션 덱
 - [../journeys.md](../journeys.md) 여정 24개
 - [../../examples/README.md](../../examples/README.md) 데모 위키
