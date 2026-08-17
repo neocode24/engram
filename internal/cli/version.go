@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"runtime/debug"
 
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/spf13/cobra"
 )
 
@@ -50,7 +51,7 @@ func collectVersionInfo() versionInfo {
 func newVersionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
-		Short: "버전과 빌드 정보를 출력합니다",
+		Short: i18n.T("cli.version.short"),
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			info := collectVersionInfo()
@@ -70,7 +71,7 @@ func newVersionCmd() *cobra.Command {
 				fmt.Fprint(w, " (dirty)")
 			}
 			fmt.Fprintln(w)
-			fmt.Fprintf(w, "commit 시각: %s\n", info.CommitAt)
+			fmt.Fprint(w, i18n.T("cli.version.commit_at", info.CommitAt)+"\n")
 			fmt.Fprintf(w, "go: %s\n", info.GoVersion)
 			fmt.Fprintf(w, "platform: %s/%s\n", info.GOOS, info.GOARCH)
 			return nil

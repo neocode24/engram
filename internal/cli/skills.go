@@ -2,12 +2,14 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/skills"
 	"github.com/spf13/cobra"
 )
@@ -25,14 +27,8 @@ const (
 func newSkillsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "skills",
-		Short: "에이전트 스킬을 다룹니다",
-		Long: `에이전트가 engram을 다루는 법을 가르치는 스킬 문서를 다룹니다.
-
-skills install이 바이너리에 임베드된 스킬 문서를 감지된 에이전트의
-스킬 디렉토리에 심습니다. 이것이 LLM 통합의 전부입니다(ADR 0014).
-
-이 커맨드는 위키가 아니라 에이전트를 다룹니다. 위키 밖에서 실행해도
-동작합니다.`,
+		Short: i18n.T("cli.skills.short"),
+		Long:  i18n.T("cli.skills.long"),
 	}
 	cmd.AddCommand(newSkillsInstallCmd())
 	return cmd
@@ -43,21 +39,8 @@ skills install이 바이너리에 임베드된 스킬 문서를 감지된 에이
 func newSkillsInstallCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",
-		Short: "스킬 문서를 에이전트 스킬 디렉토리에 심습니다",
-		Long: `임베드된 스킬 문서를 에이전트의 스킬 디렉토리에 심습니다.
-
-문서는 정적입니다. 위키의 임계값이나 허용값을 담지 않습니다. 그 위키에
-적용되는 규칙은 에이전트가 engram rules show로 얻습니다. 그래서 한 번
-심으면 모든 위키에 통합니다.
-
---dir이 없으면 홈 디렉토리에서 실제로 존재하는 에이전트 스킬 디렉토리를
-찾아 전부에 심습니다. 없는 도구를 위해 디렉토리를 만들지 않습니다.
-하나도 찾지 못하면 실패하니 --dir로 직접 지정하세요. --dir은 스킬
-루트(스킬 디렉토리들이 있는 곳)를 받고 그 아래 engram/SKILL.md를
-만듭니다. 이미 있는 디렉토리여야 합니다.
-
-이미 있는 파일은 덮지 않습니다. 충돌하면 무엇이 충돌하는지 알리고
-멈춥니다. 덮으려면 --force를 주세요.`,
+		Short: i18n.T("cli.skills.install_short"),
+		Long:  i18n.T("cli.skills.install_long"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dirFlag, err := stringFlag(cmd, flagSkillsDir)
 			if err != nil {
@@ -65,29 +48,28 @@ func newSkillsInstallCmd() *cobra.Command {
 			}
 			force, err := cmd.Flags().GetBool(flagSkillsForce)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagSkillsForce, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.skills.flag_read_fail", flagSkillsForce), err)
 			}
 			dryRun, err := cmd.Flags().GetBool(flagSkillsDryRun)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagSkillsDryRun, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.skills.flag_read_fail", flagSkillsDryRun), err)
 			}
 
 			var roots []string
 			if dirFlag != "" {
 				info, err := os.Stat(dirFlag)
 				if err != nil || !info.IsDir() {
-					return fmt.Errorf("--dir 경로가 디렉토리가 아닙니다: %s\n실제로 있는 스킬 루트 디렉토리를 주세요", dirFlag)
+					return fmt.Errorf("%s", i18n.T("cli.skills.dir_not_dir", dirFlag))
 				}
 				roots = []string{dirFlag}
 			} else {
 				home, err := os.UserHomeDir()
 				if err != nil {
-					return fmt.Errorf("홈 디렉토리를 알 수 없음: %w\n--dir로 설치 위치를 직접 지정하세요", err)
+					return fmt.Errorf("%s: %w\n%s", i18n.T("cli.skills.home_fail"), err, i18n.T("cli.skills.home_fail_hint"))
 				}
 				roots = skills.Detect(home)
 				if len(roots) == 0 {
-					return fmt.Errorf("설치 대상이 될 에이전트 스킬 디렉토리를 찾지 못했습니다\n찾아본 곳(홈 디렉토리 기준):\n  %s\n없는 도구를 위해 디렉토리를 만들지 않습니다. 설치 위치를 --dir로 직접 지정하세요",
-						strings.Join(skills.Sources(), "\n  "))
+					return fmt.Errorf("%s", i18n.T("cli.skills.detect_fail", strings.Join(skills.Sources(), "\n  ")))
 				}
 			}
 
@@ -112,17 +94,17 @@ func newSkillsInstallCmd() *cobra.Command {
 					return enc.Encode(res)
 				}
 				printSkillsConflicts(cmd.ErrOrStderr(), res)
-				return fmt.Errorf("이미 있는 파일을 덮지 않습니다. 덮으려면 --force를 주세요")
+				return errors.New(i18n.T("cli.skills.conflict"))
 			}
 
 			var written, overwritten []string
 			if !dryRun {
 				for _, p := range paths {
 					if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
-						return fmt.Errorf("스킬 디렉토리를 만들 수 없음: %w", err)
+						return fmt.Errorf("%s: %w", i18n.T("cli.skills.dir_mkdir_fail"), err)
 					}
 					if err := os.WriteFile(p, []byte(skills.Doc()), 0o644); err != nil {
-						return fmt.Errorf("스킬 문서를 쓸 수 없음: %s: %w", p, err)
+						return fmt.Errorf("%s: %w", i18n.T("cli.skills.doc_write_fail", p), err)
 					}
 					written = append(written, p)
 					if containsString(conflicts, p) {
@@ -148,9 +130,9 @@ func newSkillsInstallCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().String(flagSkillsDir, "", "설치 위치를 직접 지정합니다. 감지를 건너뜁니다")
-	cmd.Flags().Bool(flagSkillsForce, false, "이미 있는 파일을 덮어 씁니다")
-	cmd.Flags().Bool(flagSkillsDryRun, false, "어디에 무엇을 심을지만 냅니다. 쓰지 않습니다")
+	cmd.Flags().String(flagSkillsDir, "", i18n.T("cli.skills.flag_dir"))
+	cmd.Flags().Bool(flagSkillsForce, false, i18n.T("cli.skills.flag_force"))
+	cmd.Flags().Bool(flagSkillsDryRun, false, i18n.T("cli.skills.flag_dry_run"))
 	return cmd
 }
 
@@ -168,25 +150,25 @@ type skillsOutcome struct {
 // printSkillsInstall는 심은 목록과 재시작 안내를 낸다.
 func printSkillsInstall(w io.Writer, res skillsOutcome) {
 	if res.DryRun {
-		fmt.Fprintf(w, "심을 예정인 파일 %d개 (dry-run. 아직 쓰지 않았습니다)\n", len(res.Files))
+		fmt.Fprint(w, i18n.T("cli.skills.dry_run", len(res.Files))+"\n")
 	} else {
-		fmt.Fprintf(w, "심었습니다. 파일 %d개\n", len(res.Files))
+		fmt.Fprint(w, i18n.T("cli.skills.done", len(res.Files))+"\n")
 	}
 	for _, p := range res.Files {
 		fmt.Fprintf(w, "  %s\n", p)
 	}
 	if len(res.Overwritten) > 0 {
-		fmt.Fprintf(w, "덮어 쓴 파일 %d개\n", len(res.Overwritten))
+		fmt.Fprint(w, i18n.T("cli.skills.overwritten", len(res.Overwritten))+"\n")
 		for _, p := range res.Overwritten {
 			fmt.Fprintf(w, "  %s\n", p)
 		}
 	}
-	fmt.Fprintf(w, "에이전트를 다시 시작해야 스킬이 잡힐 수 있습니다\n")
+	fmt.Fprint(w, i18n.T("cli.skills.restart_note")+"\n")
 }
 
 // printSkillsConflicts는 충돌 목록을 알린다.
 func printSkillsConflicts(w io.Writer, res skillsOutcome) {
-	fmt.Fprintf(w, "이미 있는 파일이 %d개 있습니다\n", len(res.Conflicts))
+	fmt.Fprint(w, i18n.T("cli.skills.conflicts_count", len(res.Conflicts))+"\n")
 	for _, p := range res.Conflicts {
 		fmt.Fprintf(w, "  %s\n", p)
 	}

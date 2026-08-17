@@ -2,12 +2,14 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/neocode24/engram/internal/eject"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/spf13/cobra"
 )
 
@@ -22,26 +24,8 @@ const (
 func newEjectCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "eject",
-		Short: "규칙 명세와 Python 린터를 위키로 내보냅니다",
-		Long: `내장 규칙을 사용자가 고칠 수 있는 파일로 내보냅니다.
-
-규칙 명세 문서(meta/), 문서 단위 규칙을 판정하는 Python 린터
-(scripts/lint-frontmatter.py), 커밋 훅(.githooks/pre-commit),
-에이전트 계약(AGENTS.md), 줄바꿈 설정(.gitattributes)을 만듭니다.
-전부 이 위키의 engram.yaml 을 반영해 생성합니다. 린터는 값을 박지
-않고 engram.yaml 을 실행 시점에 읽으므로 설정을 바꾸면 따라갑니다.
-
-제품에서 나가는 문이 아닙니다. 규칙만 사용자 것이 되고 연산은
-engram 에 남습니다. 이후에도 search, recall, resurface, bridge,
-digest, backlinks 가 그대로 동작합니다.
-
-단방향입니다. 되돌리는 커맨드가 없으므로 이미 있는 파일을 덮지
-않습니다. 충돌하면 무엇이 충돌하는지 전부 알리고 멈춥니다.
---force 를 주면 덮되 무엇을 덮는지 먼저 알립니다.
---dry-run 은 무엇이 만들어질지 봅니다. 쓰지는 않습니다.
-
-린터와 훅에는 python3 가 필요합니다. Windows 는 기본 제공되지
-않으므로 따로 설치해야 합니다.`,
+		Short: i18n.T("cli.eject.short"),
+		Long:  i18n.T("cli.eject.long"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
 			if err != nil {
@@ -49,11 +33,11 @@ digest, backlinks 가 그대로 동작합니다.
 			}
 			force, err := cmd.Flags().GetBool(flagEjectForce)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagEjectForce, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.eject.flag_read_fail", flagEjectForce), err)
 			}
 			dryRun, err := cmd.Flags().GetBool(flagEjectDryRun)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagEjectDryRun, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.eject.flag_read_fail", flagEjectDryRun), err)
 			}
 
 			plan := eject.Plan(cfg)
@@ -74,7 +58,7 @@ digest, backlinks 가 그대로 동작합니다.
 					return enc.Encode(res)
 				}
 				printEjectConflicts(cmd.ErrOrStderr(), res)
-				return fmt.Errorf("이미 있는 파일을 덮지 않습니다. 덮으려면 --force 를 주세요")
+				return errors.New(i18n.T("cli.eject.conflict"))
 			}
 
 			var written, overwritten []string
@@ -107,9 +91,9 @@ digest, backlinks 가 그대로 동작합니다.
 			return nil
 		},
 	}
-	cmd.Flags().Bool(flagEjectForce, false, "이미 있는 파일을 덮어 씁니다")
-	cmd.Flags().Bool(flagEjectDryRun, false, "무엇이 만들어질지 봅니다. 파일을 쓰지 않습니다")
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().Bool(flagEjectForce, false, i18n.T("cli.eject.flag_force"))
+	cmd.Flags().Bool(flagEjectDryRun, false, i18n.T("cli.eject.flag_dry_run"))
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.eject.flag_wiki"))
 	return cmd
 }
 
@@ -137,10 +121,10 @@ func planPaths(plan []eject.Artifact) []string {
 func writeArtifact(root string, a eject.Artifact) error {
 	path := filepath.Join(root, filepath.FromSlash(a.Path))
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("디렉토리를 만들 수 없음: %w", err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.eject.dir_mkdir_fail"), err)
 	}
 	if err := os.WriteFile(path, []byte(a.Content), a.Mode); err != nil {
-		return fmt.Errorf("산출물을 쓸 수 없음: %s: %w", path, err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.eject.artifact_write_fail", path), err)
 	}
 	return nil
 }
@@ -148,28 +132,28 @@ func writeArtifact(root string, a eject.Artifact) error {
 // printEject는 만든 목록과 세 가지 안내를 낸다.
 func printEject(w io.Writer, res ejectOutcome) {
 	if res.DryRun {
-		fmt.Fprintf(w, "만들 예정인 파일 %d개 (dry-run. 아직 쓰지 않았습니다)\n", len(res.Files))
+		fmt.Fprint(w, i18n.T("cli.eject.dry_run", len(res.Files))+"\n")
 	} else {
-		fmt.Fprintf(w, "만들었습니다. 파일 %d개\n", len(res.Files))
+		fmt.Fprint(w, i18n.T("cli.eject.done", len(res.Files))+"\n")
 	}
 	for _, p := range res.Files {
 		fmt.Fprintf(w, "  %s\n", p)
 	}
 	if len(res.Overwritten) > 0 {
-		fmt.Fprintf(w, "덮어 쓴 파일 %d개\n", len(res.Overwritten))
+		fmt.Fprint(w, i18n.T("cli.eject.overwritten", len(res.Overwritten))+"\n")
 		for _, p := range res.Overwritten {
 			fmt.Fprintf(w, "  %s\n", p)
 		}
 	}
-	fmt.Fprintf(w, "\n안내:\n")
-	fmt.Fprintf(w, "  훅을 켜려면: git config core.hooksPath .githooks\n")
-	fmt.Fprintf(w, "  eject 이후에도 search, recall, resurface, bridge, digest, backlinks 가 그대로 동작합니다\n")
-	fmt.Fprintf(w, "  린터와 훅에는 python3 이 필요합니다. Windows 는 기본 제공되지 않으므로 설치해야 합니다\n")
+	fmt.Fprint(w, "\n"+i18n.T("cli.eject.guide_header")+"\n")
+	fmt.Fprint(w, "  "+i18n.T("cli.eject.hook_enable")+"\n")
+	fmt.Fprint(w, "  "+i18n.T("cli.eject.still_works")+"\n")
+	fmt.Fprint(w, "  "+i18n.T("cli.eject.python_note")+"\n")
 }
 
 // printEjectConflicts는 충돌 목록을 알린다.
 func printEjectConflicts(w io.Writer, res ejectOutcome) {
-	fmt.Fprintf(w, "이미 있는 파일이 %d개 있습니다\n", len(res.Conflicts))
+	fmt.Fprint(w, i18n.T("cli.eject.conflicts_count", len(res.Conflicts))+"\n")
 	for _, p := range res.Conflicts {
 		fmt.Fprintf(w, "  %s\n", p)
 	}

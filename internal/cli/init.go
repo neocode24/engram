@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/neocode24/engram/internal/config"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/spf13/cobra"
 )
 
@@ -33,12 +34,9 @@ type initResult struct {
 func newInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init [경로]",
-		Short: "새 위키를 만듭니다",
-		Long: `지정한 경로에 새 위키를 만듭니다. 경로를 생략하면 현재 디렉토리입니다.
-
-디렉토리 구성, engram.yaml 설정, 첫 문서 index.md, .gitignore를 만듭니다.
-이미 engram.yaml이 있으면 기존 위키를 보존하기 위해 거절합니다.`,
-		Args: cobra.MaximumNArgs(1),
+		Short: i18n.T("cli.init.short"),
+		Long:  i18n.T("cli.init.long"),
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dir := "."
 			if len(args) == 1 {
@@ -66,7 +64,7 @@ func newInitCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().String(flagPreset, string(config.DefaultPreset),
-		"스키마 프리셋. minimal, personal, team 중 하나")
+		i18n.T("cli.init.flag_preset"))
 	return cmd
 }
 
@@ -77,7 +75,7 @@ func parsePreset(raw string) (config.Preset, error) {
 	case config.PresetMinimal, config.PresetPersonal, config.PresetTeam:
 		return p, nil
 	}
-	return "", fmt.Errorf("--preset 값이 허용값이 아님: %q (허용값: minimal, personal, team)", raw)
+	return "", fmt.Errorf("%s", i18n.T("cli.init.preset_invalid", raw))
 }
 
 // runInit는 위키 루트에 초기 파일을 만든다. 기존 파일은 덮어쓰지 않으므로
@@ -86,13 +84,12 @@ func runInit(dir string, preset config.Preset, now time.Time) (initResult, error
 	root := filepath.Clean(dir)
 	cfgPath := filepath.Join(root, config.ConfigFileName)
 	if _, err := os.Stat(cfgPath); err == nil {
-		return initResult{}, fmt.Errorf("대상이 이미 engram 위키입니다: %s\n기존 위키를 덮어쓰지 않습니다. 다른 경로를 지정하거나 기존 %s을 손으로 고치세요",
-			cfgPath, config.ConfigFileName)
+		return initResult{}, fmt.Errorf("%s", i18n.T("cli.init.already_wiki", cfgPath, config.ConfigFileName))
 	} else if !errors.Is(err, fs.ErrNotExist) {
-		return initResult{}, fmt.Errorf("대상 경로를 확인할 수 없음: %w", err)
+		return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.path_check_fail"), err)
 	}
 	if err := os.MkdirAll(root, 0o755); err != nil {
-		return initResult{}, fmt.Errorf("위키 루트를 만들 수 없음: %w", err)
+		return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.root_mkdir_fail"), err)
 	}
 	if err := writeFileIfAbsent(cfgPath, []byte(configYAML(preset))); err != nil {
 		return initResult{}, err
@@ -101,11 +98,11 @@ func runInit(dir string, preset config.Preset, now time.Time) (initResult, error
 	// 생성물은 항상 이 로드 결과에서 파생한다.
 	cfg, err := config.Load(root)
 	if err != nil {
-		return initResult{}, fmt.Errorf("초기 설정을 읽을 수 없음: %w", err)
+		return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.config_load_fail"), err)
 	}
 	for _, d := range cfg.PageDirs {
 		if err := os.MkdirAll(filepath.Join(root, d), 0o755); err != nil {
-			return initResult{}, fmt.Errorf("디렉토리를 만들 수 없음: %s: %w", d, err)
+			return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.dir_mkdir_fail", d), err)
 		}
 	}
 	if err := writeFileIfAbsent(filepath.Join(root, "index.md"), []byte(indexMD(cfg, now))); err != nil {
@@ -129,11 +126,11 @@ func writeFileIfAbsent(path string, data []byte) error {
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("파일을 만들 수 없음: %s: %w", path, err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.init.file_create_fail", path), err)
 	}
 	if _, err := f.Write(data); err != nil {
 		f.Close()
-		return fmt.Errorf("파일을 쓸 수 없음: %s: %w", path, err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.init.file_write_fail", path), err)
 	}
 	return f.Close()
 }
@@ -146,7 +143,7 @@ func ensureGitignore(root string) error {
 		return writeFileIfAbsent(path, []byte(gitignoreEntry+"\n"))
 	}
 	if err != nil {
-		return fmt.Errorf(".gitignore을 읽을 수 없음: %w", err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.init.gitignore_read_fail"), err)
 	}
 	if hasLine(data, gitignoreEntry) {
 		return nil
@@ -159,7 +156,7 @@ func ensureGitignore(root string) error {
 	b.WriteString(gitignoreEntry)
 	b.WriteByte('\n')
 	if err := os.WriteFile(path, []byte(b.String()), 0o644); err != nil {
-		return fmt.Errorf(".gitignore을 갱신할 수 없음: %w", err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.init.gitignore_write_fail"), err)
 	}
 	return nil
 }
@@ -177,39 +174,7 @@ func hasLine(data []byte, line string) bool {
 // configYAML은 init이 쓰는 engram.yaml 본문이다. 주석이 무엇을 고칠 수
 // 있는지를 알려준다. 임계값과 디렉토리는 기본값을 그대로 박는다.
 func configYAML(preset config.Preset) string {
-	return fmt.Sprintf(`# engram 위키 설정. 프론트매터 속성, 임계값, 디렉토리 매핑을 정의합니다.
-preset: %s
-
-# 프론트매터 속성. 프리셋(minimal < personal < team)이 시작점이며
-# 개별 속성을 아래에서 따로 켜고 끌 수 있습니다.
-# 사용 가능한 속성: type, artifact_stage, status, indexable, tags, source_refs,
-# derived_from, related, source_channel, derived_context, scope, sensitivity,
-# trigger_mode, workflow
-# axes:
-#   scope: true
-
-# 문서 종류(type 속성의 허용값). 위키에 맞게 추가합니다.
-# types: [concept, project, system, decision, procedure, incident,
-#   meeting-summary, agent-workflow, source-summary, inbox-note]
-
-# taxonomy. topics는 개방 집합이고 forms는 폐쇄 집합입니다.
-# topics: [go, cli]
-# forms: [memo, report]
-
-# 임계값. min_wikilinks만 승급 거절 사유이고 나머지는 경고에 쓰입니다.
-min_wikilinks: 2    # promote 게이트. 0으로 두면 게이트가 꺼집니다
-stale_days: 90      # 재발견 대상 판정 기준 일수
-max_lines: 1000     # 문서 길이 경고 상한
-broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
-
-# 문서가 놓이는 디렉토리와 루트에 있어야 하는 파일
-page_dirs: [inbox, sources, context, archive]
-root_files: [index.md]
-
-# 문서가 아닌 마크다운. 같은 파일명이면 깊이와 무관하게 순회에서 뺍니다.
-# 기본값은 README.md 하나입니다. 비워 두면 README.md도 문서로 검사합니다.
-# ignore_files: [README.md]
-`, preset)
+	return i18n.T("cli.init.config_yaml", preset)
 }
 
 // indexAxisOrder는 index.md 프론트매터에 속성을 놓는 순서다.
@@ -255,43 +220,43 @@ func indexMD(cfg config.Config, now time.Time) string {
 	fmt.Fprintf(&b, "sourced_at: %s\n", date)
 	fmt.Fprintf(&b, "updated: %s\n", date)
 	b.WriteString("---\n\n")
-	b.WriteString("# engram 위키\n\n")
-	b.WriteString("이 문서는 위키의 첫 문서입니다. 위키를 소개하는 안내로 바꿉니다.\n\n")
+	b.WriteString(i18n.T("cli.init.index_title") + "\n\n")
+	b.WriteString(i18n.T("cli.init.index_intro") + "\n\n")
 	for _, d := range cfg.PageDirs {
 		fmt.Fprintf(&b, "- %s/\n", d)
 	}
-	b.WriteString("\n새 자료는 inbox에 넣고 승급 파이프라인을 따라 context로 옮깁니다.\n")
+	b.WriteString("\n" + i18n.T("cli.init.index_guide") + "\n")
 	return b.String()
 }
 
 // printOnboarding은 무엇이 만들어졌고 다음에 무엇을 하면 되는지를 인쇄한다.
 func printOnboarding(w io.Writer, res initResult) {
 	dirGuide := map[string]string{
-		"inbox":   "새 자료가 들어오는 곳",
-		"sources": "원본을 보존하는 곳",
-		"context": "정리된 문서가 사는 곳",
-		"archive": "승급에서 물러난 문서가 가는 곳",
+		"inbox":   i18n.T("cli.init.dir_inbox"),
+		"sources": i18n.T("cli.init.dir_sources"),
+		"context": i18n.T("cli.init.dir_context"),
+		"archive": i18n.T("cli.init.dir_archive"),
 	}
 	fileGuide := map[string]string{
-		config.ConfigFileName: "위키 설정. 속성과 임계값을 여기서 조정하세요",
-		"index.md":            "첫 문서. 위키 소개로 채우세요",
-		".gitignore":          ".engram/ 캐시 디렉토리를 git에서 제외합니다",
+		config.ConfigFileName: i18n.T("cli.init.file_config"),
+		"index.md":            i18n.T("cli.init.file_index"),
+		".gitignore":          i18n.T("cli.init.file_gitignore"),
 	}
-	fmt.Fprintf(w, "위키를 초기화했습니다: %s (프리셋: %s)\n\n", res.Root, res.Preset)
-	fmt.Fprintln(w, "디렉토리:")
+	fmt.Fprint(w, i18n.T("cli.init.done", res.Root, res.Preset)+"\n\n")
+	fmt.Fprintln(w, i18n.T("cli.init.dirs_header"))
 	for _, d := range res.Dirs {
 		guide, ok := dirGuide[d]
 		if !ok {
-			guide = "문서 디렉토리"
+			guide = i18n.T("cli.init.dir_other")
 		}
 		fmt.Fprintf(w, "  %-12s %s\n", d+"/", guide)
 	}
-	fmt.Fprintln(w, "\n파일:")
+	fmt.Fprintln(w, "\n"+i18n.T("cli.init.files_header"))
 	for _, f := range res.Files {
 		fmt.Fprintf(w, "  %-12s %s\n", f, fileGuide[f])
 	}
-	fmt.Fprintln(w, "\n다음 단계:")
-	fmt.Fprintln(w, "  1. inbox에 첫 자료를 넣으세요")
-	fmt.Fprintf(w, "  2. %s을 열어 속성과 임계값을 위키에 맞게 조정하세요\n", config.ConfigFileName)
-	fmt.Fprintln(w, "  3. index.md를 위키 소개로 채우세요")
+	fmt.Fprintln(w, "\n"+i18n.T("cli.init.next_header"))
+	fmt.Fprintln(w, "  1. "+i18n.T("cli.init.step_inbox"))
+	fmt.Fprint(w, "  2. "+i18n.T("cli.init.step_config", config.ConfigFileName)+"\n")
+	fmt.Fprintln(w, "  3. "+i18n.T("cli.init.step_fill_index"))
 }

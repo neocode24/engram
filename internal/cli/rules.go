@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/neocode24/engram/internal/config"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/spf13/cobra"
 )
@@ -64,11 +65,8 @@ func displayAxes() []config.Axis {
 func newRulesCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "rules",
-		Short: "이 위키에 적용되는 규칙을 다룹니다",
-		Long: `이 위키에 지금 적용되는 규칙을 다룹니다.
-
-rules show가 규칙 전부를 읽기 전용으로 보여줍니다. eject 없이
-규칙을 확인하려는 경우를 위한 커맨드입니다.`,
+		Short: i18n.T("cli.rules.short"),
+		Long:  i18n.T("cli.rules.long"),
 	}
 	cmd.AddCommand(newRulesShowCmd())
 	return cmd
@@ -80,16 +78,9 @@ rules show가 규칙 전부를 읽기 전용으로 보여줍니다. eject 없이
 func newRulesShowCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show",
-		Short: "이 위키에 적용되는 규칙 전부를 보여줍니다",
-		Long: `이 위키에 지금 적용되는 규칙 전부를 보여줍니다.
-
-프리셋과 프론트매터 속성, 단계별 필수 필드, 허용값, 임계값, 승급 게이트, lint 규칙,
-디렉토리를 절로 나눠 보여줍니다. 위키의 engram.yaml을 읽어 프리셋과
-사용자 설정이 합쳐진 결과를 냅니다. 제품 기본값이 아니라 이 위키의
-값입니다.
-
-무엇도 바꾸지 않습니다. 규칙은 읽는 것입니다.`,
-		Args: cobra.NoArgs,
+		Short: i18n.T("cli.rules.show_short"),
+		Long:  i18n.T("cli.rules.show_long"),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_, cfg, err := ingestTarget(cmd)
 			if err != nil {
@@ -105,7 +96,7 @@ func newRulesShowCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.rules.flag_wiki"))
 	return cmd
 }
 
@@ -156,8 +147,8 @@ func buildRulesReport(cfg config.Config) rulesReport {
 // printRules는 사람용 보고를 인쇄한다. 절을 나누고 정렬해 터미널에서
 // 읽히게 한다. 마크다운 표 기호는 쓰지 않는다.
 func printRules(w io.Writer, res rulesReport) {
-	fmt.Fprintf(w, "이 위키의 규칙 (프리셋: %s)\n", res.Preset)
-	fmt.Fprintf(w, "프리셋과 engram.yaml 설정이 합쳐진 결과입니다. 제품 기본값이 아니라 이 위키의 값입니다.\n")
+	fmt.Fprint(w, i18n.T("cli.rules.header", res.Preset)+"\n")
+	fmt.Fprint(w, i18n.T("cli.rules.header_note")+"\n")
 
 	axes := displayAxes()
 	on, off := []string{}, []string{}
@@ -168,14 +159,14 @@ func printRules(w io.Writer, res rulesReport) {
 			off = append(off, string(ax))
 		}
 	}
-	fmt.Fprintf(w, "\n프론트매터 속성 %d종 (켜짐 %d, 꺼짐 %d)\n", len(axes), len(on), len(off))
-	fmt.Fprintf(w, "  켜짐  %s\n", strings.Join(on, ", "))
+	fmt.Fprint(w, "\n"+i18n.T("cli.rules.axes_header", len(axes), len(on), len(off))+"\n")
+	fmt.Fprintf(w, "  %s  %s\n", i18n.T("cli.rules.axes_on"), strings.Join(on, ", "))
 	if len(off) > 0 {
-		fmt.Fprintf(w, "  꺼짐  %s\n", strings.Join(off, ", "))
-		fmt.Fprintf(w, "  꺼진 속성은 필수가 아니고, 문서에 있으면 schema.axis-off가 잡습니다\n")
+		fmt.Fprintf(w, "  %s  %s\n", i18n.T("cli.rules.axes_off"), strings.Join(off, ", "))
+		fmt.Fprint(w, "  "+i18n.T("cli.rules.axes_off_note")+"\n")
 	}
 
-	fmt.Fprintf(w, "\n단계별 필수 필드\n")
+	fmt.Fprint(w, "\n"+i18n.T("cli.rules.required_header")+"\n")
 	stageWidth := 0
 	for _, st := range []string{"inbox", "source", "context", "archive"} {
 		if w := displayWidth(st); w > stageWidth {
@@ -186,22 +177,22 @@ func printRules(w io.Writer, res rulesReport) {
 		fmt.Fprintf(w, "  %s  %s\n", padRight(st, stageWidth), strings.Join(res.RequiredFields[st], ", "))
 	}
 
-	fmt.Fprintf(w, "\n허용값. 폐쇄 집합은 정의되지 않은 값이 오류입니다\n")
-	printValueSets(w, res.ClosedSets, "정의되지 않아 이 위키는 값을 검사하지 않습니다")
-	fmt.Fprintf(w, "\n허용값. 개방 집합은 정의되지 않은 값이 경고입니다\n")
-	printValueSets(w, res.OpenSets, "정의되지 않아 모든 값이 경고 대상입니다")
+	fmt.Fprint(w, "\n"+i18n.T("cli.rules.closed_header")+"\n")
+	printValueSets(w, res.ClosedSets, i18n.T("cli.rules.closed_empty"))
+	fmt.Fprint(w, "\n"+i18n.T("cli.rules.open_header")+"\n")
+	printValueSets(w, res.OpenSets, i18n.T("cli.rules.open_empty"))
 
-	fmt.Fprintf(w, "\n임계값\n")
+	fmt.Fprint(w, "\n"+i18n.T("cli.rules.thresholds_header")+"\n")
 	t := res.Thresholds
 	thresholdRows := []struct {
 		name string
 		val  string
 		desc string
 	}{
-		{"min_wikilinks", fmt.Sprintf("%d", t.MinWikilinks), "승급 게이트의 거절 기준입니다"},
-		{"stale_days", fmt.Sprintf("%d", t.StaleDays), "resurface가 다시 꺼낼 문서를 고르는 기준 일수입니다"},
-		{"max_lines", fmt.Sprintf("%d", t.MaxLines), "body.max-lines 경고의 상한 줄 수입니다"},
-		{"broad_topic_pct", fmt.Sprintf("%d", t.BroadTopicPct), "wiki.broad-topic 진단의 상한 비율입니다"},
+		{"min_wikilinks", fmt.Sprintf("%d", t.MinWikilinks), i18n.T("cli.rules.th_min_wikilinks")},
+		{"stale_days", fmt.Sprintf("%d", t.StaleDays), i18n.T("cli.rules.th_stale_days")},
+		{"max_lines", fmt.Sprintf("%d", t.MaxLines), i18n.T("cli.rules.th_max_lines")},
+		{"broad_topic_pct", fmt.Sprintf("%d", t.BroadTopicPct), i18n.T("cli.rules.th_broad_topic_pct")},
 	}
 	nameWidth, valWidth := 0, 0
 	for _, r := range thresholdRows {
@@ -216,12 +207,12 @@ func printRules(w io.Writer, res rulesReport) {
 		fmt.Fprintf(w, "  %s %s  %s\n", padRight(r.name, nameWidth), padRight(r.val, valWidth), r.desc)
 	}
 
-	fmt.Fprintf(w, "\n승급 게이트\n")
-	fmt.Fprintf(w, "  게이트가 승급을 거절하는 조건은 하나뿐입니다.\n")
-	fmt.Fprintf(w, "  문서의 고유 위키링크 수가 min_wikilinks %d개에 못 미치는 것입니다.\n", res.Gate.MinWikilinks)
-	fmt.Fprintf(w, "  promote와 new는 이것만 묻습니다. 길이도 형식도 주제도 막지 않습니다.\n")
+	fmt.Fprint(w, "\n"+i18n.T("cli.rules.gate_header")+"\n")
+	fmt.Fprint(w, "  "+i18n.T("cli.rules.gate_only_one")+"\n")
+	fmt.Fprint(w, "  "+i18n.T("cli.rules.gate_condition", res.Gate.MinWikilinks)+"\n")
+	fmt.Fprint(w, "  "+i18n.T("cli.rules.gate_scope")+"\n")
 
-	fmt.Fprintf(w, "\nlint 규칙 %d종\n", len(res.Rules))
+	fmt.Fprint(w, "\n"+i18n.T("cli.rules.lint_header", len(res.Rules))+"\n")
 	idWidth, sevWidth := 0, 0
 	for _, r := range res.Rules {
 		if w := displayWidth(r.ID); w > idWidth {
@@ -234,10 +225,10 @@ func printRules(w io.Writer, res rulesReport) {
 	for _, r := range res.Rules {
 		fmt.Fprintf(w, "  [%s] %s  %s\n", padRight(r.Severity, sevWidth), padRight(r.ID, idWidth), r.Desc)
 	}
-	fmt.Fprintf(w, "  등급에서 error와 reject는 lint를 종료 코드 1로 끝냅니다. warn은 알리고 통과시킵니다.\n")
-	fmt.Fprintf(w, "  승급 시점에 문서를 거절하는 것은 reject 하나뿐입니다.\n")
+	fmt.Fprint(w, "  "+i18n.T("cli.rules.lint_severity_note")+"\n")
+	fmt.Fprint(w, "  "+i18n.T("cli.rules.lint_reject_note")+"\n")
 
-	fmt.Fprintf(w, "\n디렉토리\n")
+	fmt.Fprint(w, "\n"+i18n.T("cli.rules.dirs_header")+"\n")
 	fmt.Fprintf(w, "  page_dirs    %s\n", strings.Join(res.Dirs.PageDirs, ", "))
 	fmt.Fprintf(w, "  root_files   %s\n", strings.Join(res.Dirs.RootFiles, ", "))
 	fmt.Fprintf(w, "  ignore_files %s\n", strings.Join(res.Dirs.IgnoreFiles, ", "))
