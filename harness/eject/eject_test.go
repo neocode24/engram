@@ -348,3 +348,46 @@ func writeFile(t *testing.T, root, name, content string) {
 		t.Fatal(err)
 	}
 }
+
+// TestLinterSurvivesNonUTF8Console는 내보낸 Python 린터가 UTF-8 이 아닌
+// 콘솔 인코딩에서도 한글 메시지를 내는지 본다.
+//
+// Windows 콘솔의 기본 인코딩은 cp1252 나 cp949 다. 파이썬은 그 인코딩으로
+// 담을 수 없는 문자를 만나면 UnicodeEncodeError 로 죽는다. engram 본체는
+// 콘솔 코드페이지를 UTF-8 로 바꿔 푸는데(ADR 0026) 내보낸 스크립트는 그
+// 처리를 받지 못하므로 스스로 스트림을 다시 열어야 한다.
+//
+// 이 결함은 Windows CI 에서만 드러났다. cp1252 를 PYTHONIOENCODING 으로
+// 주면 어느 플랫폼에서든 재현되므로 여기서 못 박는다.
+func TestLinterSurvivesNonUTF8Console(t *testing.T) {
+	if binaryPath == "" {
+		t.Skip("바이너리가 없다")
+	}
+	if pythonPath == "" {
+		t.Skip("python3 가 없다")
+	}
+	touchSources()
+
+	wiki := t.TempDir()
+	if _, code := run(t, binaryPath, "init", wiki); code != 0 {
+		t.Fatalf("init 실패: 종료 코드 %d", code)
+	}
+	if _, code := run(t, binaryPath, "eject", "--wiki", wiki); code != 0 {
+		t.Fatalf("eject 실패: 종료 코드 %d", code)
+	}
+
+	linter := filepath.Join(wiki, "scripts", "lint-frontmatter.py")
+	cmd := exec.Command(pythonPath, linter, wiki)
+	// cp1252 는 한글을 담지 못한다. 스트림을 다시 열지 않으면 여기서 죽는다.
+	cmd.Env = append(os.Environ(), "PYTHONIOENCODING=cp1252")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("cp1252 콘솔에서 린터가 죽었다: %v\n%s", err, out)
+	}
+	if strings.Contains(string(out), "UnicodeEncodeError") {
+		t.Fatalf("cp1252 콘솔에서 인코딩 오류가 났다:\n%s", out)
+	}
+	if !strings.Contains(string(out), "검사한 파일") {
+		t.Errorf("한글 메시지가 온전히 나오지 않았다:\n%s", out)
+	}
+}

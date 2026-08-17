@@ -60,6 +60,14 @@ import os
 import re
 import sys
 
+# Windows 콘솔의 기본 인코딩은 UTF-8 이 아니라 cp949 나 cp1252 다. 한글
+# 메시지를 그대로 내면 UnicodeEncodeError 로 죽는다. engram 본체는 콘솔
+# 코드페이지를 UTF-8 로 바꿔서 푸는데, 내보낸 이 스크립트는 그 처리를
+# 받지 못하므로 여기서 스트림을 다시 연다.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8")
+
 # --- 고정 상수. engram.yaml 이 바꿀 수 없는 값이다. ---
 ARTIFACT_STAGES = %s
 STATUSES = %s

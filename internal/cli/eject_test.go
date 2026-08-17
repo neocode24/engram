@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -161,6 +162,12 @@ func TestEjectCmd(t *testing.T) {
 	})
 
 	t.Run("훅과 린터에 실행 권한이 있다", func(t *testing.T) {
+		// Windows 에는 유닉스 실행 권한 비트가 없다. Go 가 0o666 으로
+		// 보고하며 실행 가능 여부는 확장자와 연결 프로그램이 정한다.
+		// 여기서 755 를 요구하면 Windows CI 가 영원히 실패한다.
+		if runtime.GOOS == "windows" {
+			t.Skip("Windows 에는 유닉스 실행 권한 비트가 없다")
+		}
 		root := makeEjectWiki(t)
 		if _, err := runEject(t, "eject", "--wiki", root); err != nil {
 			t.Fatal(err)
