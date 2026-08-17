@@ -1,14 +1,26 @@
 # engram
 
-**메모는 쌓이는데 지식은 안 쌓이는 문제**를 다루는 CLI 다. 마크다운 위키에 승급 파이프라인을 두고, 그 파이프라인을 사람의 의지가 아니라 코드가 강제한다. 문서는 `inbox`에서 `sources`를 거쳐 `context`로 성숙하고, 수명이 다하면 `archive`로 간다. 검색과 재발견으로 다시 만나는 순환까지가 파이프라인이다.
+English | [한국어](docs/ko-KR/README.md)
 
-> engram은 기억이 뇌에 남기는 물리적 흔적을 뜻한다. 흔적은 저장이 아니라 **연결**로 남는다. 이 도구가 연결을 요구하는 이유다.
+[![ci](https://github.com/neocode24/engram/actions/workflows/ci.yml/badge.svg)](https://github.com/neocode24/engram/actions/workflows/ci.yml)
+[![go](https://img.shields.io/github/go-mod/go-version/neocode24/engram)](go.mod)
+[![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-## 무엇이 다른가
+A CLI for the problem of **notes that pile up while knowledge never accumulates**. It puts a promotion pipeline on top of a markdown wiki and lets code, not willpower, enforce it. A document matures from `inbox` through `sources` into `context`, and retires to `archive` when its life is over. Search and rediscovery close the loop.
 
-노트 앱은 넣기 쉽다. 그래서 넣기만 하고 끝난다. 6개월 뒤 남는 것은 검색되지 않는 메모 더미다.
+![engram promote rejects an unlinked document, then accepts it once links are added](docs/assets/hero.svg)
 
-engram은 문서가 `context/`로 올라갈 때 **다른 문서와 연결되어 있는지 검사하고, 아니면 거절한다.**
+Knowledge does not live in a chat window or inside a model. It lives in **markdown files you own**. The LLM is a worker in that space, not the container. The container is not a dumping ground but an asset with a schema, stages, history, and an admission rule, and engram enforces that management in code. This is what "second brain" means here.
+
+> An engram is the physical trace a memory leaves in the brain. The trace is not storage but **connection**. That is why this tool demands connections.
+
+The command output in this README is Korean, because the tool speaks Korean to its users today. Each block is preceded by a short English gloss.
+
+## What is different
+
+Note apps make it easy to put things in. So people put things in and stop there. Six months later what remains is a heap of notes that search cannot find.
+
+When a document moves up into `context/`, engram asks for one thing only: at least two links to other documents.
 
 ```
 $ engram promote inbox/2026-08-16-llm-게이트웨이-조사.md --type concept
@@ -17,24 +29,28 @@ related 필드나 본문에 위키링크를 2개 더 추가하세요.
 이 자리에서 채우려면 --related <슬러그>를 반복해 주세요
 ```
 
-거절 사유는 하나뿐이다. 연결 없는 고립 노드만 막는다. 길이도 형식도 태그도 막지 않는다. **거절이 많으면 사용자는 우회로를 찾는다.**
+Gloss: "Promotion gate not passed: 0 wikilinks, below min_wikilinks 2. Add 2 more wikilinks in the related field or the body. To fill them here, repeat --related <slug>."
 
-이 게이트 하나가 다른 PKM 도구와의 유일한 차별점이다. 검색도 재발견도 웹 UI도 보편적 기능이며, 게이트만이 이 프로젝트 고유의 것이다.
+That is the only reason for rejection. Length, format, and tags are never checked, because the more a tool rejects, the sooner people start working around it. Search, rediscovery, and a web viewer exist in other tools too; the gate that opens and closes promotion in code is what makes engram different.
 
-### 성숙 단계
+### Maturity stages
 
-디렉토리는 분류함이 아니라 **성숙 단계**다. 문서는 아래로 갈수록 검증된 지식이 된다.
+![Four stages rising left to right: inbox tray, sources shelf, context network, archive drawer, with the gate before context and a small engram device checking documents](docs/assets/system.webp)
 
-| 디렉토리 | 단계 | 성격 | 검증 |
+1 inbox, 2 sources, 3 context, 4 archive. The gate sits in front of 3.
+
+Directories are not categories. They are **maturity stages**. The further down the table, the more vetted the knowledge.
+
+| Directory | Stage | Character | Checked by |
 |---|---|---|---|
-| `inbox/` | 러프 캡처 | 임시. 처리되면 비워진다 | 없음 |
-| `sources/` | 원본 보존 | append-only. 본문을 고치지 않는다 | 스키마 |
-| `context/` | 정리된 지식 | 재사용 가능한 결론 | 스키마 + **게이트** |
-| `archive/` | 수명 종료 | 이력으로만 남는다. 링크는 깨지지 않는다 | 스키마 |
+| `inbox/` | rough capture | temporary; emptied as items are processed | nothing |
+| `sources/` | preserved originals | append-only; the body is never edited | schema |
+| `context/` | curated knowledge | conclusions you can reuse | schema + **gate** |
+| `archive/` | end of life | kept as history; links do not break | schema |
 
-`sources/`에는 `updated` 필드를 쓰지 않는다. 오타 하나 고친 것이 신선도를 오해하게 만들기 때문이다.
+`sources/` documents never carry an `updated` field. Fixing one typo would make the document look fresh when it is not.
 
-각 문서는 YAML 프론트매터로 상태를 갖는다.
+Every document carries its state in YAML frontmatter.
 
 ```yaml
 ---
@@ -51,31 +67,15 @@ indexable: true
 ---
 ```
 
-### LLM을 부르지 않는다
-
-**engram은 LLM을 부르지 않는다.** API key도, OAuth 토큰도, 프로바이더 설정도 보관하지 않는다. 호출 방향이 반대다. 이미 열려 있는 에이전트 세션이 engram을 부른다.
-
-| 하는 일 | 소유 |
-|---|---|
-| 게이트 판정, lint, 스키마 검증 | **engram** |
-| 검색, 링크 그래프, 재발견 후보 선정 | **engram** |
-| 회의록 요약, 분류 제안, 다이제스트 산문 | 에이전트 |
-
-**웹으로 공유할 때는 한 층 더 좁다.** `engram serve`는 읽기 전용이고 `context/`에 올라간 문서만 보여준다. `inbox/`와 `sources/`는 목록에도 URL에도 없다. **팀에 보이려면 승급해야 한다.**
-
-**MCP로 노출할 때도 같은 경계다.** 도구 열 중 쓰기는 `capture` 하나이고 `inbox`에만 쓴다. `promote`는 아예 도구로 내보내지 않는다. 에이전트가 승급을 실행할 수단이 없어야 게이트가 관문으로 남는다.
-
-경계는 "같은 입력에 같은 출력이 나오는가" 하나로 갈린다. 결정론적인 것은 코드가, 판단은 사람이나 에이전트가 맡는다. 그래서 조회 커맨드는 완성된 산문이 아니라 **재료**를 반환하고 `--json`은 에이전트용 주 경로다. 에이전트가 쓸 수 있는 범위는 `inbox/`까지며, `context/`로 올리려면 게이트를 지나야 한다.
-
-## 설치
+## Install
 
 ```sh
 go install github.com/neocode24/engram/cmd/engram@latest
 ```
 
-코어는 순수 Go이고 CGO를 쓰지 않는다. 런타임 의존성이 없어 Go가 지원하는 플랫폼에서 빌드된다.
+The core is pure Go with no CGO. There are no runtime dependencies, so it builds wherever Go builds.
 
-소스에서 직접 빌드할 수도 있다.
+Or build from source.
 
 ```sh
 git clone https://github.com/neocode24/engram.git
@@ -83,11 +83,13 @@ cd engram
 go build ./cmd/engram
 ```
 
-## 5분 만에 해 보기
+## Five minutes, first promotion
 
-빈 디렉토리에서 시작해 첫 승급까지 간다. 아래 출력은 전부 실제 실행 결과다.
+Start from an empty directory and reach the first promotion. Every line of output below is a real run.
 
-### 위키를 만든다
+### Create a wiki
+
+Gloss: "Initialized wiki: wiki (preset: education)", then the four directories, the three files (`engram.yaml`, `index.md`, `.gitignore`), and three next steps.
 
 ```
 $ engram init wiki
@@ -110,7 +112,9 @@ $ engram init wiki
   3. index.md를 위키 소개로 채우세요
 ```
 
-### 마찰 없이 받는다
+### Capture without friction
+
+Gloss: "Put into inbox: inbox/2026-08-16-llm-게이트웨이-조사.md. Next: tidy the document, then promote it."
 
 ```
 $ engram capture --title "LLM 게이트웨이 조사" "여러 프로바이더를 한 엔드포인트로 묶는 패턴. 회의에서 나온 조사 과제."
@@ -118,9 +122,11 @@ inbox에 넣었습니다: inbox/2026-08-16-llm-게이트웨이-조사.md
 다음: 문서를 정리한 뒤 승급하세요. 지금은 engram lint로 위키 상태를 볼 수 있습니다
 ```
 
-`capture`는 아무것도 검증하지 않는다. 회의 중에 쓰는 명령이라 마찰이 있으면 안 된다.
+`capture` validates nothing. It is the command you type during a meeting, so it must have no friction.
 
-### 원본은 따로 보존한다
+### Preserve the original separately
+
+Gloss: "Put into source: sources/2026-08-게이트웨이-벤치마크.md. Next: once organized, write a context document that cites this original."
 
 ```
 $ engram source --title "게이트웨이 벤치마크" --created 2026-08 --ref "https://example.com/report" "지연시간과 비용을 프로바이더별로 측정한 원문."
@@ -128,7 +134,7 @@ source에 넣었습니다: sources/2026-08-게이트웨이-벤치마크.md
 다음: 정리가 끝나면 이 원본을 인용하는 맥락 문서를 만드세요
 ```
 
-### 승급한다. 처음에는 거절당한다
+### Promote. The first attempt is rejected
 
 ```
 $ engram promote inbox/2026-08-16-llm-게이트웨이-조사.md --type concept
@@ -137,7 +143,7 @@ related 필드나 본문에 위키링크를 2개 더 추가하세요.
 이 자리에서 채우려면 --related <슬러그>를 반복해 주세요
 ```
 
-연결을 채워 다시 시도하면 통과한다.
+Add the connections and try again. Gloss: "Moved to context: context/llm-게이트웨이-조사.md. Type: concept. Gate: 2 links, 2 targets, threshold 2."
 
 ```
 $ engram promote inbox/2026-08-16-llm-게이트웨이-조사.md --type concept \
@@ -148,7 +154,9 @@ context로 올렸습니다: context/llm-게이트웨이-조사.md
 다음: engram lint로 승급 문서의 스키마를 확인하세요
 ```
 
-### 확인한다
+### Check
+
+Gloss: lint says "3 files checked, no violations". status shows counts per stage, 2 wikilinks and 0 orphans, lint totals, inbox backlog pressure, and a suggested next action ("inbox is empty; capture something new").
 
 ```
 $ engram lint
@@ -169,9 +177,9 @@ $ engram status
     inbox가 비었습니다. 새 메모를 받아 파이프라인을 돌리세요
 ```
 
-### 쌓인 위키를 다시 만난다
+### Meet the wiki again
 
-위키가 커지면 검색과 재발견이 가치를 낸다. `reindex`로 색인을 만들면 `search`가 문서 목록을, `recall`이 인용 가능한 원문 조각을 낸다.
+As the wiki grows, search and rediscovery start paying off. `reindex` builds the index; then `search` returns a list of documents and `recall` returns quotable chunks of the original text with their source.
 
 ```
 $ engram reindex
@@ -189,24 +197,42 @@ $ engram recall 게이트웨이 --limit 1
 지연시간과 비용을 프로바이더별로 측정한 원문.
 ```
 
-재발견 커맨드는 후보와 근거만 낸다. `resurface`는 `stale_days`를 넘긴 문서를, `bridge`는 유사한데 링크 없는 쌍을, `digest`는 기간 안의 변화를 꺼낸다. 수명이 끝난 문서는 `archive`로 걷어 낸다. 이때 슬러그가 유지되므로 들어오는 링크는 깨지지 않는다.
+Rediscovery commands return candidates and evidence only. `resurface` brings back documents older than `stale_days`, `bridge` finds similar pairs that are not linked, `digest` collects what changed in a period. Documents at end of life go to `archive`; the slug is kept, so incoming links do not break.
 
-## 커맨드
+## Working with agents
 
-스물일곱이다. 다섯 갈래로 나뉜다. 넣고, 올리고, 조회하고, 다시 만나고, 관리한다.
+engram never calls an LLM itself. It stores no API keys, OAuth tokens, or provider settings. Instead, the agent session you already have open (Claude Code, Hermes, and so on) calls engram. Wiring it up takes one command, `engram skills install`, which copies the skill document embedded in the binary into the agent's skill directory. That is the whole integration.
+
+The work splits like this.
+
+| Job | Owner |
+|---|---|
+| gate verdicts, lint, schema validation | engram |
+| search, link graph, rediscovery candidates | engram |
+| meeting summaries, classification proposals, digest prose | the agent |
+
+The rule is one question: does the same input give the same output? Deterministic work belongs to engram; judgment belongs to people or agents. That is why query commands return material rather than finished prose, and why every query command has `--json`. An agent can write as far as `inbox/`; moving something up to `context/` is done by a person through the gate.
+
+Exposing the wiki over MCP keeps the same boundary. Of the ten tools `engram mcp` exports, the only one that writes is `capture`, and it writes only to `inbox`. `promote` is not exported at all. If the agent had a way to run a promotion, the gate would stop being a gate.
+
+Sharing over the web is narrower still. `engram serve` is read-only and shows only documents that reached `context/`. `inbox/` and `sources/` appear in no list and no URL. To be visible to the team, a document has to be promoted.
+
+## Commands
+
+Twenty-seven, in five groups: put in, move up, look up, meet again, manage.
 
 ```mermaid
 flowchart LR
-    subgraph IN["넣는다"]
+    subgraph IN["put in"]
         C1["capture"]
         C2["source"]
     end
-    subgraph UP["올린다"]
+    subgraph UP["move up"]
         C3["promote"]
         C4["new"]
-        G{"게이트"}
+        G{"gate"}
     end
-    subgraph USE["쓴다"]
+    subgraph USE["use"]
         C5["search, recall"]
         C6["resurface, bridge, digest"]
     end
@@ -217,136 +243,139 @@ flowchart LR
     S --> C3
     C3 --> G
     C4 --> G
-    G -->|"통과"| K["context/"]
-    G -->|"거절"| X["연결을 채운다"]
+    G -->|"pass"| K["context/"]
+    G -->|"reject"| X["add links"]
     X --> C3
     K --> C5
     K --> C6
     K --> A["archive/"]
-    C6 -->|"잊힌 문서를 다시 꺼낸다"| K
+    C6 -->|"bring forgotten documents back"| K
 
     style G fill:#ffe6e6
 ```
 
-### 넣기
+### Put in
 
-| 커맨드 | 하는 일 |
+| Command | What it does |
 |---|---|
-| `capture` | 검증 없이 `inbox/`에 받는다 |
-| `source` | `sources/`에 원본을 확정한다. 출처와 작성일을 남긴다 |
+| `capture` | Accept into `inbox/` without validation |
+| `source` | Fix an original in `sources/` with its reference and creation date |
 
-### 올리기
+### Move up
 
-| 커맨드 | 하는 일 |
+| Command | What it does |
 |---|---|
-| `promote` | 기존 문서를 `context/`로 올린다. 게이트를 지난다 |
-| `new` | 처음부터 검수된 지식으로 `context/`에 쓴다. 게이트를 지난다 |
-| `demote` | 잘못 올린 문서를 `inbox/`나 `sources/`로 되돌린다 |
-| `archive` | 수명이 끝난 문서를 `archive/`로 옮긴다. 슬러그를 유지해 링크가 깨지지 않는다 |
+| `promote` | Move an existing document up to `context/`. Passes the gate |
+| `new` | Write vetted knowledge straight into `context/`. Passes the gate |
+| `demote` | Send a wrongly promoted document back to `inbox/` or `sources/` |
+| `archive` | Move an end-of-life document to `archive/`. Keeps the slug so links survive |
 
-### 조회
+### Look up
 
-| 커맨드 | 하는 일 |
+| Command | What it does |
 |---|---|
-| `search` | 위키를 검색한다. 사람이 열어 볼 문서 목록 |
-| `recall` | 질의에 맞는 원문 조각을 출처와 함께 낸다. 에이전트가 인용할 대상 |
-| `backlinks` | 슬러그를 가리키는 링크를 종류별로 조회한다 |
-| `lint` | 스키마와 링크 무결성을 검사한다 |
-| `status` | 현황과 inbox 적체 압력, 다음 행동 |
-| `doctor` | 환경과 위키 설정을 진단한다. 항목마다 복구 조치 |
+| `search` | Search the wiki. A list of documents for a person to open |
+| `recall` | Return chunks of original text with sources. What an agent quotes |
+| `backlinks` | List links pointing at a slug, by kind |
+| `lint` | Check schema and link integrity |
+| `status` | Current state, inbox backlog pressure, next actions |
+| `doctor` | Diagnose environment and wiki configuration, with a fix for each item |
 
-### 재발견
+### Meet again
 
-| 커맨드 | 하는 일 |
+| Command | What it does |
 |---|---|
-| `resurface` | 오래 안 본 `context/` 문서를 다시 꺼낸다. 제시 이력을 남긴다 |
-| `bridge` | 유사한데 링크가 없는 문서 쌍을 찾는다. 기각은 영구 기록 |
-| `digest` | 기간 안의 신규, 승급, 노후, 고아를 집계한다 |
+| `resurface` | Bring back `context/` documents not seen for a long time. Records what it showed |
+| `bridge` | Find similar pairs that are not linked. Rejections are recorded permanently |
+| `digest` | Aggregate new, promoted, stale, and orphan documents in a period |
 
-### 관리
+### Manage
 
-| 커맨드 | 하는 일 |
+| Command | What it does |
 |---|---|
-| `init` | 새 위키를 만든다. 프리셋 3종 |
-| `mv` | 문서 슬러그를 바꾸고 걸린 링크를 모두 고친다 |
-| `update` | 문서의 프론트매터와 본문을 갱신한다 |
-| `reindex` | 검색 색인을 만든다. 색인을 쓰는 유일한 커맨드 |
-| `migrate` | 기존 문서를 지금의 설정과 규칙에 맞춘다. `--dry-run`이 기본 |
-| `sync` | git 이력에서 `updated`와 `sourced_at`을 정정한다. `--dry-run`이 기본 |
-| `rules show` | 이 위키에 적용되는 규칙 전부를 읽기 전용으로 낸다 |
-| `eject` | 규칙을 명세 문서와 Python 린터로 풀어 소유권을 넘긴다. 단방향 |
-| `skills install` | 에이전트에 스킬 문서를 심는다. LLM 통합의 전부 |
-| `mcp` | 위키를 MCP 서버로 노출한다. 쓰기 도구는 `capture` 하나 |
-| `serve` | 읽기 전용 웹 뷰어. `context/`만 보여준다 |
-| `version` | 버전과 빌드 정보 |
+| `init` | Create a new wiki. Three presets |
+| `mv` | Rename a slug and fix every link that points at it |
+| `update` | Update a document's frontmatter and body |
+| `reindex` | Build the search index. The only command that writes it |
+| `migrate` | Conform existing documents to the current config and rules. `--dry-run` by default |
+| `sync` | Correct `updated` and `sourced_at` from git history. `--dry-run` by default |
+| `rules show` | Print every rule that applies to this wiki, read-only |
+| `eject` | Hand over the rules as spec documents and a Python linter. One way |
+| `skills install` | Install the skill document into an agent. The whole of the LLM integration |
+| `mcp` | Expose the wiki as an MCP server. The only write tool is `capture` |
+| `serve` | Read-only web viewer. Shows `context/` only |
+| `version` | Version and build info |
 
-전역 플래그는 둘이다. `--json`은 기계 판독 출력이고, `--now`는 기준 시각을 고정해 결과를 결정론적으로 만든다.
+There are two global flags. `--json` gives machine-readable output; `--now` pins the reference time so results are deterministic.
 
-`promote`는 출발지에 따라 동작이 다르다. `inbox/` 문서는 **이동**하고 `sources/` 문서는 **파생**을 만든다. 원본 보존 계층을 옮기면 그 계약이 깨지기 때문이다. 파생은 `derived_from`과 `derived_context`로 양방향 기록된다.
+`promote` behaves differently by origin. An `inbox/` document is **moved**; a `sources/` document **derives** a new one. Moving a preserved original would break the preservation contract. The derivation is recorded in both directions through `derived_from` and `derived_context`.
 
-`search`와 `recall`의 분리가 설계 원칙의 하나다. `search`는 사람이 열어 볼 목록을 주고 `recall`은 에이전트가 컨텍스트에 넣고 `[[슬러그]]`로 인용할 원문 조각을 준다. **둘 다 요약하지 않는다.**
+The split between `search` and `recall` is a design principle. `search` gives a person a list to open; `recall` gives an agent chunks of original text to put in context and cite as `[[slug]]`. **Neither summarizes.**
 
-## 설정
+## Configuration
 
-위키 루트의 `engram.yaml` 하나다. git에 커밋되어 팀이 공유한다.
+One file, `engram.yaml`, at the wiki root. It is committed to git and shared by the team.
 
 ```yaml
 preset: education
 
-# taxonomy. topics는 개방 집합이고 forms는 폐쇄 집합이다.
+# taxonomy. topics is an open set, forms is a closed set.
 topics: [llm, gateway]
 forms: [note, report]
 
-# 임계값. min_wikilinks만 승급 거절 사유이고 나머지는 경고에 쓰인다.
-min_wikilinks: 2    # promote 게이트. 0으로 두면 게이트가 꺼진다
-stale_days: 90      # 재발견 대상 판정 기준 일수
-max_lines: 1000     # 문서 길이 경고 상한
-broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
+# thresholds. Only min_wikilinks can reject a promotion; the rest only warn.
+min_wikilinks: 2    # promote gate. 0 turns the gate off
+stale_days: 90      # rediscovery threshold in days
+max_lines: 1000     # document length warning
+broad_topic_pct: 25 # warning when one topic covers this share of documents (percent)
 ```
 
-프리셋은 스키마 축의 개수를 정한다. `personal`이 `education`에 포함되고 `education`이 `team`에 포함된다. 기본값은 `education`이다.
+A preset decides how many schema axes are on. `personal` is contained in `education`, which is contained in `team`. The default is `education`.
 
-| 프리셋 | 쓰는 경우 |
+| Preset | When |
 |---|---|
-| `personal` | 혼자 쓰는 위키. 축이 가장 적다 |
-| `education` | 입력 경로와 승급 추적이 필요할 때 |
-| `team` | 업무 자료와 개인 자료가 섞일 때. 민감도 축이 켜진다 |
+| `personal` | A wiki for one person. Fewest axes |
+| `education` | When you want input channels and promotion tracking |
+| `team` | When work and personal material mix. Turns on the sensitivity axis |
 
-포함 관계를 지키므로 프리셋 상향은 필드 추가만으로 끝난다.
+Because the presets nest, moving up a preset only adds fields.
 
-`topics`는 열려 있고 `forms`는 닫혀 있다. lint는 `forms` 위반을 오류로, `topics` 신규 값을 경고로 다룬다. 이 구분이 없으면 오타로 생긴 분류가 조용히 자리를 잡는다.
+`topics` is open and `forms` is closed. lint treats an unknown `form` as an error and a new `topic` as a warning. Without that distinction, a typo quietly becomes a category.
 
-## 어디까지 왔는가
+## Where it stands
 
-**0.1부터 0.4까지 끝났고 1.0이 진행 중이다.** 위의 커맨드 스물일곱이 전부 동작한다.
+**0.1 through 0.4 are done and 1.0 has one item left, `pack`.** All twenty-seven commands above work. The first release ships together with making the repository public.
 
-| 마일스톤 | 범위 | 상태 |
+| Milestone | Scope | Status |
 |---|---|---|
-| 0.1 | `init`, `capture`, `source`, `promote`, `new`, 게이트, `lint`, `status`, `doctor` | 완료 |
-| 0.2 | `search`, `backlinks`, `reindex`, `demote`, `mv`, `update` | 완료 |
-| 0.3 | `resurface`, `bridge`, `digest`, `recall`, `archive` | 완료 |
-| 0.4 | `eject`, `rules show`, `migrate`, `sync` | 완료 |
-| 1.0 | `skills install`, MCP 노출, `serve`, 릴리스 배포 | 완료 |
-| 1.0 | `pack` | **아직 없다** |
+| 0.1 | `init`, `capture`, `source`, `promote`, `new`, the gate, `lint`, `status`, `doctor` | done |
+| 0.2 | `search`, `backlinks`, `reindex`, `demote`, `mv`, `update` | done |
+| 0.3 | `resurface`, `bridge`, `digest`, `recall`, `archive` | done |
+| 0.4 | `eject`, `rules show`, `migrate`, `sync` | done |
+| 1.0 | `skills install`, MCP, `serve`, release pipeline | done |
+| 1.0 | `pack` | **not yet** |
 
-`eject`는 규칙을 사용자에게 넘기되 연산은 넘기지 않는다. 내보낸 뒤에도 `search`, `recall`, `resurface`, `bridge`, `digest`, `backlinks`가 그대로 동작한다. 내보낸 Python 린터가 `engram lint`와 같은 판정을 내는지 대조하는 검증이 CI에서 돈다. 1.0은 웹 UI, 에이전트 스킬 설치, 배포이고 아직 구현 전이다. 마일스톤별 범위는 [design.md](docs/design.md)에 있다.
+`eject` hands the rules to the user but keeps the computation. After ejecting, `search`, `recall`, `resurface`, `bridge`, `digest`, and `backlinks` keep working. CI checks that the exported Python linter reaches the same verdicts as `engram lint`. What remains for 1.0 is `pack`, the export bundle. Milestone scope is in [design.md](docs/design.md).
 
-검증은 `go test ./...`가 정식이다. **도구가 만든 위키는 어느 시점에 `lint`를 돌려도 `error`가 0이어야 한다.** 이 불변식을 여정 통합 테스트가 지킨다. `init`부터 `archive`까지 실제 바이너리로 순서대로 돌리고 각 단계마다 `lint`를 다시 검사한다. 도구가 자기 산출물을 자기 검사로 통과하지 못하면 게이트를 믿을 수 없기 때문이다.
+`go test ./...` is the official verification. **A wiki produced by the tool must show zero `error` from `lint` at any point in time.** A journey test guards that invariant: it drives the real binary from `init` to `archive` in order and re-runs `lint` after every step. If the tool cannot pass its own check on its own output, the gate cannot be trusted.
 
-## 문서
+## Documents
 
-| 문서 | 내용 | 언제 읽는가 |
+| Document | Content | When to read |
 |---|---|---|
-| [architecture.md](docs/architecture.md) | 동작 구조. mermaid 도식 10종 | 전체 그림이 필요할 때 |
-| [spec-map.md](docs/spec-map.md) | 규칙 명세와 구현의 대응 | **무엇이 다른지**가 궁금할 때 |
-| [design.md](docs/design.md) | 커맨드 체계, 설정, 마일스톤 | 커맨드 경계와 설정이 궁금할 때 |
-| [journeys.md](docs/journeys.md) | 사용자 여정 24개 | 실제 사용 시나리오가 궁금할 때 |
-| [decisions/](docs/decisions/README.md) | ADR 색인. 설계 결정과 개정 이력 | "왜 이렇게 설계했는가"가 궁금할 때 |
-| [roadmap.md](docs/roadmap.md) | 지금 무엇을 하나 | 진행 상황이 궁금할 때 |
-| [AGENTS.md](AGENTS.md) | 이 저장소에서 작업하는 에이전트의 계약 | 기여할 때 |
+| [architecture.md](docs/architecture.md) | How it works. Ten mermaid diagrams | When you need the whole picture |
+| [spec-map.md](docs/spec-map.md) | How the rule specs map to the implementation | When you wonder **what is different** |
+| [design.md](docs/design.md) | Command system, configuration, milestones | When you wonder about command boundaries and settings |
+| [journeys.md](docs/journeys.md) | Twenty-four user journeys | When you want real scenarios |
+| [decisions/](docs/decisions/README.md) | ADR index. Design decisions and their amendments | When you ask "why was it designed this way" |
+| [roadmap.md](docs/roadmap.md) | What is being done now | When you want progress |
+| [course/](docs/course/README.md) | Course material. Unit 1 orientation deck (HTML, slide and reading modes) | When explaining it to others or learning it first |
+| [AGENTS.md](AGENTS.md) | The contract for agents working in this repository | When contributing |
 
-설계 근거가 궁금하면 ADR을 읽는 편이 빠르다. 왜 게이트가 하나뿐인지, 왜 LLM을 부르지 않는지, 왜 빈 위키에서는 게이트가 유예되는지가 전부 기록되어 있다.
+There is a 60-minute [orientation deck](docs/course/index.html) that explains why this system exists. It is a single HTML file; open it in a browser. Reading mode unfolds the speaker notes under every slide. The deck and the tool's messages are in Korean.
 
-## 라이선스
+If you want the reasoning, the ADRs are the fastest route. Why there is only one gate, why the tool never calls an LLM, why the gate is deferred in an empty wiki: it is all written down.
+
+## License
 
 [Apache License 2.0](LICENSE)
