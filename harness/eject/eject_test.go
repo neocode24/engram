@@ -196,7 +196,9 @@ func canonicalize(t *testing.T, out string) string {
 		}
 		stanzas = nil
 	}
-	lines := strings.Split(out, "\n")
+	// 줄바꿈을 먼저 통일한다. 한쪽이 CRLF 로 내면 아래 줄 단위 비교가
+	// 전부 어긋나는데, 그 실패는 판정 차이처럼 보여서 진단을 헤매게 한다.
+	lines := strings.Split(strings.ReplaceAll(out, "\r\n", "\n"), "\n")
 	inWikiFindings := false
 	for i := 0; i < len(lines); i++ {
 		line := lines[i]

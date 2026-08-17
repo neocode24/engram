@@ -64,9 +64,12 @@ import sys
 # 메시지를 그대로 내면 UnicodeEncodeError 로 죽는다. engram 본체는 콘솔
 # 코드페이지를 UTF-8 로 바꿔서 푸는데, 내보낸 이 스크립트는 그 처리를
 # 받지 못하므로 여기서 스트림을 다시 연다.
+# newline 도 함께 고정한다. Windows 의 텍스트 모드는 \n 을 \r\n 으로
+# 바꿔 내보내는데, engram lint 는 \n 만 내므로 그대로 두면 두 린터의
+# 출력이 줄바꿈에서 갈린다. 판정이 같아야 한다는 계약이 깨진다.
 for _stream in (sys.stdout, sys.stderr):
     if hasattr(_stream, "reconfigure"):
-        _stream.reconfigure(encoding="utf-8")
+        _stream.reconfigure(encoding="utf-8", newline="\n")
 
 # --- 고정 상수. engram.yaml 이 바꿀 수 없는 값이다. ---
 ARTIFACT_STAGES = %s
