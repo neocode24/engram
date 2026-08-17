@@ -67,6 +67,9 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 		"cli.promote.done":                 "context로 올렸습니다: %s",
 		"cli.promote.type_line":            "문서 종류: %s",
 		"cli.promote.next":                 "다음: engram lint로 승급 문서의 스키마를 확인하세요",
+		"cli.promote.plan":                 "올릴 예정입니다: %s에서 %s로",
+		"cli.promote.flag_dry_run":         "쓰지 않고 게이트만 확인합니다. 통과하면 무엇이 만들어질지 냅니다",
+		"cli.ingest.dry_run_note":          "시험 실행이라 아무것도 쓰지 않았습니다",
 		"cli.new.short":                    "처음부터 검수된 지식으로 context에 씁니다",
 		"cli.new.long": `검수된 지식을 곧바로 context 단계로 씁니다.
 
@@ -257,6 +260,9 @@ short, repeat --related <slug> to fill them in here.`,
 		"cli.promote.done":                 "Promoted to context: %s",
 		"cli.promote.type_line":            "Type: %s",
 		"cli.promote.next":                 "Next: check the promoted document's schema with engram lint",
+		"cli.promote.plan":                 "Would promote: %s to %s",
+		"cli.promote.flag_dry_run":         "Check the gate without writing. Reports what would be created if it passes",
+		"cli.ingest.dry_run_note":          "Dry run: nothing was written",
 		"cli.new.short":                    "Write reviewed knowledge straight to context",
 		"cli.new.long": `Writes reviewed knowledge directly to the context stage.
 

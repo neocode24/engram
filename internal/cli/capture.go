@@ -118,6 +118,15 @@ func stringFlag(cmd *cobra.Command, name string) (string, error) {
 	return v, nil
 }
 
+// boolFlag는 참/거짓 플래그 값을 읽는다.
+func boolFlag(cmd *cobra.Command, name string) (bool, error) {
+	v, err := cmd.Flags().GetBool(name)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", i18n.T("cli.ingest.flag_read_fail", name), err)
+	}
+	return v, nil
+}
+
 // pathOrWikiFlag는 위치 인자와 --wiki 플래그 중 실제로 주어진 것을 위키
 // 경로로 고른다. 커맨드 스물이 --wiki를 받는데 lint, status, reindex,
 // doctor 넷만 위치 인자였다. 에이전트가 플래그를 전 커맨드에 통하는

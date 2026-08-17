@@ -70,6 +70,7 @@
 | [0053](0053-wiki-path-accepts-both-positional-and-flag.md) | 위키 경로는 네 커맨드에서도 --wiki로 받는다 | 2026-08-17 | accepted |
 | [0054](0054-gate-counts-only-links-that-resolve.md) | 승급 게이트는 실제로 이어지는 링크만 센다 | 2026-08-17 | accepted |
 | [0055](0055-agents-change-the-wiki-only-through-commands.md) | 에이전트는 커맨드로만 위키를 바꾼다 | 2026-08-17 | accepted |
+| [0056](0056-promote-has-a-dry-run.md) | promote에 --dry-run을 둔다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 

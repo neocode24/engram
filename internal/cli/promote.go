@@ -127,6 +127,25 @@ func newPromoteCmd() *cobra.Command {
 				warnDeferred(cmd.ErrOrStderr(), g)
 			}
 
+			dryRun, err := boolFlag(cmd, flagDryRun)
+			if err != nil {
+				return err
+			}
+			if dryRun {
+				res := promoteOutcome{
+					writeOutcome: writeOutcome{Path: destPath, Slug: slug, Stage: "context", Gate: gateOf(g)},
+					Type:         finalType(fields),
+					DryRun:       true,
+				}
+				if jsonOutput(cmd) {
+					enc := json.NewEncoder(cmd.OutOrStdout())
+					enc.SetIndent("", "  ")
+					return enc.Encode(res)
+				}
+				printPromotePlan(cmd.OutOrStdout(), srcPath, res)
+				return nil
+			}
+
 			if err := createDocFile(destPath, doc.Render(fields, d.Body)); err != nil {
 				return err
 			}
@@ -159,6 +178,7 @@ func newPromoteCmd() *cobra.Command {
 	cmd.Flags().String(flagSlug, "", i18n.T("cli.promote.flag_slug"))
 	cmd.Flags().StringArray(flagRelated, nil, i18n.T("cli.promote.flag_related"))
 	cmd.Flags().String(flagType, "", i18n.T("cli.promote.flag_type"))
+	cmd.Flags().Bool(flagDryRun, false, i18n.T("cli.promote.flag_dry_run"))
 	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
 }
@@ -166,7 +186,8 @@ func newPromoteCmd() *cobra.Command {
 // promoteOutcome은 promote의 결과다. 공통 결과에 문서 종류를 더 낸다.
 type promoteOutcome struct {
 	writeOutcome
-	Type string `json:"type"`
+	Type   string `json:"type"`
+	DryRun bool   `json:"dryRun,omitempty"`
 }
 
 // finalType은 완성된 필드에서 문서 종류를 꺼낸다.
@@ -204,6 +225,17 @@ func printPromoted(w io.Writer, res promoteOutcome) {
 	fmt.Fprintln(w, i18n.T("cli.ingest.gate_line", res.Gate.Links, res.Gate.Targets, res.Gate.Min,
 		deferredNote(res.Gate.Deferred)))
 	fmt.Fprintln(w, i18n.T("cli.promote.next"))
+}
+
+// printPromotePlan은 --dry-run 결과를 낸다. 승급이 지금 성공할지를
+// 아무것도 쓰지 않고 알린다. 게이트가 막으면 여기까지 오지 않고 거절
+// 메시지가 나가므로, 이 출력이 나왔다는 것은 통과한다는 뜻이다.
+func printPromotePlan(w io.Writer, srcPath string, res promoteOutcome) {
+	fmt.Fprintln(w, i18n.T("cli.promote.plan", srcPath, res.Path))
+	fmt.Fprintln(w, i18n.T("cli.promote.type_line", res.Type))
+	fmt.Fprintln(w, i18n.T("cli.ingest.gate_line", res.Gate.Links, res.Gate.Targets, res.Gate.Min,
+		deferredNote(res.Gate.Deferred)))
+	fmt.Fprintln(w, i18n.T("cli.ingest.dry_run_note"))
 }
 
 // deferredNote는 유예 안내 문구를 낸다.

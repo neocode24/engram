@@ -570,3 +570,46 @@ func TestPromoteType(t *testing.T) {
 		}
 	})
 }
+
+// TestPromoteDryRun은 --dry-run 이 게이트만 확인하고 아무것도 쓰지 않는지
+// 본다. 에이전트가 통과 여부를 넘겨짚고 실패할 제안을 사람에게 넘기는
+// 일이 실제로 있었다(ADR 0056).
+func TestPromoteDryRun(t *testing.T) {
+	t.Run("통과하면 무엇이 만들어질지 내고 쓰지 않습니다", func(t *testing.T) {
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+		addContextDocs(t, dir)
+
+		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel,
+			"--slug", "memo", "--related", "a-doc", "--related", "b-doc", "--dry-run")
+		if err != nil {
+			t.Fatalf("통과해야 함: %v\n%s", err, out)
+		}
+		for _, want := range []string{"올릴 예정입니다", "게이트", "아무것도 쓰지 않았습니다"} {
+			if !strings.Contains(out, want) {
+				t.Errorf("출력에 %q 없음:\n%s", want, out)
+			}
+		}
+		if _, err := os.Stat(filepath.Join(dir, "context", "memo.md")); err == nil {
+			t.Error("시험 실행인데 문서를 만들었습니다")
+		}
+		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
+			t.Error("시험 실행인데 inbox 원본을 지웠습니다")
+		}
+	})
+
+	t.Run("게이트를 못 넘으면 시험 실행도 거절합니다", func(t *testing.T) {
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+		addContextDocs(t, dir)
+
+		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel,
+			"--slug", "memo", "--related", "없는문서", "--dry-run")
+		if err == nil {
+			t.Fatalf("거절해야 함:\n%s", out)
+		}
+		if strings.Contains(out, "올릴 예정입니다") {
+			t.Errorf("거절인데 성공 계획을 냈습니다:\n%s", out)
+		}
+	})
+}
