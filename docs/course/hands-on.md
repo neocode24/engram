@@ -1098,6 +1098,22 @@ derived_from:
 
 나중에 `context` 문서의 주장이 맞는지 확인하려면 이 링크를 따라가면 됩니다. **`sources`가 지식이 아니라 증거인 이유가 여기서 보입니다.**
 
+### 지금 없는 길이 하나 있습니다
+
+`inbox` 문서가 나가는 길은 원래 셋입니다. upstream `inbox/README.md`가 이렇게 적었습니다.
+
+```
+- delete the inbox item if it has no long-term value
+- move evidence to sources/ if it should be traceable
+- promote durable knowledge to context/
+```
+
+**engram에는 가운데 길이 없습니다.** `capture`로 `inbox`에 들어온 원본을 `sources`로 옮기는 커맨드가 없습니다. `source`는 표준 입력으로 새 문서를 만들 뿐이고 `demote`는 `context`에서만 내려갑니다.
+
+그래서 전사를 `capture`로 받았다면 승급할 때 **원문이 사라집니다.** 방금 올린 문서의 프론트매터를 보면 `source_refs: []`입니다. 나중에 "이 결정이 정말 그 회의에서 나왔나"를 확인할 근거가 없습니다.
+
+**원문을 남겨야 하는 자료는 3단계에서 처음부터 `source`로 넣습니다.** 기술문서를 그렇게 한 이유가 이것입니다. 지금 시점의 회피책이며 [spec-map 4.9](../spec-map.md)에 미반영 규칙으로 적혀 있습니다.
+
 ### 순서가 있습니다
 
 **전사를 먼저 올리고 원본을 나중에 올렸습니다.** 거꾸로는 안 됩니다.
@@ -1266,6 +1282,7 @@ git add -A && git commit -m "4단계: 에이전트 연결, 승급, 이름 변경
 | `index.md`는 자동 갱신하지 않습니다 | `backlinks index`로 대신 봅니다 | 색인이 전부를 가리키면 고아 판정이 영원히 0이 됩니다 |
 | `mv`와 `archive`는 사람이 칩니다 | 에이전트에게 주지 않습니다 | 여러 파일을 한 번에 고치거나 단계를 옮깁니다 |
 | 스킬은 전역 설치가 기본입니다 | 시험 중에는 `--dir`로 격리합니다 | 스킬 문서가 위키와 무관해서 하나면 되지만, 검증 중인 것이 모든 세션에 얹히면 안 됩니다 |
+| `inbox`에서 `sources`로 가는 길이 없습니다 | 그 사실을 감추지 않고 밝힙니다 | upstream은 탈출 경로 셋을 정했는데 engram에 둘뿐입니다. 원문을 남길 자료는 3단계에서 `source`로 넣어야 합니다 |
 
 # 5단계. 꺼내 쓰기
 
