@@ -285,17 +285,32 @@ cd ~/engram-wiki
 
 `--preset`은 생략해도 `education`입니다. 그래도 적는 이유는 프리셋이라는 것이 있다는 사실을 여기서 알려야 하기 때문입니다.
 
-프리셋은 셋이고 **스키마 축의 시작점만 정합니다.** 디렉토리 구성, 게이트, 임계값은 셋 다 같습니다. 포함 관계라 오른쪽이 왼쪽을 전부 담습니다.
+### 축이란
 
-| 프리셋 | 켜지는 축 | `personal`에 더해지는 것 |
-|---|---|---|
-| `personal` | 8 | (기준) `type`, `artifact_stage`, `status`, `indexable`, `tags`, `source_refs`, `derived_from`, `related` |
-| `education` | 10 | `source_channel`, `derived_context` |
-| `team` | 14 | 위에 더해 `scope`, `sensitivity`, `trigger_mode`, `workflow` |
+먼저 이 말을 짚습니다. 앞으로 계속 나옵니다.
 
-축이 켜지면 그 필드가 단계별 필수 필드에 들어가고, 꺼진 축의 필드를 문서에 쓰면 `lint`가 `schema.axis-off`로 잡습니다. 축은 프리셋과 무관하게 `engram.yaml`에서 하나씩 켜고 끌 수 있습니다. 프리셋은 매번 열네 줄을 쓰지 않게 해 주는 시작점일 뿐입니다.
+**축은 문서 맨 위 프론트매터에 들어가는 필드 하나입니다.** engram이 다루는 축은 열넷이고, 각각이 문서를 한 가지 기준으로 가릅니다. `type`은 문서 종류로, `artifact_stage`는 성숙 단계로, `sensitivity`는 공개 범위로 가릅니다. 서로 겹치지 않는 독립된 기준이라 축이라고 부릅니다. 문서 하나가 열네 축에서 각각 어디쯤인지가 정해집니다.
+
+축은 **켜거나 끕니다.**
+
+- 켜면 그 필드가 단계별 필수 필드가 됩니다. 없으면 `lint`가 `frontmatter.missing-field`로 잡습니다.
+- 끄면 그 필드를 쓰면 안 됩니다. 있으면 `lint`가 `schema.axis-off`로 잡습니다.
+
+**프리셋은 어느 축을 켤지 정하는 시작점입니다.** 열네 줄을 매번 쓰지 않게 해 주는 것뿐이고, 축은 프리셋과 무관하게 `engram.yaml`에서 하나씩 켜고 끌 수 있습니다.
+
+### 프리셋 셋
+
+프리셋이 정하는 것은 축뿐입니다. 디렉토리 구성, 게이트, 임계값은 셋 다 같습니다. 포함 관계라 오른쪽이 왼쪽을 전부 담습니다.
+
+| 프리셋 | 켜지는 축 | 더해지는 것 | 그래서 무엇이 되나 |
+|---|---|---|---|
+| `personal` | 8 | `type`, `artifact_stage`, `status`, `indexable`, `tags`, `source_refs`, `derived_from`, `related` | 승급 파이프라인만 돕니다 |
+| `education` | 10 | `source_channel`, `derived_context` | 어디서 들어왔고 어디로 파생됐는지가 남습니다 |
+| `team` | 14 | `scope`, `sensitivity`, `trigger_mode`, `workflow` | 업무 자료가 섞여도 반출 경계를 지킵니다. 자동화 기록이 남습니다 |
 
 **실습은 `education`으로만 합니다.** `personal`은 `derived_context` 축이 꺼져 있어서 4단계의 파생 왕복이 보이지 않고, `team`은 `sensitivity`와 `workflow`까지 필수라 3단계부터 채울 것이 늘어납니다. 프리셋을 실제로 바꾸는 것은 8단계에서 `migrate`로 해 봅니다.
+
+**교육이 끝난 뒤 자기 위키를 만들 때도 `education`을 그대로 쓰면 됩니다.** 이름이 강의를 가리키는 것처럼 보이지만 축 집합의 이름일 뿐입니다. `personal`은 이름과 달리 축이 가장 적어서 파생 추적이 빠집니다. 이 이름들이 오해를 부른다는 것은 [ADR 0009](../decisions/0009-schema-presets-and-thresholds.md)가 열린 항목으로 적어 둔 문제이며 1.1에서 다시 봅니다.
 
 출력이 만든 것을 그대로 알려 줍니다.
 

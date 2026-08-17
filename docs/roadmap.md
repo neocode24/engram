@@ -79,6 +79,21 @@
 
 전사 결과 수용은 그다음이다. `capture`가 외부 전사 파일을 받아 위 첫째를 태우면 음성 없이도 루프가 닫힌다.
 
+### 프리셋 이름 재검토
+
+[0009](decisions/0009-schema-presets-and-thresholds.md)가 열린 항목으로 남긴 것이며 실제로 오해를 불렀다. 그 ADR은 `team`이 규모를 암시하는 것을 걱정했는데 더 큰 문제는 `personal`이다.
+
+**`personal`이 셋 중 축이 가장 적다.** 그런데 사용자가 교육을 마치고 본격적으로 자기 위키를 만들 때 고를 이름이 그것이다. 이름만 보고 고르면 `derived_context`와 `source_channel`이 빠진 위키를 쓰게 된다. 0009 자신이 "`personal`은 축이 너무 적어 승급 파이프라인의 가치를 체감하기 어렵다"고 적어 놓고 그 이름을 개인 사용자에게 준 셈이다.
+
+`education`도 문제다. 제품 설정값이 특정 강의를 가리키는 이름을 갖고 있다.
+
+후보는 `education`을 `personal`로, 지금의 `personal`을 `minimal`로 옮기는 것이다. 그러면 교육이 가르친 축 집합과 수료 후 쓰는 축 집합의 이름이 같아진다. 함께 볼 것 둘.
+
+- 지금의 `personal`(8축)이 남을 값어치가 있는지. `education`과 두 축 차이뿐이고 그중 `derived_context`는 `promote`의 역방향 기록이라 빠지면 기능이 준다. 프리셋을 둘로 줄이는 선택지가 있다.
+- `team`도 규모가 아니라 업무 자료 포함 여부가 기준이므로 같이 본다.
+
+옮기려면 옛 이름을 `migrate`가 받아 주어야 하고 `examples/education` 디렉토리 이름도 따라간다. 1.0 출하 뒤에 연다.
+
 ### 시맨틱 층과 model 커맨드
 
 [0007](decisions/0007-platform-and-distribution.md)이 `engram model pull`을 사이드카로 정해 두었으나 구현이 없고 어느 마일스톤에도 없다. **사이드카이므로 바이너리는 순수 Go로 남는다.** CGO나 LLM 경계와 충돌하지 않는다.
