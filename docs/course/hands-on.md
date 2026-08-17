@@ -563,11 +563,18 @@ git add -A && git commit -m "index 소개 작성"
 **복사하지 않고 경로로 읽습니다.** 이 단계의 커맨드는 전부 아래 두 줄을 깔고 시작합니다.
 
 ```
-cd ~/engram-wiki           # 작업 위치는 실습 위키
-MATERIALS=~/engram/examples/materials    # 저장소 안의 재료. 1단계에서 클론한 곳
+cd ~/engram-wiki                          # 작업 위치. 여기서 커맨드를 칩니다
+MATERIALS=~/engram/examples/materials     # 실습 재료가 있는 디렉토리
 ```
 
-이제 `$MATERIALS/회의-전사.txt` 로 씁니다. 클론을 다른 데 했으면 그 경로로 바꿉니다.
+**`MATERIALS`는 실습 재료 디렉토리를 담는 셸 변수입니다.** 매번 긴 경로를 치지 않으려고 둡니다. 클론을 홈이 아닌 곳에 했으면 이 줄만 자기 경로로 바꿉니다.
+
+```
+echo $MATERIALS     # /Users/사용자/engram/examples/materials
+ls $MATERIALS       # 재료 넷과 README.md 가 보여야 합니다
+```
+
+**터미널을 새로 열면 사라집니다.** 다시 열었으면 위 두 줄을 다시 칩니다.
 
 ```
 engram capture --title "..." < $MATERIALS/회의-전사.txt
@@ -628,6 +635,9 @@ engram source --help
 **요약하지 않습니다. 통째로 넣습니다.**
 
 ```
+cd ~/engram-wiki
+MATERIALS=~/engram/examples/materials
+
 engram capture --title "응답 지연 회의 전사" < $MATERIALS/회의-전사.txt
 ```
 
