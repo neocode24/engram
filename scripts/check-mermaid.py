@@ -10,7 +10,7 @@ fail, total = [], 0
 
 with tempfile.TemporaryDirectory() as td:
     for path in files:
-        blocks = re.findall(r"```mermaid\n(.*?)```", open(path).read(), re.S)
+        blocks = re.findall(r"```mermaid\n(.*?)```", open(path, encoding="utf-8").read(), re.S)
         for i, src in enumerate(blocks):
             total += 1
             mmd = os.path.join(td, f"b{i}.mmd")

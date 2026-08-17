@@ -230,7 +230,11 @@ func TestLinter(t *testing.T) {
 		py := needPython3(t)
 		root := writeWiki(t, map[string]string{"engram.yaml": "preset: education\n"})
 		writePlan(t, root, Plan(loadCfg(t, root)))
-		out, code := runPython(t, py, "-c", "import ast,sys; ast.parse(open(sys.argv[1]).read())",
+		// 인코딩을 명시한다. Windows 의 파이썬은 로케일 인코딩(cp1252 등)으로
+		// 파일을 열어서, 한글 주석이 든 이 스크립트를 UnicodeDecodeError 로
+		// 읽지 못한다.
+		out, code := runPython(t, py, "-c",
+			"import ast,sys; ast.parse(open(sys.argv[1], encoding='utf-8').read())",
 			filepath.Join(root, "scripts", "lint-frontmatter.py"))
 		if code != 0 {
 			t.Fatalf("문법 오류: %s", out)

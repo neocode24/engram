@@ -14,7 +14,7 @@ fail = []
 actual = {}
 for f in sorted(glob.glob(os.path.join(D, "0*.md"))):
     b = os.path.basename(f)
-    m = re.match(r"---\n(.*?)\n---\n", open(f).read(), re.S)
+    m = re.match(r"---\n(.*?)\n---\n", open(f, encoding="utf-8").read(), re.S)
     if not m:
         fail.append(f"{b}: frontmatter 없음"); continue
     fm = dict(re.findall(r"^(\w+):\s*(.+)$", m.group(1), re.M))
@@ -43,7 +43,7 @@ for f in glob.glob(os.path.join(ROOT, "**", "*.md"), recursive=True):
     if "/.git/" in f or "/private/" in f:
         continue
     d = os.path.dirname(f)
-    for m in re.finditer(r"\]\((?!https?:|mailto:|#)([^)#]+)", open(f).read()):
+    for m in re.finditer(r"\]\((?!https?:|mailto:|#)([^)#]+)", open(f, encoding="utf-8").read()):
         if not os.path.exists(os.path.normpath(os.path.join(d, m.group(1).strip()))):
             fail.append(f"깨진 링크 {os.path.relpath(f, ROOT)} -> {m.group(1)}")
             broken += 1
