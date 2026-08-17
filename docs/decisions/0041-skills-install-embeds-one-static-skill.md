@@ -2,7 +2,7 @@
 number: 0041
 title: skills install은 정적 스킬 문서 하나를 심고 위키별 규칙은 rules show로 넘긴다
 date: 2026-08-17
-status: accepted
+status: amended
 ---
 
 # skills install이 무엇을 심는가

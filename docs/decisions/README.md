@@ -55,7 +55,7 @@
 | [0038](0038-migrate-conforms-documents-to-current-rules.md) | migrate는 기존 문서를 지금의 설정과 규칙에 맞춘다 | 2026-08-16 | accepted |
 | [0039](0039-eject-emits-rule-specs-and-a-python-linter.md) | eject는 규칙 명세와 표준 라이브러리 Python 린터를 내보낸다 | 2026-08-16 | accepted |
 | [0040](0040-gate-follows-the-directory-not-the-declaration.md) | 게이트는 선언이 아니라 디렉토리를 따르고 artifact_stage 누락은 오류다 | 2026-08-16 | accepted |
-| [0041](0041-skills-install-embeds-one-static-skill.md) | skills install은 정적 스킬 문서 하나를 심고 위키별 규칙은 rules show로 넘긴다 | 2026-08-17 | accepted |
+| [0041](0041-skills-install-embeds-one-static-skill.md) | skills install은 정적 스킬 문서 하나를 심고 위키별 규칙은 rules show로 넘긴다 | 2026-08-17 | amended |
 | [0042](0042-release-artifacts-and-workflow.md) | 릴리스는 goreleaser로 만들고 태그 푸시가 유일한 계기다 | 2026-08-17 | accepted |
 | [0043](0043-mcp-exposes-one-write-tool-and-omits-promote.md) | MCP는 쓰기 도구를 하나만 노출하고 promote를 내보내지 않는다 | 2026-08-17 | accepted |
 | [0044](0044-serve-is-read-only-and-shows-only-vetted-knowledge.md) | serve는 읽기 전용이고 검수된 지식만 보여준다 | 2026-08-17 | accepted |
@@ -66,6 +66,7 @@
 | [0049](0049-cli-output-language.md) | 출력 언어는 사용자 환경이 정하고 카탈로그는 바이너리에 묶는다 | 2026-08-17 | accepted |
 | [0050](0050-slugs-must-be-wikilink-safe.md) | 슬러그는 파일시스템뿐 아니라 위키링크 문법에도 안전해야 한다 | 2026-08-17 | accepted |
 | [0051](0051-sources-holds-originals-and-refined-summaries.md) | sources는 원본과 정제본을 함께 담고 type이 그 둘을 가른다 | 2026-08-17 | accepted |
+| [0052](0052-agent-prepares-the-promotion-and-the-human-decides-it.md) | 에이전트가 승급을 준비하고 사람은 승급을 결정한다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 
@@ -98,6 +99,7 @@
 | 0009 | 프리셋 이름은 `personal`, `education`, `team`이다 | [0048](0048-preset-names-follow-attribute-sets.md) `minimal`, `personal`, `team`으로 정정. 속성 구성은 그대로다 |
 | 0045 | 슬러그 안전 검사는 파일시스템 예약 문자를 본다 | [0050](0050-slugs-must-be-wikilink-safe.md) 위키링크 문법을 깨는 문자를 더한다 |
 | 0009 | 문서 종류 기본값은 열이다 | [0051](0051-sources-holds-originals-and-refined-summaries.md) `source-raw`를 더해 열하나가 된다 |
+| 0041 | 스킬 문서가 반드시 담는 것은 다섯이다 | [0052](0052-agent-prepares-the-promotion-and-the-human-decides-it.md) 승급 준비 지시 셋을 더해 여덟이 된다 |
 
 ## 근거만 갱신된 경우
 
