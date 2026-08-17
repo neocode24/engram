@@ -6,7 +6,6 @@ package lint
 
 import (
 	"errors"
-	"fmt"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
 )
@@ -80,37 +80,37 @@ func newViolation(sev Severity, r Rule, path string, line int, msg, fix string) 
 // 규칙 정의. 나열 순서는 게이트의 거절 사유를 먼저 읽히는 순서다.
 var (
 	ruleGateMinWikilinks = newRule("gate.min-wikilinks", "reject",
-		"context 디렉토리 아래 문서의 고유 위키링크 수가 min_wikilinks 미달. 게이트의 유일한 거절 사유(ADR 0040)")
+		i18n.T("lint.rule.gate_min_wikilinks"))
 	ruleFrontmatterMissing = newRule("frontmatter.missing", "error",
-		"프론트매터 블록이 아예 없는 문서")
+		i18n.T("lint.rule.frontmatter_missing"))
 	ruleFrontmatterUnclosed = newRule("frontmatter.unclosed", "error",
-		"닫는 --- 없이 끝난 프론트매터")
+		i18n.T("lint.rule.frontmatter_unclosed"))
 	ruleFrontmatterYAML = newRule("frontmatter.yaml", "error",
-		"프론트매터 YAML 문법 오류")
+		i18n.T("lint.rule.frontmatter_yaml"))
 	ruleFrontmatterMissingField = newRule("frontmatter.missing-field", "error",
-		"단계별 필수 필드 누락")
+		i18n.T("lint.rule.frontmatter_missing_field"))
 	ruleSchemaAllowedValue = newRule("schema.allowed-value", "error",
-		"허용 집합 밖의 필드 값. artifact_stage, status, scope, sensitivity, trigger_mode")
+		i18n.T("lint.rule.schema_allowed_value"))
 	ruleSchemaAxisOff = newRule("schema.axis-off", "error",
-		"설정이 끈 속성이 문서에 있음")
+		i18n.T("lint.rule.schema_axis_off"))
 	ruleLocationStageAgreement = newRule("location.stage-agreement", "error 또는 warn",
-		"문서가 놓인 디렉토리와 artifact_stage 값의 불일치. context를 선언했는데 context/ 밖에 있으면 error, 그 밖의 불일치는 warn(ADR 0035)")
+		i18n.T("lint.rule.location_stage_agreement"))
 	ruleTaxonomyForms = newRule("taxonomy.forms", "error",
-		"forms 폐쇄 집합에 없는 form 값")
+		i18n.T("lint.rule.taxonomy_forms"))
 	ruleSourcesUpdated = newRule("sources.updated", "warn",
-		"sources 문서의 원본 보존에 어긋나는 updated 필드")
+		i18n.T("lint.rule.sources_updated"))
 	ruleTaxonomyTopics = newRule("taxonomy.topics", "warn",
-		"설정에 정의되지 않은 topics 값. 개방 집합이라 경고")
+		i18n.T("lint.rule.taxonomy_topics"))
 	ruleBodyMaxLines = newRule("body.max-lines", "warn",
-		"문서 줄 수가 max_lines 초과")
+		i18n.T("lint.rule.body_max_lines"))
 	ruleLinkBroken = newRule("link.broken", "warn",
-		"위키링크가 가리키는 문서가 위키에 없음")
+		i18n.T("lint.rule.link_broken"))
 	ruleGraphOrphan = newRule("graph.orphan", "warn",
-		"들어오는 관계와 나가는 관계가 모두 없는 문서")
+		i18n.T("lint.rule.graph_orphan"))
 	ruleGateDeferred = newRule("gate.deferred", "warn",
-		"링크 가능한 대상 문서가 부족해 게이트 유예")
+		i18n.T("lint.rule.gate_deferred"))
 	ruleWikiBroadTopic = newRule("wiki.broad-topic", "warn",
-		"한 주제가 전체 문서의 broad_topic_pct를 넘게 붙음")
+		i18n.T("lint.rule.wiki_broad_topic"))
 )
 
 // Violation은 위반 하나다. 모든 위반은 경로와 줄, 무엇이 잘못됐는지,
@@ -192,8 +192,8 @@ func Run(wikiRoot string, cfg config.Config) (Result, error) {
 		// 위반만 남기고 그래프 판정 대상에서 빠진다.
 		if !w.Parsed.HasFrontmatter {
 			violations = append(violations, newViolation(SevError, ruleFrontmatterMissing, w.Rel, 1,
-				"프론트매터가 없습니다",
-				"문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫으세요"))
+				i18n.T("lint.violation.frontmatter_missing.message"),
+				i18n.T("lint.violation.frontmatter_missing.fix")))
 			continue
 		}
 		sd, vs := scanDoc(w, cfg)
@@ -237,13 +237,13 @@ func Run(wikiRoot string, cfg config.Config) (Result, error) {
 func parseViolations(w walk.Doc) []Violation {
 	if errors.Is(w.Err, walk.ErrUnclosed) {
 		return []Violation{newViolation(SevError, ruleFrontmatterUnclosed, w.Rel, 1,
-			"프론트매터가 닫는 --- 구분자 없이 끝났습니다",
-			"프론트매터 끝에 --- 줄을 추가하세요")}
+			i18n.T("lint.violation.frontmatter_unclosed.message"),
+			i18n.T("lint.violation.frontmatter_unclosed.fix"))}
 	}
 	return []Violation{newViolation(SevError, ruleFrontmatterYAML, w.Rel,
 		yamlErrorLine(w.Err.Error()),
-		"프론트매터 YAML 파싱 실패: "+w.Err.Error(),
-		"프론트매터의 YAML 문법을 고치세요")}
+		i18n.T("lint.violation.frontmatter_yaml.message", w.Err.Error()),
+		i18n.T("lint.violation.frontmatter_yaml.fix"))}
 }
 
 // scanDoc는 파싱된 문서 하나에 문서 단위 규칙을 적용한다.
@@ -351,8 +351,8 @@ func (s *scannedDoc) checkRequiredFields(cfg config.Config, add func(Severity, R
 		// 보고하지 않는다. 값을 채우면 다음 실행이 나머지를 본다.
 		if cfg.Axes[config.AxisArtifactStage] {
 			add(SevError, ruleFrontmatterMissingField, lineOfKey(s.content, "artifact_stage"),
-				"artifact_stage 필드가 없습니다",
-				"프론트매터에 artifact_stage 필드를 채우세요")
+				i18n.T("lint.violation.stage_missing.message"),
+				i18n.T("lint.violation.stage_missing.fix"))
 		}
 		return
 	}
@@ -362,8 +362,8 @@ func (s *scannedDoc) checkRequiredFields(cfg config.Config, add func(Severity, R
 	for _, f := range RequiredFields(s.stage, cfg) {
 		if _, ok := s.fields[f]; !ok {
 			add(SevError, ruleFrontmatterMissingField, lineOfKey(s.content, "artifact_stage"),
-				fmt.Sprintf("단계 %s의 필수 필드 %s가 없습니다", s.stage, f),
-				fmt.Sprintf("프론트매터에 %s 필드를 추가하세요", f))
+				i18n.T("lint.violation.required_missing.message", s.stage, f),
+				i18n.T("lint.violation.required_missing.fix", f))
 		}
 	}
 }
@@ -404,8 +404,8 @@ func (s *scannedDoc) checkAllowedValues(cfg config.Config, add func(Severity, Ru
 		allowed := vf.set(cfg)
 		if !contains(allowed, f.Str) {
 			add(SevError, ruleSchemaAllowedValue, lineOfKey(s.content, vf.key),
-				fmt.Sprintf("%s 값이 허용값 밖입니다: %q (허용값: %s)", vf.key, f.Str, strings.Join(allowed, ", ")),
-				fmt.Sprintf("%s 값을 허용값 중 하나로 바꿉니다", vf.key))
+				i18n.T("lint.violation.allowed_value.message", vf.key, f.Str, strings.Join(allowed, ", ")),
+				i18n.T("lint.violation.allowed_value.fix", vf.key))
 		}
 	}
 }
@@ -438,8 +438,8 @@ func (s *scannedDoc) checkStageAgreement(cfg config.Config, add func(Severity, R
 			sev = SevError
 		}
 		add(sev, ruleLocationStageAgreement, lineOfKey(s.content, "artifact_stage"),
-			fmt.Sprintf("문서가 %s 디렉토리에 있지만 artifact_stage가 %q입니다", top, s.stage),
-			fmt.Sprintf("문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 %s로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요", expected))
+			i18n.T("lint.violation.stage_agreement.message", top, s.stage),
+			i18n.T("lint.violation.stage_agreement.fix", expected))
 	}
 }
 
@@ -451,8 +451,8 @@ func (s *scannedDoc) checkAxisOff(cfg config.Config, add func(Severity, Rule, in
 		}
 		if _, ok := s.fields[string(ax)]; ok {
 			add(SevError, ruleSchemaAxisOff, lineOfKey(s.content, string(ax)),
-				fmt.Sprintf("설정에서 꺼진 속성이 문서에 있습니다: %s (프리셋 %s)", ax, cfg.Preset),
-				fmt.Sprintf("engram.yaml의 axes에서 %s를 켜거나 문서에서 %s 필드를 지웁니다", ax, ax))
+				i18n.T("lint.violation.axis_off.message", ax, cfg.Preset),
+				i18n.T("lint.violation.axis_off.fix", ax, ax))
 		}
 	}
 }
@@ -463,8 +463,8 @@ func (s *scannedDoc) checkTaxonomy(cfg config.Config, add func(Severity, Rule, i
 		forms := cfg.Schema.Taxonomy.Forms.Values
 		if len(forms) > 0 && !contains(forms, f.Str) {
 			add(SevError, ruleTaxonomyForms, lineOfKey(s.content, "form"),
-				fmt.Sprintf("form 값이 forms 폐쇄 집합에 없습니다: %q (허용값: %s)", f.Str, strings.Join(forms, ", ")),
-				"form 값을 허용값 중 하나로 바꿉니다")
+				i18n.T("lint.violation.forms.message", f.Str, strings.Join(forms, ", ")),
+				i18n.T("lint.violation.forms.fix"))
 		}
 	}
 	if f, ok := s.fields["topics"]; ok && (f.Kind == doc.KindStringList) {
@@ -472,8 +472,8 @@ func (s *scannedDoc) checkTaxonomy(cfg config.Config, add func(Severity, Rule, i
 		for _, v := range f.List {
 			if !contains(topics, v) {
 				add(SevWarn, ruleTaxonomyTopics, lineOfKey(s.content, "topics"),
-					fmt.Sprintf("topics 값이 설정에 정의되지 않았습니다: %q (topics는 개방 집합입니다)", v),
-					fmt.Sprintf("engram.yaml의 topics 목록에 %q를 추가하세요", v))
+					i18n.T("lint.violation.topics.message", v),
+					i18n.T("lint.violation.topics.fix", v))
 			}
 		}
 	}
@@ -486,8 +486,8 @@ func (s *scannedDoc) checkSourcesUpdated(add func(Severity, Rule, int, string, s
 	}
 	if s.rel == sourcesDirName || strings.HasPrefix(s.rel, sourcesDirName+"/") {
 		add(SevWarn, ruleSourcesUpdated, lineOfKey(s.content, "updated"),
-			"sources 계층 문서에 updated 필드가 있습니다",
-			"updated 필드를 지우세요. sources는 원본 보존 계층이라 갱신하지 않습니다")
+			i18n.T("lint.violation.sources_updated.message"),
+			i18n.T("lint.violation.sources_updated.fix"))
 	}
 }
 
@@ -495,8 +495,8 @@ func (s *scannedDoc) checkSourcesUpdated(add func(Severity, Rule, int, string, s
 func (s *scannedDoc) checkMaxLines(cfg config.Config, add func(Severity, Rule, int, string, string)) {
 	if n := lineCount(s.content); n > cfg.Thresholds.MaxLines {
 		add(SevWarn, ruleBodyMaxLines, lineOfKey(s.content, "artifact_stage"),
-			fmt.Sprintf("문서가 %d줄로 max_lines %d줄을 넘습니다", n, cfg.Thresholds.MaxLines),
-			"문서를 나누세요. 상한은 engram.yaml의 max_lines로 조정하세요")
+			i18n.T("lint.violation.max_lines.message", n, cfg.Thresholds.MaxLines),
+			i18n.T("lint.violation.max_lines.fix"))
 	}
 }
 
@@ -609,8 +609,8 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 			}
 			if _, ok := bySlug[l.Slug]; !ok {
 				add(SevWarn, ruleLinkBroken, s.rel, l.Line,
-					fmt.Sprintf("깨진 위키링크: [[%s]]에 해당하는 문서가 없습니다", l.Slug),
-					fmt.Sprintf("슬러그를 고치거나 [[%s]] 문서를 만드세요", l.Slug))
+					i18n.T("lint.violation.link_broken.message", l.Slug),
+					i18n.T("lint.violation.link_broken.fix", l.Slug))
 			}
 		}
 		for _, v := range relationValues(s) {
@@ -644,8 +644,8 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 		related := len(relationValues(s)) > 0
 		if len(outgoing) == 0 && !related && incoming[relationSlug(s.rel)] == 0 {
 			add(SevWarn, ruleGraphOrphan, s.rel, 1,
-				"들어오는 관계와 나가는 관계가 모두 없습니다",
-				fmt.Sprintf("다른 문서의 related나 본문에서 [[%s]]로 연결하거나 관계 필드로 잇으세요", slug))
+				i18n.T("lint.violation.orphan.message"),
+				i18n.T("lint.violation.orphan.fix", slug))
 		}
 		if gateOn && strings.HasPrefix(s.rel, contextDir+"/") {
 			n := len(outgoing)
@@ -654,14 +654,14 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 			// 링크가 기준을 채운 문서는 유예와 무관하게 스스로 통과한다.
 			if g.Deferred && n < cfg.Thresholds.MinWikilinks {
 				add(SevWarn, ruleGateDeferred, s.rel, lineOfKey(s.content, "related"),
-					fmt.Sprintf("링크 가능한 대상 문서가 %d개로 min_wikilinks %d개보다 적어 게이트를 유예합니다. 대상 문서가 %d개가 되면 게이트가 동작합니다", g.Targets, g.Min, g.Min),
-					fmt.Sprintf("연결할 문서를 만들어 대상을 늘리세요. 기준은 engram.yaml의 min_wikilinks로 조정하세요"))
+					i18n.T("lint.violation.gate_deferred.message", g.Targets, g.Min, g.Min),
+					i18n.T("lint.violation.gate_deferred.fix"))
 				continue
 			}
 			if !g.Passed {
 				add(SevReject, ruleGateMinWikilinks, s.rel, lineOfKey(s.content, "related"),
-					fmt.Sprintf("위키링크가 %d개로 min_wikilinks %d개에 못 미칩니다", n, cfg.Thresholds.MinWikilinks),
-					fmt.Sprintf("related 필드나 본문에 위키링크를 %d개 더 추가하세요", cfg.Thresholds.MinWikilinks-n))
+					i18n.T("lint.violation.gate_reject.message", n, cfg.Thresholds.MinWikilinks),
+					i18n.T("lint.violation.gate_reject.fix", cfg.Thresholds.MinWikilinks-n))
 			}
 		}
 	}
@@ -709,7 +709,7 @@ func broadTopicFindings(docs []scannedDoc, cfg config.Config) []WikiFinding {
 			Threshold: cfg.Thresholds.BroadTopicPct,
 			Total:     total,
 			Paths:     paths[topic],
-			Fix:       "주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요",
+			Fix:       i18n.T("lint.wiki.broad_topic.fix"),
 		})
 	}
 	sort.Slice(out, func(i, j int) bool {

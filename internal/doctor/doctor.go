@@ -15,6 +15,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/graph"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/state"
 	"github.com/neocode24/engram/internal/walk"
 )
@@ -116,8 +117,8 @@ func checkGit() (Finding, bool) {
 		return Finding{
 			ID:     "env.git",
 			Status: StatusWarn,
-			Detail: "git을 실행할 수 없습니다",
-			Fix:    "engram sync만 git을 요구하고 나머지 커맨드는 git 없이 동작하므로 당장은 문제가 아닙니다. 날짜 필드를 git 이력에서 정정하려면 설치하세요. macOS는 xcode-select --install, Windows는 Git for Windows 설치",
+			Detail: i18n.T("doctor.env.git.unavailable"),
+			Fix:    i18n.T("doctor.env.git.unavailable_fix"),
 		}, false
 	}
 	return Finding{ID: "env.git", Status: StatusOK, Detail: ver}, true
@@ -134,22 +135,22 @@ func isGitRepo(root string) bool {
 func checkAutoCRLF(root string, hasGit bool) Finding {
 	f := Finding{ID: "env.git-autocrlf"}
 	if !hasGit {
-		f.Status, f.Detail = StatusSkip, "git이 없어 확인할 수 없습니다"
+		f.Status, f.Detail = StatusSkip, i18n.T("doctor.env.git_autocrlf.skip_no_git")
 		return f
 	}
 	if !isGitRepo(root) {
-		f.Status, f.Detail = StatusSkip, "대상 경로가 git 저장소가 아닙니다"
+		f.Status, f.Detail = StatusSkip, i18n.T("doctor.env.git_autocrlf.skip_not_repo")
 		return f
 	}
 	val, err := gitOutput("-C", root, "config", "--get", "core.autocrlf")
 	if err != nil && !valueAbsent(err) {
 		// --get 은 값이 없으면 종료 코드 1 을 낸다. 그 외의 실패면 설정을 못 읽은 것이다.
-		f.Status, f.Detail = StatusWarn, "core.autocrlf 값을 읽을 수 없습니다"
-		f.Fix = "git config core.autocrlf input으로 직접 확인하세요"
+		f.Status, f.Detail = StatusWarn, i18n.T("doctor.env.git_autocrlf.read_fail")
+		f.Fix = i18n.T("doctor.env.git_autocrlf.read_fail_fix")
 		return f
 	}
 	if val == "" {
-		val = "설정 없음"
+		val = i18n.T("doctor.env.git_autocrlf.no_value")
 	}
 	if val == "true" {
 		if runtime.GOOS == "windows" {
@@ -157,7 +158,7 @@ func checkAutoCRLF(root string, hasGit bool) Finding {
 		} else {
 			f.Status = StatusWarn
 		}
-		f.Detail = "core.autocrlf가 true입니다. 줄바꿈이 자동 변환되어 프론트매터와 골든 비교가 틀어집니다"
+		f.Detail = i18n.T("doctor.env.git_autocrlf.true_detail")
 		f.Fix = "git config core.autocrlf input"
 		return f
 	}
@@ -179,23 +180,23 @@ func checkFSCase() Finding {
 	f := Finding{ID: "env.fs-case"}
 	dir, err := os.MkdirTemp("", "engram-doctor-case-")
 	if err != nil {
-		f.Status, f.Detail = StatusFail, "임시 디렉토리를 만들 수 없어 확인에 실패했습니다"
-		f.Fix = "TMPDIR 환경변수와 임시 디렉토리 권한을 확인하세요"
+		f.Status, f.Detail = StatusFail, i18n.T("doctor.env.fs_case.fail_mkdir")
+		f.Fix = i18n.T("doctor.env.fs_case.fail_mkdir_fix")
 		return f
 	}
 	defer os.RemoveAll(dir)
 	lower := filepath.Join(dir, "probe")
 	if err := os.WriteFile(lower, []byte("x"), 0o644); err != nil {
-		f.Status, f.Detail = StatusFail, "임시 파일을 만들 수 없어 확인에 실패했습니다"
-		f.Fix = "임시 디렉토리 쓰기 권한을 확인하세요"
+		f.Status, f.Detail = StatusFail, i18n.T("doctor.env.fs_case.fail_write")
+		f.Fix = i18n.T("doctor.env.fs_case.fail_write_fix")
 		return f
 	}
 	if _, err := os.Stat(filepath.Join(dir, "Probe")); err == nil {
-		f.Status, f.Detail = StatusWarn, "파일시스템이 대소문자를 무시합니다. 대소문자만 다른 슬러그가 서로 겹칩니다"
-		f.Fix = "슬러그에 대소문자만 다른 이름을 쓰지 마세요"
+		f.Status, f.Detail = StatusWarn, i18n.T("doctor.env.fs_case.ignore_case")
+		f.Fix = i18n.T("doctor.env.fs_case.ignore_case_fix")
 		return f
 	}
-	f.Status, f.Detail = StatusOK, "파일시스템이 대소문자를 구분합니다"
+	f.Status, f.Detail = StatusOK, i18n.T("doctor.env.fs_case.ok")
 	return f
 }
 
@@ -215,7 +216,7 @@ type consoleState struct {
 func checkConsoleEncoding() Finding {
 	f := Finding{ID: "env.console-encoding"}
 	if runtime.GOOS != "windows" {
-		f.Status, f.Detail = StatusOK, "Windows가 아니므로 콘솔은 UTF-8을 씁니다"
+		f.Status, f.Detail = StatusOK, i18n.T("doctor.env.console_encoding.ok_not_windows")
 		return f
 	}
 	return consoleFinding(probeConsole())
@@ -239,18 +240,18 @@ func consoleFinding(st consoleState) Finding {
 	f := Finding{ID: "env.console-encoding"}
 	if !st.IsConsole {
 		f.Status = StatusOK
-		f.Detail = "stdout이 콘솔이 아닙니다. UTF-8 바이트를 그대로 냅니다. 받는 쪽이 UTF-8로 해석해야 합니다"
-		f.Fix = "PowerShell 이라면 [Console]::OutputEncoding = [Text.Encoding]::UTF8를 먼저 실행하세요"
+		f.Detail = i18n.T("doctor.env.console_encoding.ok_not_console")
+		f.Fix = i18n.T("doctor.env.console_encoding.ok_not_console_fix")
 		return f
 	}
 	if st.OutputCP == 65001 {
 		f.Status = StatusOK
-		f.Detail = "출력 코드페이지를 65001 (UTF-8) 로 전환했습니다"
+		f.Detail = i18n.T("doctor.env.console_encoding.ok_switched")
 		return f
 	}
 	f.Status = StatusWarn
-	f.Detail = fmt.Sprintf("출력 코드페이지가 %d 입니다. 콘솔 인코딩 전환에 실패했습니다", st.OutputCP)
-	f.Fix = "콘솔에서 chcp 65001을 실행하세요"
+	f.Detail = i18n.T("doctor.env.console_encoding.warn", st.OutputCP)
+	f.Fix = i18n.T("doctor.env.console_encoding.warn_fix")
 	return f
 }
 
@@ -286,20 +287,20 @@ func checkWritePerm(root string) Finding {
 	f := Finding{ID: "env.write-perm"}
 	info, err := os.Stat(root)
 	if err != nil {
-		f.Status, f.Detail = StatusSkip, "대상 경로가 없습니다"
+		f.Status, f.Detail = StatusSkip, i18n.T("doctor.env.write_perm.skip_no_path")
 		return f
 	}
 	if !info.IsDir() {
-		f.Status, f.Detail = StatusSkip, "대상 경로가 디렉토리가 아닙니다"
+		f.Status, f.Detail = StatusSkip, i18n.T("doctor.env.write_perm.skip_not_dir")
 		return f
 	}
 	if err := probeWrite(root); err != nil {
 		f.Status = StatusFail
-		f.Detail = fmt.Sprintf("위키 루트에 쓸 수 없습니다: %v", err)
-		f.Fix = fmt.Sprintf("chmod u+w %s 또는 디렉토리 소유자를 확인하세요", root)
+		f.Detail = i18n.T("doctor.env.write_perm.fail", err)
+		f.Fix = i18n.T("doctor.env.write_perm.fail_fix", root)
 		return f
 	}
-	f.Status, f.Detail = StatusOK, "위키 루트에 쓸 수 있습니다"
+	f.Status, f.Detail = StatusOK, i18n.T("doctor.env.write_perm.ok")
 	return f
 }
 
@@ -308,23 +309,23 @@ func loadConfig(root string) (config.Config, bool, Finding) {
 	f := Finding{ID: "wiki.config"}
 	path := filepath.Join(root, config.ConfigFileName)
 	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
-		f.Status, f.Detail = StatusSkip, "engram.yaml이 없어 위키가 아닙니다. 환경 점검만 진행합니다"
+		f.Status, f.Detail = StatusSkip, i18n.T("doctor.wiki.config.skip")
 		return config.Config{}, false, f
 	}
 	cfg, err := config.LoadFile(path)
 	if err != nil {
 		f.Status = StatusFail
-		f.Detail = fmt.Sprintf("engram.yaml을 파싱할 수 없습니다: %v", err)
-		f.Fix = "engram.yaml의 YAML 문법을 고치세요"
+		f.Detail = i18n.T("doctor.wiki.config.fail", err)
+		f.Fix = i18n.T("doctor.wiki.config.fail_fix")
 		return config.Config{}, true, f
 	}
-	f.Status, f.Detail = StatusOK, "engram.yaml을 읽었습니다"
+	f.Status, f.Detail = StatusOK, i18n.T("doctor.wiki.config.ok")
 	return cfg, true, f
 }
 
 // skipFinding은 위키가 아닐 때의 항목을 만든다.
 func skipFinding(id string) Finding {
-	return Finding{ID: id, Status: StatusSkip, Detail: "engram.yaml이 없어 위키가 아닙니다"}
+	return Finding{ID: id, Status: StatusSkip, Detail: i18n.T("doctor.wiki.skip")}
 }
 
 // checkUnknownKeys는 설정의 알 수 없는 키를 본다. 오타를 여기서 잡는다.
@@ -335,11 +336,11 @@ func checkUnknownKeys(cfg config.Config, isWiki bool) Finding {
 	f := Finding{ID: "wiki.config-unknown-keys"}
 	if len(cfg.UnknownKeys) > 0 {
 		f.Status = StatusWarn
-		f.Detail = fmt.Sprintf("알 수 없는 키: %s", strings.Join(cfg.UnknownKeys, ", "))
-		f.Fix = "이 키들을 지우거나 맞는 이름으로 고치세요. 지원 키는 engram config list --origin에서 봅니다"
+		f.Detail = i18n.T("doctor.wiki.unknown_keys.warn", strings.Join(cfg.UnknownKeys, ", "))
+		f.Fix = i18n.T("doctor.wiki.unknown_keys.warn_fix")
 		return f
 	}
-	f.Status, f.Detail = StatusOK, "알 수 없는 키가 없습니다"
+	f.Status, f.Detail = StatusOK, i18n.T("doctor.wiki.unknown_keys.ok")
 	return f
 }
 
@@ -352,8 +353,8 @@ func checkMinWikilinks(cfg config.Config, isWiki bool) Finding {
 	f := Finding{ID: "wiki.min-wikilinks"}
 	if cfg.Thresholds.MinWikilinks == 0 {
 		f.Status = StatusWarn
-		f.Detail = "min_wikilinks가 0 이라 승급 게이트가 꺼져 있습니다"
-		f.Fix = "engram.yaml에 min_wikilinks: 2를 지정하세요"
+		f.Detail = i18n.T("doctor.wiki.min_wikilinks.warn")
+		f.Fix = i18n.T("doctor.wiki.min_wikilinks.warn_fix")
 		return f
 	}
 	f.Status, f.Detail = StatusOK, fmt.Sprintf("min_wikilinks %d", cfg.Thresholds.MinWikilinks)
@@ -374,11 +375,11 @@ func checkPageDirs(root string, cfg config.Config, isWiki bool) Finding {
 	}
 	if len(missing) > 0 {
 		f.Status = StatusFail
-		f.Detail = fmt.Sprintf("없는 디렉토리: %s", strings.Join(missing, ", "))
+		f.Detail = i18n.T("doctor.wiki.page_dirs.fail", strings.Join(missing, ", "))
 		f.Fix = fmt.Sprintf("mkdir %s", strings.Join(missing, " "))
 		return f
 	}
-	f.Status, f.Detail = StatusOK, fmt.Sprintf("page_dirs %d개가 모두 있습니다", len(cfg.PageDirs))
+	f.Status, f.Detail = StatusOK, i18n.T("doctor.wiki.page_dirs.ok", len(cfg.PageDirs))
 	return f
 }
 
@@ -396,11 +397,11 @@ func checkRootFiles(root string, cfg config.Config, isWiki bool) Finding {
 	}
 	if len(missing) > 0 {
 		f.Status = StatusFail
-		f.Detail = fmt.Sprintf("없는 루트 파일: %s", strings.Join(missing, ", "))
-		f.Fix = fmt.Sprintf("%s 파일을 위키 루트에 만드세요", strings.Join(missing, ", "))
+		f.Detail = i18n.T("doctor.wiki.root_files.fail", strings.Join(missing, ", "))
+		f.Fix = i18n.T("doctor.wiki.root_files.fail_fix", strings.Join(missing, ", "))
 		return f
 	}
-	f.Status, f.Detail = StatusOK, fmt.Sprintf("root_files %d개가 모두 있습니다", len(cfg.RootFiles))
+	f.Status, f.Detail = StatusOK, i18n.T("doctor.wiki.root_files.ok", len(cfg.RootFiles))
 	return f
 }
 
@@ -416,17 +417,17 @@ func checkBridgeRejections(root string, cfg config.Config, isWiki bool) Finding 
 	st, err := state.Load(root)
 	if err != nil {
 		f.Status = StatusWarn
-		f.Detail = fmt.Sprintf("%s을 읽을 수 없습니다: %v", state.StateFileName, err)
-		f.Fix = fmt.Sprintf("%s의 YAML 형식을 고치세요. 손으로 고치기 어려우면 파일을 지우면 기각이 전부 사라집니다", state.StateFileName)
+		f.Detail = i18n.T("doctor.wiki.bridge_rejections.read_fail", state.StateFileName, err)
+		f.Fix = i18n.T("doctor.wiki.bridge_rejections.read_fail_fix", state.StateFileName)
 		return f
 	}
 	if len(st.BridgeRejections) == 0 {
-		f.Status, f.Detail = StatusOK, "기각된 쌍이 없습니다"
+		f.Status, f.Detail = StatusOK, i18n.T("doctor.wiki.bridge_rejections.ok_none")
 		return f
 	}
 	walked, err := walk.Files(root, cfg)
 	if err != nil {
-		f.Status, f.Detail = StatusWarn, "위키를 순회할 수 없어 확인하지 못했습니다"
+		f.Status, f.Detail = StatusWarn, i18n.T("doctor.wiki.bridge_rejections.walk_fail")
 		return f
 	}
 	g := graph.Build(walked)
@@ -434,18 +435,18 @@ func checkBridgeRejections(root string, cfg config.Config, isWiki bool) Finding 
 	for _, p := range st.BridgeRejections {
 		for _, slug := range p {
 			if !g.Has(slug) {
-				dangling = append(dangling, fmt.Sprintf("%s %s (%s 없음)", p[0], p[1], slug))
+				dangling = append(dangling, i18n.T("doctor.wiki.bridge_rejections.dangling_item", p[0], p[1], slug))
 				break
 			}
 		}
 	}
 	if len(dangling) > 0 {
 		f.Status = StatusWarn
-		f.Detail = fmt.Sprintf("실재하지 않는 슬러그를 가리키는 기각 쌍 %d건: %s", len(dangling), strings.Join(dangling, ", "))
-		f.Fix = "engram bridge --unreject <A> <B>로 지우거나 engram mv로 슬러그를 맞추세요"
+		f.Detail = i18n.T("doctor.wiki.bridge_rejections.dangling", len(dangling), strings.Join(dangling, ", "))
+		f.Fix = i18n.T("doctor.wiki.bridge_rejections.dangling_fix")
 		return f
 	}
-	f.Status, f.Detail = StatusOK, fmt.Sprintf("기각 쌍 %d건이 모두 실재하는 문서를 가리킵니다", len(st.BridgeRejections))
+	f.Status, f.Detail = StatusOK, i18n.T("doctor.wiki.bridge_rejections.ok", len(st.BridgeRejections))
 	return f
 }
 
@@ -457,22 +458,22 @@ func checkEngramGitignore(root string, hasGit, isWiki bool) Finding {
 	}
 	f := Finding{ID: "wiki.engram-gitignore"}
 	if !hasGit {
-		f.Status, f.Detail = StatusSkip, "git이 없어 확인할 수 없습니다"
+		f.Status, f.Detail = StatusSkip, i18n.T("doctor.wiki.engram_gitignore.skip_no_git")
 		return f
 	}
 	if !isGitRepo(root) {
-		f.Status, f.Detail = StatusSkip, "위키가 git 저장소가 아닙니다"
+		f.Status, f.Detail = StatusSkip, i18n.T("doctor.wiki.engram_gitignore.skip_not_repo")
 		return f
 	}
 	// 캐시 안 파일 경로로 묻는다. ".engram/" 형태의 패턴은 디렉토리에만
 	// 걸리는데 .engram 이 아직 없으면 디렉토리로서 매칭되지 않기 때문이다.
 	err := exec.Command("git", "-C", root, "check-ignore", "-q", filepath.FromSlash(".engram/cache")).Run()
 	if err == nil {
-		f.Status, f.Detail = StatusOK, ".engram이 gitignore 됩니다"
+		f.Status, f.Detail = StatusOK, i18n.T("doctor.wiki.engram_gitignore.ok")
 		return f
 	}
 	f.Status = StatusWarn
-	f.Detail = ".engram 캐시 디렉토리가 gitignore 되지 않았습니다"
-	f.Fix = "위키 루트 .gitignore에 .engram/ 줄을 추가하세요"
+	f.Detail = i18n.T("doctor.wiki.engram_gitignore.warn")
+	f.Fix = i18n.T("doctor.wiki.engram_gitignore.warn_fix")
 	return f
 }

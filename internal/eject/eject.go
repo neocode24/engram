@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/neocode24/engram/internal/config"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/neocode24/engram/internal/wiki"
 )
@@ -129,46 +130,33 @@ func stageDirsSorted(dirs map[string]string) [][2]string {
 
 // excludedNote는 내보내지 않는 것과 그 이유다. 문서마다 같은 문구를
 // 쓴다. 사용자가 왜 이 규칙은 없는지 헤매지 않게 하기 위해서다.
-const excludedNote = `이 문서와 린터가 내보내지 않는 것:
-
-- wiki.broad-topic. 위키 전체의 통계로 판정하는 진단이라 문서 하나를 보는
-  훅의 자리가 아니다. engram lint 가 계속 판정한다.
-- 검색 색인, 재발견, 링크 그래프 계산, 다이제스트. 연산은 파일로 표현되지
-  않는다. engram search, recall, resurface, bridge, digest, backlinks 가
-  계속 수행한다.`
+// 문구는 카탈로그에 있다. 산출물이 내보내는 시점 언어로 굳으므로(ADR 0049).
+func excludedNote() string {
+	return i18n.T("eject.excluded_note")
+}
 
 // frontmatterSchemaDoc은 속성과 단계별 필수 필드를 규정한다.
 func frontmatterSchemaDoc(cfg config.Config) string {
 	var b strings.Builder
-	b.WriteString("# 프론트매터 스키마\n\n")
-	fmt.Fprintf(&b, "이 위키는 %s 프리셋을 쓴다. 프리셋은 속성의 시작점이고 engram.yaml 의 axes 로 개별 속성을 켜고 끌 수 있다.\n\n", cfg.Preset)
-	b.WriteString("## 켜진 속성\n\n")
+	b.WriteString(i18n.T("eject.schema_doc.heading"))
+	b.WriteString(i18n.T("eject.schema_doc.intro", cfg.Preset))
+	b.WriteString(i18n.T("eject.schema_doc.on_heading"))
 	for _, ax := range onAxes(cfg) {
 		b.WriteString("- " + ax + "\n")
 	}
 	if off := offAxes(cfg); len(off) > 0 {
-		b.WriteString("\n## 꺼진 속성\n\n꺼진 속성을 문서에 두면 위반이다.\n\n")
+		b.WriteString(i18n.T("eject.schema_doc.off_heading"))
 		for _, ax := range off {
 			b.WriteString("- " + ax + "\n")
 		}
 	}
-	b.WriteString("\n## 단계별 필수 필드\n\n")
+	b.WriteString(i18n.T("eject.schema_doc.required_heading"))
 	for _, stage := range stageOrder() {
 		fields := lint.RequiredFields(string(stage), cfg)
 		fmt.Fprintf(&b, "- %s: %s\n", stage, strings.Join(fields, ", "))
 	}
-	b.WriteString(`
-## 날짜 필드
-
-- created. 원본이 처음 기록된 날. 사람이나 인테이크가 채운다. 연월까지만
-  알면 YYYY-MM 을 허용한다.
-- sourced_at. 이 위키에 편입된 날. 도구가 채운다.
-- updated. 마지막으로 내용이 갱신된 날. 도구가 채운다. 손으로 쓰지 않는다.
-- ` + "`sources/`" + ` 계층 문서에는 updated 를 두지 않는다. 원본 보존 계층이라
-  갱신되지 않으며 신선도를 오해하게 만든다.
-
-`)
-	b.WriteString(excludedNote)
+	b.WriteString(i18n.T("eject.schema_doc.dates"))
+	b.WriteString(excludedNote())
 	b.WriteString("\n")
 	return b.String()
 }
@@ -176,9 +164,9 @@ func frontmatterSchemaDoc(cfg config.Config) string {
 // valueSetsDoc은 허용값 집합을 규정한다.
 func valueSetsDoc(cfg config.Config) string {
 	var b strings.Builder
-	b.WriteString("# 값 집합\n\n")
-	b.WriteString("닫힌 집합(집합 밖 값은 위반)과 열린 집합(집합 밖 값은 경고)을 구분한다.\n\n")
-	b.WriteString("## 닫힌 집합\n\n")
+	b.WriteString(i18n.T("eject.values_doc.heading"))
+	b.WriteString(i18n.T("eject.values_doc.intro"))
+	b.WriteString(i18n.T("eject.values_doc.closed_heading"))
 	fmt.Fprintf(&b, "- artifact_stage: %s\n", strings.Join(cfg.Schema.ArtifactStages.Values, ", "))
 	fmt.Fprintf(&b, "- status: %s\n", strings.Join(cfg.Schema.Statuses.Values, ", "))
 	fmt.Fprintf(&b, "- type: %s\n", strings.Join(cfg.Schema.Types, ", "))
@@ -192,9 +180,9 @@ func valueSetsDoc(cfg config.Config) string {
 	if cfg.Axes[config.AxisTriggerMode] {
 		fmt.Fprintf(&b, "- trigger_mode: %s\n", strings.Join(cfg.Schema.TriggerModes.Values, ", "))
 	}
-	fmt.Fprintf(&b, "\n## 열린 집합\n\n- topics: %s\n", strings.Join(cfg.Schema.Taxonomy.Topics.Values, ", "))
-	b.WriteString("\ntopics 에 정의되지 않은 값을 쓰면 경고다. 값 자체는 허용된다.\n\n")
-	b.WriteString(excludedNote)
+	fmt.Fprintf(&b, i18n.T("eject.values_doc.open_heading"), strings.Join(cfg.Schema.Taxonomy.Topics.Values, ", "))
+	b.WriteString(i18n.T("eject.values_doc.open_note"))
+	b.WriteString(excludedNote())
 	b.WriteString("\n")
 	return b.String()
 }
@@ -202,16 +190,16 @@ func valueSetsDoc(cfg config.Config) string {
 // promotionRulesDoc은 승급 게이트와 위치 규칙을 규정한다.
 func promotionRulesDoc(cfg config.Config, dirs map[string]string) string {
 	var b strings.Builder
-	b.WriteString("# 승급 게이트와 위치 규칙\n\n")
-	fmt.Fprintf(&b, "min_wikilinks 는 %d다. context 디렉토리 아래 문서의 고유 위키링크 수가 이 값에 못 미치면 게이트가 문서를 거절한다. 0이면 게이트가 꺼진다. 게이트는 선언이 아니라 문서가 놓인 디렉토리로 발동한다.\n\n", cfg.Thresholds.MinWikilinks)
-	b.WriteString("거절 사유는 gate.min-wikilinks 하나뿐이다. 게이트를 통과하려면 관련 문서에 위키링크로 연결되어 있어야 한다.\n\n")
-	b.WriteString("링크 가능한 대상은 문서 수가 충분해야 센다. 대상 문서가 min_wikilinks 보다 적으면 게이트를 유예하고 경고만 낸다. 위키가 자라면 게이트가 다시 동작한다. inbox 단계 문서는 대상에서 뺀다. promote 되면 슬러그가 바뀌어 링크가 깨지기 때문이다.\n\n")
-	b.WriteString("## 위치와 단계의 일치\n\n문서가 놓인 최상위 디렉토리와 artifact_stage 값이 일치해야 한다.\n\n")
+	b.WriteString(i18n.T("eject.promotion_doc.heading"))
+	b.WriteString(i18n.T("eject.promotion_doc.intro", cfg.Thresholds.MinWikilinks))
+	b.WriteString(i18n.T("eject.promotion_doc.sole_reason"))
+	b.WriteString(i18n.T("eject.promotion_doc.deferred"))
+	b.WriteString(i18n.T("eject.promotion_doc.location_heading"))
 	for _, pair := range stageDirsSorted(dirs) {
-		fmt.Fprintf(&b, "- %s 단계 문서는 %s/ 디렉토리에 둔다\n", pair[0], pair[1])
+		fmt.Fprintf(&b, i18n.T("eject.promotion_doc.location_row"), pair[0], pair[1])
 	}
-	b.WriteString("\ncontext 를 선언했는데 context 디렉토리 밖에 있으면 오류이다. 검수된 지식의 필드 집합을 갖추고 색인 자격을 주장하며 파이프라인을 우회하기 때문이다. 그 밖의 불일치는 경고다.\n\n")
-	b.WriteString(excludedNote)
+	b.WriteString(i18n.T("eject.promotion_doc.context_note"))
+	b.WriteString(excludedNote())
 	b.WriteString("\n")
 	return b.String()
 }
@@ -219,16 +207,16 @@ func promotionRulesDoc(cfg config.Config, dirs map[string]string) string {
 // lintRulesDoc은 규칙 목록 전체를 규정한다. 목록은 lint.Rules 에서 온다.
 func lintRulesDoc(cfg config.Config) string {
 	var b strings.Builder
-	b.WriteString("# lint 규칙\n\n규칙 ID 는 점 표기 소문자다. 등급의 의미는 아래와 같다.\n\n")
-	b.WriteString("- error: 승급을 막는다\n- warn: 통과시키되 알린다\n- reject: 승급 게이트 거절\n\n")
-	b.WriteString("## 규칙 목록\n\n")
-	b.WriteString("| 규칙 ID | 등급 | 판정 |\n|---|---|---|\n")
+	b.WriteString(i18n.T("eject.lint_rules_doc.heading"))
+	b.WriteString(i18n.T("eject.lint_rules_doc.severities"))
+	b.WriteString(i18n.T("eject.lint_rules_doc.table_heading"))
+	b.WriteString(i18n.T("eject.lint_rules_doc.table_header"))
 	for _, r := range lint.Rules() {
 		fmt.Fprintf(&b, "| %s | %s | %s |\n", r.ID, r.Severity, r.Desc)
 	}
-	b.WriteString("\n## scripts/lint-frontmatter.py 가 판정하는 규칙\n\n")
-	b.WriteString("문서 단위 규칙과 링크 무결성, 고아 판정, 승급 게이트를 판정한다. 위 표에서 wiki.broad-topic 만 빠진다. 위키 전체의 통계로 판정하는 진단이라 문서 하나를 보는 훅의 자리가 아니다.\n\n")
-	b.WriteString(excludedNote)
+	b.WriteString(i18n.T("eject.lint_rules_doc.script_heading"))
+	b.WriteString(i18n.T("eject.lint_rules_doc.script_note"))
+	b.WriteString(excludedNote())
 	b.WriteString("\n")
 	return b.String()
 }
@@ -236,16 +224,16 @@ func lintRulesDoc(cfg config.Config) string {
 // wikiLayoutDoc은 디렉토리 구조를 규정한다.
 func wikiLayoutDoc(cfg config.Config, dirs map[string]string) string {
 	var b strings.Builder
-	b.WriteString("# 위키 배치\n\n")
-	b.WriteString("## 단계 디렉토리\n\n")
+	b.WriteString(i18n.T("eject.layout_doc.heading"))
+	b.WriteString(i18n.T("eject.layout_doc.stage_heading"))
 	for _, pair := range stageDirsSorted(dirs) {
-		fmt.Fprintf(&b, "- %s/ (%s 단계)\n", pair[1], pair[0])
+		fmt.Fprintf(&b, i18n.T("eject.layout_doc.stage_row"), pair[1], pair[0])
 	}
-	fmt.Fprintf(&b, "\n## 루트 파일\n\nroot_files 로 정의한다: %s\n", strings.Join(cfg.RootFiles, ", "))
-	b.WriteString("\n루트 파일은 색인이다. 승급 게이트와 고아 판정에서 빠지고 스키마 검사는 그대로 받는다.\n\n")
-	fmt.Fprintf(&b, "## 문서가 아닌 파일\n\nignore_files 로 정의한다: %s\n", strings.Join(cfg.IgnoreFiles, ", "))
-	b.WriteString("\n같은 파일명이면 깊이와 무관하게 문서에서 뺀다. 디렉토리를 설명하는 README 같은 파일이 해당한다.\n\n")
-	b.WriteString(excludedNote)
+	fmt.Fprintf(&b, i18n.T("eject.layout_doc.root_files"), strings.Join(cfg.RootFiles, ", "))
+	b.WriteString(i18n.T("eject.layout_doc.root_note"))
+	fmt.Fprintf(&b, i18n.T("eject.layout_doc.ignore_files"), strings.Join(cfg.IgnoreFiles, ", "))
+	b.WriteString(i18n.T("eject.layout_doc.ignore_note"))
+	b.WriteString(excludedNote())
 	b.WriteString("\n")
 	return b.String()
 }
