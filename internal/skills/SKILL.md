@@ -116,11 +116,18 @@ sources/ 원본과 색인은 세므로 이을 곳이 없어 보여도 대개 있
 sources 문서의 본문을 이것으로 고치지 마라.
 
 **갈아 끼우기 전에 원문 보존을 먼저 판단한다.** inbox 는 임시 계층이라
-승급하면 이동해 사라진다. 원문을 오래 둘 값어치가 있으면 아래
-"sources 는 네 자리가 아니다" 절을 따라 source 를 먼저 제안한다.
-사람이 원본을 확정한 뒤에 정리본으로 갈아 끼운다. 정리본을 별도
-문서로 한 번 더 capture 하지 마라. 원문과 정리본이 둘 다 inbox 에
-남아 적체된다.
+승급하면 이동해 사라진다. 원문을 오래 둘 값어치가 있으면 갈아 끼우기
+전에 아래를 사람에게 제안한다.
+
+    engram promote <inbox 문서 경로> --to sources \
+        --created <원본이 쓰인 날> --ref <출처> --wiki <위키 경로>
+
+이것도 이동이라 inbox 원본이 사라지지만 sources 에 증거로 남는다.
+그 뒤 그 sources 문서를 promote 하면 파생이 만들어지고 원본은 남는다.
+--created 와 --ref 는 사실이어야 하며 그 확인은 사람이 한다.
+
+정리본을 별도 문서로 한 번 더 capture 하지 마라. 원문과 정리본이 둘 다
+inbox 에 남아 적체된다.
 
 **3. --dry-run 으로 스스로 검증한다.** --type, --slug, --related 를 다
 채우고 --dry-run 을 붙여 돌린다.
@@ -195,7 +202,7 @@ lint의 위반 목록도 규칙 ID와 함께 나오므로 같이 읽는다.
 ## 커맨드 갈래
 
 - 넣기: capture(네가 쓴다. inbox 까지), source(사람이 쓴다. 원본 보존)
-- 올리기: promote(승인받고 네가 실행), demote(제안만 한다)
+- 올리기: promote(승인받고 네가 실행. --to sources 로 증거 보존), demote(제안만 한다)
 - 조회: search(이을 곳을 찾는다), status
 - 재발견: resurface, digest
 - 관리: init, update(inbox 문서 본문 정리에 쓴다)

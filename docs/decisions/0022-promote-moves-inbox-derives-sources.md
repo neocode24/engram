@@ -2,7 +2,7 @@
 number: 0022
 title: promote는 inbox를 옮기고 sources에서는 파생을 만든다
 date: 2026-08-15
-status: accepted
+status: amended
 ---
 
 # promote의 두 가지 동작

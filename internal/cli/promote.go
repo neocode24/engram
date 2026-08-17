@@ -56,6 +56,22 @@ func newPromoteCmd() *cobra.Command {
 				return errors.New(i18n.T("cli.promote.unknown_stage", srcPath, stage))
 			}
 
+			// --to 는 승급 대상 단계를 고른다. upstream inbox/README.md 가
+			// inbox 의 탈출 경로를 셋으로 정했고 그중 하나가 sources 다.
+			// "move evidence to sources/ if it should be traceable" (ADR 0058).
+			toStage, err := stringFlag(cmd, flagTo)
+			if err != nil {
+				return err
+			}
+			switch toStage {
+			case "", stageNameContext:
+			case stageNameSources:
+				return promoteToSources(cmd, root, cfg, srcPath, d, stage)
+			default:
+				return errors.New(i18n.T("cli.promote.to_invalid", toStage,
+					stageNameContext+", "+stageNameSources))
+			}
+
 			slugFlag, err := stringFlag(cmd, flagSlug)
 			if err != nil {
 				return err
@@ -179,8 +195,133 @@ func newPromoteCmd() *cobra.Command {
 	cmd.Flags().StringArray(flagRelated, nil, i18n.T("cli.promote.flag_related"))
 	cmd.Flags().String(flagType, "", i18n.T("cli.promote.flag_type"))
 	cmd.Flags().Bool(flagDryRun, false, i18n.T("cli.promote.flag_dry_run"))
+	cmd.Flags().String(flagTo, "", i18n.T("cli.promote.flag_to"))
+	cmd.Flags().String(flagCreated, "", i18n.T("cli.source.flag_created"))
+	cmd.Flags().String(flagChannel, "", i18n.T("cli.source.flag_channel"))
+	cmd.Flags().StringArray(flagRef, nil, i18n.T("cli.source.flag_ref"))
 	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
+}
+
+// promoteToSources는 inbox 문서를 sources 로 옮긴다. 증거로 남길 값어치가
+// 있는 원본의 자리다. context 로 올릴 때와 달리 게이트를 적용하지 않는다.
+// 게이트는 지식 노드가 고립된 채 context 로 올라가는 것을 막는 장치이고
+// sources 는 지식이 아니라 증거이기 때문이다(ADR 0058).
+//
+// 본문은 그대로 둔다. sources 는 이후 본문을 고치지 않는 것이 계약이다.
+func promoteToSources(cmd *cobra.Command, root string, cfg config.Config,
+	srcPath string, d doc.Doc, stage string) error {
+	if stage != "inbox" {
+		return errors.New(i18n.T("cli.promote.to_sources_from", srcPath, stage))
+	}
+	slugFlag, err := stringFlag(cmd, flagSlug)
+	if err != nil {
+		return err
+	}
+	slug := slugFlag
+	if slug == "" {
+		slug = stripDatePrefix(filepath.Base(srcPath))
+	} else if err := wiki.ValidateSlug(slug); err != nil {
+		return err
+	}
+
+	// created 는 원본이 쓰인 날이다. 플래그가 없으면 문서가 이미 갖고
+	// 있는 값을 쓴다. capture 가 넣은 날짜라 입수일에 가깝지만 지어내는
+	// 것보다는 낫다. 값을 확정하는 것은 사람의 일이다(ADR 0052).
+	created, err := stringFlag(cmd, flagCreated)
+	if err != nil {
+		return err
+	}
+	if created == "" {
+		created = fieldString(d, "created")
+	}
+	if created == "" {
+		created = Now(cmd).Format("2006-01-02")
+	} else if !validDatePrecision(created) {
+		return errors.New(i18n.T("cli.source.created_invalid", created))
+	}
+
+	// 기본값이 source 커맨드와 다르다. 그쪽은 붙여 넣는 내용이 정제본인
+	// 경우가 흔해 source-summary 다(ADR 0051). 이쪽은 upstream 이
+	// "move evidence" 라 부르는 자리이고 증거는 원문이다.
+	docType, err := stringFlag(cmd, flagType)
+	if err != nil {
+		return err
+	}
+	if docType == "" {
+		docType = evidenceSourceType
+	}
+	if !containsString(cfg.Schema.Types, docType) {
+		return errors.New(i18n.T("cli.ingest.type_invalid",
+			docType, strings.Join(cfg.Schema.Types, ", ")))
+	}
+
+	fm := wiki.Frontmatter(wiki.StageSource, cfg)
+	fm["type"] = docType
+	fm["created"] = created
+	fm["sourced_at"] = Now(cmd).Format("2006-01-02")
+	// capture 가 채워 둔 채널을 살린다. --channel 이 있으면 덮는다.
+	if ch := fieldString(d, "source_channel"); ch != "" {
+		fm["source_channel"] = ch
+	}
+	if err := applyChannel(cmd, cfg, fm); err != nil {
+		return err
+	}
+	if err := applyRefs(cmd, cfg, fm); err != nil {
+		return err
+	}
+
+	destRel, err := wiki.FilePath(cfg, wiki.StageSource, created, slug)
+	if err != nil {
+		return err
+	}
+	destPath := filepath.Join(root, filepath.FromSlash(destRel))
+	if _, err := os.Stat(destPath); err == nil {
+		return errors.New(i18n.T("cli.ingest.dest_exists", destPath))
+	}
+
+	dryRun, err := boolFlag(cmd, flagDryRun)
+	if err != nil {
+		return err
+	}
+	res := writeOutcome{Path: destPath, Slug: slug, Stage: string(wiki.StageSource)}
+	if dryRun {
+		if jsonOutput(cmd) {
+			enc := json.NewEncoder(cmd.OutOrStdout())
+			enc.SetIndent("", "  ")
+			return enc.Encode(sourcesOutcome{writeOutcome: res, Type: docType, DryRun: true})
+		}
+		fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.to_sources_plan", srcPath, destPath))
+		fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.type_line", docType))
+		fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.ingest.dry_run_note"))
+		return nil
+	}
+
+	if _, err := wiki.Create(root, cfg, wiki.StageSource, created, slug, fm, d.Body); err != nil {
+		return err
+	}
+	if err := os.Remove(srcPath); err != nil {
+		return fmt.Errorf("%s: %w", i18n.T("cli.promote.inbox_remove_fail", srcPath), err)
+	}
+	if jsonOutput(cmd) {
+		enc := json.NewEncoder(cmd.OutOrStdout())
+		enc.SetIndent("", "  ")
+		return enc.Encode(sourcesOutcome{writeOutcome: res, Type: docType})
+	}
+	fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.to_sources_done", destPath))
+	fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.type_line", docType))
+	fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.to_sources_next"))
+	return nil
+}
+
+// evidenceSourceType은 --to sources 의 type 기본값이다.
+const evidenceSourceType = "source-raw"
+
+// sourcesOutcome은 --to sources 의 결과다.
+type sourcesOutcome struct {
+	writeOutcome
+	Type   string `json:"type"`
+	DryRun bool   `json:"dryRun,omitempty"`
 }
 
 // promoteOutcome은 promote의 결과다. 공통 결과에 문서 종류를 더 낸다.

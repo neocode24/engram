@@ -182,7 +182,7 @@ lint 규칙 16종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 **코드로 강제하는 것.** 셋 중 하나뿐이다. `promote`가 `inbox`에서 `context`로 옮긴다([ADR 0022](decisions/0022-promote-moves-inbox-derives-sources.md)). 삭제는 사용자가 파일을 지우면 되고 커맨드가 없어도 성립한다.
 
-**미반영.** **`move evidence to sources/`에 해당하는 커맨드가 없다.** `source`는 표준 입력으로 새 문서를 만들 뿐 `inbox` 문서를 옮기지 않고, `demote`는 `context`에서만 내려간다. 그래서 `capture`로 `inbox`에 들어온 원본은 `sources`로 갈 길이 없다. 실제 에이전트가 이 자리에서 `engram source ... < inbox파일`이라는 잘못된 우회를 두 번 만들어 냈다. 프론트매터가 본문에 박히고 `inbox` 원본이 남아 같은 내용이 두 곳에 생긴다.
+**셋이 다 열려 있다.** `promote`가 `context`로 올리고, `promote --to sources`가 증거를 옮기며([ADR 0058](decisions/0058-promote-to-sources-moves-evidence.md)), 삭제는 파일을 지우면 된다. 가운데 길은 이 README를 읽고 나서야 만들어졌다. 그전에는 실제 에이전트가 `engram source ... < inbox파일`이라는 잘못된 우회를 두 번 지어냈다. 프론트매터가 본문에 박히고 `inbox` 원본이 남아 같은 내용이 두 곳에 생겼다.
 
 **차이.** upstream은 채널별 하위 디렉토리를 두고 engram은 `source_channel` 속성 값으로만 남긴다. 4.6절에 이미 적은 차이다.
 
@@ -239,7 +239,7 @@ lint 규칙 16종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 | 규칙 | 출처 | 상태 |
 |---|---|---|
-| `inbox`에서 `sources`로 증거를 옮긴다 | `inbox/README.md` | 커맨드 없음 |
+| `inbox`에서 `sources`로 증거를 옮긴다 | `inbox/README.md` | **반영됨.** `promote --to sources` (ADR 0058) |
 | `context`는 source-backed여야 한다 | `context/README.md`, `promotion-rules.md` | `source_refs`의 값이 비어도 통과 |
 | 문서 형태 규약(한 줄 판단 + 네 절) | `context/README.md`, `promotion-rules.md` | 강제하지 않음. 의도된 선택 |
 

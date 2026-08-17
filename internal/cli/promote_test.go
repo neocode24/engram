@@ -613,3 +613,87 @@ func TestPromoteDryRun(t *testing.T) {
 		}
 	})
 }
+
+// TestPromoteToSources는 inbox 문서를 sources 로 옮기는 경로를 본다.
+// upstream inbox/README.md 가 정한 탈출 경로 셋 중 하나이며 engram 에
+// 없던 길이다(ADR 0058).
+func TestPromoteToSources(t *testing.T) {
+	t.Run("inbox 문서를 옮기고 원본은 남지 않습니다", func(t *testing.T) {
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+
+		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel, "--to", "sources",
+			"--created", "2026-03-04", "--ref", "회의 전사", "--channel", "teams")
+		if err != nil {
+			t.Fatalf("옮겨야 함: %v\n%s", err, out)
+		}
+		if _, err := os.Stat(filepath.Join(dir, rel)); err == nil {
+			t.Error("inbox 원본이 남았습니다")
+		}
+		got := readWikiFile(t, filepath.Join(dir, "sources"), "2026-03-04-memo.md")
+		for _, want := range []string{
+			"artifact_stage: source",
+			"type: source-raw", // 증거는 원문이므로 source 커맨드와 기본값이 다르다
+			"created: 2026-03-04",
+			"source_channel: teams",
+			"- 회의 전사",
+		} {
+			if !strings.Contains(got, want) {
+				t.Errorf("프론트매터에 %q 없음:\n%s", want, got)
+			}
+		}
+	})
+
+	t.Run("게이트를 적용하지 않습니다", func(t *testing.T) {
+		// sources 는 지식이 아니라 증거다. 링크가 하나도 없어도 들어간다.
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+		addContextDocs(t, dir)
+
+		if _, err := runPromoteRoot(t, "promote", "--wiki", dir, rel, "--to", "sources"); err != nil {
+			t.Fatalf("링크가 없어도 옮겨야 함: %v", err)
+		}
+	})
+
+	t.Run("--dry-run은 아무것도 쓰지 않습니다", func(t *testing.T) {
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+
+		out, err := runPromoteRoot(t, "promote", "--wiki", dir, rel, "--to", "sources", "--dry-run")
+		if err != nil {
+			t.Fatalf("통과해야 함: %v\n%s", err, out)
+		}
+		if !strings.Contains(out, "아무것도 쓰지 않았습니다") {
+			t.Errorf("시험 실행 안내가 없음:\n%s", out)
+		}
+		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
+			t.Error("시험 실행인데 inbox 원본을 지웠습니다")
+		}
+	})
+
+	t.Run("sources 문서는 sources 로 못 옮깁니다", func(t *testing.T) {
+		dir := initWiki(t)
+		if _, err := runPromoteRoot(t, "source", "--wiki", dir,
+			"--now", "2026-01-01T00:00:00Z", "--slug", "orig", "원본"); err != nil {
+			t.Fatalf("source 실패: %v", err)
+		}
+		_, err := runPromoteRoot(t, "promote", "--wiki", dir,
+			"sources/2026-01-01-orig.md", "--to", "sources")
+		if err == nil {
+			t.Fatal("inbox 문서만 옮길 수 있어야 함")
+		}
+		if !strings.Contains(err.Error(), "inbox") {
+			t.Errorf("어느 단계만 되는지 알려야 함: %v", err)
+		}
+	})
+
+	t.Run("--to 허용값 밖은 거절합니다", func(t *testing.T) {
+		dir := initWiki(t)
+		rel := captureMemo(t, dir)
+
+		_, err := runPromoteRoot(t, "promote", "--wiki", dir, rel, "--to", "archive")
+		if err == nil {
+			t.Fatal("허용값 밖은 거절해야 함")
+		}
+	})
+}

@@ -18,6 +18,12 @@ import (
 // flagRelated는 promote와 new가 함께 쓰는 링크 추가 플래그 이름이다.
 const flagRelated = "related"
 
+// 단계 이름이다. --to 값과 출력에 함께 쓴다.
+const (
+	stageNameContext = "context"
+	stageNameSources = "sources"
+)
+
 // splitRelated는 --related 값을 쉼표로 나눈다. update 의 --set 이 배열
 // 속성을 쉼표로 받으므로 --related 도 그럴 것으로 보고 쓰는 일이 실제로
 // 있었다. 나누지 않으면 "a,b" 한 덩어리가 슬러그가 되어 본문에

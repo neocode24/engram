@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// flagTo는 demote의 도착 단계 플래그 이름이다.
+// flagTo는 demote의 도착 단계이자 promote의 승급 대상 단계 플래그 이름이다.
 const flagTo = "to"
 
 // newDemoteCmd는 잘못 올린 문서를 되돌리는 demote 커맨드를 반환한다.

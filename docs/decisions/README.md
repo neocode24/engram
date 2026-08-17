@@ -36,7 +36,7 @@
 | [0019](0019-index-documents-outside-the-gate.md) | 색인 문서를 승급 게이트와 고아 판정 대상에서 제외한다 | 2026-08-15 | accepted |
 | [0020](0020-slug-and-filename-rules.md) | 슬러그와 파일명 규칙을 upstream 실물에서 확정한다 | 2026-08-15 | amended |
 | [0021](0021-gate-deferral-when-targets-are-scarce.md) | 링크 대상이 부족하면 승급 게이트를 유예한다 | 2026-08-15 | amended |
-| [0022](0022-promote-moves-inbox-derives-sources.md) | promote는 inbox를 옮기고 sources에서는 파생을 만든다 | 2026-08-15 | accepted |
+| [0022](0022-promote-moves-inbox-derives-sources.md) | promote는 inbox를 옮기고 sources에서는 파생을 만든다 | 2026-08-15 | amended |
 | [0023](0023-gate-targets-exclude-inbox.md) | 게이트의 링크 대상 집계에서 inbox 문서를 제외한다 | 2026-08-15 | accepted |
 | [0024](0024-public-boundary-and-private-directory.md) | 공개 경계를 gitignore된 private 디렉토리로 긋고 이력을 익명화한다 | 2026-08-15 | amended |
 | [0025](0025-index-storage-and-staleness.md) | 인덱스를 JSON으로 저장하고 조회는 인덱스를 갱신하지 않는다 | 2026-08-15 | accepted |
@@ -72,6 +72,7 @@
 | [0055](0055-agents-change-the-wiki-only-through-commands.md) | 에이전트는 커맨드로만 위키를 바꾼다 | 2026-08-17 | accepted |
 | [0056](0056-promote-has-a-dry-run.md) | promote에 --dry-run을 둔다 | 2026-08-17 | accepted |
 | [0057](0057-approval-attaches-to-content-not-to-the-command.md) | 승인은 커맨드가 아니라 문서 내용에 붙는다 | 2026-08-17 | accepted |
+| [0058](0058-promote-to-sources-moves-evidence.md) | promote --to sources가 inbox의 증거를 옮긴다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 
@@ -107,6 +108,7 @@
 | 0041 | 스킬 문서가 반드시 담는 것은 다섯이다 | [0052](0052-agent-prepares-the-promotion-and-the-human-decides-it.md) 승급 준비 지시 셋을 더해 여덟이 된다 |
 | 0041 | 쓰기 경계는 단계로 말한다 | [0055](0055-agents-change-the-wiki-only-through-commands.md) 도구로도 말한다. 파일 직접 편집을 금지한다 |
 | 0052 | promote는 제안만 하고 사람이 실행한다 | [0057](0057-approval-attaches-to-content-not-to-the-command.md) 승인을 받은 뒤 에이전트가 실행한다. 스킬 경로에 한한다 |
+| 0022 | promote는 inbox를 옮기고 sources에서 파생한다 | [0058](0058-promote-to-sources-moves-evidence.md) --to sources로 inbox에서 sources로 옮기는 길을 더한다 |
 | 0009 | 게이트는 문서의 고유 위키링크 수를 센다 | [0054](0054-gate-counts-only-links-that-resolve.md) 대상이 실재하는 링크만 센다 |
 
 ## 근거만 갱신된 경우
