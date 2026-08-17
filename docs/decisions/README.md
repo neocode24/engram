@@ -66,11 +66,12 @@
 | [0049](0049-cli-output-language.md) | 출력 언어는 사용자 환경이 정하고 카탈로그는 바이너리에 묶는다 | 2026-08-17 | accepted |
 | [0050](0050-slugs-must-be-wikilink-safe.md) | 슬러그는 파일시스템뿐 아니라 위키링크 문법에도 안전해야 한다 | 2026-08-17 | accepted |
 | [0051](0051-sources-holds-originals-and-refined-summaries.md) | sources는 원본과 정제본을 함께 담고 type이 그 둘을 가른다 | 2026-08-17 | accepted |
-| [0052](0052-agent-prepares-the-promotion-and-the-human-decides-it.md) | 에이전트가 승급을 준비하고 사람은 승급을 결정한다 | 2026-08-17 | accepted |
+| [0052](0052-agent-prepares-the-promotion-and-the-human-decides-it.md) | 에이전트가 승급을 준비하고 사람은 승급을 결정한다 | 2026-08-17 | amended |
 | [0053](0053-wiki-path-accepts-both-positional-and-flag.md) | 위키 경로는 네 커맨드에서도 --wiki로 받는다 | 2026-08-17 | accepted |
 | [0054](0054-gate-counts-only-links-that-resolve.md) | 승급 게이트는 실제로 이어지는 링크만 센다 | 2026-08-17 | accepted |
 | [0055](0055-agents-change-the-wiki-only-through-commands.md) | 에이전트는 커맨드로만 위키를 바꾼다 | 2026-08-17 | accepted |
 | [0056](0056-promote-has-a-dry-run.md) | promote에 --dry-run을 둔다 | 2026-08-17 | accepted |
+| [0057](0057-approval-attaches-to-content-not-to-the-command.md) | 승인은 커맨드가 아니라 문서 내용에 붙는다 | 2026-08-17 | accepted |
 
 ## 공개 범위 밖
 
@@ -105,6 +106,7 @@
 | 0009 | 문서 종류 기본값은 열이다 | [0051](0051-sources-holds-originals-and-refined-summaries.md) `source-raw`를 더해 열하나가 된다 |
 | 0041 | 스킬 문서가 반드시 담는 것은 다섯이다 | [0052](0052-agent-prepares-the-promotion-and-the-human-decides-it.md) 승급 준비 지시 셋을 더해 여덟이 된다 |
 | 0041 | 쓰기 경계는 단계로 말한다 | [0055](0055-agents-change-the-wiki-only-through-commands.md) 도구로도 말한다. 파일 직접 편집을 금지한다 |
+| 0052 | promote는 제안만 하고 사람이 실행한다 | [0057](0057-approval-attaches-to-content-not-to-the-command.md) 승인을 받은 뒤 에이전트가 실행한다. 스킬 경로에 한한다 |
 | 0009 | 게이트는 문서의 고유 위키링크 수를 센다 | [0054](0054-gate-counts-only-links-that-resolve.md) 대상이 실재하는 링크만 센다 |
 
 ## 근거만 갱신된 경우

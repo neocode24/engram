@@ -24,17 +24,20 @@ func TestDoc(t *testing.T) {
 		}
 	})
 
-	// 문서가 반드시 담는 다섯. 이 테스트가 경계 문구가 지워지는 것을
-	// 막는 유일한 장치다(ADR 0041).
-	t.Run("문서는 경계 다섯 항목을 담는다", func(t *testing.T) {
+	// 문서가 반드시 담는 경계 문구다. 이 테스트가 그것이 지워지는 것을
+	// 막는 유일한 장치다(ADR 0041, 0055, 0057).
+	t.Run("문서는 경계 문구를 담는다", func(t *testing.T) {
 		doc := Doc()
 		for _, want := range []string{
 			"engram은 LLM을 부르지 않는다", // 호출 방향
-			"inbox까지",              // 쓰기 경계
+			"inbox까지",              // 혼자 판단해 쓰는 범위
 			"확정은 사람이 한다",           // 승급 확정 주체
-			"--json",               // 조회의 주 경로
-			"--now",                // 기준 시각
-			"rules show",           // 규칙의 진실원
+			"승인 없이 실행하지 마라",        // 승인 뒤에야 promote 한다
+			"파일을 직접 만들거나 고치지 마라",   // 커맨드로만 바꾼다
+			"--dry-run",  // 스스로 검증
+			"--json",     // 조회의 주 경로
+			"--now",      // 기준 시각
+			"rules show", // 규칙의 진실원
 		} {
 			if !strings.Contains(doc, want) {
 				t.Errorf("문서에 %q 없음. 경계 문구가 지워졌다", want)

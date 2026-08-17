@@ -2,7 +2,7 @@
 number: 0052
 title: 에이전트가 승급을 준비하고 사람은 승급을 결정한다
 date: 2026-08-17
-status: accepted
+status: amended
 ---
 
 # 에이전트의 일은 capture에서 끝나지 않는다
