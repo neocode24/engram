@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
 	"github.com/spf13/cobra"
@@ -23,19 +25,9 @@ const flagTo = "to"
 func newDemoteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "demote <경로>",
-		Short: "context 문서를 inbox나 sources로 되돌립니다",
-		Long: `context 단계 문서를 inbox 또는 sources로 내립니다.
-
-도착 단계의 기본값은 inbox입니다. inbox가 임시 계층이라 되돌리기의
-도착지로 안전합니다.
-
-문서를 내리면 파일명에 날짜 접두사가 붙어 슬러그가 바뀝니다. 그 문서를
-가리키던 위키링크는 전부 깨지므로 실행 전에 목록을 경고로 냅니다.
-되돌리기를 막지는 않습니다. 깨진 링크는 engram mv로 고치세요.
-
-파생 문서라면 원본 sources 문서의 derived_context도 어긋납니다.
-원본 되돌리기는 이 커맨드의 범위가 아니므로 경고로만 알립니다.`,
-		Args: cobra.ExactArgs(1),
+		Short: i18n.T("cli.demote.short"),
+		Long:  i18n.T("cli.demote.long"),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
 			if err != nil {
@@ -47,14 +39,14 @@ func newDemoteCmd() *cobra.Command {
 			}
 			raw, err := os.ReadFile(srcPath)
 			if err != nil {
-				return fmt.Errorf("문서를 읽을 수 없음: %s: %w", srcPath, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.doc_read_fail", srcPath), err)
 			}
 			d, err := doc.Parse(args[0], raw)
 			if err != nil {
-				return fmt.Errorf("문서를 파싱할 수 없음: %s: %w", srcPath, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.doc_parse_fail", srcPath), err)
 			}
 			if stage := fieldString(d, "artifact_stage"); stage != "context" {
-				return fmt.Errorf("context 단계 문서만 되돌립니다: %s의 artifact_stage 값이 %q입니다", srcPath, stage)
+				return errors.New(i18n.T("cli.demote.not_context", srcPath, stage))
 			}
 
 			toFlag, err := stringFlag(cmd, flagTo)
@@ -70,12 +62,12 @@ func newDemoteCmd() *cobra.Command {
 			case "sources":
 				stage = wiki.StageSource
 			default:
-				return fmt.Errorf("--to 값이 허용값 밖입니다: %q (허용값: inbox, sources)", toFlag)
+				return errors.New(i18n.T("cli.demote.to_invalid", toFlag))
 			}
 
 			rel, err := filepath.Rel(root, srcPath)
 			if err != nil {
-				return fmt.Errorf("위키 루트 기준 경로를 계산할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.rel_fail"), err)
 			}
 			rel = filepath.ToSlash(rel)
 			slug := stripDatePrefix(filepath.Base(srcPath))
@@ -91,16 +83,16 @@ func newDemoteCmd() *cobra.Command {
 			// 깨질 링크를 먼저 본다. 순회해서 최소로만 센다.
 			walked, err := walk.Files(root, cfg)
 			if err != nil {
-				return fmt.Errorf("위키를 순회할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.walk_fail"), err)
 			}
 			broken := brokenLinks(walked, slug, rel)
 			for _, b := range broken {
-				fmt.Fprintf(cmd.ErrOrStderr(), "경고: 깨질 위키링크: %s %d줄이 [[%s]]를 가리킵니다. engram mv로 링크를 고치세요\n",
-					b.Path, b.Line, slug)
+				fmt.Fprintln(cmd.ErrOrStderr(), i18n.T("cli.demote.warn_broken_link",
+					b.Path, b.Line, slug))
 			}
 			derived := listFieldValues(d, "derived_from")
 			for _, src := range derived {
-				fmt.Fprintf(cmd.ErrOrStderr(), "경고: 이 문서는 원본 %s에서 파생되었습니다. 원본의 derived_context 갱신은 이 커맨드가 하지 않습니다. engram update로 직접 고치세요\n", src)
+				fmt.Fprintln(cmd.ErrOrStderr(), i18n.T("cli.demote.warn_derived", src))
 			}
 
 			destRel, err := wiki.FilePath(cfg, stage, date, slug)
@@ -109,7 +101,7 @@ func newDemoteCmd() *cobra.Command {
 			}
 			destPath := filepath.Join(root, filepath.FromSlash(destRel))
 			if _, err := os.Stat(destPath); err == nil {
-				return fmt.Errorf("도착지에 이미 문서가 있습니다: %s\n기존 문서를 덮어쓰지 않습니다. 슬러그를 다르게 지정하세요", destPath)
+				return errors.New(i18n.T("cli.ingest.dest_exists", destPath))
 			}
 
 			fields := demoteFields(d.Fields, stage, cfg)
@@ -117,7 +109,7 @@ func newDemoteCmd() *cobra.Command {
 				return err
 			}
 			if err := os.Remove(srcPath); err != nil {
-				return fmt.Errorf("context 원본을 지울 수 없음: %s: %w", srcPath, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.demote.remove_fail", srcPath), err)
 			}
 
 			res := demoteOutcome{
@@ -137,8 +129,8 @@ func newDemoteCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().String(flagTo, "inbox", "도착 단계. 허용값: inbox, sources")
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().String(flagTo, "inbox", i18n.T("cli.demote.flag_to"))
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
 }
 
@@ -211,13 +203,13 @@ func listFieldValues(d doc.Doc, key string) []string {
 
 // printDemoted은 내린 경로와 다음에 할 수 있는 일을 낸다.
 func printDemoted(w io.Writer, res demoteOutcome) {
-	fmt.Fprintf(w, "%s로 내렸습니다: %s\n", res.Stage, res.Path)
-	fmt.Fprintf(w, "날짜 접두사: %s, 슬러그: %s\n", res.Date, res.Slug)
+	fmt.Fprintln(w, i18n.T("cli.demote.done", res.Stage, res.Path))
+	fmt.Fprintln(w, i18n.T("cli.demote.meta", res.Date, res.Slug))
 	if len(res.BrokenLinks) > 0 {
-		fmt.Fprintf(w, "깨질 링크 %d건. engram mv로 고치세요\n", len(res.BrokenLinks))
+		fmt.Fprintln(w, i18n.T("cli.demote.broken_count", len(res.BrokenLinks)))
 	}
 	if len(res.DerivedFrom) > 0 {
-		fmt.Fprintf(w, "파생 원본 %d건의 derived_context가 어긋났습니다\n", len(res.DerivedFrom))
+		fmt.Fprintln(w, i18n.T("cli.demote.derived_count", len(res.DerivedFrom)))
 	}
-	fmt.Fprintf(w, "다음: 정리가 끝나면 engram promote로 다시 올리세요\n")
+	fmt.Fprintln(w, i18n.T("cli.demote.next"))
 }

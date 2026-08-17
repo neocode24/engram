@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/neocode24/engram/internal/doc"
 	"github.com/neocode24/engram/internal/graph"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/state"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
@@ -25,21 +27,9 @@ const flagDryRun = "dry-run"
 func newMvCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "mv <옛슬러그> <새슬러그>",
-		Short: "문서 슬러그를 바꾸고 걸린 링크를 모두 고칩니다",
-		Long: `문서의 슬러그를 바꾸고 그 문서를 가리키는 모든 링크를 고칩니다.
-
-본문 위키링크의 표시 문자열과 헤딩은 보존하고 슬러그만 바꿉니다.
-related, derived_from, derived_context, source_refs 필드도 같이 고칩니다.
-코드 펜스와 인라인 코드 안의 링크 문법은 고치지 않습니다.
-
-날짜 접두사 규칙을 지킵니다. 원본에 접두사가 있었으면 유지하고
-슬러그 부분만 바꿉니다. 새 슬러그는 슬러그 규칙(ADR 0020)으로 정규화합니다.
-
-링크를 먼저 다 고치고 파일 이동을 마지막에 합니다. 중간에 실패하면
-링크가 옛 이름을 가리키는 상태로 끝나므로 mv를 다시 돌리면 수습됩니다.
-
---dry-run 은 무엇이 바뀌는지만 내고 아무것도 쓰지 않습니다.`,
-		Args: cobra.ExactArgs(2),
+		Short: i18n.T("cli.mv.short"),
+		Long:  i18n.T("cli.mv.long"),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
 			if err != nil {
@@ -51,15 +41,15 @@ related, derived_from, derived_context, source_refs 필드도 같이 고칩니�
 				return err
 			}
 			if oldSlug == "" {
-				return fmt.Errorf("옛 슬러그가 비었습니다: %q", args[0])
+				return errors.New(i18n.T("cli.mv.old_empty", args[0]))
 			}
 			if oldSlug == newSlug {
-				return fmt.Errorf("새 슬러그가 옛 슬러그와 같습니다: %s", newSlug)
+				return errors.New(i18n.T("cli.mv.same_slug", newSlug))
 			}
 
 			walked, err := walk.Files(root, cfg)
 			if err != nil {
-				return fmt.Errorf("위키를 순회할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.walk_fail"), err)
 			}
 			g := graph.Build(walked)
 
@@ -72,10 +62,10 @@ related, derived_from, derived_context, source_refs 필드도 같이 고칩니�
 				}
 			}
 			if srcRel == "" {
-				return fmt.Errorf("옛 슬러그에 해당하는 문서가 없습니다: %s\n문서 경로나 슬러그를 바로 줍니다. 예: engram mv note memo", args[0])
+				return errors.New(i18n.T("cli.mv.old_not_found", args[0]))
 			}
 			if g.Has(newSlug) {
-				return fmt.Errorf("새 슬러그가 이미 쓰이고 있습니다: %s\n기존 문서를 덮어쓰지 않습니다. 다른 슬러그를 고르세요", newSlug)
+				return errors.New(i18n.T("cli.mv.slug_taken", newSlug))
 			}
 
 			backlinks := g.Backlinks(oldSlug)
@@ -88,7 +78,7 @@ related, derived_from, derived_context, source_refs 필드도 같이 고칩니�
 			srcPath := filepath.Join(root, filepath.FromSlash(srcRel))
 			dstPath := filepath.Join(root, filepath.FromSlash(dstRel))
 			if _, err := os.Stat(dstPath); err == nil {
-				return fmt.Errorf("도착지에 이미 문서가 있습니다: %s\n기존 문서를 덮어쓰지 않습니다", dstPath)
+				return errors.New(i18n.T("cli.mv.dest_exists", dstPath))
 			}
 
 			// 파일별 고친 링크 수를 센다. 출력과 JSON 에 쓴다.
@@ -99,7 +89,7 @@ related, derived_from, derived_context, source_refs 필드도 같이 고칩니�
 
 			dryRun, err := cmd.Flags().GetBool(flagDryRun)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagDryRun, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.flag_read_fail", flagDryRun), err)
 			}
 			if !dryRun {
 				// 링크를 먼저 다 고친다. 파일 이동은 마지막이다.
@@ -109,7 +99,7 @@ related, derived_from, derived_context, source_refs 필드도 같이 고칩니�
 					}
 				}
 				if err := os.Rename(srcPath, dstPath); err != nil {
-					return fmt.Errorf("문서를 옮길 수 없음: %s 로: %w", dstPath, err)
+					return fmt.Errorf("%s: %w", i18n.T("cli.mv.rename_fail", dstPath), err)
 				}
 			}
 
@@ -134,8 +124,8 @@ related, derived_from, derived_context, source_refs 필드도 같이 고칩니�
 			return nil
 		},
 	}
-	cmd.Flags().Bool(flagDryRun, false, "무엇이 바뀌는지만 내고 아무것도 쓰지 않습니다")
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().Bool(flagDryRun, false, i18n.T("cli.mv.flag_dry_run"))
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
 }
 
@@ -209,11 +199,11 @@ func rewriteLinks(root, rel, oldSlug, newSlug string) error {
 	path := filepath.Join(root, filepath.FromSlash(rel))
 	raw, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("링크 문서를 읽을 수 없음: %s: %w", path, err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.mv.link_read_fail", path), err)
 	}
 	d, err := doc.Parse(rel, raw)
 	if err != nil {
-		return fmt.Errorf("링크 문서를 파싱할 수 없음: %s: %w", path, err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.mv.link_parse_fail", path), err)
 	}
 
 	body := rewriteBodyLinks(d.Body, oldSlug, newSlug)
@@ -225,7 +215,7 @@ func rewriteLinks(root, rel, oldSlug, newSlug string) error {
 		fields[i] = rewriteFieldValues(fields[i], oldSlug, newSlug)
 	}
 	if err := os.WriteFile(path, doc.Render(fields, body), 0o644); err != nil {
-		return fmt.Errorf("링크 문서를 쓸 수 없음: %s: %w", path, err)
+		return fmt.Errorf("%s: %w", i18n.T("cli.mv.link_write_fail", path), err)
 	}
 	return nil
 }
@@ -312,29 +302,29 @@ func replaceSlugOccurrence(s, oldSlug, newSlug string) string {
 
 // printMoved은 옮긴 경로와 고친 링크를 파일별로 낸다.
 func printMoved(w io.Writer, res mvOutcome) {
-	verb := "옮겼습니다"
+	verb := i18n.T("cli.mv.verb_moved")
 	if res.DryRun {
-		verb = "바꿀 예정입니다"
+		verb = i18n.T("cli.mv.verb_will_change")
 	}
-	fmt.Fprintf(w, "%s: %s에서 %s로 (슬러그 %s)\n", verb, res.From, res.To, res.Slug)
+	fmt.Fprintln(w, i18n.T("cli.mv.summary", verb, res.From, res.To, res.Slug))
 	if len(res.Updated) == 0 {
-		fmt.Fprintf(w, "고칠 링크가 없습니다\n")
+		fmt.Fprintln(w, i18n.T("cli.mv.no_links"))
 	} else {
 		total := 0
 		for _, u := range res.Updated {
 			total += u.Links
 		}
-		fmt.Fprintf(w, "고친 링크 %d건:\n", total)
+		fmt.Fprintln(w, i18n.T("cli.mv.links_total", total))
 		for _, u := range res.Updated {
-			fmt.Fprintf(w, "  %s: %d건\n", u.Path, u.Links)
+			fmt.Fprintln(w, i18n.T("cli.mv.links_per_file", u.Path, u.Links))
 		}
 	}
 	if res.Rejections > 0 {
-		fmt.Fprintf(w, "bridge 기각 쌍 %d건의 슬러그도 함께 고쳤습니다\n", res.Rejections)
+		fmt.Fprintln(w, i18n.T("cli.mv.rejections_fixed", res.Rejections))
 	}
 	if res.DryRun {
-		fmt.Fprintf(w, "시험 실행이라 아무것도 쓰지 않았습니다\n")
+		fmt.Fprintln(w, i18n.T("cli.mv.dry_run_note"))
 	} else {
-		fmt.Fprintf(w, "다음: engram lint로 링크 무결성을 확인하세요\n")
+		fmt.Fprintln(w, i18n.T("cli.mv.next"))
 	}
 }

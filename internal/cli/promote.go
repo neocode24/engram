@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
@@ -25,16 +27,9 @@ import (
 func newPromoteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "promote <경로>",
-		Short: "기존 문서를 context 단계로 올립니다",
-		Long: `기존 문서를 승급 게이트로 검사해 context 단계로 올립니다.
-
-inbox 문서는 이동합니다. 원본이 남지 않습니다. inbox는 임시 계층입니다.
-sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sources는 원본
-보존 계층이고 이후 본문을 고치지 않는 것이 계약입니다.
-
-게이트는 lint.EvaluateGate가 단일 진실원입니다. 링크가 부족하면
---related <슬러그>를 반복해 이 자리에서 채울 수 있습니다.`,
-		Args: cobra.ExactArgs(1),
+		Short: i18n.T("cli.promote.short"),
+		Long:  i18n.T("cli.promote.long"),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, cfg, err := ingestTarget(cmd)
 			if err != nil {
@@ -46,19 +41,19 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 			}
 			raw, err := os.ReadFile(srcPath)
 			if err != nil {
-				return fmt.Errorf("문서를 읽을 수 없음: %s: %w", srcPath, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.doc_read_fail", srcPath), err)
 			}
 			d, err := doc.Parse(args[0], raw)
 			if err != nil {
-				return fmt.Errorf("문서를 파싱할 수 없음: %s: %w", srcPath, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.doc_parse_fail", srcPath), err)
 			}
 			stage := fieldString(d, "artifact_stage")
 			switch stage {
 			case "inbox", "source":
 			case "context":
-				return fmt.Errorf("이미 context 단계입니다: %s\npromote는 inbox나 sources 문서를 올립니다", srcPath)
+				return errors.New(i18n.T("cli.promote.already_context", srcPath))
 			default:
-				return fmt.Errorf("문서 단계를 알 수 없습니다: %s의 artifact_stage 값이 %q다 (허용값: inbox, source, context)", srcPath, stage)
+				return errors.New(i18n.T("cli.promote.unknown_stage", srcPath, stage))
 			}
 
 			slugFlag, err := stringFlag(cmd, flagSlug)
@@ -71,7 +66,7 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 			}
 			related, err := cmd.Flags().GetStringArray(flagRelated)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagRelated, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.flag_read_fail", flagRelated), err)
 			}
 			// 문서 종류는 내용을 읽어야 아는 판단이라 도구가 정하지 못한다.
 			// 사용자가 준 값만 반영하고 추론하지 않는다. ADR 0014.
@@ -80,8 +75,8 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 				return err
 			}
 			if typeFlag != "" && !containsString(cfg.Schema.Types, typeFlag) {
-				return fmt.Errorf("--type 값이 허용값 밖입니다: %q (허용값: %s)",
-					typeFlag, strings.Join(cfg.Schema.Types, ", "))
+				return errors.New(i18n.T("cli.ingest.type_invalid",
+					typeFlag, strings.Join(cfg.Schema.Types, ", ")))
 			}
 			if typeFlag == "" {
 				warnStageDefaultType(cmd.ErrOrStderr(), stage, fieldString(d, "type"), cfg)
@@ -89,7 +84,7 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 
 			rel, err := filepath.Rel(root, srcPath)
 			if err != nil {
-				return fmt.Errorf("위키 루트 기준 경로를 계산할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.rel_fail"), err)
 			}
 			rel = filepath.ToSlash(rel)
 
@@ -109,7 +104,7 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 
 			walked, err := walk.Files(root, cfg)
 			if err != nil {
-				return fmt.Errorf("위키를 순회할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.walk_fail"), err)
 			}
 			warnUnknownRelated(cmd.ErrOrStderr(), related, knownSlugs(walked))
 
@@ -119,7 +114,7 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 			}
 			destPath := filepath.Join(root, filepath.FromSlash(destRel))
 			if _, err := os.Stat(destPath); err == nil {
-				return fmt.Errorf("도착지에 이미 문서가 있습니다: %s\n기존 문서를 덮어쓰지 않습니다. 슬러그를 다르게 지정하세요", destPath)
+				return errors.New(i18n.T("cli.ingest.dest_exists", destPath))
 			}
 
 			g := lint.EvaluateGate(len(linkSlugs(updated)), countTargets(walked, rel, slug), cfg.Thresholds.MinWikilinks)
@@ -135,14 +130,14 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 			}
 			if stage == "inbox" {
 				if err := os.Remove(srcPath); err != nil {
-					return fmt.Errorf("inbox 원본을 지울 수 없음: %s: %w", srcPath, err)
+					return fmt.Errorf("%s: %w", i18n.T("cli.promote.inbox_remove_fail", srcPath), err)
 				}
 			}
 			if stage == "source" && cfg.Axes[config.AxisDerivedContext] {
 				// 역방향 기록. 프론트매터 필드만 갱신하고 본문은 그대로 둔다.
 				srcFields := mergeListField(d.Fields, "derived_context", []string{slug})
 				if err := os.WriteFile(srcPath, doc.Render(srcFields, d.Body), 0o644); err != nil {
-					return fmt.Errorf("원본의 derived_context를 갱신할 수 없음: %s: %w", srcPath, err)
+					return fmt.Errorf("%s: %w", i18n.T("cli.promote.derived_context_fail", srcPath), err)
 				}
 			}
 
@@ -159,10 +154,10 @@ sources 문서는 파생을 만듭니다. 원본이 그대로 남습니다. sour
 			return nil
 		},
 	}
-	cmd.Flags().String(flagSlug, "", "도착지 문서 슬러그. 생략하면 원본 파일명에서 날짜 접두사를 뗀 값입니다")
-	cmd.Flags().StringArray(flagRelated, nil, "related 필드에 추가할 슬러그. 여러 번 쓸 수 있습니다")
-	cmd.Flags().String(flagType, "", "승급 문서의 문서 종류. 허용값은 위키 설정의 types입니다")
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().String(flagSlug, "", i18n.T("cli.promote.flag_slug"))
+	cmd.Flags().StringArray(flagRelated, nil, i18n.T("cli.promote.flag_related"))
+	cmd.Flags().String(flagType, "", i18n.T("cli.promote.flag_type"))
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
 }
 
@@ -196,23 +191,23 @@ func warnStageDefaultType(w io.Writer, stage, cur string, cfg config.Config) {
 	if cur == "" || cur != def {
 		return
 	}
-	fmt.Fprintf(w, "경고: 문서 종류가 %s 단계 기본값 %q 그대로입니다. --type으로 지정하세요 (허용값: %s)\n",
-		stage, cur, strings.Join(cfg.Schema.Types, ", "))
+	fmt.Fprintln(w, i18n.T("cli.promote.warn_default_type",
+		stage, cur, strings.Join(cfg.Schema.Types, ", ")))
 }
 
 // printPromoted은 만들어진 경로와 다음에 할 수 있는 일을 낸다.
 func printPromoted(w io.Writer, res promoteOutcome) {
-	fmt.Fprintf(w, "context로 올렸습니다: %s\n", res.Path)
-	fmt.Fprintf(w, "문서 종류: %s\n", res.Type)
-	fmt.Fprintf(w, "게이트: 링크 %d개, 대상 %d개, 기준 %d개%s\n", res.Gate.Links, res.Gate.Targets, res.Gate.Min,
-		deferredNote(res.Gate.Deferred))
-	fmt.Fprintf(w, "다음: engram lint로 승급 문서의 스키마를 확인하세요\n")
+	fmt.Fprintln(w, i18n.T("cli.promote.done", res.Path))
+	fmt.Fprintln(w, i18n.T("cli.promote.type_line", res.Type))
+	fmt.Fprintln(w, i18n.T("cli.ingest.gate_line", res.Gate.Links, res.Gate.Targets, res.Gate.Min,
+		deferredNote(res.Gate.Deferred)))
+	fmt.Fprintln(w, i18n.T("cli.promote.next"))
 }
 
 // deferredNote는 유예 안내 문구를 낸다.
 func deferredNote(deferred bool) string {
 	if deferred {
-		return " (유예)"
+		return i18n.T("cli.ingest.deferred_note")
 	}
 	return ""
 }
@@ -225,7 +220,7 @@ func resolveDocPath(wikiRoot, arg string) (string, error) {
 			return c, nil
 		}
 	}
-	return "", fmt.Errorf("문서를 찾을 수 없습니다: %s\n위키 루트 상대 경로로 주세요. 예: engram promote inbox/2026-01-01-메모.md", arg)
+	return "", errors.New(i18n.T("cli.ingest.doc_not_found", arg))
 }
 
 // fieldString은 문자열 필드 값을 반환한다.

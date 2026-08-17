@@ -2,10 +2,12 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/neocode24/engram/internal/config"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
@@ -23,13 +25,9 @@ const (
 func newNewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "new <제목>",
-		Short: "처음부터 검수된 지식으로 context에 씁니다",
-		Long: `검수된 지식을 곧바로 context 단계로 씁니다.
-
-승급 게이트는 promote와 같은 함수로 판정합니다. 링크가 부족하면
---related <슬러그>를 반복해 이 자리에서 채울 수 있습니다.
-본문은 upstream promotion-rules.md가 요구하는 절 제목의 골격만 넣습니다.`,
-		Args: cobra.ExactArgs(1),
+		Short: i18n.T("cli.new.short"),
+		Long:  i18n.T("cli.new.long"),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			title := args[0]
 			root, cfg, err := ingestTarget(cmd)
@@ -52,7 +50,7 @@ func newNewCmd() *cobra.Command {
 			}
 			related, err := cmd.Flags().GetStringArray(flagRelated)
 			if err != nil {
-				return fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagRelated, err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.flag_read_fail", flagRelated), err)
 			}
 			if len(related) > 0 {
 				values := make([]string, 0, len(related))
@@ -65,7 +63,7 @@ func newNewCmd() *cobra.Command {
 
 			walked, err := walk.Files(root, cfg)
 			if err != nil {
-				return fmt.Errorf("위키를 순회할 수 없음: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.walk_fail"), err)
 			}
 			warnUnknownRelated(cmd.ErrOrStderr(), related, knownSlugs(walked))
 
@@ -91,20 +89,20 @@ func newNewCmd() *cobra.Command {
 				enc.SetIndent("", "  ")
 				return enc.Encode(res)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "context에 썼습니다: %s\n", res.Path)
-			fmt.Fprintf(cmd.OutOrStdout(), "게이트: 링크 %d개, 대상 %d개, 기준 %d개%s\n",
-				res.Gate.Links, res.Gate.Targets, res.Gate.Min, deferredNote(res.Gate.Deferred))
-			fmt.Fprintf(cmd.OutOrStdout(), "다음: 골격의 절을 채우고 engram lint로 확인하세요\n")
+			fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.new.done", res.Path))
+			fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.ingest.gate_line",
+				res.Gate.Links, res.Gate.Targets, res.Gate.Min, deferredNote(res.Gate.Deferred)))
+			fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.new.next"))
 			return nil
 		},
 	}
-	cmd.Flags().String(flagSlug, "", "문서 슬러그. 생략하면 제목에서 만듭니다")
-	cmd.Flags().String(flagType, "", "문서 종류. 기본값은 context 단계 초기값입니다")
-	cmd.Flags().String(flagForm, "", "문서 형태. forms 폐쇄 집합의 값이어야 합니다")
-	cmd.Flags().StringArray(flagTopics, nil, "주제. 여러 번 쓸 수 있습니다")
-	cmd.Flags().StringArray(flagTags, nil, "광범위 묶음 태그. 여러 번 쓸 수 있습니다")
-	cmd.Flags().StringArray(flagRelated, nil, "관련 문서 슬러그. 여러 번 쓸 수 있습니다")
-	cmd.Flags().String(flagWiki, ".", "대상 위키 경로")
+	cmd.Flags().String(flagSlug, "", i18n.T("cli.new.flag_slug"))
+	cmd.Flags().String(flagType, "", i18n.T("cli.new.flag_type"))
+	cmd.Flags().String(flagForm, "", i18n.T("cli.new.flag_form"))
+	cmd.Flags().StringArray(flagTopics, nil, i18n.T("cli.new.flag_topics"))
+	cmd.Flags().StringArray(flagTags, nil, i18n.T("cli.new.flag_tags"))
+	cmd.Flags().StringArray(flagRelated, nil, i18n.T("cli.new.flag_related"))
+	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
 }
 
@@ -116,8 +114,8 @@ func newFrontmatter(cmd *cobra.Command, cfg config.Config) (map[string]any, erro
 		return nil, err
 	} else if v != "" {
 		if !containsString(cfg.Schema.Types, v) {
-			return nil, fmt.Errorf("--type 값이 허용값 밖입니다: %q (허용값: %s)",
-				v, strings.Join(cfg.Schema.Types, ", "))
+			return nil, errors.New(i18n.T("cli.ingest.type_invalid",
+				v, strings.Join(cfg.Schema.Types, ", ")))
 		}
 		fm["type"] = v
 	}
@@ -127,20 +125,20 @@ func newFrontmatter(cmd *cobra.Command, cfg config.Config) (map[string]any, erro
 		forms := cfg.Schema.Taxonomy.Forms.Values
 		if !containsString(forms, v) {
 			if len(forms) == 0 {
-				return nil, fmt.Errorf("--form 값을 받을 수 없습니다: %q\n위키 설정의 forms가 비어 있습니다. engram.yaml의 forms에 값을 정의하세요", v)
+				return nil, errors.New(i18n.T("cli.new.form_empty", v))
 			}
-			return nil, fmt.Errorf("--form 값이 forms 폐쇄 집합에 없습니다: %q (허용값: %s)",
-				v, strings.Join(forms, ", "))
+			return nil, errors.New(i18n.T("cli.new.form_invalid",
+				v, strings.Join(forms, ", ")))
 		}
 		fm["form"] = v
 	}
 	if v, err := cmd.Flags().GetStringArray(flagTopics); err != nil {
-		return nil, fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagTopics, err)
+		return nil, fmt.Errorf("%s: %w", i18n.T("cli.ingest.flag_read_fail", flagTopics), err)
 	} else if len(v) > 0 {
 		fm["topics"] = v
 	}
 	if v, err := cmd.Flags().GetStringArray(flagTags); err != nil {
-		return nil, fmt.Errorf("--%s 플래그를 읽을 수 없음: %w", flagTags, err)
+		return nil, fmt.Errorf("%s: %w", i18n.T("cli.ingest.flag_read_fail", flagTags), err)
 	} else if len(v) > 0 {
 		fm["tags"] = v
 	}
