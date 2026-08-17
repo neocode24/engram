@@ -86,7 +86,10 @@ engram이 어디서든 실행되는 상태를 만들고, 실습 재료를 손에
 
 전제는 둘입니다. **Go 1.26 이상**과 **git**입니다.
 
+**홈 디렉토리에 클론합니다.** 3단계부터 실습 재료를 `~/engram/examples/materials/` 경로로 참조하므로 자리를 맞춥니다.
+
 ```
+cd ~
 git clone https://github.com/neocode24/engram.git
 cd engram
 go install ./cmd/engram
@@ -189,9 +192,10 @@ xattr -d com.apple.quarantine ~/go/bin/engram
 
 ### 실습 재료 받기
 
-바이너리만으로는 실습을 시작할 수 없습니다. 저장소를 받습니다. 빌드는 하지 않습니다.
+바이너리만으로는 실습을 시작할 수 없습니다. 저장소를 받습니다. 빌드는 하지 않습니다. **방법 A와 같은 자리인 홈 디렉토리에 둡니다.**
 
 ```
+cd ~
 git clone https://github.com/neocode24/engram.git
 ```
 
@@ -210,6 +214,19 @@ engram doctor
 - `doctor`가 환경을 진단합니다. 아직 위키가 없으므로 위키 관련 항목은 건너뜁니다.
 
 `command not found`가 나면 PATH 문제입니다. 터미널을 새로 열었는지부터 확인합니다.
+
+## 출력 언어
+
+기본은 한국어입니다. 이 문서에 실린 출력도 한국어입니다. 영어로 보려면 둘 중 하나를 씁니다.
+
+```
+engram --lang en status
+export ENGRAM_LANG=en
+```
+
+허용값은 `ko`와 `en`입니다. **실습 중에는 한국어로 둡니다.** 이 문서의 출력과 화면이 같아야 막혔을 때 비교할 수 있습니다.
+
+이 설정은 `engram.yaml`에 없습니다. 그 파일은 커밋되어 팀이 공유하는데 출력 언어는 읽는 사람의 것이기 때문입니다([0049](../decisions/0049-cli-output-language.md)).
 
 ## 설치가 겹쳤을 때
 
@@ -265,6 +282,8 @@ Windows는 `Remove-Item "$env:USERPROFILE\go\bin\engram.exe"` 입니다.
 | 겹침 처리 | `which -a`로 찾고 `engram version`으로 구분합니다 | 소스 빌드는 `dev`, 릴리스는 번호가 나오므로 구분이 확실합니다 |
 | 실습 재료 배포 | 저장소 클론으로만 얻습니다 | 바이너리에 임베드하면 위키 도구가 위키 아닌 파일을 뿌리게 됩니다 |
 | Windows PATH | PowerShell의 `SetEnvironmentVariable`을 씁니다 | `setx`는 PATH를 자르거나 날립니다 |
+| 클론 위치 | 홈 디렉토리 `~/engram` | 3단계부터 재료를 절대 경로로 참조하므로 자리를 맞춥니다 |
+| 출력 언어 | 실습 중에는 한국어로 둡니다 | 문서에 실린 출력과 화면이 같아야 막혔을 때 비교됩니다 |
 
 ---
 
