@@ -41,7 +41,7 @@
 | 실습 단계 | 주제 | 상태 |
 |---|---|---|
 | 1 | 설치와 준비 | 확정 |
-| 2 | 첫 위키 | 미확정 |
+| 2 | 첫 위키 | 확정 |
 | 3 | 넣기 | 미확정 |
 | 4 | 올리기 | 미확정 |
 | 5 | 꺼내 쓰기 | 미확정 |
@@ -114,9 +114,15 @@ go env GOPATH
 macOS와 Linux의 zsh입니다. bash면 `~/.zshrc`를 `~/.bashrc`로 바꿉니다.
 
 ```
-echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
+cat >> ~/.zshrc <<'EOF'
+
+# go install 로 받은 도구. engram 이 여기 들어갑니다
+export PATH="$PATH:$(go env GOPATH)/bin"
+EOF
 source ~/.zshrc
 ```
+
+빈 줄과 주석을 함께 넣습니다. 나중에 설정 파일을 열었을 때 이 줄이 왜 있는지 알 수 있어야 합니다.
 
 Windows PowerShell입니다. 사용자 범위로만 바꾸므로 관리자 권한이 필요 없습니다.
 
@@ -264,7 +270,190 @@ Windows는 `Remove-Item "$env:USERPROFILE\go\bin\engram.exe"` 입니다.
 
 # 2단계. 첫 위키
 
-미확정입니다.
+## 목표
+
+자기 위키를 만들고, 이 위키에 적용되는 규칙이 무엇인지 읽습니다. 아직 문서를 넣지 않습니다.
+
+이 단계가 심는 문장은 하나입니다. **디렉토리는 분류함이 아니라 성숙 단계입니다.**
+
+## 만들기
+
+```
+engram init --preset education ~/engram-wiki
+cd ~/engram-wiki
+```
+
+`--preset`은 생략해도 `education`입니다. 그래도 적는 이유는 프리셋이라는 것이 있다는 사실을 여기서 알려야 하기 때문입니다. `personal`, `education`, `team` 셋이 있고 오른쪽으로 갈수록 스키마 축이 늘어납니다. **실습은 `education`으로만 합니다.** 프리셋을 바꾸는 것은 8단계에서 `migrate`로 실제로 해 봅니다.
+
+출력이 만든 것을 그대로 알려 줍니다.
+
+```
+위키를 초기화했습니다: /Users/사용자/engram-wiki (프리셋: education)
+
+디렉토리:
+  inbox/       새 자료가 들어오는 곳
+  sources/     원본을 보존하는 곳
+  context/     정리된 문서가 사는 곳
+  archive/     승급에서 물러난 문서가 가는 곳
+
+파일:
+  engram.yaml  위키 설정. 축과 임계값을 여기서 조정하세요
+  index.md     첫 문서. 위키 소개로 채우세요
+  .gitignore   .engram/ 캐시 디렉토리를 git에서 제외합니다
+```
+
+네 디렉토리를 소리 내어 읽습니다. **주제별로 나뉜 것이 아닙니다.** 같은 주제의 문서가 넷 중 어디에 있느냐가 그 문서의 성숙도입니다. 자료는 `inbox`로 들어와 `context`로 올라가고 수명이 끝나면 `archive`로 갑니다. `sources`는 원본을 그대로 두는 곳이라 이 흐름 옆에 붙어 있습니다.
+
+## git 저장소로 만들기
+
+```
+git init
+git add -A
+git commit -m "위키 시작"
+```
+
+**위키는 git 저장소여야 합니다.** 세 가지 이유입니다.
+
+- `engram.yaml`이 git으로 공유되기 때문에 팀이 같은 규칙을 씁니다. 6단계에서 만드는 `engram-state.yaml`도 마찬가지입니다.
+- `doctor`의 점검 항목 두 개가 git 없이는 건너뛰어집니다.
+- 8단계의 `sync`가 git 이력에서 날짜를 정정합니다. 그때 이력이 있으려면 지금부터 커밋이 쌓여야 합니다.
+
+**각 단계가 끝날 때마다 커밋합니다.** 8단계에서 `sync`를 돌릴 때 그 커밋들이 재료가 됩니다.
+
+`.gitignore`는 `init`이 만들어 뒀습니다. 안에는 `.engram/` 한 줄이 있습니다. 검색 색인은 언제든 다시 만들 수 있는 파생물이라 커밋하지 않습니다.
+
+## 진단하기
+
+```
+engram doctor
+```
+
+```
+[ok] env.git git version 2.33.0
+[ok] env.git-autocrlf ...
+[warn] env.fs-case 파일시스템이 대소문자를 무시합니다. 대소문자만 다른 슬러그가 서로 겹칩니다
+    조치: 슬러그에 대소문자만 다른 이름을 쓰지 마세요
+[ok] env.console-encoding Windows가 아니므로 콘솔은 UTF-8을 씁니다
+[ok] env.write-perm 위키 루트에 쓸 수 있습니다
+[ok] wiki.config engram.yaml을 읽었습니다
+[ok] wiki.config-unknown-keys 알 수 없는 키가 없습니다
+[ok] wiki.min-wikilinks min_wikilinks 2
+[ok] wiki.page-dirs page_dirs 4개가 모두 있습니다
+[ok] wiki.root-files root_files 1개가 모두 있습니다
+[ok] wiki.engram-gitignore .engram이 gitignore 됩니다
+[ok] wiki.bridge-rejections 기각된 쌍이 없습니다
+항목 12개, ok 11, warn 1, fail 0, skip 0
+```
+
+**`fail 0`이면 통과입니다.** `env.fs-case` 경고는 macOS와 Windows에서 정상입니다. 그 파일시스템이 대소문자를 구분하지 않아서 `Go.md`와 `go.md`가 같은 파일이 됩니다. Linux에서는 이 줄이 `ok`로 나옵니다. 경고일 뿐이며 슬러그를 소문자로만 쓰면 걸릴 일이 없습니다.
+
+`git init`을 하기 전에 돌리면 `env.git-autocrlf`와 `wiki.engram-gitignore`가 `skip`으로 나옵니다. 앞뒤로 한 번씩 돌려서 차이를 보게 하면 git이 왜 전제인지가 눈에 들어옵니다.
+
+## 규칙 읽기
+
+**이 단계의 핵심입니다.**
+
+```
+engram rules show
+```
+
+앞으로 여섯 단계에서 만날 것이 전부 여기 있습니다. 다 외우게 하지 않고 네 곳만 짚습니다.
+
+**축 14종.** `education`은 열 개가 켜져 있습니다. 꺼진 축의 필드를 문서에 쓰면 `lint`가 `schema.axis-off`로 잡습니다. 축은 `engram.yaml`에서 하나씩 켜고 끌 수 있습니다.
+
+**단계별 필수 필드.** 네 단계가 요구하는 것이 다릅니다. `context`가 `related`를 요구하고 `inbox`는 요구하지 않는 것이 이 체계의 요약입니다. **올라갈수록 자격이 늘어납니다.**
+
+**승급 게이트.**
+
+```
+승급 게이트
+  게이트가 승급을 거절하는 조건은 하나뿐입니다.
+  문서의 고유 위키링크 수가 min_wikilinks 2개에 못 미치는 것입니다.
+  promote와 new는 이것만 묻습니다. 길이도 형식도 주제도 막지 않습니다.
+```
+
+이 세 줄을 그대로 읽습니다. 4단계에서 거절을 직접 당하기 전에 왜 거절되는지를 미리 알려 둡니다. **막는 것이 하나뿐이라는 점이 요점입니다.** 나머지 판단은 사람에게 남습니다.
+
+**lint 규칙 16종.** 훑기만 합니다. 심각도가 셋(`reject`, `error`, `warn`)이고 `reject`가 하나뿐이라는 것만 확인합니다.
+
+## 현황 보기
+
+```
+engram status
+```
+
+```
+현황
+  inbox 0, source 0, context 0, archive 0 문서
+  위키링크 0개, 고아 문서 0개
+  lint: 파일 1개, error 0, warn 0, reject 0 (상세는 engram lint)
+
+적체 압력 (기준 2026-08-17)
+  inbox 문서 0개
+  지금 승급할 수 있는 문서 0개
+
+다음 행동
+  - engram capture
+    inbox가 비었습니다. 새 메모를 받아 파이프라인을 돌리세요
+```
+
+**`context 0`인데 `파일 1개`인 것을 짚습니다.** `index.md`는 루트 파일이라 단계 집계에 들어가지 않습니다. `engram.yaml`의 `root_files`가 그렇게 정하고 있습니다. 위키의 목차이지 승급 파이프라인을 지나는 문서가 아닙니다.
+
+`다음 행동`이 `engram capture`를 가리킵니다. 3단계가 그것입니다. **`status`는 매 단계 끝에 돌립니다.** 도구가 다음에 뭘 하라고 하는지 보는 습관을 여기서 들입니다.
+
+## index.md 채우기
+
+`init`이 만든 `index.md`에는 자리를 채우는 문장이 들어 있습니다. 이것을 자기 위키 소개로 고칩니다. **에디터로 직접 엽니다.** 프론트매터는 건드리지 않고 `---` 아래 본문만 고칩니다.
+
+두세 줄이면 됩니다. 무엇을 모으는 위키인지 씁니다.
+
+고친 뒤 검사합니다.
+
+```
+engram lint
+```
+
+```
+검사한 파일 1개, 위반 없음
+```
+
+손으로 고쳐도 `error 0`이어야 합니다. **도구가 만든 위키는 언제 `lint`를 돌려도 `error`가 0입니다.** 이 불변식을 매 단계 끝에서 확인합니다.
+
+`updated` 필드가 옛 날짜로 남아 있는 것이 보입니다. 손으로 고쳤기 때문에 도구가 갱신할 기회가 없었습니다. 8단계의 `sync`가 git 이력에서 이런 것을 정정합니다. 지금은 그냥 둡니다.
+
+## 확인
+
+```
+engram doctor      # fail 0
+engram lint        # error 0
+engram status      # 다음 행동이 engram capture
+git log --oneline  # 커밋 하나 이상
+```
+
+넷이 통과하면 2단계가 끝납니다.
+
+```
+git add -A && git commit -m "index 소개 작성"
+```
+
+## 강사 노트
+
+- 30분입니다. 절반을 `rules show`에 씁니다. 커맨드를 치는 시간보다 출력을 같이 읽는 시간이 길어야 합니다.
+- `git init` 전후로 `doctor`를 한 번씩 돌리게 합니다. `skip` 두 개가 `ok`로 바뀌는 것을 눈으로 보면 설명이 필요 없습니다.
+- 네 디렉토리를 두고 묻습니다. "지금 여러분 노트 앱의 폴더는 무엇으로 나뉘어 있습니까." 주제로 나뉜다는 답이 나오면 그 차이가 이 체계의 출발점이라고 말합니다.
+- `min_wikilinks: 2`를 `engram.yaml`에서 직접 보게 합니다. 4단계에서 거절당할 때 이 숫자를 기억해야 합니다.
+- 프리셋 셋을 비교하지 않습니다. 여기서 `personal`과 `team`을 열어 보면 아직 쓰지 않은 축 이야기로 빠집니다. 8단계까지 미룹니다.
+
+## 이 단계에서 확정한 것
+
+| 결정 | 내용 | 이유 |
+|---|---|---|
+| 위키 위치 | `~/engram-wiki` 하나 | 8단계까지 이것만 씁니다. 실습장을 늘리지 않습니다 |
+| 프리셋 | `education` 고정 | `personal`은 `derived_context` 축이 꺼져 있어 4단계의 파생 왕복이 보이지 않습니다 |
+| 프리셋 비교 | 2단계에서 하지 않습니다 | 아직 쓰지 않은 축 이야기로 빠집니다. 8단계 `migrate`에서 실제로 바꿔 봅니다 |
+| git | 2단계에서 `git init`하고 매 단계 끝에 커밋합니다 | `doctor` 항목 둘이 git을 요구하고, 8단계 `sync`가 이력을 재료로 씁니다 |
+| `index.md` 편집 | 에디터로 본문만 고칩니다. `update` 커맨드를 쓰지 않습니다 | `update`는 4단계 커맨드입니다. 여기서 커맨드를 늘리지 않습니다 |
+| 매 단계 마무리 | `doctor`, `lint`, `status` 셋을 돌리고 커밋합니다 | 불변식 확인을 습관으로 만듭니다 |
 
 # 3단계. 넣기
 
