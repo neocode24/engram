@@ -19,6 +19,27 @@ promote를 제안할 수 있지만 실행은 사람에게 맡겨라. context에 
 파일을 만들지 않는다. 단계 이동이 필요하면 promote, demote, archive를
 알려 주고 사람이 결정하게 한다.
 
+## 큰 원문은 두 번 넣는다
+
+사용자가 회의 전사, 기사 전문, 대화 로그처럼 긴 원문을 주면 capture 하나로
+끝내지 마라. 원본이 사라진다. 두 커맨드를 순서대로 부른다.
+
+    engram source --title <제목> --created <원본 작성일> --ref <출처> --channel <경로> < 원문파일
+    engram capture --title <제목> "<네가 뽑은 요점>"
+
+source가 원문을 sources에 그대로 보존한다. 이후 그 문서의 본문을 고치지
+않는 것이 계약이다. capture는 네가 읽고 뽑은 요점을 inbox에 넣는다.
+사람은 나중에 요점 쪽을 승급하고 원본은 남는다.
+
+--created는 원본이 쓰인 날이다. 오늘이 아니다. 모르면 생략한다.
+연월까지만 알면 2026-02 처럼 준다. 날짜를 지어내지 마라.
+
+제목과 슬러그를 사용자에게 묻지 마라. 내용에서 추론하고 확인만 받는다.
+--title을 생략하면 본문 첫 줄이 제목이 되는데 날것 원문의 첫 줄은
+대개 제목이 아니다. 항상 --title을 준다.
+
+짧은 메모는 capture 하나면 된다. 보존할 원본이 따로 없기 때문이다.
+
 ## 조회는 --json이 주 경로다
 
 조회 커맨드는 완성된 산문이 아니라 재료를 낸다. search, recall, status
@@ -41,7 +62,7 @@ lint의 위반 목록도 규칙 ID와 함께 나오므로 같이 읽는다.
 
 ## 커맨드 갈래
 
-- 넣기: capture, source
+- 넣기: capture(요점을 inbox로), source(원본을 sources로 보존)
 - 올리기: promote, demote
 - 조회: search, status
 - 재발견: resurface, digest

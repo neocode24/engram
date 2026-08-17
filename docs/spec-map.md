@@ -197,6 +197,7 @@ LLM으로 승급 기준 전부를 판정하게 하면 그 판정은 재현되지
 | 단계 디렉토리 안의 비문서 파일 | 명세에 개념이 없다. 실데이터에는 `README.md`가 네 자리에 있다 | ~~없었다~~ `ignore_files`로 순회에서 뺀다([ADR 0036](decisions/0036-non-document-files-in-stage-dirs.md)) |
 | security-rules.md 전체 | 커밋 금지 항목과 민감 자료 취급 | 코드로 강제하는 것이 하나도 없다. `sensitivity` 축만 있다 |
 | `indexable` 단계 기본값 | wiki-artifact-schema.md가 유형별 인덱싱 기본값으로 선언. upstream lint는 위반을 검사 | 강제 규칙이 없다. 쓰기 커맨드가 단계별 초기값으로만 채운다 |
+| `agents/workflows/` 전체 | 에이전트 절차 명세. 텍스트 드롭 인테이크, 음성 메모 인테이크 등 | 대응표가 `meta/` 명세만 덮어서 **아예 보지 않았다**. 아래에 적는다 |
 
 `supersedes`와 `superseded_by`는 지금 사람이 `related`나 본문 링크로 대신 표현한다. 결정할 시점은 대체 이력을 코드가 다뤄야 할 때다. 폐기와 개정의 이력 관리가 `archive` 너머로 확장되거나, 동등성 검증에서 이 필드를 쓰는 문서가 걸릴 때다.
 
@@ -205,6 +206,18 @@ LLM으로 승급 기준 전부를 판정하게 하면 그 판정은 재현되지
 같은 자리에서 성격이 다른 것이 함께 나온다. 실운영 위키 306문서에 engram을 돌리면 `schema.allowed-value`가 열다섯이고 그중 다섯만 `index` 단계다. 나머지 열은 `status: draft` 다섯, `trigger_mode: manual` 넷, `sensitivity: public` 하나이며 **셋 다 upstream 명세가 선언한 적 없는 값이다.** 명세는 `trigger_mode`를 `manual-prompt` 등 다섯으로, `sensitivity`를 `public-reference` 등 넷으로 못 박았다. 즉 이 열 건은 engram과 명세의 차이가 아니라 **upstream의 실제 위키가 자기 명세에서 흘러내린 것**이고 engram이 그것을 잡아낸 것이다. upstream 자체 lint는 `archive/`를 스캔하지 않는 등 검사 범위가 더 좁다. 결정할 시점은 동등성 검증에서 upstream 전용 규칙으로 남아 있는 위치 규칙(upstream의 `location.type-agreement`)을 정리하며 MOC를 받아들일지 한 번에 정할 때다.
 
 security-rules는 지금 전부 사람과 저장소 정책에 남아 있다. 이 저장소의 공개 경계 장치는 있지만 그것은 engram의 기능이 아니다. 결정할 시점은 민감 자료가 실제로 섞이는 운영 환경이 생겼을 때다. `doctor`의 점검 항목 후보가 된다.
+
+`agents/workflows/`는 4절의 대응표를 만들 때 범위 밖이었다. 대응표가 `meta/` 아래 규칙 명세 7종만 덮었기 때문이다. 절차 명세는 규칙이 아니라 에이전트에게 주는 순서라 성격이 다르다고 보았는데, 그 안에 **engram이 지켜야 할 계약**이 섞여 있었다.
+
+가장 분명한 것이 텍스트 드롭 인테이크다. upstream은 `inbox/_drop/`에 아무 이름으로 원문을 던지면 에이전트가 채널과 날짜와 슬러그를 추론해 확인을 받고, **원본을 `sources/`에 보존한 뒤** 요점 draft를 `inbox/`에 만들고 그 폴더를 비운다. 원본 보존이 계약이다.
+
+engram은 이 절차를 커맨드 둘로 이미 표현할 수 있다. `source`가 원본을 보존하고 `capture`가 draft를 만든다. **그런데 스킬 문서가 그 순서를 가르치지 않아서** 에이전트가 `capture` 하나만 부르고 원본을 버릴 여지가 있었다. 스킬 문서에 "큰 원문은 두 번 넣는다" 절을 더해 닫았다.
+
+`inbox/_drop/`이라는 폴더 자체는 만들지 않는다. **그것은 커맨드가 없어서 생긴 우회로다.** upstream은 CLI가 없어 사용자가 큰 파일을 둘 자리가 필요했고, 위키 안에 위키가 아닌 파일이 놓이니 "lint 대상이 아니다"를 따로 선언해야 했다. engram에서는 파일이 위키 밖 아무 곳에 있어도 되고 에이전트가 경로로 읽는다.
+
+실제로 확인한 것 둘을 적어 둔다. `inbox/_drop/`에 프론트매터 없는 마크다운을 두면 `frontmatter.missing`으로 `error`가 난다. engram이 그 하위 디렉토리도 문서로 훑기 때문이다. 반면 `inbox/<채널>/` 같은 중첩 디렉토리는 그대로 동작한다. 즉 빠진 것은 채널 구조가 아니라 **순회에서 빼는 디렉토리 개념** 하나다. 파일 단위로는 `ignore_files`가 있고([ADR 0036](decisions/0036-non-document-files-in-stage-dirs.md)) 디렉토리 단위는 없다. 위키 안에 드롭 폴더를 두겠다는 요구가 실제로 나오면 그때 `ignore_dirs`를 본다.
+
+음성 메모 인테이크는 여정 2와 같은 자리이며 바이너리 밖 동선이다([ADR 0014](decisions/0014-llm-boundary-agent-drives-binary.md)).
 
 `indexable`은 지금 `promote`가 context 문서에 참을, `capture`가 inbox 문서에 거짓을 초기값으로 쓰는 방식으로만 지켜진다. 사람이 프론트매터를 고쳐 값을 바꿔도 lint는 잡지 않는다. 결정할 시점은 검색 인덱스가 민감 자료를 걸러 내야 할 필요가 생겼을 때다. security-rules의 이행과 같은 때에 볼 문제다.
 

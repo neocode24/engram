@@ -16,7 +16,7 @@
 | 실습 위키 | 수강생이 만들어 끝까지 쓰는 위키. `~/engram-wiki` | 랩, lab, 내 위키 |
 | 데모 위키 | 저장소의 `examples/personal`. 6단계에서만 씁니다 | 씨앗 위키, seed, 예제 위키 |
 | 실습 재료 | 저장소의 `examples/materials/`. 위키에 집어넣을 원재료 | 샘플, 교재, 데이터셋 |
-| 저장소 | engram 소스 저장소 | 레포, 리포지토리 |
+| 저장소 | 1단계에서 클론한 engram 소스 저장소. `~/engram`. **실습 위키가 아닙니다** | 레포, 리포지토리 |
 | 설치 방법 | 소스 빌드와 바이너리 내려받기 두 가지 | 갈래, 경로, 트랙 |
 
 `갈래`는 커맨드 분류(넣기, 올리기, 조회, 재발견, 관리 다섯 갈래)에만 씁니다. 설치나 선택지를 가리키는 데 쓰지 않습니다.
@@ -86,7 +86,7 @@ engram이 어디서든 실행되는 상태를 만들고, 실습 재료를 손에
 
 전제는 둘입니다. **Go 1.26 이상**과 **git**입니다.
 
-**홈 디렉토리에 클론합니다.** 3단계부터 실습 재료를 `~/engram/examples/materials/` 경로로 참조하므로 자리를 맞춥니다.
+**홈 디렉토리에 클론합니다.** 3단계부터 실습 재료를 저장소 경로로 참조합니다. 다른 곳에 클론해도 되지만 그때는 3단계의 경로를 자기 위치로 바꿔야 합니다.
 
 ```
 cd ~
@@ -282,7 +282,7 @@ Windows는 `Remove-Item "$env:USERPROFILE\go\bin\engram.exe"` 입니다.
 | 겹침 처리 | `which -a`로 찾고 `engram version`으로 구분합니다 | 소스 빌드는 `dev`, 릴리스는 번호가 나오므로 구분이 확실합니다 |
 | 실습 재료 배포 | 저장소 클론으로만 얻습니다 | 바이너리에 임베드하면 위키 도구가 위키 아닌 파일을 뿌리게 됩니다 |
 | Windows PATH | PowerShell의 `SetEnvironmentVariable`을 씁니다 | `setx`는 PATH를 자르거나 날립니다 |
-| 클론 위치 | 홈 디렉토리 `~/engram` | 3단계부터 재료를 절대 경로로 참조하므로 자리를 맞춥니다 |
+| 클론 위치 | 홈 디렉토리 `~/engram` | 3단계가 저장소 경로로 재료를 읽습니다. 실습 위키 `~/engram-wiki` 와 이름이 비슷하므로 문서에서 늘 함께 적습니다 |
 | 출력 언어 | 실습 중에는 한국어로 둡니다 | 문서에 실린 출력과 화면이 같아야 막혔을 때 비교됩니다 |
 
 ---
@@ -551,13 +551,26 @@ git add -A && git commit -m "index 소개 작성"
 
 **전사는 engram의 일이 아닙니다.** 이 파일은 전사가 이미 끝난 결과입니다. engram은 음성을 다루지 않고 앞으로도 다루지 않습니다. 사용자가 자기 도구로 전사하고 그 결과 텍스트만 engram에 넣습니다.
 
-### 재료를 위키로 복사하지 않습니다
+### 두 디렉토리를 헷갈리지 않습니다
 
-지금 작업 위치는 `~/engram-wiki`이고 재료는 `~/engram/examples/materials/`에 있습니다. **다른 디렉토리입니다. 복사하지 않고 경로로 읽습니다.**
+이름이 비슷해서 여기서 제일 많이 막힙니다.
+
+| 무엇 | 어디 | 역할 |
+|---|---|---|
+| 실습 위키 | `~/engram-wiki` | **작업 위치.** 여기서 커맨드를 칩니다 |
+| 저장소 | `~/engram` | 1단계에서 클론한 소스. **재료가 여기 있습니다** |
+
+**복사하지 않고 경로로 읽습니다.** 이 단계의 커맨드는 전부 아래 두 줄을 깔고 시작합니다.
 
 ```
-cd ~/engram-wiki
-engram capture --title "..." < ~/engram/examples/materials/회의-전사.txt
+cd ~/engram-wiki           # 작업 위치는 실습 위키
+MATERIALS=~/engram/examples/materials    # 저장소 안의 재료. 1단계에서 클론한 곳
+```
+
+이제 `$MATERIALS/회의-전사.txt` 로 씁니다. 클론을 다른 데 했으면 그 경로로 바꿉니다.
+
+```
+engram capture --title "..." < $MATERIALS/회의-전사.txt
 ```
 
 `capture`와 `source`는 표준 입력을 받으므로 파일을 옮길 이유가 없습니다.
@@ -576,7 +589,7 @@ engram capture --title "..." < ~/engram/examples/materials/회의-전사.txt
 `capture`와 `source`는 `--title`을 생략하면 **본문 첫 줄에서 제목을 만듭니다.** 문서 첫 줄이 `# 헤딩`이면 잘 나옵니다.
 
 ```
-engram capture < ~/engram/examples/materials/기술문서-원문.md
+engram capture < $MATERIALS/기술문서-원문.md
 inbox에 넣었습니다: .../2026-08-17-캐시-무효화를-설계하는-네-가지-방법.md
 ```
 
@@ -615,7 +628,7 @@ engram source --help
 **요약하지 않습니다. 통째로 넣습니다.**
 
 ```
-engram capture --title "응답 지연 회의 전사" < ~/engram/examples/materials/회의-전사.txt
+engram capture --title "응답 지연 회의 전사" < $MATERIALS/회의-전사.txt
 ```
 
 ```
@@ -652,7 +665,7 @@ engram source \
   --created 2026-02-18 \
   --channel web \
   --ref "https://example.com/cache-invalidation" \
-  < ~/engram/examples/materials/기술문서-원문.md
+  < $MATERIALS/기술문서-원문.md
 ```
 
 표준 입력으로 파일을 통째로 넣습니다. `capture`도 같은 방식을 받습니다.
@@ -686,7 +699,7 @@ sourced_at: 2026-08-17   # 내 위키에 들어온 날
 통째로 넣는 쪽입니다.
 
 ```
-engram capture --title "배포 실패 스레드" < ~/engram/examples/materials/슬랙-스레드.txt
+engram capture --title "배포 실패 스레드" < $MATERIALS/슬랙-스레드.txt
 ```
 
 나누는 쪽이면 파일을 잘라 세 번 넣습니다. 어느 쪽이든 **원문을 고치지 않습니다.**
