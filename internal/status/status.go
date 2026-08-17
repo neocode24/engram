@@ -1,4 +1,4 @@
-// Package status는 위키 현황과 inbox 적체 압력을 계산한다.
+// Package status는 위키 현황과 밀린 것을 계산한다.
 // 숫자 나열이 아니라 지금 무엇을 해야 하는지가 보여야 하므로
 // 지표에서 파생한 다음 행동 제안을 함께 낸다.
 package status
@@ -36,7 +36,7 @@ type LintSummary struct {
 	Reject int `json:"reject"`
 }
 
-// Backlog은 inbox 적체 압력 지표다. OldestDays 는 날짜를 아는 inbox 문서가
+// Backlog은 아직 처리하지 않은 것의 지표다. OldestDays 는 날짜를 아는 inbox 문서가
 // 없으면 nil 이다. 나이를 모르는 문서는 UnknownAge 로 따로 세고 0 으로 치지 않는다.
 type Backlog struct {
 	Inbox           int      `json:"inbox"`
@@ -238,6 +238,16 @@ func suggest(res Result, cfg config.Config) []Suggestion {
 		out = append(out, Suggestion{
 			Action: "engram lint",
 			Detail: i18n.T("core.status.suggest_lint", res.Lint.Error),
+		})
+	}
+	// inbox 에 밀린 것이 있는데 하나도 못 올리는 상태를 잡는다. 게이트가
+	// 링크 부족으로 전부 막은 경우인데, 이 가지가 없으면 "제안 없음" 이
+	// 나와서 사용자는 도구가 할 말이 없다고 읽는다.
+	if res.Backlog.Inbox > 0 && res.Backlog.Promotable == 0 {
+		out = append(out, Suggestion{
+			Action: i18n.T("core.status.action_link"),
+			Detail: i18n.T("core.status.suggest_blocked",
+				res.Backlog.Inbox, cfg.Thresholds.MinWikilinks),
 		})
 	}
 	if res.Backlog.Inbox == 0 {

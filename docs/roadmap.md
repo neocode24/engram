@@ -23,7 +23,7 @@
 | `promote` | inbox는 이동, sources는 파생 | [0021](decisions/0021-gate-deferral-when-targets-are-scarce.md), [0022](decisions/0022-promote-moves-inbox-derives-sources.md), [0023](decisions/0023-gate-targets-exclude-inbox.md) |
 | `new` | 처음부터 검수된 지식으로 `context/`에 쓴다 | 상동 |
 | `lint` | 규칙 16종. 스키마, 링크 무결성, 위치와 단계의 일치 | [0019](decisions/0019-index-documents-outside-the-gate.md) |
-| `status` | 현황과 적체 압력, 다음 행동 제안 | |
+| `status` | 현황과 밀린 것, 다음 행동 제안 | |
 | `doctor` | 환경과 위키 점검 12종. 항목마다 복구 조치 | |
 | `resurface` | 오래 안 본 문서를 제시 이력 기준으로 꺼낸다 | [0028](decisions/0028-rediscovery-state-and-boundaries.md) |
 | `bridge` | 유사한데 링크가 없는 쌍. 기각은 영구 기록 | [0028](decisions/0028-rediscovery-state-and-boundaries.md) |

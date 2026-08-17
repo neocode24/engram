@@ -25,7 +25,7 @@
 | `inbox/` | `2026-03-02-talk-note` | **일부러 남긴 미처리 메모** |
 | 루트 | `index.md` | 색인 문서 |
 
-`inbox`에 하나를 남긴 것은 의도다. 적체가 0인 위키로는 `status`가 무엇을 보는지, `lint`가 고아 문서를 어떻게 잡는지 보여줄 수 없다. `engram lint examples/personal`을 돌리면 `warn` 하나가 나오는데 그 메모가 아무와도 이어져 있지 않다는 경고다. **`error`와 `reject`는 0이다.**
+`inbox`에 하나를 남긴 것은 의도다. 밀린 것이 0인 위키로는 `status`가 무엇을 보는지, `lint`가 고아 문서를 어떻게 잡는지 보여줄 수 없다. `engram lint examples/personal`을 돌리면 `warn` 하나가 나오는데 그 메모가 아무와도 이어져 있지 않다는 경고다. **`error`와 `reject`는 0이다.**
 
 ## 돌려 보기
 

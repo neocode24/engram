@@ -70,10 +70,10 @@ source_refs)를 종류별로 구분해 보여줍니다. 슬러그에 해당하�
 		"cli.lint.more_paths":           " 외 %d개",
 
 		// status
-		"cli.status.short": "위키 현황과 inbox 적체 압력을 보여줍니다",
-		"cli.status.long": `대상 경로의 위키 현황과 inbox 적체 압력을 보여줍니다. 경로를 생략하면 현재 디렉토리입니다.
+		"cli.status.short": "위키 현황과 밀린 것을 보여줍니다",
+		"cli.status.long": `대상 경로의 위키 현황과 아직 처리하지 않은 것을 보여줍니다. 경로를 생략하면 현재 디렉토리입니다.
 
-현황, 적체 압력, 다음 행동 세 구획으로 나눠 냅니다.
+현황, 밀린 것, 다음 행동 세 구획으로 나눠 냅니다.
 나이 계산의 기준 시각은 전역 --now 입니다.
 
 위키가 아닌 디렉토리에서는 거절하고 engram init 을 안내합니다.`,
@@ -81,10 +81,11 @@ source_refs)를 종류별로 구분해 보여줍니다. 슬러그에 해당하�
 		"cli.status.overview_counts":       "  inbox %d, source %d, context %d, archive %d 문서",
 		"cli.status.overview_links":        "  위키링크 %d개, 고아 문서 %d개",
 		"cli.status.overview_lint":         "  lint: 파일 %d개, error %d, warn %d, reject %d (상세는 engram lint)",
-		"cli.status.section_backlog":       "적체 압력 (기준 %s)",
+		"cli.status.section_backlog":       "밀린 것 (기준 %s)",
 		"cli.status.backlog_inbox":         "  inbox 문서 %d개",
+		"cli.status.backlog_inbox_today":   "  inbox 문서 %d개, 전부 오늘 들어왔습니다",
 		"cli.status.backlog_inbox_unknown": "  inbox 문서 %d개, 가장 오래된 것 알 수 없음",
-		"cli.status.backlog_inbox_oldest":  "  inbox 문서 %d개, 가장 오래된 것 %d일",
+		"cli.status.backlog_inbox_oldest":  "  inbox 문서 %d개, 가장 오래된 것은 %d일 전",
 		"cli.status.backlog_unknown_age":   "  날짜를 알 수 없는 inbox 문서 %d개",
 		"cli.status.backlog_stale":         "  stale_days를 넘긴 context 문서 %d개",
 		"cli.status.backlog_promotable":    "  지금 승급할 수 있는 문서 %d개",
@@ -168,7 +169,7 @@ fail 항목이 하나라도 있으면 종료 코드 1로 끝납니다. warn은 0
 		"cli.digest.long": `기간 안의 위키 변화를 집계합니다. 상태를 남기지 않으므로 몇 번을 돌려도 같은 결과가 나옵니다.
 
 --days로 기간을 정합니다. 창은 [기준 시각 - N일, 기준 시각]이고 기준
-시각은 전역 --now 다. 신규는 created가 창 안에 있는 문서, 노후는
+시각은 전역 --now 다. 신규는 created가 창 안에 있는 문서, 오래된 문서는
 stale_days를 넘긴 context 문서, 고아는 링크가 0개인 문서입니다.
 승급 집계는 promote가 승급 시각을 프론트매터에 남기지 않아 여기에
 없습니다.`,
@@ -178,7 +179,7 @@ stale_days를 넘긴 context 문서, 고아는 링크가 0개인 문서입니다
 		"cli.digest.flag_wiki":      "대상 위키 경로",
 		"cli.digest.header":         "기간 집계 (%s부터 %s까지, %d일)",
 		"cli.digest.created":        "  신규 %d개%s",
-		"cli.digest.stale":          "  노후 %d개%s",
+		"cli.digest.stale":          "  오래된 문서 %d개%s",
 		"cli.digest.orphans":        "  고아 %d개%s",
 		"cli.digest.more_slugs":     " 외 %d개",
 
@@ -264,11 +265,11 @@ end with exit code 1; warn passes with a notice.`,
 		"cli.lint.more_paths":           " and %d more",
 
 		// status
-		"cli.status.short": "Show wiki status and inbox backlog pressure",
-		"cli.status.long": `Show wiki status and inbox backlog pressure at the given path. Without a path,
+		"cli.status.short": "Show wiki status and what is waiting",
+		"cli.status.long": `Show wiki status and what is still waiting at the given path. Without a path,
 the current directory is used.
 
-Output is split into three sections: status, backlog pressure, and next steps.
+Output is split into three sections: status, backlog, and next steps.
 The reference time for age calculation is the global --now.
 
 In a directory that is not a wiki, the command refuses and points to engram init.`,
@@ -276,10 +277,11 @@ In a directory that is not a wiki, the command refuses and points to engram init
 		"cli.status.overview_counts":       "  inbox %d, source %d, context %d, archive %d documents",
 		"cli.status.overview_links":        "  wikilinks: %d, orphan documents: %d",
 		"cli.status.overview_lint":         "  lint: %d files, error %d, warn %d, reject %d (details: engram lint)",
-		"cli.status.section_backlog":       "Backlog pressure (as of %s)",
+		"cli.status.section_backlog":       "Backlog (as of %s)",
 		"cli.status.backlog_inbox":         "  inbox documents: %d",
+		"cli.status.backlog_inbox_today":   "  inbox documents: %d, all arrived today",
 		"cli.status.backlog_inbox_unknown": "  inbox documents: %d, oldest age unknown",
-		"cli.status.backlog_inbox_oldest":  "  inbox documents: %d, oldest is %d days old",
+		"cli.status.backlog_inbox_oldest":  "  inbox documents: %d, oldest arrived %d days ago",
 		"cli.status.backlog_unknown_age":   "  inbox documents with unknown date: %d",
 		"cli.status.backlog_stale":         "  context documents past stale_days: %d",
 		"cli.status.backlog_promotable":    "  documents promotable now: %d",

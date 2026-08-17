@@ -45,6 +45,8 @@ func init() {
 		"core.status.action_review":      "검토",
 		"core.status.suggest_stale":      "stale_days %d일을 넘긴 context 문서 %d개. 갱신하거나 archive로 옮기세요",
 		"core.status.suggest_lint":       "error %d건이 승급을 막고 있습니다. 상세 위반은 engram lint가 보여줍니다",
+		"core.status.action_link":        "링크 채우기",
+		"core.status.suggest_blocked":    "inbox 문서 %d개가 있지만 지금 올릴 수 있는 것이 없습니다. 승급하려면 문서마다 위키링크가 %d개 필요합니다. promote 할 때 --related 로 채울 수 있습니다",
 		"core.status.suggest_capture":    "inbox가 비었습니다. 새 메모를 받아 파이프라인을 돌리세요",
 		"core.status.more_paths":         " 외 %d개",
 		// export
@@ -162,6 +164,8 @@ func init() {
 		"core.status.action_review":      "review",
 		"core.status.suggest_stale":      "context documents past the stale_days of %[2]d days: %[1]d. update them or move them to archive",
 		"core.status.suggest_lint":       "errors blocking promotion: %d. engram lint shows the details",
+		"core.status.action_link":        "add links",
+		"core.status.suggest_blocked":    "inbox holds %d documents but none can be promoted yet. Each needs %d wikilinks to pass the gate. Fill them in with --related when you promote",
 		"core.status.suggest_capture":    "inbox is empty. capture new notes to run the pipeline",
 		"core.status.more_paths":         " and %d more",
 		// export

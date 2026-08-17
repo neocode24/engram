@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newStatusCmd는 위키 현황과 inbox 적체 압력을 보여주는 status 커맨드를 반환한다.
+// newStatusCmd는 위키 현황과 밀린 것을 보여주는 status 커맨드를 반환한다.
 // status 는 진단이지 판정이 아니다. 정상 종료 코드는 항상 0 이고 판정은 lint 가 한다.
 func newStatusCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -56,6 +56,8 @@ func printStatusText(w io.Writer, res status.Result, now time.Time) {
 		fmt.Fprintln(w, i18n.T("cli.status.backlog_inbox", b.Inbox))
 	case b.OldestDays == nil:
 		fmt.Fprintln(w, i18n.T("cli.status.backlog_inbox_unknown", b.Inbox))
+	case *b.OldestDays == 0:
+		fmt.Fprintln(w, i18n.T("cli.status.backlog_inbox_today", b.Inbox))
 	default:
 		fmt.Fprintln(w, i18n.T("cli.status.backlog_inbox_oldest", b.Inbox, *b.OldestDays))
 	}

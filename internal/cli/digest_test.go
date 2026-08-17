@@ -77,7 +77,7 @@ func TestDigestCmd(t *testing.T) {
 		for _, want := range []string{
 			"기간 집계 (2026-07-17부터 2026-08-16까지, 30일)",
 			"신규 2개: lonely, new",
-			"노후 1개: old",
+			"오래된 문서 1개: old",
 			"고아 1개: lonely",
 		} {
 			if !strings.Contains(out, want) {

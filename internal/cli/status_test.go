@@ -74,7 +74,7 @@ func TestStatusCmd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("status 는 항상 종료 코드 0 이어야 합니다: %v\n%s", err, out)
 		}
-		for _, want := range []string{"현황", "적체 압력 (기준 2026-08-15)", "다음 행동", "engram promote inbox/2026-07-15-ready.md"} {
+		for _, want := range []string{"현황", "밀린 것 (기준 2026-08-15)", "다음 행동", "engram promote inbox/2026-07-15-ready.md"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("출력에 %q 없음:\n%s", want, out)
 			}

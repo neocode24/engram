@@ -146,7 +146,7 @@ func buildDemo(t *testing.T, dir string) {
 		"--related", "promotion-pipeline", "--related", "index")
 
 	// 3. inbox 에 미처리 메모 둘. 하나는 승급하고 하나는 남긴다.
-	// 적체가 0인 위키는 status 가 무엇을 보는지 보여주지 못한다.
+	// 밀린 것이 0인 위키는 status 가 무엇을 보는지 보여주지 못한다.
 	r.run("capture", "--wiki", dir, "--title", "읽을거리 메모", "--slug", "reading-note",
 		"주간 회고에서 나온 이야기. 정리 전 상태다.")
 	r.run("capture", "--wiki", dir, "--title", "강연 메모", "--slug", "talk-note",
@@ -359,7 +359,7 @@ engram 이 만드는 위키의 모습을 보여주는 예제다. ` + "`engram in
 | context | 4건 | 게이트를 지난 검수된 지식 |
 
 ` + "`engram status .`" + ` 를 돌리면 이 표를 도구가 직접 낸다. inbox 에 하나가
-남아 있는 것은 실수가 아니라 의도다. 적체가 0인 위키로는 status 가
+남아 있는 것은 실수가 아니라 의도다. 밀린 것이 0인 위키로는 status 가
 무엇을 보는지 보여줄 수 없다.
 `
 

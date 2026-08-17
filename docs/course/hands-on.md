@@ -441,7 +441,7 @@ engram status
   위키링크 0개, 고아 문서 0개
   lint: 파일 1개, error 0, warn 0, reject 0 (상세는 engram lint)
 
-적체 압력 (기준 2026-08-17)
+밀린 것 (기준 2026-08-17)
   inbox 문서 0개
   지금 승급할 수 있는 문서 0개
 

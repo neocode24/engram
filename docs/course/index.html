@@ -983,7 +983,7 @@ body.read #hint{display:none}
       <div class="body"></div>
       <script type="application/json" class="tscript">[
 ["cmd","engram status"],
-["out","현황\n  inbox 0, source 1, context 1, archive 0 문서\n  위키링크 2개, 고아 문서 0개\n  lint: 파일 3개, error 0, warn 0, reject 0 (상세는 engram lint)\n\n적체 압력 (기준 2026-08-16)\n  inbox 문서 0개\n  지금 승급할 수 있는 문서 0개\n\n다음 행동\n  - engram capture\n    inbox가 비었습니다. 새 메모를 받아 파이프라인을 돌리세요"],
+["out","현황\n  inbox 0, source 1, context 1, archive 0 문서\n  위키링크 2개, 고아 문서 0개\n  lint: 파일 3개, error 0, warn 0, reject 0 (상세는 engram lint)\n\n밀린 것 (기준 2026-08-16)\n  inbox 문서 0개\n  지금 승급할 수 있는 문서 0개\n\n다음 행동\n  - engram capture\n    inbox가 비었습니다. 새 메모를 받아 파이프라인을 돌리세요"],
 ["cmd","engram reindex"],
 ["out","색인을 만들었습니다: .engram/index.json\n문서 3개, 토큰 76개, 크기 3832 바이트"],
 ["cmd","engram search 게이트웨이"],
@@ -995,7 +995,7 @@ body.read #hint{display:none}
     <p class="small mute" style="margin-top:.6em"><code>search</code>는 사람이 열어 볼 목록을 주고, <code>recall</code>은 에이전트가 컨텍스트에 넣고 <code>[[슬러그]]</code>로 인용할 원문 조각을 준다. 둘 다 요약하지 않는다.</p>
   </div>
   <aside class="notes">
-    <p><code>status</code>의 "다음 행동" 줄을 읽는다. 도구가 현황만 나열하지 않고 무엇을 하면 되는지 말한다. inbox 적체 압력도 여기서 본다. 며칠째 몇 개가 쌓였는지가 곧 정리 세션을 열 신호다.</p>
+    <p><code>status</code>의 "다음 행동" 줄을 읽는다. 도구가 현황만 나열하지 않고 무엇을 하면 되는지 말한다. 밀린 것도 여기서 본다. 며칠째 몇 개가 쌓였는지가 곧 정리 세션을 열 신호다.</p>
     <p><code>recall</code> 출력의 줄 범위(16-18)를 짚는다. 헤딩 단위로 자른 청크에 슬러그와 줄 범위가 붙어서 에이전트가 그대로 인용할 수 있다. 요약은 안 한다. 요약은 에이전트 몫이다.</p>
   </aside>
 </section>

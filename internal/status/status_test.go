@@ -232,10 +232,13 @@ func TestRun(t *testing.T) {
 		}
 	})
 
-	t.Run("제안이 없으면 없다고 낸다", func(t *testing.T) {
+	t.Run("올릴 수 없는 inbox 가 밀리면 링크를 채우라고 안내한다", func(t *testing.T) {
 		// 링크 대상을 min_wikilinks 만큼 확보해 게이트가 동작하는 상태에서
 		// 링크 없는 inbox 문서는 승급 대기가 아니다. 대상은 context 문서와
 		// sources 문서다. inbox 문서는 대상에서 빠진다.
+		//
+		// 예전에는 이 상태에서 제안이 하나도 없었다. 밀린 것이 있는데
+		// 도구가 할 말이 없다고 읽혀서 사용자가 다음에 뭘 할지 모른다.
 		root := writeWiki(t, map[string]string{
 			"engram.yaml":              "preset: personal\n",
 			"inbox/2026-08-01-memo.md": inboxDoc("2026-08-01", ""),
@@ -244,8 +247,14 @@ func TestRun(t *testing.T) {
 			"sources/2026-06-01.md":    "---\ntype: source-summary\nartifact_stage: source\nstatus: sourced\nindexable: false\nsource_refs: []\nderived_from: []\nderived_context: []\nsource_channel: web\ncreated: 2026-06-01\nsourced_at: 2026-06-02\n---\n\n원본\n",
 		})
 		res, _ := Run(root, fixedNow)
-		if len(res.Suggestions) != 0 {
-			t.Errorf("제안이 없어야 한다: %+v", res.Suggestions)
+		if res.Backlog.Inbox == 0 || res.Backlog.Promotable != 0 {
+			t.Fatalf("시험 전제가 깨졌다. inbox %d, promotable %d", res.Backlog.Inbox, res.Backlog.Promotable)
+		}
+		if len(res.Suggestions) != 1 {
+			t.Fatalf("제안이 하나여야 한다: %+v", res.Suggestions)
+		}
+		if !strings.Contains(res.Suggestions[0].Detail, "위키링크가 2개 필요합니다") {
+			t.Errorf("게이트 기준을 알려야 한다: %+v", res.Suggestions[0])
 		}
 	})
 
