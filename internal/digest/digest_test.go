@@ -87,7 +87,7 @@ func TestRunAggregates(t *testing.T) {
 	if want := []string{"2026-07-15-inbox-new", "orphan"}; !reflect.DeepEqual(res.Orphans, want) {
 		t.Errorf("고아 = %v, want %v", res.Orphans, want)
 	}
-	if res.Days != 30 || res.StaleDays != 90 {
+	if res.Days != 30 || res.StaleDays != 30 {
 		t.Errorf("기간/노후 기준: days=%d staleDays=%d", res.Days, res.StaleDays)
 	}
 	if res.Since != "2026-07-17T12:00:00Z" || res.Until != "2026-08-16T12:00:00Z" {

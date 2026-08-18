@@ -124,7 +124,7 @@
 | `page_dirs` | 문서가 놓이는 디렉토리 | 프리셋 |
 | `root_files` | 루트에 있어야 하는 파일 | `index.md` |
 | `min_wikilinks` | 승급 게이트. 미만이면 거절 | 2 |
-| `stale_days` | 재발견 판정 | 90 |
+| `stale_days` | 재발견 판정 | 30 |
 | `max_lines` | 문서 길이 상한. 경고 | 1000 |
 | `broad_topic_pct` | 광범위 주제 비율 상한. 경고 | 25 |
 | `[embedding]` | 시맨틱 검색 선택 층 | 모델, 차원, 청크 크기 |

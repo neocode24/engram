@@ -57,7 +57,7 @@ preset: %s
 
 # 임계값. min_wikilinks만 승급 거절 사유이고 나머지는 경고에 쓰입니다.
 min_wikilinks: 2    # promote 게이트. 0으로 두면 게이트가 꺼집니다
-stale_days: 90      # 재발견 대상 판정 기준 일수
+stale_days: 30      # 재발견 대상 판정 기준 일수
 max_lines: 1000     # 문서 길이 경고 상한
 broad_topic_pct: 25 # 광범위 주제 비율 경고 상한(퍼센트)
 
@@ -339,7 +339,7 @@ preset: %s
 
 # Thresholds. Only min_wikilinks rejects promotion; the rest feed warnings.
 min_wikilinks: 2    # promote gate. Set 0 to turn the gate off
-stale_days: 90      # Days used to pick resurface candidates
+stale_days: 30      # Days used to pick resurface candidates
 max_lines: 1000     # Document length warning ceiling
 broad_topic_pct: 25 # Broad topic ratio warning ceiling (percent)
 

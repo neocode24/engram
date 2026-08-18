@@ -285,9 +285,9 @@
 
 **upstream 규정**: `scripts/wiki_resurface.py:48`가 `MIN_STALE_DAYS = 30`이다. "이보다 최근에 만진 페이지는 후보가 아니다."
 
-**engram 대응**: `internal/config/config.go:219` `StaleDays: 90`이 대응한다. 값이 3배다.
+**engram 대응**: `internal/config/config.go`의 `StaleDays`가 대응한다. 기본값이 90이었으나 [ADR 0067](decisions/0067-stale-days-default-is-thirty.md)이 30으로 바꿔 upstream과 같아졌다.
 
-**영향**: 노후 판정 기준이 다르다.
+**영향**: 해소되었다. 90에서는 실운영 위키 308문서 기준 `resurface` 후보가 0건이었다.
 
 **출처**: B6
 

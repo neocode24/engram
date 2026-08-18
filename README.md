@@ -328,7 +328,7 @@ forms: [note, report]
 
 # thresholds. Only min_wikilinks can reject a promotion; the rest only warn.
 min_wikilinks: 2    # promote gate. 0 turns the gate off
-stale_days: 90      # rediscovery threshold in days
+stale_days: 30      # rediscovery threshold in days
 max_lines: 1000     # document length warning
 broad_topic_pct: 25 # warning when one topic covers this share of documents (percent)
 ```

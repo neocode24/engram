@@ -216,7 +216,7 @@ func defaults() Config {
 		Preset:      DefaultPreset,
 		Axes:        presetAxes(DefaultPreset),
 		Schema:      defaultSchema(),
-		Thresholds:  Thresholds{MinWikilinks: 2, StaleDays: 90, MaxLines: 1000, BroadTopicPct: 25},
+		Thresholds:  Thresholds{MinWikilinks: 2, StaleDays: 30, MaxLines: 1000, BroadTopicPct: 25},
 		PageDirs:    []string{"inbox", "sources", "context", "archive"},
 		RootFiles:   []string{"index.md"},
 		IgnoreFiles: []string{"README.md"},

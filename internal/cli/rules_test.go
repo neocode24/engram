@@ -82,7 +82,7 @@ func TestRulesShowCmd(t *testing.T) {
 	})
 
 	t.Run("사용자가 바꾼 임계값이 제품 기본값 대신 나옵니다", func(t *testing.T) {
-		wiki := makeRulesWiki(t, "preset: personal\nmin_wikilinks: 5\nstale_days: 30\n")
+		wiki := makeRulesWiki(t, "preset: personal\nmin_wikilinks: 5\nstale_days: 60\n")
 		out, err := runRules(t, "rules", "show", "--wiki", wiki)
 		if err != nil {
 			t.Fatalf("실행 실패: %v\n%s", err, out)
@@ -96,12 +96,12 @@ func TestRulesShowCmd(t *testing.T) {
 			}
 		}
 		joined := strings.Join(lines, "\n")
-		for _, want := range []string{"min_wikilinks 5", "stale_days 30"} {
+		for _, want := range []string{"min_wikilinks 5", "stale_days 60"} {
 			if !strings.Contains(joined, want) {
 				t.Errorf("출력에 %q 없음:\n%s", want, out)
 			}
 		}
-		if strings.Contains(joined, "min_wikilinks 2") || strings.Contains(joined, "stale_days 90") {
+		if strings.Contains(joined, "min_wikilinks 2") || strings.Contains(joined, "stale_days 30") {
 			t.Errorf("제품 기본값이 나옴:\n%s", out)
 		}
 	})

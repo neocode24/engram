@@ -231,7 +231,7 @@ func TestJourney(t *testing.T) {
 	assertFileContains(t, bundle, "context/lecture.md", "lecture")
 
 	// 승급 문서가 재발견 대상에 들어가는지 본다. 기준 시각을 stale_days
-	// 기본값 90일보다 훨씬 뒤로 옮긴다. 승급 문서에 날짜가 없으면 후보가
+	// 기본값 30일보다 훨씬 뒤로 옮긴다. 승급 문서에 날짜가 없으면 후보가
 	// 비거나 skippedNoDate 가 늘어난다.
 	future := walker{bin: binaryPath, wiki: wiki, now: "2026-12-01T00:00:00Z"}
 	rs := future.run("resurface 미래 시각", "resurface", "--json", "--wiki", wiki)

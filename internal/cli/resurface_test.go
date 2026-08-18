@@ -74,7 +74,7 @@ func TestResurfaceCmd(t *testing.T) {
 			t.Fatalf("resurface 오류: %v\n%s", err, out)
 		}
 		for _, want := range []string{
-			"다시 꺼낼 문서 2개 (stale_days 90일, 기준 2026-08-16)",
+			"다시 꺼낼 문서 2개 (stale_days 30일, 기준 2026-08-16)",
 			"old-b (더 오래된 결정): 마지막 갱신 258일 전, 제시한 적 없음",
 			"old-a (첫 결정): 마지막 갱신 227일 전, 제시한 적 없음",
 		} {
@@ -142,7 +142,7 @@ func TestResurfaceCmd(t *testing.T) {
 		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
 			t.Fatalf("JSON 파싱 실패: %v\n출력: %s", err, out)
 		}
-		if res.StaleDays != 90 || res.SkippedNoDate != 0 {
+		if res.StaleDays != 30 || res.SkippedNoDate != 0 {
 			t.Errorf("기준값: %+v", res)
 		}
 		if len(res.Candidates) != 2 || res.Candidates[0].Slug != "old-b" {

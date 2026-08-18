@@ -32,7 +32,7 @@ func TestLoad(t *testing.T) {
 				if c.Preset != DefaultPreset {
 					t.Errorf("프리셋 = %q, want %q", c.Preset, DefaultPreset)
 				}
-				if want := (Thresholds{MinWikilinks: 2, StaleDays: 90, MaxLines: 1000, BroadTopicPct: 25}); c.Thresholds != want {
+				if want := (Thresholds{MinWikilinks: 2, StaleDays: 30, MaxLines: 1000, BroadTopicPct: 25}); c.Thresholds != want {
 					t.Errorf("임계값 = %+v, want %+v", c.Thresholds, want)
 				}
 				if want := []string{"inbox", "sources", "context", "archive"}; !reflect.DeepEqual(c.PageDirs, want) {
@@ -89,10 +89,10 @@ func TestLoad(t *testing.T) {
 		},
 		{
 			name: "파일 병합이 기본값을 덮고 없는 키는 기본값이 남는다",
-			yaml: "min_wikilinks: 5\nstale_days: 30\n",
+			yaml: "min_wikilinks: 5\nstale_days: 60\n",
 			check: func(t *testing.T, c Config) {
-				if c.Thresholds.MinWikilinks != 5 || c.Thresholds.StaleDays != 30 {
-					t.Errorf("임계값 = %+v, want min_wikilinks 5, stale_days 30", c.Thresholds)
+				if c.Thresholds.MinWikilinks != 5 || c.Thresholds.StaleDays != 60 {
+					t.Errorf("임계값 = %+v, want min_wikilinks 5, stale_days 60", c.Thresholds)
 				}
 				if c.Thresholds.MaxLines != 1000 || c.Thresholds.BroadTopicPct != 25 {
 					t.Errorf("파일에 없는 임계값이 기본값이 아님: %+v", c.Thresholds)
@@ -239,5 +239,17 @@ func TestLoad(t *testing.T) {
 			}
 			tt.check(t, c)
 		})
+	}
+}
+
+// TestDefaultStaleDays는 노후 기준일 기본값을 못 박는다. 실운영 위키
+// 308문서 측정에서 90이면 resurface 후보가 0건이었다(ADR 0067).
+func TestDefaultStaleDays(t *testing.T) {
+	c, err := Load(t.TempDir())
+	if err != nil {
+		t.Fatalf("에러 없이 로드되어야 함: %v", err)
+	}
+	if c.Thresholds.StaleDays != 30 {
+		t.Errorf("stale_days 기본값 = %d, want 30", c.Thresholds.StaleDays)
 	}
 }

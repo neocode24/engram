@@ -109,7 +109,7 @@ func TestDigestCmd(t *testing.T) {
 		if len(res.Created) != 2 || len(res.Stale) != 1 || len(res.Orphans) != 1 {
 			t.Errorf("집계: %+v", res)
 		}
-		if res.Days != 30 || res.StaleDays != 90 {
+		if res.Days != 30 || res.StaleDays != 30 {
 			t.Errorf("기준값: %+v", res)
 		}
 	})
