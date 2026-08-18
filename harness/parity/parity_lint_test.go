@@ -246,9 +246,12 @@ func usePresetTeam(t *testing.T, wiki string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	swapped := strings.Replace(string(raw), "preset: minimal", "preset: team", 1)
+	// 골든 픽스처의 프리셋 이름과 같아야 한다. ADR 0048이 프리셋 이름을
+	// 바꿀 때 픽스처는 personal 로 갱신됐는데 이 문자열이 minimal 로 남아
+	// 이 축이 그때부터 실행되지 않았다.
+	swapped := strings.Replace(string(raw), "preset: personal", "preset: team", 1)
 	if swapped == string(raw) {
-		t.Fatalf("픽스처 engram.yaml에서 preset: minimal 을 찾지 못했다: %s", path)
+		t.Fatalf("픽스처 engram.yaml에서 preset: personal 을 찾지 못했다: %s", path)
 	}
 	if err := os.WriteFile(path, []byte(swapped), 0o644); err != nil {
 		t.Fatal(err)

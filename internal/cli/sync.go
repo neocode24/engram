@@ -46,14 +46,20 @@ func newSyncCmd() *cobra.Command {
 			}
 
 			var changes []syncChange
-			uncommitted := 0
+			uncommitted, bulkOnly := 0, 0
 			for _, w := range walked {
 				if w.Err != nil || !w.Parsed.HasFrontmatter {
 					continue // 프론트매터를 읽지 못한 문서는 정정 대상이 아니다
 				}
 				d, ok := hist[w.Rel]
 				if !ok || d.First == "" {
-					uncommitted++
+					// 대량 커밋에만 등장한 문서는 커밋이 없는 것과 다른
+					// 사유로 건너뛴다. 다음 실제 편집 때 채워진다.
+					if ok && d.BulkOnly {
+						bulkOnly++
+					} else {
+						uncommitted++
+					}
 					continue
 				}
 				cs := dateChanges(w.Rel, w.Parsed, d)
@@ -68,7 +74,7 @@ func newSyncCmd() *cobra.Command {
 				changes = append(changes, cs...)
 			}
 
-			res := syncOutcome{Applied: apply, Changed: changes, Uncommitted: uncommitted}
+			res := syncOutcome{Applied: apply, Changed: changes, Uncommitted: uncommitted, BulkOnly: bulkOnly}
 			if jsonOutput(cmd) {
 				enc := json.NewEncoder(cmd.OutOrStdout())
 				enc.SetIndent("", "  ")
@@ -97,6 +103,7 @@ type syncOutcome struct {
 	Applied     bool         `json:"applied"`
 	Changed     []syncChange `json:"changed"`
 	Uncommitted int          `json:"uncommitted"`
+	BulkOnly    int          `json:"bulkOnly"`
 }
 
 // dateChanges는 문서의 현재 값과 git 이력을 비교해 정정할 필드를 뽑는다.
@@ -159,5 +166,8 @@ func printSync(w io.Writer, res syncOutcome) {
 	}
 	if res.Uncommitted > 0 {
 		fmt.Fprint(w, i18n.T("cli.sync.uncommitted", res.Uncommitted)+"\n")
+	}
+	if res.BulkOnly > 0 {
+		fmt.Fprint(w, i18n.T("cli.sync.bulk_only", res.BulkOnly, gitdate.BulkCommitThreshold)+"\n")
 	}
 }

@@ -1,6 +1,7 @@
 package gitdate
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -181,4 +182,84 @@ func TestHistoryWithQuotedPaths(t *testing.T) {
 	if _, ok := hist["context/ascii.md"]; !ok {
 		t.Error("ascii 문서가 이력에 없다")
 	}
+}
+
+// TestBulkCommitFilter는 대량 커밋을 날짜 신호에서 빼는지 본다.
+// upstream 이 겪은 사고와 같은 경로가 engram 에도 있다. migrate 가 전
+// 문서의 프론트매터를 한 커밋에 고치고 그 뒤 sync 가 그 날짜를 쓰면
+// 위키 전체가 방금 만진 것이 되어 재발견이 죽는다.
+func TestBulkCommitFilter(t *testing.T) {
+	// commitDocs는 문서 n개를 만들어 한 커밋에 넣는다.
+	commitDocs := func(t *testing.T, root, date, prefix string, n int) {
+		t.Helper()
+		for i := 0; i < n; i++ {
+			writeFile(t, filepath.Join(root, "context", fmt.Sprintf("%s%02d.md", prefix, i)), date+"\n")
+		}
+		commitAll(t, root, date, prefix+" 커밋")
+	}
+
+	t.Run("문서 15개를 한 커밋에 넣으면 그 날짜를 쓰지 않는다", func(t *testing.T) {
+		needGit(t)
+		root := t.TempDir()
+		gitRun(t, root, "", "init")
+		writeFile(t, filepath.Join(root, "context", "오래된.md"), "첫 내용\n")
+		commitAll(t, root, "2026-01-01", "첫 커밋")
+		// 15개짜리 커밋이 기존 문서까지 함께 건드린다. 대량 커밋이다.
+		writeFile(t, filepath.Join(root, "context", "오래된.md"), "형식만 바뀜\n")
+		commitDocs(t, root, "2026-08-01", "대량", 14)
+
+		hist, err := History(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := hist["context/오래된.md"].Last; got != "2026-01-01" {
+			t.Errorf("Last = %q, 대량 커밋을 빼면 2026-01-01 이어야 함", got)
+		}
+		// 대량 커밋에만 등장한 문서는 날짜가 없고 표시만 남는다.
+		d := hist["context/대량00.md"]
+		if d.Last != "" || d.First != "" || !d.BulkOnly {
+			t.Errorf("대량 커밋에만 있는 문서 = %+v, 날짜 없이 BulkOnly 여야 함", d)
+		}
+	})
+
+	t.Run("문서 14개짜리 커밋은 날짜를 쓴다", func(t *testing.T) {
+		needGit(t)
+		root := t.TempDir()
+		gitRun(t, root, "", "init")
+		writeFile(t, filepath.Join(root, "context", "오래된.md"), "첫 내용\n")
+		commitAll(t, root, "2026-01-01", "첫 커밋")
+		writeFile(t, filepath.Join(root, "context", "오래된.md"), "내용 갱신\n")
+		commitDocs(t, root, "2026-08-01", "보통", 13)
+
+		hist, err := History(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := hist["context/오래된.md"].Last; got != "2026-08-01" {
+			t.Errorf("Last = %q, 임계값 미만이므로 2026-08-01 이어야 함", got)
+		}
+		if d := hist["context/보통00.md"]; d.Last != "2026-08-01" || d.BulkOnly {
+			t.Errorf("함께 들어온 문서 = %+v, 2026-08-01 이고 BulkOnly 가 아니어야 함", d)
+		}
+	})
+
+	t.Run("마크다운이 아닌 파일은 대량 판정에서 세지 않는다", func(t *testing.T) {
+		needGit(t)
+		root := t.TempDir()
+		gitRun(t, root, "", "init")
+		writeFile(t, filepath.Join(root, "context", "문서.md"), "내용\n")
+		// 문서는 하나뿐이고 스크립트와 설정만 스무 개를 함께 고쳤다.
+		for i := 0; i < 20; i++ {
+			writeFile(t, filepath.Join(root, "scripts", fmt.Sprintf("s%02d.sh", i)), "echo\n")
+		}
+		commitAll(t, root, "2026-08-01", "스크립트 정리")
+
+		hist, err := History(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := hist["context/문서.md"].Last; got != "2026-08-01" {
+			t.Errorf("Last = %q, 문서 수가 임계값 미만이므로 2026-08-01 이어야 함", got)
+		}
+	})
 }

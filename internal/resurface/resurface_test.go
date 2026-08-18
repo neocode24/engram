@@ -179,36 +179,20 @@ func TestRunSelectsAndSorts(t *testing.T) {
 	}
 }
 
-func TestRunNeverShownFirstThenOldestShown(t *testing.T) {
+// TestRunSortsByScoreNotByHistory는 제시 이력이 정렬 키가 아니라 제외
+// 필터임을 못 박는다. 마지막 제시를 1차 키로 두면 점수가 순위를 바꾸지
+// 못해 인바운드 가중치가 무의미해진다(ADR 0066).
+func TestRunSortsByScoreNotByHistory(t *testing.T) {
 	now := fixedNow()
 	older, _ := time.Parse(time.RFC3339, "2026-06-01T00:00:00Z")
-	recent, _ := time.Parse(time.RFC3339, "2026-08-10T00:00:00Z")
 
-	t.Run("둘 다 제시했으면 오래된 쪽이 먼저", func(t *testing.T) {
+	t.Run("제시한 적 있어도 점수가 높으면 먼저", func(t *testing.T) {
 		root := makeWiki(t, map[string]string{
 			"context/old-a.md": docFM("2026-01-01", "", "본문"),
 			"context/old-b.md": docFM("2025-12-01", "", "본문"),
 		})
-		if err := SaveHistory(root, map[string]time.Time{"old-a": recent, "old-b": older}); err != nil {
-			t.Fatal(err)
-		}
-		res, err := Run(root, loadCfg(t, root), now, 5, true)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if res.Candidates[0].Slug != "old-b" || res.Candidates[1].Slug != "old-a" {
-			t.Fatalf("제시 이력 정렬이 다릅니다: %s, %s", res.Candidates[0].Slug, res.Candidates[1].Slug)
-		}
-		if res.Candidates[0].LastShown == nil || !res.Candidates[0].LastShown.Equal(older) {
-			t.Errorf("old-b 의 마지막 제시 = %v, want %v", res.Candidates[0].LastShown, older)
-		}
-	})
-
-	t.Run("제시한 적 없는 문서가 먼저", func(t *testing.T) {
-		root := makeWiki(t, map[string]string{
-			"context/old-a.md": docFM("2026-01-01", "", "본문"),
-			"context/old-b.md": docFM("2025-12-01", "", "본문"),
-		})
+		// old-b 는 쿨다운 밖에서 제시된 적이 있고 old-a 는 제시된 적이 없다.
+		// 그래도 경과일이 큰 old-b 가 먼저다.
 		if err := SaveHistory(root, map[string]time.Time{"old-b": older}); err != nil {
 			t.Fatal(err)
 		}
@@ -216,8 +200,11 @@ func TestRunNeverShownFirstThenOldestShown(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if res.Candidates[0].Slug != "old-a" {
-			t.Fatalf("제시한 적 없는 문서가 먼저여야 합니다: %+v", res.Candidates)
+		if res.Candidates[0].Slug != "old-b" {
+			t.Fatalf("점수가 높은 문서가 먼저여야 합니다: %+v", res.Candidates)
+		}
+		if res.Candidates[0].LastShown == nil || !res.Candidates[0].LastShown.Equal(older) {
+			t.Errorf("old-b 의 마지막 제시 = %v, want %v", res.Candidates[0].LastShown, older)
 		}
 	})
 
@@ -387,4 +374,159 @@ func date(t *testing.T, s string) time.Time {
 	}
 	t.Fatalf("날짜 리터럴을 파싱할 수 없습니다: %q", s)
 	return time.Time{}
+}
+
+// TestNoInbound는 재발견의 고아 판정이 인바운드만 보는지 확인한다.
+// lint 의 graph.orphan 은 아웃바운드와 관계 필드와 인바운드가 전부 0일
+// 때만 고아로 보므로 아래 문서는 lint 에서 고아가 아니다. 두 지표가
+// 다른 것을 재는 것이 ADR 0066 의 결정이다.
+func TestNoInbound(t *testing.T) {
+	old := "2020-01-01"
+	root := makeWiki(t, map[string]string{
+		// 가리키는 문서. 아웃바운드는 있으나 아무도 안 가리킨다.
+		"context/가리키는.md": docFM(old, old, "# 가리키는\n\n[[가리켜지는]]\n"),
+		// 가리켜지는 문서. 인바운드가 하나 있다.
+		"context/가리켜지는.md": docFM(old, old, "# 가리켜지는\n\n본문\n"),
+	})
+	res, err := Run(root, loadCfg(t, root), fixedNow(), -1, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, u := range res.NoInbound {
+		got = append(got, u.Slug)
+	}
+	if want := []string{"가리키는"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("NoInbound = %v, want %v", got, want)
+	}
+	for _, c := range res.Candidates {
+		if c.Slug == "가리켜지는" && c.Inbound != 1 {
+			t.Errorf("가리켜지는 의 인바운드 = %d, want 1", c.Inbound)
+		}
+		if c.Slug == "가리키는" && c.Inbound != 0 {
+			t.Errorf("가리키는 의 인바운드 = %d, want 0", c.Inbound)
+		}
+	}
+}
+
+// TestInboundWeightBreaksTie는 경과일이 같고 인바운드가 다른 두 문서의
+// 순위가 갈리는지 본다. 인바운드가 적을수록 잊히기 쉬우므로 먼저 나온다.
+func TestInboundWeightBreaksTie(t *testing.T) {
+	old := "2020-01-01"
+	root := makeWiki(t, map[string]string{
+		// ㄱ 이 ㄴ 을 가리킨다. 둘의 날짜는 같다.
+		"context/ㄱ연결됨.md": docFM(old, old, "# 연결됨\n\n본문\n"),
+		"context/ㄴ고립됨.md": docFM(old, old, "# 고립됨\n\n본문\n"),
+		"context/ㄷ링커.md":  docFM(old, old, "# 링커\n\n[[ㄱ연결됨]]\n"),
+	})
+	cfg := loadCfg(t, root)
+	res, err := Run(root, cfg, fixedNow(), 2, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Candidates) != 2 {
+		t.Fatalf("후보 수 = %d, want 2: %+v", len(res.Candidates), res.Candidates)
+	}
+	// 셋의 경과일이 같으므로 인바운드 0인 둘이 먼저다. 그 둘 사이는
+	// 점수가 같아 슬러그 오름차순으로 갈린다.
+	if got := []string{res.Candidates[0].Slug, res.Candidates[1].Slug}; !reflect.DeepEqual(got, []string{"ㄴ고립됨", "ㄷ링커"}) {
+		t.Errorf("순위 = %v, 인바운드 0인 문서가 먼저여야 함", got)
+	}
+	// 인바운드 1인 문서의 점수는 경과일의 1.5배, 0인 문서는 2배다.
+	full, err := Run(root, cfg, fixedNow(), -1, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range full.Candidates {
+		want := float64(c.AgeDays) * (1.0 + 1.0/(1.0+float64(c.Inbound)))
+		if c.Score != want {
+			t.Errorf("%s 점수 = %v, want %v", c.Slug, c.Score, want)
+		}
+	}
+	// 같은 입력에 같은 순서가 나온다. 부동소수 비교라 못 박는다.
+	for i := 0; i < 5; i++ {
+		again, err := Run(root, cfg, fixedNow(), -1, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(again.Candidates, full.Candidates) {
+			t.Fatalf("%d번째 실행의 순서가 다릅니다:\n첫 실행 %+v\n이번 %+v", i, full.Candidates, again.Candidates)
+		}
+	}
+}
+
+// TestCooldown은 쿨다운이 정렬 앞의 제외 필터로 도는지, 그리고 후보가
+// 마르면 무시되는지 본다. 빈 결과보다 반복 노출이 낫다는 것이 ADR 0066
+// 의 판단이다.
+func TestCooldown(t *testing.T) {
+	now := fixedNow()
+	// 가 가 가장 오래됐으므로 쿨다운이 없으면 점수 1위다.
+	files := map[string]string{
+		"context/가.md": docFM("2020-01-01", "2020-01-01", "# 가\n"),
+		"context/나.md": docFM("2021-01-01", "2021-01-01", "# 나\n"),
+		"context/다.md": docFM("2022-01-01", "2022-01-01", "# 다\n"),
+	}
+
+	t.Run("쿨다운 안에 제시한 문서는 점수가 1위여도 빠진다", func(t *testing.T) {
+		root := makeWiki(t, files)
+		if err := SaveHistory(root, map[string]time.Time{"가": now.AddDate(0, 0, -10)}); err != nil {
+			t.Fatal(err)
+		}
+		res, err := Run(root, loadCfg(t, root), now, 2, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := []string{res.Candidates[0].Slug, res.Candidates[1].Slug}
+		if !reflect.DeepEqual(got, []string{"나", "다"}) {
+			t.Errorf("후보 = %v, 쿨다운 안의 가 는 빠져야 함", got)
+		}
+		if res.CooldownFilled != 0 {
+			t.Errorf("CooldownFilled = %d, want 0", res.CooldownFilled)
+		}
+	})
+
+	t.Run("쿨다운 밖에 제시한 문서는 후보로 남는다", func(t *testing.T) {
+		root := makeWiki(t, files)
+		if err := SaveHistory(root, map[string]time.Time{"가": now.AddDate(0, 0, -CooldownDays)}); err != nil {
+			t.Fatal(err)
+		}
+		res, err := Run(root, loadCfg(t, root), now, -1, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(res.Candidates) != 3 || res.Candidates[0].Slug != "가" || res.CooldownFilled != 0 {
+			t.Errorf("후보 %+v, CooldownFilled %d. 21일이 지났으므로 점수 1위인 가 가 먼저여야 함",
+				res.Candidates, res.CooldownFilled)
+		}
+	})
+
+	t.Run("후보가 요청 수보다 적으면 쿨다운을 무시하고 채운다", func(t *testing.T) {
+		root := makeWiki(t, files)
+		shown := map[string]time.Time{}
+		for _, s := range []string{"가", "나", "다"} {
+			shown[s] = now.AddDate(0, 0, -1)
+		}
+		if err := SaveHistory(root, shown); err != nil {
+			t.Fatal(err)
+		}
+		res, err := Run(root, loadCfg(t, root), now, 2, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(res.Candidates) != 2 {
+			t.Fatalf("후보 수 = %d, want 2. 쿨다운이 결과를 비우면 안 된다", len(res.Candidates))
+		}
+		if res.CooldownFilled != 2 {
+			t.Errorf("CooldownFilled = %d, want 2", res.CooldownFilled)
+		}
+		for _, c := range res.Candidates {
+			if !c.Cooldown {
+				t.Errorf("쿨다운으로 채운 후보에 표시가 없음: %+v", c)
+			}
+		}
+		// 채울 때도 점수 순이다.
+		if res.Candidates[0].Slug != "가" {
+			t.Errorf("채운 순서 = %s, 점수 1위인 가 가 먼저여야 함", res.Candidates[0].Slug)
+		}
+	})
 }

@@ -871,3 +871,22 @@ func TestRun(t *testing.T) {
 		}
 	})
 }
+
+// TestOrphanIgnoresInboundDirection은 아웃바운드만 있고 인바운드가 0인
+// 문서를 lint 가 고아로 보지 않는 것을 못 박는다. 재발견 쪽은 같은
+// 문서를 "아무도 안 가리키는 문서"로 낸다(ADR 0066). lint 는 그 문서를
+// 고쳐서 해결할 수 있는 것만 지적하고 인바운드는 남이 걸어 주는 것이라
+// 그 문서를 고쳐서 해결되지 않는다.
+func TestOrphanIgnoresInboundDirection(t *testing.T) {
+	res := runLint(t, map[string]string{
+		// 가리키는 문서는 아웃바운드가 둘이고 인바운드가 0이다.
+		"context/가리키는.md": cleanContextDoc("나", "다"),
+		"context/나.md":    cleanContextDoc("다", "다"),
+		"context/다.md":    cleanContextDoc("나", "나"),
+	})
+	for _, v := range findByRule(res, "graph.orphan") {
+		if v.Path == "context/가리키는.md" {
+			t.Errorf("아웃바운드가 있는 문서가 lint 고아로 판정됨: %+v", v)
+		}
+	}
+}

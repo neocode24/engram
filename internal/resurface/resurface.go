@@ -15,6 +15,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
+	"github.com/neocode24/engram/internal/graph"
 	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/walk"
 )
@@ -26,6 +27,10 @@ const (
 	historyVersion = 1
 )
 
+// CooldownDays는 한 번 제시한 문서를 후보에서 빼 두는 기간이다.
+// 설정으로 노출하지 않는다(ADR 0010 과 같은 이유). upstream 과 같은 값이다.
+const CooldownDays = 21
+
 // Candidate는 다시 꺼낼 문서 하나다. 근거가 되는 경과일과 제시 이력을
 // 함께 실는다. 문장은 만들지 않는다(design.md 재발견 절).
 type Candidate struct {
@@ -33,16 +38,31 @@ type Candidate struct {
 	Title     string     `json:"title"`
 	Path      string     `json:"path"`
 	AgeDays   int        `json:"daysSinceUpdate"`
+	Inbound   int        `json:"inboundLinks"`
+	Score     float64    `json:"score"`
 	LastShown *time.Time `json:"lastShown"`
+	Cooldown  bool       `json:"cooldown"`
+}
+
+// Unlinked는 아무도 가리키지 않는 context 문서다. 재발견의 고아 판정은
+// 인바운드만 본다. lint 의 graph.orphan 과 다른 것을 재므로 형도 이름도
+// 나눠 둔다(ADR 0066).
+type Unlinked struct {
+	Slug  string `json:"slug"`
+	Title string `json:"title"`
+	Path  string `json:"path"`
 }
 
 // Result는 resurface 실행 결과다. 후보가 없으면 Reason 에 이유가 들어간다.
 type Result struct {
-	StaleDays     int         `json:"staleDays"`
-	Now           time.Time   `json:"now"`
-	SkippedNoDate int         `json:"skippedNoDate"`
-	Candidates    []Candidate `json:"candidates"`
-	Reason        string      `json:"reason,omitempty"`
+	StaleDays      int         `json:"staleDays"`
+	Now            time.Time   `json:"now"`
+	SkippedNoDate  int         `json:"skippedNoDate"`
+	Candidates     []Candidate `json:"candidates"`
+	CooldownDays   int         `json:"cooldownDays"`
+	CooldownFilled int         `json:"cooldownFilled"`
+	NoInbound      []Unlinked  `json:"noInbound"`
+	Reason         string      `json:"reason,omitempty"`
 }
 
 // BaseDate는 문서의 기준 날짜를 반환한다. updated 를 우선하고 없으면
@@ -80,8 +100,15 @@ func Run(wikiRoot string, cfg config.Config, now time.Time, limit int, dryRun bo
 		return Result{}, fmt.Errorf("%s: %w", i18n.T("core.resurface.walk_fail"), err)
 	}
 	shown := LoadHistory(wikiRoot)
+	inbound := inboundCounts(walked)
 
-	res := Result{StaleDays: cfg.Thresholds.StaleDays, Now: now, Candidates: []Candidate{}}
+	res := Result{
+		StaleDays:    cfg.Thresholds.StaleDays,
+		Now:          now,
+		Candidates:   []Candidate{},
+		CooldownDays: CooldownDays,
+		NoInbound:    []Unlinked{},
+	}
 
 	// 정렬에 제시 이력이 필요하므로 후보를 Candidate 로 바꾸는 단계에서
 	// 이력을 함께 붙인다.
@@ -97,6 +124,13 @@ func Run(wikiRoot string, cfg config.Config, now time.Time, limit int, dryRun bo
 			continue
 		}
 		contextDocs++
+		slug := slugOf(w.Rel)
+		// 재발견의 고아는 인바운드 0 하나로 정해진다. 노후 여부와
+		// 무관하므로 날짜를 읽기 전에 센다.
+		if inbound[slug] == 0 {
+			res.NoInbound = append(res.NoInbound, Unlinked{
+				Slug: slug, Title: titleOf(w.Parsed), Path: w.Rel})
+		}
 		// 파싱에 실패한 문서는 기준 날짜를 읽을 수 없으므로 날짜 없음으로 센다.
 		if w.Err != nil || !w.Parsed.HasFrontmatter {
 			res.SkippedNoDate++
@@ -111,12 +145,13 @@ func Run(wikiRoot string, cfg config.Config, now time.Time, limit int, dryRun bo
 		if age <= cfg.Thresholds.StaleDays {
 			continue
 		}
-		slug := slugOf(w.Rel)
 		e := entry{cand: Candidate{
 			Slug:    slug,
 			Title:   titleOf(w.Parsed),
 			Path:    w.Rel,
 			AgeDays: age,
+			Inbound: inbound[slug],
+			Score:   score(age, inbound[slug]),
 		}}
 		if t, ok := shown[slug]; ok {
 			e.cand.LastShown = &t
@@ -124,26 +159,43 @@ func Run(wikiRoot string, cfg config.Config, now time.Time, limit int, dryRun bo
 		}
 		entries = append(entries, e)
 	}
+	sort.Slice(res.NoInbound, func(i, j int) bool { return res.NoInbound[i].Slug < res.NoInbound[j].Slug })
 
-	sort.Slice(entries, func(i, j int) bool {
-		a, b := entries[i], entries[j]
-		// 한 번도 제시되지 않은 문서가 먼저, 다음은 마지막 제시가 오래된
-		// 순, 기준 날짜가 오래된 순, 마지막으로 슬러그 오름차순이다.
-		if a.ever != b.ever {
-			return !a.ever
+	// 제시 이력은 정렬 키가 아니라 제외 필터다. 마지막 제시를 정렬
+	// 1차 키로 두면 점수가 순위를 바꾸지 못해 인바운드 가중치가 무의미해진다.
+	// 쿨다운 안의 문서를 뺀다. 다만 제외가 후보를 고갈시키면 무시하고
+	// 점수 순으로 도로 채운다. upstream 위키는 300 문서라 제외해도 후보가
+	// 남지만 engram 의 대상에는 문서 열댓 개짜리 위키가 있다. 재발견이
+	// 빈 결과를 내면 그 기능을 안 쓰게 되므로 빈 결과보다 반복 노출이 낫다.
+	var fresh, cooled []entry
+	for _, e := range entries {
+		if e.ever && days(now, e.shown) < CooldownDays {
+			e.cand.Cooldown = true
+			cooled = append(cooled, e)
+			continue
 		}
-		if a.ever && !a.shown.Equal(b.shown) {
-			return a.shown.Before(b.shown)
-		}
-		if a.cand.AgeDays != b.cand.AgeDays {
-			return a.cand.AgeDays > b.cand.AgeDays
-		}
-		return a.cand.Slug < b.cand.Slug
-	})
+		fresh = append(fresh, e)
+	}
+	// 정렬은 가중 점수 내림차순, 동점은 슬러그 오름차순 둘뿐이다.
+	byScore := func(es []entry) {
+		sort.Slice(es, func(i, j int) bool {
+			a, b := es[i], es[j]
+			if a.cand.Score != b.cand.Score {
+				return a.cand.Score > b.cand.Score
+			}
+			return a.cand.Slug < b.cand.Slug
+		})
+	}
+	byScore(fresh)
+	byScore(cooled)
+	entries = append(fresh, cooled...)
 	if limit >= 0 && len(entries) > limit {
 		entries = entries[:limit]
 	}
 	for _, e := range entries {
+		if e.cand.Cooldown {
+			res.CooldownFilled++
+		}
 		res.Candidates = append(res.Candidates, e.cand)
 	}
 
@@ -223,6 +275,35 @@ func SaveHistory(wikiRoot string, shown map[string]time.Time) error {
 		return fmt.Errorf("%s: %w", i18n.T("core.resurface.history_write_fail", path), err)
 	}
 	return nil
+}
+
+// score는 재발견 가중 점수다. 경과일에 인바운드 링크 수의 역수 가중을
+// 곱한다. 링크가 적을수록 잊히기 쉬우므로 가중이 커진다. upstream 의
+// 식과 같다(ADR 0066).
+func score(ageDays, inbound int) float64 {
+	return float64(ageDays) * (1.0 + 1.0/(1.0+float64(inbound)))
+}
+
+// inboundCounts는 슬러그마다 그것을 가리키는 다른 문서의 수를 센다.
+// 같은 문서가 여러 번 걸어도 하나로 세고 자기 자신을 가리키는 링크는
+// 세지 않는다. 잊힘의 강도는 남이 얼마나 가리키는지로 정해진다.
+func inboundCounts(walked []walk.Doc) map[string]int {
+	g := graph.Build(walked)
+	out := map[string]int{}
+	for _, w := range walked {
+		if stageOfDir(w.Rel) != "context" {
+			continue
+		}
+		slug := slugOf(w.Rel)
+		froms := map[string]bool{}
+		for _, l := range g.Backlinks(slug) {
+			if l.From != w.Rel {
+				froms[l.From] = true
+			}
+		}
+		out[slug] = len(froms)
+	}
+	return out
 }
 
 // stageOfDir는 문서 위치의 첫 디렉토리로 단계를 잡는다. 승급은 파일을

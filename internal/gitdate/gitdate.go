@@ -13,10 +13,25 @@ import (
 	"github.com/neocode24/engram/internal/i18n"
 )
 
+// BulkCommitThreshold는 한 커밋이 건드린 위키 문서 수의 상한이다. 이
+// 수 이상을 건드린 커밋은 지식이 갱신된 것이 아니라 형식만 바꾼 것으로
+// 보고 날짜 신호에서 뺀다.
+//
+// upstream 이 실제로 겪은 사고에서 온 값이다. 전 문서의 프론트매터를
+// 한 커밋에 고치자 context 79개의 날짜가 전부 그날이 되어 재발견 결과가
+// 0건이 되었고, 이 필터를 켜서 58건이 회복되었다. engram 에도 같은
+// 경로가 있다. migrate 는 정의상 전 문서의 프론트매터를 한 커밋에
+// 고치는 커맨드이고 그 뒤에 sync --apply 를 돌리면 같은 일이 난다.
+//
+// 설정으로 노출하지 않는다. 색인의 k1 과 b 를 노출하지 않기로 한 것과
+// 같은 이유다(ADR 0010). upstream 과 같은 값을 쓴다.
+const BulkCommitThreshold = 15
+
 // Dates는 문서 하나의 커밋 날짜다. 이력이 없으면 빈 값이다.
 type Dates struct {
-	First string // 최초 커밋 날짜. YYYY-MM-DD
-	Last  string // 마지막 커밋 날짜. YYYY-MM-DD
+	First    string // 최초 커밋 날짜. YYYY-MM-DD
+	Last     string // 마지막 커밋 날짜. YYYY-MM-DD
+	BulkOnly bool   // 대량 커밋에만 등장해 날짜를 비워 둔 문서다
 }
 
 // History는 위키 루트 아래 문서들의 커밋 날짜를 한 번의 git log 로 얻는다.
@@ -44,30 +59,81 @@ func History(wikiRoot string) (map[string]Dates, error) {
 	}
 
 	hist := map[string]Dates{}
-	date := ""
+	bulkOnly := map[string]bool{}
+	// git log 는 새 커밋부터 내보내므로 커밋 순서는 최신순이다.
+	for _, c := range parseCommits(out, prefix) {
+		if c.docs >= BulkCommitThreshold {
+			for _, rel := range c.paths {
+				bulkOnly[rel] = true
+			}
+			continue
+		}
+		for _, rel := range c.paths {
+			d, seen := hist[rel]
+			if !seen {
+				// 처음 만난 날짜가 마지막 커밋이다.
+				d.Last = c.date
+			}
+			// 끝까지 덮어 쓰면 마지막에 만난 값, 곧 최초 커밋이 남는다.
+			d.First = c.date
+			hist[rel] = d
+		}
+	}
+	// 커밋이 전부 대량 커밋인 문서는 날짜를 없는 것으로 둔다. 대량
+	// 커밋의 날짜로 대신 채우지 않는다. 없는 날짜를 만드는 것보다
+	// 없다고 두는 것이 낫다. 부른 쪽이 개수를 알릴 수 있게 표시만 남긴다.
+	for rel := range bulkOnly {
+		if _, ok := hist[rel]; !ok {
+			hist[rel] = Dates{BulkOnly: true}
+		}
+	}
+	return hist, nil
+}
+
+// commit은 커밋 하나가 건드린 위키 안 경로와 그 날짜다. docs 는 그중
+// 마크다운 문서 수다.
+type commit struct {
+	date  string
+	paths []string
+	docs  int
+}
+
+// parseCommits는 git log --name-only 출력을 커밋 단위로 끊는다. 위키
+// 밖의 경로는 버린다.
+//
+// 대량 여부를 세는 대상은 커밋이 건드린 파일 전부가 아니라 위키의
+// 마크다운 문서다. 설정 파일이나 스크립트를 함께 고친 커밋이 억울하게
+// 걸리면 안 된다.
+func parseCommits(out, prefix string) []commit {
+	var commits []commit
+	cur := commit{}
+	started := false
+	flush := func() {
+		if started {
+			commits = append(commits, cur)
+		}
+	}
 	for _, line := range strings.Split(out, "\n") {
 		if line == "" {
 			continue
 		}
 		if strings.HasPrefix(line, "\x1e") {
-			date = day(line[1:])
+			flush()
+			cur = commit{date: day(line[1:])}
+			started = true
 			continue
 		}
-		// 파일 경로 줄이다. 위키 밖의 경로는 버린다.
 		if !strings.HasPrefix(line, prefix) {
 			continue
 		}
 		rel := strings.TrimPrefix(line, prefix)
-		d, seen := hist[rel]
-		if !seen {
-			// git log 는 새 커밋부터 내보내므로 처음 만난 날짜가 마지막 커밋이다.
-			d.Last = date
+		cur.paths = append(cur.paths, rel)
+		if strings.HasSuffix(rel, ".md") {
+			cur.docs++
 		}
-		// 끝까지 덮어 쓰면 마지막에 만난 값, 곧 최초 커밋이 남는다.
-		d.First = date
-		hist[rel] = d
 	}
-	return hist, nil
+	flush()
+	return commits
 }
 
 // day는 ISO 8601 시각에서 날짜 부분만 남긴다. 형식이 짧으면 빈 값을 둔다.

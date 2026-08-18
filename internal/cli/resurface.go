@@ -41,7 +41,7 @@ func newResurfaceCmd() *cobra.Command {
 				enc.SetIndent("", "  ")
 				return enc.Encode(res)
 			}
-			printResurface(cmd.OutOrStdout(), res, dryRun)
+			printResurface(cmd.OutOrStdout(), res, limit, dryRun)
 			return nil
 		},
 	}
@@ -53,7 +53,7 @@ func newResurfaceCmd() *cobra.Command {
 
 // printResurface는 사람용 결과를 인쇄한다. 후보마다 슬러그, 제목,
 // 경과일, 마지막 제시 시각을 낸다.
-func printResurface(w io.Writer, res resurface.Result, dryRun bool) {
+func printResurface(w io.Writer, res resurface.Result, limit int, dryRun bool) {
 	if len(res.Candidates) == 0 {
 		fmt.Fprintln(w, i18n.T("cli.resurface.no_candidates"))
 		fmt.Fprintln(w, i18n.T("cli.resurface.reason", res.Reason))
@@ -70,6 +70,25 @@ func printResurface(w io.Writer, res resurface.Result, dryRun bool) {
 				title = " (" + c.Title + ")"
 			}
 			fmt.Fprintln(w, i18n.T("cli.resurface.candidate_line", c.Slug, title, c.AgeDays, last))
+		}
+	}
+	if res.CooldownFilled > 0 {
+		fmt.Fprintln(w, i18n.T("cli.resurface.cooldown_filled", res.CooldownFilled, res.CooldownDays))
+	}
+	if len(res.NoInbound) > 0 {
+		// 전체 개수는 알리되 화면에 쏟지 않는다. 낼 문서 수와 같은
+		// 상한을 쓰고 전부는 --json 에 있다.
+		shown := res.NoInbound
+		if limit >= 0 && len(shown) > limit {
+			shown = shown[:limit]
+		}
+		fmt.Fprintln(w, i18n.T("cli.resurface.no_inbound_header", len(res.NoInbound)))
+		for _, u := range shown {
+			title := ""
+			if u.Title != "" {
+				title = " (" + u.Title + ")"
+			}
+			fmt.Fprintln(w, i18n.T("cli.resurface.no_inbound_line", u.Slug, title))
 		}
 	}
 	if res.SkippedNoDate > 0 {

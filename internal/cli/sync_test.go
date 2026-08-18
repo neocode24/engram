@@ -257,3 +257,43 @@ func formatViolations(vs []lint.Violation) string {
 	}
 	return b.String()
 }
+
+// TestSyncSkipsBulkCommitDates는 대량 커밋에만 등장한 문서의 날짜를
+// sync 가 채우지 않고 그 수를 알리는지 본다. migrate 뒤에 sync 를 돌리는
+// 경로가 재발견을 죽이는 것을 막는 판정이다(ADR 0066).
+func TestSyncSkipsBulkCommitDates(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git 이 PATH 에 없다")
+	}
+	root := t.TempDir()
+	syncGitRun(t, root, "", "init")
+	writeWikiFileAt(t, root, "engram.yaml", "preset: personal\nmin_wikilinks: 0\n")
+	// 문서 15개를 한 커밋에 넣는다. engram.yaml 은 마크다운이 아니라 세지 않는다.
+	for i := 0; i < 15; i++ {
+		writeWikiFileAt(t, root, fmt.Sprintf("context/대량%02d.md", i),
+			"---\ntype: concept\ncreated: 2020-01-01\n---\n\n본문\n")
+	}
+	syncCommitAll(t, root, "2026-08-01", "프론트매터 일괄 정정")
+
+	out, err := runSync(t, "sync", "--json", "--wiki", root)
+	if err != nil {
+		t.Fatalf("sync 오류: %v\n%s", err, out)
+	}
+	var res syncOutcome
+	if err := json.Unmarshal([]byte(out), &res); err != nil {
+		t.Fatalf("JSON 파싱 실패: %v\n%s", err, out)
+	}
+	if len(res.Changed) != 0 {
+		t.Errorf("대량 커밋 날짜를 쓰려 합니다: %+v", res.Changed)
+	}
+	if res.BulkOnly != 15 {
+		t.Errorf("BulkOnly = %d, want 15", res.BulkOnly)
+	}
+	text, err := runSync(t, "sync", "--wiki", root)
+	if err != nil {
+		t.Fatalf("sync 오류: %v\n%s", err, text)
+	}
+	if !strings.Contains(text, "문서 15개 이상을 한 번에 고친 커밋에만 등장하는 문서 15개") {
+		t.Errorf("대량 커밋 안내가 없습니다:\n%s", text)
+	}
+}

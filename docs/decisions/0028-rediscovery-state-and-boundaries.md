@@ -2,7 +2,7 @@
 number: 0028
 title: 재발견 커맨드의 상태를 성격에 따라 두 곳에 나눠 둔다
 date: 2026-08-16
-status: accepted
+status: amended
 ---
 
 # 재발견 커맨드의 상태와 경계

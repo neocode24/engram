@@ -163,6 +163,7 @@ updated 가 최신이 되면 신선도를 오해하게 만들기 때문입니다
 		"cli.sync.field_absent":   "(없음)",
 		"cli.sync.current":        "현재 %s",
 		"cli.sync.uncommitted":    "커밋되지 않은 문서 %d개는 건너뛰었습니다",
+		"cli.sync.bulk_only":      "문서 %[2]d개 이상을 한 번에 고친 커밋에만 등장하는 문서 %[1]d개는 날짜를 채우지 않았습니다",
 
 		// rules
 		"cli.rules.short": "이 위키에 적용되는 규칙을 다룹니다",
@@ -446,6 +447,7 @@ A dirty worktree is fine: the verdict rests on commit history.`,
 		"cli.sync.field_absent":   "(none)",
 		"cli.sync.current":        "now %s",
 		"cli.sync.uncommitted":    "Skipped %d uncommitted documents",
+		"cli.sync.bulk_only":      "Left dates unfilled for %[1]d documents that appear only in commits touching %[2]d or more documents at once",
 
 		// rules
 		"cli.rules.short": "Manage the rules applied to this wiki",

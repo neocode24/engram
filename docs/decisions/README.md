@@ -42,7 +42,7 @@
 | [0025](0025-index-storage-and-staleness.md) | 인덱스를 JSON으로 저장하고 조회는 인덱스를 갱신하지 않는다 | 2026-08-15 | accepted |
 | [0026](0026-windows-console-utf8.md) | Windows 콘솔에 출력할 때 코드페이지를 UTF-8로 바꾼다 | 2026-08-15 | accepted |
 | [0027](0027-prose-register-by-audience.md) | 문체를 독자에 따라 세 층으로 나눈다 | 2026-08-15 | accepted |
-| [0028](0028-rediscovery-state-and-boundaries.md) | 재발견 커맨드의 상태를 성격에 따라 두 곳에 나눠 둔다 | 2026-08-16 | accepted |
+| [0028](0028-rediscovery-state-and-boundaries.md) | 재발견 커맨드의 상태를 성격에 따라 두 곳에 나눠 둔다 | 2026-08-16 | amended |
 | [0029](0029-upstream-vendoring-and-parity-execution.md) | upstream 계약을 치환 사전으로 익명화해 vendoring하고 parity는 로컬에서만 돈다 | 2026-08-16 | amended |
 | [0030](0030-upstream-delta-is-not-a-public-artifact.md) | upstream 변경 로그에서 뽑은 delta는 공개하지 않는다 | 2026-08-16 | accepted |
 | [0031](0031-location-must-agree-with-stage.md) | 문서가 놓인 디렉토리와 artifact_stage가 일치해야 한다 | 2026-08-16 | amended |
@@ -80,6 +80,7 @@
 | [0063](0063-exposure-reads-indexable-status-and-scopes-internal.md) | 노출 판정이 indexable과 status를 읽고 internal은 반출에서 뺀다 | 2026-08-19 | accepted |
 | [0064](0064-update-refuses-to-change-sources.md) | update는 sources 문서를 거절한다 | 2026-08-19 | accepted |
 | [0065](0065-markdown-links-count-as-relations.md) | 마크다운 링크도 문서 사이의 관계로 센다 | 2026-08-19 | accepted |
+| [0066](0066-rediscovery-reads-inbound-links-and-ignores-bulk-commits.md) | 재발견은 인바운드 링크를 보고 대량 커밋을 신호에서 뺀다 | 2026-08-19 | accepted |
 
 ## 공개 범위 밖
 
@@ -120,6 +121,7 @@
 | 0052 | 스킬 문서가 반드시 담는 것은 여덟이다 | [0062](0062-agents-read-the-wiki-through-recall.md) 위키 내용을 recall로 꺼내라는 지시를 더해 아홉이 된다 |
 | 0009 | 게이트는 문서의 고유 위키링크 수를 센다 | [0065](0065-markdown-links-count-as-relations.md) 마크다운 링크도 관계로 세므로 대상이 위키링크에 한정되지 않는다 |
 | 0044 | 노출 판정은 위치와 민감도를 본다 | [0063](0063-exposure-reads-indexable-status-and-scopes-internal.md) indexable 과 status 를 더하고 internal 을 반출에서 뺀다 |
+| 0028 | 재발견 선정은 경과일과 제시 이력으로 정렬한다 | [0066](0066-rediscovery-reads-inbound-links-and-ignores-bulk-commits.md) 인바운드 가중 점수로 정렬하고 제시 이력은 쿨다운 필터로 옮긴다 |
 
 ## 근거만 갱신된 경우
 

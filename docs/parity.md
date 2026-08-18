@@ -114,30 +114,39 @@ engram은 ADR [0020](decisions/0020-slug-and-filename-rules.md)에서 반대로 
 
 ### 결과
 
-후보는 양쪽 모두 6건이고 집합이 같다. 순위는 1위만 갈린다.
+후보는 양쪽 모두 6건이고 집합이 같다. 순위는 6위만 같다. 2026-08-19 재측정 결과다.
 
 | 순위 | upstream | engram |
 |---|---|---|
 | 1 | legacy-import-notes | sqlite-foreign-keys |
 | 2 | sqlite-foreign-keys | markdown-link-syntax |
-| 3 | markdown-link-syntax | cli-flag-conventions |
+| 3 | markdown-link-syntax | legacy-import-notes |
 | 4 | cli-flag-conventions | go-table-driven-tests |
-| 5 | go-table-driven-tests | legacy-import-notes |
+| 5 | go-table-driven-tests | cli-flag-conventions |
 | 6 | testing-pyramid | testing-pyramid |
 
 ### 차이의 이유
 
-upstream은 경과일에 인바운드 링크 수의 역수 가중을 곱한다. 링크가 적을수록 잊히기 쉽다는 이유다. `legacy-import-notes`는 인바운드가 0개라 가중이 2배가 되어 경과 197일로도 1위가 된다. 반면 `sqlite-foreign-keys`는 경과 260일에 인바운드 1개라 가중 1.5배로 2위다. 점수는 394 대 390으로 근소하다.
+engram도 인바운드 가중을 따라갔다. [0066](decisions/0066-rediscovery-reads-inbound-links-and-ignores-bulk-commits.md)이 정렬을 upstream과 같은 식으로 바꿨다. 점수는 `경과일 * (1 + 1/(1 + 인바운드 링크 수))`이고 정렬 키는 점수 내림차순과 슬러그 오름차순 둘뿐이다. 제시 이력은 정렬 키에서 빠져 쿨다운 필터로 옮겼다. 그래서 이전 측정에서 5위였던 `legacy-import-notes`가 3위로 올라왔다.
 
-engram은 제시 이력과 경과일로만 정렬한다. 인바운드 가중이 없으므로 경과일순인 `sqlite-foreign-keys`가 1위고 `legacy-import-notes`는 5위다.
+**남은 차이는 인바운드를 세는 범위다.** 식은 같은데 대입하는 인바운드 값이 다르다.
 
-**따라갈 후보다.** 인바운드 가중은 upstream이 실제로 순위에 쓰는 규칙이고 engram에 없다. 다만 1위와 2위의 점수 차가 1퍼센트 남짓이므로 이 가중이 선정에 큰 영향을 주는 경우는 고립에 가까운 문서다. 고립 문서를 먼저 꺼내는 것이 맞는지는 제품 판단이므로 여기서 정하지 않는다.
+| 슬러그 | upstream 인바운드 | engram 인바운드 | engram이 더 세는 것 |
+|---|---|---|---|
+| sqlite-foreign-keys | 1 | 1 | 없음 |
+| markdown-link-syntax | 1 | 1 | 없음 |
+| legacy-import-notes | 0 | 1 | `index.md`의 `related` |
+| go-table-driven-tests | 2 | 3 | `index.md`의 본문 링크 |
+| cli-flag-conventions | 2 | 5 | `inbox/` 문서 둘, `context/missing-stage.md` |
+| testing-pyramid | 2 | 5 | `index.md`, `inbox/` 문서 하나, `sources/` 문서 하나 |
+
+upstream `wiki_resurface.py`는 `context/`만 훑으므로 `index.md`와 `inbox/`와 `sources/`가 거는 링크를 세지 않는다. engram의 링크 그래프는 위키 전체를 보고 관계 필드도 링크로 센다([0065](decisions/0065-markdown-links-count-as-relations.md)). 그래서 engram의 인바운드가 항상 크거나 같고, 가중이 그만큼 작아진다. 이 차이는 upstream의 색인 경계 판단과 engram의 그래프 정의가 다른 데서 오므로 재발견 쪽에서 좁힐 문제가 아니다.
 
 측정의 사소한 차이 하나. 커밋 시각을 그날 정오로 맞추는 바람에 upstream의 경과일이 engram보다 하루씩 크게 나온다. 모든 문서가 같은 방향으로 치우치므로 순위에는 영향을 주지 않는다.
 
 ### 이 축이 비교하지 않는 것
 
-- 점수 값 자체. 두 식이 다르고 위에서 설명했다
+- 점수 값 자체. 식은 같아졌으나 인바운드를 세는 범위가 달라 값이 다르다. 위에서 설명했다
 - upstream 스크립트가 함께 내는 bridges와 orphans. 별개 기능이다
 - 제시 이력이 쌓인 상태의 재정렬. 빈 상태만 비교한다
 

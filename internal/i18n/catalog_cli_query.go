@@ -110,25 +110,31 @@ fail 항목이 하나라도 있으면 종료 코드 1로 끝납니다. warn은 0
 		"cli.resurface.short": "오래 안 본 context 문서를 다시 꺼냅니다",
 		"cli.resurface.long": `stale_days를 넘긴 context 문서를 골라 다시 보여줍니다.
 
-제시 이력을 <위키>/.engram/resurface.json에 남겨 최근에 보여준 문서가
-먼저 나오지 않게 합니다. 이 파일은 gitignore 대상이고 없어도 빈 이력으로
+제시 이력을 <위키>/.engram/resurface.json에 남겨 최근에 보여준 문서를
+후보에서 뺍니다. 이 파일은 gitignore 대상이고 없어도 빈 이력으로
 동작하므로 지워도 도구가 멈추지 않습니다.
-한 번도 제시하지 않은 문서를 먼저 내고, 그다음은 마지막 제시가 오래된
-순서입니다. 상태를 쓰는 유일한 조회 커맨드라 실행마다 결과가 달라지므로
+순서는 점수 내림차순이고 동점은 슬러그 오름차순입니다. 점수는 경과일에
+인바운드 링크 수의 역수를 곱한 값이라 아무도 안 가리키는 문서가 먼저 나옵니다.
+최근 21일 안에 제시한 문서는 후보에서 빼되 후보가 모자라면 다시 넣습니다.
+아무도 안 가리키는 문서는 따로 셉니다.
+상태를 쓰는 유일한 조회 커맨드라 실행마다 결과가 달라지므로
 --now로 기준 시각을 고정할 수 있습니다.
 --dry-run은 이력을 기록하지 않습니다.`,
-		"cli.resurface.flag_read_fail":  "--%s 플래그를 읽을 수 없음",
-		"cli.resurface.flag_limit":      "낼 문서 수",
-		"cli.resurface.flag_dry_run":    "제시 이력을 기록하지 않습니다",
-		"cli.resurface.flag_wiki":       "대상 위키 경로",
-		"cli.resurface.no_candidates":   "다시 꺼낼 문서가 없습니다",
-		"cli.resurface.reason":          "  이유: %s",
-		"cli.resurface.header":          "다시 꺼낼 문서 %d개 (stale_days %d일, 기준 %s)",
-		"cli.resurface.never_shown":     "제시한 적 없음",
-		"cli.resurface.last_shown":      "마지막 제시 %s",
-		"cli.resurface.candidate_line":  "  - %s%s: 마지막 갱신 %d일 전, %s",
-		"cli.resurface.skipped_no_date": "기준 날짜를 알 수 없는 context 문서 %d개는 대상에서 뺐습니다",
-		"cli.resurface.dry_run_note":    "--dry-run이라 제시 이력을 기록하지 않았습니다",
+		"cli.resurface.flag_read_fail":    "--%s 플래그를 읽을 수 없음",
+		"cli.resurface.flag_limit":        "낼 문서 수",
+		"cli.resurface.flag_dry_run":      "제시 이력을 기록하지 않습니다",
+		"cli.resurface.flag_wiki":         "대상 위키 경로",
+		"cli.resurface.no_candidates":     "다시 꺼낼 문서가 없습니다",
+		"cli.resurface.reason":            "  이유: %s",
+		"cli.resurface.header":            "다시 꺼낼 문서 %d개 (stale_days %d일, 기준 %s)",
+		"cli.resurface.never_shown":       "제시한 적 없음",
+		"cli.resurface.last_shown":        "마지막 제시 %s",
+		"cli.resurface.candidate_line":    "  - %s%s: 마지막 갱신 %d일 전, %s",
+		"cli.resurface.cooldown_filled":   "후보가 모자라 최근 %[2]d일 안에 제시한 문서 %[1]d개를 다시 넣었습니다",
+		"cli.resurface.no_inbound_header": "아무도 안 가리키는 문서 %d개",
+		"cli.resurface.no_inbound_line":   "  - %s%s",
+		"cli.resurface.skipped_no_date":   "기준 날짜를 알 수 없는 context 문서 %d개는 대상에서 뺐습니다",
+		"cli.resurface.dry_run_note":      "--dry-run이라 제시 이력을 기록하지 않았습니다",
 
 		// bridge
 		"cli.bridge.short": "유사한데 링크가 없는 문서 쌍을 찾습니다",
@@ -309,24 +315,31 @@ Any fail ends with exit code 1. warn stays 0.`,
 		"cli.resurface.long": `Pick context documents past stale_days and show them again.
 
 Presentation history is kept in <wiki>/.engram/resurface.json so recently
-shown documents do not come first. The file is gitignored and works as an empty
+shown documents are dropped from the candidates. The file is gitignored and works as an empty
 history when missing, so deleting it never breaks the tool.
-Never-presented documents come first, then by oldest last presentation.
+Ordered by score descending, ties by slug ascending. The score is the age in
+days times the reciprocal of the inbound link count, so documents nobody points
+to come first. Documents shown within the last 21 days are excluded from the
+candidates, but they are put back when there are not enough candidates.
+Documents nobody points to are counted separately.
 As the only query command that writes state, results change between runs;
 pin the reference time with --now.
 --dry-run records no history.`,
-		"cli.resurface.flag_read_fail":  "cannot read --%s flag",
-		"cli.resurface.flag_limit":      "number of documents to return",
-		"cli.resurface.flag_dry_run":    "do not record presentation history",
-		"cli.resurface.flag_wiki":       "target wiki path",
-		"cli.resurface.no_candidates":   "No documents to resurface",
-		"cli.resurface.reason":          "  Reason: %s",
-		"cli.resurface.header":          "Documents to resurface: %d (stale_days %d days, as of %s)",
-		"cli.resurface.never_shown":     "never shown",
-		"cli.resurface.last_shown":      "last shown %s",
-		"cli.resurface.candidate_line":  "  - %s%s: last updated %d days ago, %s",
-		"cli.resurface.skipped_no_date": "Excluded %d context documents whose date is unknown",
-		"cli.resurface.dry_run_note":    "--dry-run: presentation history was not recorded",
+		"cli.resurface.flag_read_fail":    "cannot read --%s flag",
+		"cli.resurface.flag_limit":        "number of documents to return",
+		"cli.resurface.flag_dry_run":      "do not record presentation history",
+		"cli.resurface.flag_wiki":         "target wiki path",
+		"cli.resurface.no_candidates":     "No documents to resurface",
+		"cli.resurface.reason":            "  Reason: %s",
+		"cli.resurface.header":            "Documents to resurface: %d (stale_days %d days, as of %s)",
+		"cli.resurface.never_shown":       "never shown",
+		"cli.resurface.last_shown":        "last shown %s",
+		"cli.resurface.candidate_line":    "  - %s%s: last updated %d days ago, %s",
+		"cli.resurface.cooldown_filled":   "Refilled %[1]d documents shown within the last %[2]d days because there were not enough candidates",
+		"cli.resurface.no_inbound_header": "Documents nobody points to: %d",
+		"cli.resurface.no_inbound_line":   "  - %s%s",
+		"cli.resurface.skipped_no_date":   "Excluded %d context documents whose date is unknown",
+		"cli.resurface.dry_run_note":      "--dry-run: presentation history was not recorded",
 
 		// bridge
 		"cli.bridge.short": "Find similar document pairs without links",

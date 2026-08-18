@@ -82,7 +82,9 @@ func TestResurfaceCmd(t *testing.T) {
 				t.Errorf("출력에 %q 없음:\n%s", want, out)
 			}
 		}
-		if strings.Contains(out, "fresh") {
+		// fresh 는 후보가 아니다. 다만 아무도 안 가리키는 문서 목록에는
+		// 노후와 무관하게 나오므로 슬러그만 보지 않고 후보 줄로 본다.
+		if strings.Contains(out, "fresh (본문): 마지막 갱신") {
 			t.Error("최근 문서가 후보에 있습니다")
 		}
 		// 실행하면 이력이 기록된다.
