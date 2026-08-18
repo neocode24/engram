@@ -313,6 +313,37 @@ engram은 이 절차를 커맨드 둘로 이미 표현할 수 있다. `source`�
 
 **engram의 검색 색인에는 이 판정을 넣지 않기로 했다**([ADR 0061](decisions/0061-field-weights-and-what-the-index-is-not.md)). upstream의 `indexable`은 외부 RAG의 색인 자격 선언이고 engram의 `search`는 승급을 준비하며 `inbox`와 `sources`를 훑는 도구라 대상이 다르다. 남에게 도달하는 경로(`serve`, `export`)에서 민감도를 거르는 일은 `internal/expose`가 이미 하고 있다.
 
+### 6.1 upstream 규범 문서 커버리지
+
+upstream 감사 보고서 5개(A/B/C/D/E)를 바탕으로 규범 문서별 미해결 항목을 정리한다. 상세는 `docs/upstream-gap.md`를 참조한다.
+
+| 문서 | 전체 항목 | 미해결 | 주요 미해결 항목 |
+|---|---|---|---|
+| **에이전트 절차** (A-agents.md) | 42 | 26 | 트리거 표 부재, `inbox/_drop/` 부재, 인입 시점 채널 추론 부재, 회의록 절 구조 부재, 음성 원본 커밋 금지 부재 |
+| **스크립트** (B-scripts.md) | 41 | 28 | 대량 커밋 필터 부재, `indexable` 값 읽기 부재, 임베딩/시맨틱 검색 부재, 쿨다운 부재, 인바운드 링크 가중치 부재 |
+| **결정/시스템/MOC** (C-decisions.md) | 40 | 27 | 검색 자격 판단 차이, 출처 증명 요구 약함, 색인 경계 차이, `supersedes`/`superseded_by` 부재, MOC 부재 |
+| **절차 문서** (D-procedures.md) | 30 | 22 | 문서 유효 기간 부재, AI 산출물 보존 수준 부재, 출처 증명 약함, 시효 자료 필드 부재, 용어 정규화 부재 |
+| **계약 파일** (E-contract.md) | 37 | 25 | `title` 필드 없음, inbox가 lint 범위, 마크다운 링크 파싱 부재, 템플릿 준수 부재, 한글 파일명 고정 차이 |
+| **합계** | 190 | 128 | |
+
+**카테고리별 분류:**
+
+| 카테고리 | 항목 수 |
+|---|---|
+| 경계 (공개 경계, 보안, 민감도, 접근 제어) | 15 |
+| 재발견 (재발견 루프, bridge, resurface, 색인) | 10 |
+| 기능 (그 외 기능 구현, 인터페이스, 운용 절차) | 103 |
+
+**중복 주요 문제:**
+
+- `index.md` 자동 갱신 부재 (A5, B15, D1, E22, E27)
+- `log.md` 기록 부재 (A6, D2, E22, E27)
+- 대량 커밋 필터 부재 (B3, C3, E7)
+- `indexable` 값 읽기 부재 (A8, B19, B29, C11, C12, E37)
+- 임베딩/시맨틱 검색 부재 (B1, B14, C1, C7, D21)
+
+이 커버리지 표는 2026-08-18 기준 감사 결과를 정리한 것이다. 상세 내용은 `docs/upstream-gap.md`에 각 항목별 upstream 규정, engraph 대응, 영향, 출처를 포함하여 기록되어 있다.
+
 ## 7. 명세가 바뀌면 무슨 일이 도는가
 
 [ADR 0005](decisions/0005-upstream-contract-and-harness.md)가 정하고 [ADR 0029](decisions/0029-upstream-vendoring-and-parity-execution.md)가 다듬은 3층 harness가 명세 변화를 다룬다.
