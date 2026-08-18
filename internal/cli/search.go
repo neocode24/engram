@@ -27,6 +27,7 @@ const (
 type searchHit struct {
 	Rank  int     `json:"rank"`
 	Slug  string  `json:"slug"`
+	Title string  `json:"title"`
 	Score float64 `json:"score"`
 	Path  string  `json:"path"`
 }
@@ -89,7 +90,8 @@ func newSearchCmd() *cobra.Command {
 				res := searchResponse{Query: query, IndexStatus: status, Results: make([]searchHit, 0, len(results))}
 				for i, r := range results {
 					res.Results = append(res.Results, searchHit{
-						Rank: i + 1, Slug: r.Slug, Score: round2(r.Score), Path: r.Path,
+						Rank: i + 1, Slug: r.Slug, Title: r.Title,
+						Score: round2(r.Score), Path: r.Path,
 					})
 				}
 				enc := json.NewEncoder(cmd.OutOrStdout())
@@ -115,8 +117,18 @@ func printSearch(w io.Writer, query string, results []index.SearchResult) {
 		return
 	}
 	for i, r := range results {
-		fmt.Fprintf(w, "%3d  %.2f  %s  %s\n", i+1, r.Score, r.Slug, r.Path)
+		fmt.Fprintf(w, "%3d  %5.2f  %-8s %s\n", i+1, r.Score, stageOf(r.Path), r.Slug)
 	}
+}
+
+// stageOf는 순회 경로에서 단계 이름을 낸다. 목록에서 경로 전체를 내면
+// 슬러그와 겹쳐 같은 값을 두 번 보여 주는 꼴이 된다. 사람이 목록에서
+// 실제로 쓰는 정보는 어느 단계에 있는가다(ADR 0060).
+func stageOf(rel string) string {
+	if i := strings.Index(rel, "/"); i > 0 {
+		return rel[:i]
+	}
+	return i18n.T("cli.search.stage_root")
 }
 
 // round2는 값을 소수점 둘째 자리까지 반올림한다.

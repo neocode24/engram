@@ -315,11 +315,12 @@ func searchJSON(root, query string, limit int) (searchResponse, error) {
 			return searchResponse{}, err
 		}
 	}
-	results := ix.Search(query, recallCandidateDocs)
+	results := ix.Search(query, limit)
 	res := searchResponse{Query: query, IndexStatus: status, Results: make([]searchHit, 0, len(results))}
 	for i, r := range results {
 		res.Results = append(res.Results, searchHit{
-			Rank: i + 1, Slug: r.Slug, Score: round2(r.Score), Path: r.Path,
+			Rank: i + 1, Slug: r.Slug, Title: r.Title,
+			Score: round2(r.Score), Path: r.Path,
 		})
 	}
 	return res, nil
@@ -343,7 +344,7 @@ func recallJSON(root, query string, limit int) (recallResponse, error) {
 	if !ix.Fresh(walked, root) {
 		status = indexStale
 	}
-	scored, err := scoreChunks(root, ix.Search(query, limit), query)
+	scored, err := scoreChunks(root, ix.Search(query, recallCandidateDocs), query)
 	if err != nil {
 		return recallResponse{}, err
 	}

@@ -74,6 +74,7 @@
 | [0057](0057-approval-attaches-to-content-not-to-the-command.md) | 승인은 커맨드가 아니라 문서 내용에 붙는다 | 2026-08-17 | accepted |
 | [0058](0058-promote-to-sources-moves-evidence.md) | promote --to sources가 inbox의 증거를 옮긴다 | 2026-08-17 | accepted |
 | [0059](0059-recall-candidate-pool-is-independent-of-limit.md) | recall의 문서 후보 수는 --limit과 무관하게 고정한다 | 2026-08-18 | accepted |
+| [0060](0060-search-line-shows-stage-not-path.md) | search 목록은 경로 대신 단계를 내고 제목은 --json에만 담는다 | 2026-08-18 | accepted |
 
 ## 공개 범위 밖
 

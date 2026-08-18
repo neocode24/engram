@@ -18,6 +18,7 @@ func init() {
 		"cli.search.flag_limit":          "결과 상한",
 		"cli.search.flag_wiki":           "대상 위키 경로",
 		"cli.search.no_results":          "결과가 없습니다",
+		"cli.search.stage_root":          "루트",
 		"cli.search.query_tokens":        "질의 %q는 다음 토큰으로 검색했습니다: %s",
 
 		// recall
@@ -211,6 +212,7 @@ builds the index.`,
 		"cli.search.flag_limit":          "result limit",
 		"cli.search.flag_wiki":           "target wiki path",
 		"cli.search.no_results":          "No results",
+		"cli.search.stage_root":          "root",
 		"cli.search.query_tokens":        "Query %q was searched with these tokens: %s",
 
 		// recall

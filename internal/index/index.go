@@ -145,6 +145,7 @@ func docTitle(wd walk.Doc) string {
 type SearchResult struct {
 	Path  string  `json:"path"`
 	Slug  string  `json:"slug"`
+	Title string  `json:"title"`
 	Score float64 `json:"score"`
 }
 
@@ -177,7 +178,7 @@ func (ix *Index) Search(query string, limit int) []SearchResult {
 			score += idf * tf * (bm25K1 + 1) / denom
 		}
 		if score > 0 {
-			results = append(results, SearchResult{Path: e.Path, Slug: e.Slug, Score: score})
+			results = append(results, SearchResult{Path: e.Path, Slug: e.Slug, Title: e.Title, Score: score})
 		}
 	}
 	sort.Slice(results, func(i, j int) bool {

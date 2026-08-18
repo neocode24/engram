@@ -236,3 +236,48 @@ func TestSearchCmd(t *testing.T) {
 		}
 	})
 }
+
+// TestSearchLineShowsStageNotPath는 목록 줄이 경로 대신 단계를 내는지 본다.
+// 경로를 통째로 내면 슬러그와 겹쳐 같은 값을 두 번 보여 준다(ADR 0060).
+func TestSearchLineShowsStageNotPath(t *testing.T) {
+	dir := searchWiki(t)
+	if out, err := runSearchRoot(t, "reindex", dir); err != nil {
+		t.Fatalf("reindex 실패: %v\n%s", err, out)
+	}
+
+	out, err := runSearchRoot(t, "search", "--wiki", dir, "게이트웨이")
+	if err != nil {
+		t.Fatalf("검색 실패: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, "context ") {
+		t.Errorf("단계가 없음:\n%s", out)
+	}
+	if strings.Contains(out, ".md") {
+		t.Errorf("경로가 남아 있음:\n%s", out)
+	}
+
+	// --json 은 경로를 유지한다. 기계가 파일을 열어야 한다.
+	jsonOut, err := runSearchRoot(t, "search", "--wiki", dir, "--json", "게이트웨이")
+	if err != nil {
+		t.Fatalf("검색 실패: %v\n%s", err, jsonOut)
+	}
+	var res struct {
+		Results []struct {
+			Path  string `json:"path"`
+			Title string `json:"title"`
+		} `json:"results"`
+	}
+	if err := json.Unmarshal([]byte(strings.TrimSpace(jsonOut)), &res); err != nil {
+		t.Fatalf("JSON 파싱 실패: %v\n%s", err, jsonOut)
+	}
+	if len(res.Results) == 0 {
+		t.Fatal("결과가 없음")
+	}
+	if !strings.HasSuffix(res.Results[0].Path, ".md") {
+		t.Errorf("--json 에 경로가 없음: %+v", res.Results[0])
+	}
+	// 색인이 담고만 있고 아무도 안 읽던 제목을 여기서 쓴다.
+	if res.Results[0].Title == "" {
+		t.Errorf("--json 에 제목이 없음: %+v", res.Results[0])
+	}
+}
