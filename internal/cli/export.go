@@ -17,6 +17,7 @@ const (
 	flagExportOut          = "out"
 	flagExportReplacements = "replacements"
 	flagExportDryRun       = "dry-run"
+	flagIncludeInternal    = "include-internal"
 )
 
 // newExportCmd는 위키의 일부를 밖으로 내보낼 번들을 만드는 export 커맨드를 반환한다.
@@ -45,6 +46,10 @@ func newExportCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("%s: %w", i18n.T("cli.export.flag_read_fail", flagIncludeArchive), err)
 			}
+			includeInternal, err := cmd.Flags().GetBool(flagIncludeInternal)
+			if err != nil {
+				return fmt.Errorf("%s: %w", i18n.T("cli.export.flag_read_fail", flagIncludeInternal), err)
+			}
 			dryRun, err := cmd.Flags().GetBool(flagExportDryRun)
 			if err != nil {
 				return fmt.Errorf("%s: %w", i18n.T("cli.export.flag_read_fail", flagExportDryRun), err)
@@ -56,9 +61,10 @@ func newExportCmd() *cobra.Command {
 			}
 
 			res, err := export.Plan(root, cfg, export.Options{
-				IncludeArchive: includeArchive,
-				Slugs:          args,
-				Rules:          rules,
+				IncludeArchive:  includeArchive,
+				IncludeInternal: includeInternal,
+				Slugs:           args,
+				Rules:           rules,
 			})
 			if err != nil {
 				return err
@@ -91,14 +97,19 @@ func newExportCmd() *cobra.Command {
 				DanglingSlugs:    res.DanglingSlugs,
 				ExcludedByFilter: res.ExcludedByFilter,
 				Excluded: exportExcluded{
-					Inbox:     res.Exposure.ExcludedInbox,
-					Sources:   res.Exposure.ExcludedSources,
-					Archive:   res.Exposure.ExcludedArchive,
-					Sensitive: res.Exposure.ExcludedSensitive,
-					Unparsed:  res.Exposure.ExcludedUnparsed,
-					Outside:   res.Exposure.ExcludedOutside,
+					Inbox:        res.Exposure.ExcludedInbox,
+					Sources:      res.Exposure.ExcludedSources,
+					Archive:      res.Exposure.ExcludedArchive,
+					Sensitive:    res.Exposure.ExcludedSensitive,
+					Internal:     res.Exposure.ExcludedInternal,
+					NotIndexable: res.Exposure.ExcludedNotIndexable,
+					Superseded:   res.Exposure.ExcludedSuperseded,
+					Unparsed:     res.Exposure.ExcludedUnparsed,
+					Outside:      res.Exposure.ExcludedOutside,
 				},
-				SensitivityOn: res.Exposure.SensitivityOn,
+				IncludedInternal: res.Exposure.IncludedInternal,
+				IncludeInternal:  res.Exposure.IncludeInternal,
+				SensitivityOn:    res.Exposure.SensitivityOn,
 			}
 			if jsonOutput(cmd) {
 				enc := json.NewEncoder(cmd.OutOrStdout())
@@ -113,6 +124,7 @@ func newExportCmd() *cobra.Command {
 	cmd.Flags().String(flagExportOut, "", i18n.T("cli.export.flag_out"))
 	cmd.Flags().String(flagExportReplacements, "", i18n.T("cli.export.flag_replacements"))
 	cmd.Flags().Bool(flagIncludeArchive, false, i18n.T("cli.export.flag_include_archive"))
+	cmd.Flags().Bool(flagIncludeInternal, false, i18n.T("cli.export.flag_include_internal"))
 	cmd.Flags().Bool(flagExportDryRun, false, i18n.T("cli.export.flag_dry_run"))
 	return cmd
 }
@@ -167,12 +179,15 @@ func writeExportFile(out string, f export.File) error {
 
 // exportExcluded는 노출 규칙이 무엇을 걸렀는지다.
 type exportExcluded struct {
-	Inbox     int `json:"inbox"`
-	Sources   int `json:"sources"`
-	Archive   int `json:"archive"`
-	Sensitive int `json:"sensitive"`
-	Unparsed  int `json:"unparsed"`
-	Outside   int `json:"outside"`
+	Inbox        int `json:"inbox"`
+	Sources      int `json:"sources"`
+	Archive      int `json:"archive"`
+	Sensitive    int `json:"sensitive"`
+	Internal     int `json:"internal"`
+	NotIndexable int `json:"notIndexable"`
+	Superseded   int `json:"superseded"`
+	Unparsed     int `json:"unparsed"`
+	Outside      int `json:"outside"`
 }
 
 // exportOutcome은 export 의 결과다. DryRun 이면 Files 는 내보낼 예정이다.
@@ -187,6 +202,8 @@ type exportOutcome struct {
 	DanglingSlugs    []string       `json:"danglingSlugs,omitempty"`
 	ExcludedByFilter int            `json:"excludedByFilter"`
 	Excluded         exportExcluded `json:"excluded"`
+	IncludedInternal int            `json:"includedInternal"`
+	IncludeInternal  bool           `json:"includeInternal"`
 	SensitivityOn    bool           `json:"sensitivityOn"`
 }
 
@@ -231,10 +248,23 @@ func printExport(w io.Writer, o exportOutcome) {
 	if o.Excluded.Unparsed > 0 {
 		fmt.Fprint(w, i18n.T("cli.export.excluded_unparsed", o.Excluded.Unparsed)+"\n")
 	}
+	if o.Excluded.NotIndexable > 0 {
+		fmt.Fprint(w, i18n.T("cli.export.excluded_not_indexable", o.Excluded.NotIndexable)+"\n")
+	}
+	if o.Excluded.Superseded > 0 {
+		fmt.Fprint(w, i18n.T("cli.export.excluded_superseded", o.Excluded.Superseded)+"\n")
+	}
 	if o.SensitivityOn {
 		fmt.Fprint(w, i18n.T("cli.export.sensitivity_on", o.Excluded.Sensitive)+"\n")
 	} else {
 		fmt.Fprint(w, i18n.T("cli.export.sensitivity_off")+"\n")
+	}
+	// 넓히는 선택을 했다는 사실이 출력에 남아야 한다. 반출은 되돌릴 수
+	// 없다(ADR 0063).
+	if o.IncludeInternal {
+		fmt.Fprint(w, i18n.T("cli.export.included_internal", o.IncludedInternal)+"\n")
+	} else if o.Excluded.Internal > 0 {
+		fmt.Fprint(w, i18n.T("cli.export.excluded_internal", o.Excluded.Internal, flagIncludeInternal)+"\n")
 	}
 
 	if o.Anonymized {

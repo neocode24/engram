@@ -1,20 +1,26 @@
 package doc
 
 import (
+	"path"
 	"regexp"
 	"strings"
 )
 
-// Link는 추출된 위키링크 하나다. 중복 제거는 하지 않는다. 세는 것은 호출자 몫이다.
+// Link는 추출된 링크 하나다. 중복 제거는 하지 않는다. 세는 것은 호출자 몫이다.
 type Link struct {
 	Slug string
 	Line int // 원본 파일 기준 1 기반 줄 번호
 }
 
-// wikiLinkPattern은 [[슬러그]], [[슬러그|표시문자]], [[슬러그#헤딩]] 형태를 잡는다.
-var wikiLinkPattern = regexp.MustCompile(`\[\[([^[\]]+)\]\]`)
+// linkPattern은 두 문법을 한 번에 잡는다(ADR 0065). 첫 갈래가 위키링크
+// [[슬러그]], [[슬러그|표시문자]], [[슬러그#헤딩]]이고 둘째 갈래가 마크다운
+// 링크 [텍스트](경로)다. 하나로 묶어야 문서 안 등장 순서가 보존된다.
+var linkPattern = regexp.MustCompile(`\[\[([^[\]]+)\]\]|\[[^\[\]]*\]\(([^()\s]+)\)`)
 
-// BodyLinks는 본문에서 위키링크를 순서대로 추출한다.
+// schemePattern은 http:, https:, mailto: 같은 URI 스킴 접두를 잡는다.
+var schemePattern = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9+.\-]*:`)
+
+// BodyLinks는 본문에서 링크를 순서대로 추출한다.
 // 코드 펜스(```)와 인라인 코드(백틱) 안의 것은 링크가 아니다.
 // 문서에 링크 문법 자체를 설명해도 판정이 틀어지지 않게 하기 위해서다.
 func (d Doc) BodyLinks() []Link {
@@ -30,14 +36,34 @@ func (d Doc) BodyLinks() []Link {
 			continue
 		}
 		for _, seg := range outsideCode(line) {
-			for _, m := range wikiLinkPattern.FindAllStringSubmatch(seg, -1) {
-				if slug := slugOf(m[1]); slug != "" {
+			for _, m := range linkPattern.FindAllStringSubmatch(seg, -1) {
+				slug := slugOf(m[1])
+				if m[1] == "" {
+					slug = slugOfMarkdownPath(m[2])
+				}
+				if slug != "" {
 					links = append(links, Link{Slug: slug, Line: lineNo})
 				}
 			}
 		}
 	}
 	return links
+}
+
+// slugOfMarkdownPath는 마크다운 링크 경로를 슬러그로 바꾼다.
+// 위키 안 문서를 가리키지 않으면 빈 문자열을 낸다(ADR 0065).
+// 디렉토리를 버리는 것은 위키 안에서 슬러그가 유일하다는 전제 때문이다.
+func slugOfMarkdownPath(p string) string {
+	if i := strings.IndexByte(p, '#'); i >= 0 {
+		p = p[:i] // 문서 안 앵커는 관계가 아니다. #만 있으면 경로가 빈다
+	}
+	if !strings.HasSuffix(p, ".md") {
+		return "" // 이미지와 외부 자료는 관계가 아니다
+	}
+	if schemePattern.MatchString(p) {
+		return "" // 외부 링크는 위키 안의 관계가 아니다
+	}
+	return strings.TrimSuffix(path.Base(p), ".md")
 }
 
 // FrontmatterLinks는 프론트매터 related 필드의 링크를 반환한다.

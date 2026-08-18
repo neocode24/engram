@@ -20,6 +20,8 @@ const (
 	flagSetKey   = "set"
 	flagUnsetKey = "unset"
 	flagBodyFrom = "body-from"
+	// flagUpdateForce는 sources 원본 보존 거절을 넘기는 플래그 이름이다(ADR 0064).
+	flagUpdateForce = "force"
 )
 
 // newUpdateCmd는 문서의 프론트매터와 본문을 갱신하는 update 커맨드를 반환한다.
@@ -53,6 +55,16 @@ func newUpdateCmd() *cobra.Command {
 			}
 			if len(sets) == 0 && len(unsets) == 0 && bodyFrom == "" {
 				return errors.New(i18n.T("cli.update.no_changes"))
+			}
+			force, err := cmd.Flags().GetBool(flagUpdateForce)
+			if err != nil {
+				return fmt.Errorf("%s: %w", i18n.T("cli.ingest.flag_read_fail", flagUpdateForce), err)
+			}
+			// sources는 원본 보존 계층이다(ADR 0064). 모르고 고치는 것을
+			// 막는 것이 목적이므로 --force를 준 경우는 통과시킨다.
+			inSources := stageOfPath(root, srcPath) == "sources"
+			if inSources && !force {
+				return errors.New(i18n.T("cli.update.sources_refused"))
 			}
 
 			raw, err := os.ReadFile(srcPath)
@@ -95,16 +107,13 @@ func newUpdateCmd() *cobra.Command {
 				}
 				body = content
 				bodyChanged = true
-				if rel := stageOfPath(root, srcPath); rel == "sources" {
-					fmt.Fprintln(cmd.ErrOrStderr(), i18n.T("cli.update.warn_sources_body"))
-				}
 			}
 
 			// updated는 도구가 채우는 필드다(ADR 0009). 갱신 사실을 날짜로
 			// 남겨야 재발견 루프가 노후를 올바르게 판정한다. sources 계층과
 			// 사용자가 updated를 직접 정하거나 지운 경우는 채우지 않는다.
 			autoUpdated := ""
-			if stageOfPath(root, srcPath) != "sources" &&
+			if !inSources &&
 				!hasSetKey(sets, "updated") && !containsString(unsets, "updated") {
 				autoUpdated = Now(cmd).Format("2006-01-02")
 				fields = upsertField(fields, doc.Field{Key: "updated", Kind: doc.KindDate, Str: autoUpdated})
@@ -114,7 +123,7 @@ func newUpdateCmd() *cobra.Command {
 				return fmt.Errorf("%s: %w", i18n.T("cli.update.write_fail", srcPath), err)
 			}
 
-			res := updateOutcome{Path: srcPath, Set: sets, Unset: unsets, Updated: autoUpdated}
+			res := updateOutcome{Path: srcPath, Set: sets, Unset: unsets, Updated: autoUpdated, ForcedSources: inSources}
 			if bodyChanged {
 				res.BodyFrom = bodyFrom
 			}
@@ -130,18 +139,21 @@ func newUpdateCmd() *cobra.Command {
 	cmd.Flags().StringArray(flagSetKey, nil, i18n.T("cli.update.flag_set"))
 	cmd.Flags().StringArray(flagUnsetKey, nil, i18n.T("cli.update.flag_unset"))
 	cmd.Flags().String(flagBodyFrom, "", i18n.T("cli.update.flag_body_from"))
+	cmd.Flags().Bool(flagUpdateForce, false, i18n.T("cli.update.flag_force"))
 	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
 	return cmd
 }
 
 // updateOutcome은 update의 결과다. Updated는 도구가 updated 필드를
-// 자동으로 채웠을 때만 값이 있다.
+// 자동으로 채웠을 때만 값이 있다. ForcedSources는 원본 보존 계층을
+// --force로 고친 경우다(ADR 0064).
 type updateOutcome struct {
-	Path     string   `json:"path"`
-	Set      []string `json:"set"`
-	Unset    []string `json:"unset"`
-	BodyFrom string   `json:"bodyFrom,omitempty"`
-	Updated  string   `json:"updated,omitempty"`
+	Path          string   `json:"path"`
+	Set           []string `json:"set"`
+	Unset         []string `json:"unset"`
+	BodyFrom      string   `json:"bodyFrom,omitempty"`
+	Updated       string   `json:"updated,omitempty"`
+	ForcedSources bool     `json:"forcedSources,omitempty"`
 }
 
 // hasSetKey는 --set 목록에 키가 이미 있는지 본다. 사용자가 직접 정한
@@ -293,6 +305,9 @@ func stageOfPath(root, path string) string {
 // printUpdated은 갱신 내용과 다음에 할 수 있는 일을 낸다.
 func printUpdated(w io.Writer, res updateOutcome) {
 	fmt.Fprintln(w, i18n.T("cli.update.done", res.Path))
+	if res.ForcedSources {
+		fmt.Fprintln(w, i18n.T("cli.update.forced_sources"))
+	}
 	for _, kv := range res.Set {
 		fmt.Fprintln(w, i18n.T("cli.update.set_line", kv))
 	}

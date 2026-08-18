@@ -177,6 +177,7 @@ related, derived_from, derived_context, source_refs 필드도 같이 고칩니�
 
 꺼진 속성의 키와 허용값 밖의 값은 거절합니다. artifact_stage는 여기서
 바꾸지 못합니다. 단계 이동은 engram promote와 engram demote의 일입니다.
+sources는 원본 보존 계층이라 거절합니다. --force로 넘길 수 있습니다.
 키 순서는 파싱이 보존한 그대로 유지됩니다.`,
 		"cli.update.flag_set":              "프론트매터 키 설정. key=value. 반복 가능",
 		"cli.update.flag_unset":            "프론트매터 키 제거. 반복 가능",
@@ -185,7 +186,9 @@ related, derived_from, derived_context, source_refs 필드도 같이 고칩니�
 		"cli.update.set_invalid":           "--set 값이 key=value 형식이 아닙니다: %q",
 		"cli.update.unset_stage_forbidden": "artifact_stage는 update로 지울 수 없습니다. 단계 이동은 engram promote와 engram demote가 합니다",
 		"cli.update.unset_axis_off":        "꺼진 속성의 키는 지울 것도 없습니다: %s",
-		"cli.update.warn_sources_body":     "경고: sources는 원본 보존 계층입니다. 본문을 바꾼 사실을 기억해 두세요",
+		"cli.update.flag_force":            "sources 원본 보존 거절을 넘깁니다",
+		"cli.update.sources_refused":       "sources는 원본과 출처를 보존하는 계층이라 update가 거절합니다\n꼭 고쳐야 하면 --force를 주세요",
+		"cli.update.forced_sources":        "--force로 원본 보존 계층을 고쳤습니다",
 		"cli.update.write_fail":            "문서를 쓸 수 없음: %s",
 		"cli.update.set_stage_forbidden":   "artifact_stage는 update로 바꿀 수 없습니다. 단계 이동은 engram promote와 engram demote가 합니다",
 		"cli.update.set_axis_off":          "꺼진 속성의 키는 설정할 수 없습니다: %s (프리셋 %s). engram.yaml의 axes에서 켜거나 문서에서 쓰지 않습니다",
@@ -377,6 +380,7 @@ values. Example: --set topics=go,cli
 
 Keys of disabled attributes and values outside the allowed set are rejected. artifact_stage
 cannot be changed here. Stage moves belong to engram promote and engram demote.
+sources is a preservation layer and is refused. Pass --force to bypass it.
 Key order is kept exactly as parsing preserved it.`,
 		"cli.update.flag_set":              "Set a frontmatter key. key=value. Repeatable",
 		"cli.update.flag_unset":            "Remove a frontmatter key. Repeatable",
@@ -385,7 +389,9 @@ Key order is kept exactly as parsing preserved it.`,
 		"cli.update.set_invalid":           "--set value is not in key=value form: %q",
 		"cli.update.unset_stage_forbidden": "artifact_stage cannot be removed with update. Stage moves belong to engram promote and engram demote",
 		"cli.update.unset_axis_off":        "nothing to unset for a disabled attribute: %s",
-		"cli.update.warn_sources_body":     "Warning: sources is a preservation layer. Remember that the body was changed",
+		"cli.update.flag_force":            "Bypass the sources preservation refusal",
+		"cli.update.sources_refused":       "sources preserves originals and their provenance, so update refuses to change it\nPass --force if you really must change it",
+		"cli.update.forced_sources":        "Changed a preservation-layer document with --force",
 		"cli.update.write_fail":            "cannot write document: %s",
 		"cli.update.set_stage_forbidden":   "artifact_stage cannot be changed with update. Stage moves belong to engram promote and engram demote",
 		"cli.update.set_axis_off":          "cannot set a disabled attribute: %s (preset %s). Turn it on under axes in engram.yaml, or stop using it in documents",

@@ -24,6 +24,10 @@ import (
 type Options struct {
 	// IncludeArchive는 archive 문서도 반출할지 정한다.
 	IncludeArchive bool
+	// IncludeInternal은 sensitivity 가 internal 인 문서도 반출할지
+	// 정한다. 기본은 거짓이다. 파일이 기계 밖으로 나가므로 기본이 전체
+	// 노출이면 사고가 난다(ADR 0063).
+	IncludeInternal bool
 	// Slugs는 반출할 문서를 좁힌다. 비면 노출 규칙을 지난 전부다.
 	// 링크를 따라가지 않는다. 지목한 것만 나간다.
 	Slugs []string
@@ -96,7 +100,7 @@ func (r Result) UnusedRules() []Rule {
 
 // Plan은 반출 계획을 만든다. 파일을 쓰지 않는다.
 func Plan(root string, cfg config.Config, opts Options) (Result, error) {
-	sel, err := expose.Select(root, cfg, expose.Options{IncludeArchive: opts.IncludeArchive})
+	sel, err := expose.Select(root, cfg, exposeOptions(opts))
 	if err != nil {
 		return Result{}, err
 	}
@@ -148,6 +152,12 @@ func Plan(root string, cfg config.Config, opts Options) (Result, error) {
 	return res, nil
 }
 
+// exposeOptions는 반출 선택지를 노출 판정의 선택지로 옮긴다. 두 곳에서
+// 손으로 옮기면 한쪽만 고쳐질 수 있어 한 자리에 둔다.
+func exposeOptions(opts Options) expose.Options {
+	return expose.Options{IncludeArchive: opts.IncludeArchive, IncludeInternal: opts.IncludeInternal}
+}
+
 // narrow는 명시 슬러그로 대상을 좁힌다. 제외된 문서를 지목하면 왜
 // 제외되었는지 알리고 멈춘다. 슬러그 지정이 노출 규칙을 뚫는 경로가
 // 되면 민감도 제외가 이름만 바꿔 무력해지기 때문이다(ADR 0046).
@@ -170,7 +180,7 @@ func narrow(sel expose.Result, opts Options, cfg config.Config) ([]expose.Doc, e
 		s := graph.Normalize(want)
 		ed, ok := bySlug[s]
 		if !ok {
-			return nil, notExportable(sel, want, s, cfg, expose.Options{IncludeArchive: opts.IncludeArchive})
+			return nil, notExportable(sel, want, s, cfg, exposeOptions(opts))
 		}
 		if picked[s] {
 			continue

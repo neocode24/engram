@@ -232,6 +232,40 @@ func TestServeSensitivityFilter(t *testing.T) {
 	})
 }
 
+// TestServeShowsInternalAndHidesUnvetted는 ADR 0063이 serve 에 준
+// 기본값을 지킨다. internal 은 로컬 조회이므로 보이고, indexable 이
+// false 이거나 status 가 superseded 인 문서는 보이지 않는다.
+func TestServeShowsInternalAndHidesUnvetted(t *testing.T) {
+	root := makeWiki(t, "team")
+	extra := map[string]string{
+		"context/색인제외.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+			"indexable: false\nsensitivity: public-reference\ncreated: 2026-01-01\n---\n\n# 색인 제외\n\n감춥니다.\n",
+		"context/대체됨.md": "---\ntype: concept\nartifact_stage: context\nstatus: superseded\n" +
+			"indexable: true\nsensitivity: public-reference\ncreated: 2026-01-01\n---\n\n# 대체된 문서\n\n감춥니다.\n",
+	}
+	for name, content := range extra {
+		if err := os.WriteFile(filepath.Join(root, filepath.FromSlash(name)), []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	h := newTestServer(t, root, Options{})
+
+	// hub 는 sensitivity 가 internal 이다. 자기 위키를 자기가 보는 것이므로
+	// 감추지 않는다. 좁히는 플래그도 두지 않았다.
+	if code, _ := get(t, h, docPath("context/hub.md")); code != http.StatusOK {
+		t.Errorf("internal 문서의 상태 코드가 %d 입니다. 200 이어야 합니다", code)
+	}
+	for _, rel := range []string{"context/색인제외.md", "context/대체됨.md"} {
+		if code, _ := get(t, h, docPath(rel)); code != http.StatusNotFound {
+			t.Errorf("%s 의 상태 코드가 %d 입니다. 404 여야 합니다", rel, code)
+		}
+	}
+	_, list := get(t, h, "/")
+	if strings.Contains(list, "대체된 문서") || strings.Contains(list, "색인 제외") {
+		t.Error("감춰야 할 문서가 목록에 있습니다")
+	}
+}
+
 func TestServeWikiLinks(t *testing.T) {
 	h := newTestServer(t, makeWiki(t, "team"), Options{})
 	_, body := get(t, h, docPath("context/hub.md"))

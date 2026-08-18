@@ -2,7 +2,7 @@
 number: 0044
 title: serve는 읽기 전용이고 검수된 지식만 보여준다
 date: 2026-08-17
-status: accepted
+status: amended
 ---
 
 # serve의 노출 범위

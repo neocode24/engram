@@ -3,7 +3,9 @@
 // 노출 범위는 ADR 0044가 정한다. context 와 root_files 만 보이고 inbox 와
 // sources 는 목록에도 URL 에도 없다. archive 는 기본으로 감추고 플래그로
 // 연다. sensitivity 속성이 켜진 위키에서는 private-local-only 와 restricted 를
-// 뺀다. 그 제외를 뒤집는 플래그는 두지 않는다.
+// 뺀다. 그 제외를 뒤집는 플래그는 두지 않는다. ADR 0063이 더한 판정으로
+// indexable 이 거짓인 문서와 status 가 superseded 인 문서도 빠진다.
+// sensitivity 가 internal 인 문서는 로컬 조회이므로 보여 준다.
 //
 // 쓰기 경로가 없다. POST 계열은 라우팅에 닿기 전에 막힌다. 판정과 검색은
 // internal 패키지를 그대로 부르므로 여기서 규칙을 다시 만들지 않는다.
@@ -92,7 +94,13 @@ type view struct {
 // load는 위키를 순회해 이번 요청이 볼 모습을 만든다. 제외된 문서는
 // docs 에 남지 않으므로 목록에도 URL 로도 닿지 않는다.
 func (s *Server) load() (*view, error) {
-	sel, err := expose.Select(s.root, s.cfg, expose.Options{IncludeArchive: s.opts.IncludeArchive})
+	// IncludeInternal 은 참으로 고정한다. 로컬호스트에서 자기 위키를
+	// 보는 것이므로 자기 문서를 감추는 것은 방해일 뿐이다. 좁히는
+	// 플래그를 두지 않는다(ADR 0063).
+	sel, err := expose.Select(s.root, s.cfg, expose.Options{
+		IncludeArchive:  s.opts.IncludeArchive,
+		IncludeInternal: true,
+	})
 	if err != nil {
 		return nil, err
 	}

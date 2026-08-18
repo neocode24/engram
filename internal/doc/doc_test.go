@@ -193,3 +193,54 @@ func TestBodyLinks(t *testing.T) {
 		}
 	})
 }
+
+// TestMarkdownBodyLinks는 ADR 0065의 마크다운 링크 추출을 확인한다.
+func TestMarkdownBodyLinks(t *testing.T) {
+	t.Run("마크다운 링크를 관계로 센다", func(t *testing.T) {
+		src := "[고 스캐폴드](context/go-scaffold.md)\n[옆 문서](sibling.md)\n[증거](../sources/2026-01-01-bar.md)\n"
+		got := bodyLinksOf(t, src)
+		want := []Link{{"go-scaffold", 1}, {"sibling", 2}, {"2026-01-01-bar", 3}}
+		if len(got) != len(want) {
+			t.Fatalf("링크 수: got %d (%+v)", len(got), got)
+		}
+		for i, w := range want {
+			if got[i] != w {
+				t.Errorf("링크 %d: got %+v, want %+v", i, got[i], w)
+			}
+		}
+	})
+
+	t.Run("스킴과 .md 아닌 경로와 앵커는 관계가 아니다", func(t *testing.T) {
+		src := "[웹](https://example.com/a.md)\n[메일](mailto:a@b.md)\n" +
+			"![그림](img/diagram.png)\n[문서](notes.txt)\n[안](#결정)\n[진짜](real.md)\n"
+		got := bodyLinksOf(t, src)
+		if len(got) != 1 || got[0].Slug != "real" {
+			t.Errorf("위키 안 문서만 나와야 함: %+v", got)
+		}
+	})
+
+	t.Run("코드 펜스와 인라인 코드 안은 관계가 아니다", func(t *testing.T) {
+		src := "```\n[펜스](in-fence.md)\n```\n`[코드](in-code.md)` 그리고 [밖](out.md)\n"
+		got := bodyLinksOf(t, src)
+		if len(got) != 1 || got[0].Slug != "out" {
+			t.Errorf("코드 밖 링크만 나와야 함: %+v", got)
+		}
+	})
+
+	t.Run("두 문법이 섞여도 등장 순서를 지킨다", func(t *testing.T) {
+		got := bodyLinksOf(t, "[[first]] 그리고 [둘째](second.md) 그리고 [[third]]\n")
+		if len(got) != 3 || got[0].Slug != "first" || got[1].Slug != "second" || got[2].Slug != "third" {
+			t.Errorf("등장 순서: %+v", got)
+		}
+	})
+}
+
+// bodyLinksOf는 본문만 있는 문서를 파싱해 본문 링크를 낸다.
+func bodyLinksOf(t *testing.T, body string) []Link {
+	t.Helper()
+	d, err := Parse("a.md", []byte(body))
+	if err != nil {
+		t.Fatalf("파싱 실패: %v", err)
+	}
+	return d.BodyLinks()
+}

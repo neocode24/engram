@@ -58,7 +58,7 @@
 | [0041](0041-skills-install-embeds-one-static-skill.md) | skills install은 정적 스킬 문서 하나를 심고 위키별 규칙은 rules show로 넘긴다 | 2026-08-17 | amended |
 | [0042](0042-release-artifacts-and-workflow.md) | 릴리스는 goreleaser로 만들고 태그 푸시가 유일한 계기다 | 2026-08-17 | accepted |
 | [0043](0043-mcp-exposes-one-write-tool-and-omits-promote.md) | MCP는 쓰기 도구를 하나만 노출하고 promote를 내보내지 않는다 | 2026-08-17 | accepted |
-| [0044](0044-serve-is-read-only-and-shows-only-vetted-knowledge.md) | serve는 읽기 전용이고 검수된 지식만 보여준다 | 2026-08-17 | accepted |
+| [0044](0044-serve-is-read-only-and-shows-only-vetted-knowledge.md) | serve는 읽기 전용이고 검수된 지식만 보여준다 | 2026-08-17 | amended |
 | [0045](0045-explicit-slug-must-still-be-filesystem-safe.md) | 명시한 슬러그도 파일시스템 안전 검사를 받는다 | 2026-08-17 | amended |
 | [0046](0046-pack-exports-files-and-anonymizes-by-user-dictionary.md) | pack은 파일을 그대로 내보내고 익명화는 사용자 사전으로 한다 | 2026-08-17 | amended |
 | [0047](0047-export-not-pack.md) | 반출 커맨드의 이름을 export로 정정한다 | 2026-08-17 | accepted |
@@ -77,6 +77,9 @@
 | [0060](0060-search-line-shows-stage-not-path.md) | search 목록은 경로 대신 단계를 내고 제목은 --json에만 담는다 | 2026-08-18 | accepted |
 | [0061](0061-field-weights-and-what-the-index-is-not.md) | 색인 필드에 가중치를 주고 슬러그는 색인하지 않는다 | 2026-08-18 | accepted |
 | [0062](0062-agents-read-the-wiki-through-recall.md) | 에이전트는 위키 내용을 recall로 꺼낸다 | 2026-08-18 | accepted |
+| [0063](0063-exposure-reads-indexable-status-and-scopes-internal.md) | 노출 판정이 indexable과 status를 읽고 internal은 반출에서 뺀다 | 2026-08-19 | accepted |
+| [0064](0064-update-refuses-to-change-sources.md) | update는 sources 문서를 거절한다 | 2026-08-19 | accepted |
+| [0065](0065-markdown-links-count-as-relations.md) | 마크다운 링크도 문서 사이의 관계로 센다 | 2026-08-19 | accepted |
 
 ## 공개 범위 밖
 
@@ -115,6 +118,8 @@
 | 0022 | promote는 inbox를 옮기고 sources에서 파생한다 | [0058](0058-promote-to-sources-moves-evidence.md) --to sources로 inbox에서 sources로 옮기는 길을 더한다 |
 | 0009 | 게이트는 문서의 고유 위키링크 수를 센다 | [0054](0054-gate-counts-only-links-that-resolve.md) 대상이 실재하는 링크만 센다 |
 | 0052 | 스킬 문서가 반드시 담는 것은 여덟이다 | [0062](0062-agents-read-the-wiki-through-recall.md) 위키 내용을 recall로 꺼내라는 지시를 더해 아홉이 된다 |
+| 0009 | 게이트는 문서의 고유 위키링크 수를 센다 | [0065](0065-markdown-links-count-as-relations.md) 마크다운 링크도 관계로 세므로 대상이 위키링크에 한정되지 않는다 |
+| 0044 | 노출 판정은 위치와 민감도를 본다 | [0063](0063-exposure-reads-indexable-status-and-scopes-internal.md) indexable 과 status 를 더하고 internal 을 반출에서 뺀다 |
 
 ## 근거만 갱신된 경우
 

@@ -78,7 +78,7 @@ func bundleNames(t *testing.T, dir string) []string {
 func TestExportWritesBundle(t *testing.T) {
 	root := makeExportWiki(t)
 	out := filepath.Join(t.TempDir(), "bundle")
-	stdout, err := runExport(t, "export", "--wiki", root, "--out", out)
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--include-internal")
 	if err != nil {
 		t.Fatalf("반출 실패: %v\n%s", err, stdout)
 	}
@@ -97,7 +97,7 @@ func TestExportWritesBundle(t *testing.T) {
 func TestExportDryRunWritesNothing(t *testing.T) {
 	root := makeExportWiki(t)
 	out := filepath.Join(t.TempDir(), "bundle")
-	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--dry-run")
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--include-internal", "--dry-run")
 	if err != nil {
 		t.Fatalf("dry-run 실패: %v\n%s", err, stdout)
 	}
@@ -115,7 +115,7 @@ func TestExportRejectsNonEmptyOutDir(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(out, "잔재.md"), []byte("이전 반출물\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	_, err := runExport(t, "export", "--wiki", root, "--out", out)
+	_, err := runExport(t, "export", "--wiki", root, "--out", out, "--include-internal")
 	if err == nil || !strings.Contains(err.Error(), "비어 있지 않습니다") {
 		t.Fatalf("비어 있지 않은 디렉토리 오류 = %v", err)
 	}
@@ -131,7 +131,7 @@ func TestExportAppliesReplacements(t *testing.T) {
 		t.Fatal(err)
 	}
 	out := filepath.Join(t.TempDir(), "bundle")
-	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--replacements", dict)
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--include-internal", "--replacements", dict)
 	if err != nil {
 		t.Fatalf("반출 실패: %v\n%s", err, stdout)
 	}
@@ -174,7 +174,7 @@ func TestExportRequiresOut(t *testing.T) {
 func TestExportJSON(t *testing.T) {
 	root := makeExportWiki(t)
 	out := filepath.Join(t.TempDir(), "bundle")
-	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--dry-run", "--json")
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--include-internal", "--dry-run", "--json")
 	if err != nil {
 		t.Fatalf("반출 실패: %v\n%s", err, stdout)
 	}
@@ -190,5 +190,94 @@ func TestExportJSON(t *testing.T) {
 	}
 	if o.Anonymized {
 		t.Error("치환 파일이 없는데 익명화했다고 보고했습니다")
+	}
+}
+
+// makeBoundaryWiki는 ADR 0063이 더한 판정 셋을 한 위키에 모은다.
+// 공개 문서 하나, internal 하나, indexable 이 false 인 것 하나, status 가
+// superseded 인 것 하나다.
+func makeBoundaryWiki(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	head := "---\ntype: concept\nartifact_stage: context\n"
+	files := map[string]string{
+		"engram.yaml": "preset: team\n",
+		"context/공개.md": head + "status: promoted\nindexable: true\nsensitivity: public-reference\n" +
+			"created: 2026-01-01\n---\n\n# 공개 문서\n\n나갑니다.\n",
+		"context/사내.md": head + "status: promoted\nindexable: true\nsensitivity: internal\n" +
+			"created: 2026-01-01\n---\n\n# 사내 문서\n\n기본으로 빠집니다.\n",
+		"context/색인제외.md": head + "status: promoted\nindexable: false\nsensitivity: public-reference\n" +
+			"created: 2026-01-01\n---\n\n# 색인 제외\n\n빠집니다.\n",
+		"context/대체됨.md": head + "status: superseded\nindexable: true\nsensitivity: public-reference\n" +
+			"created: 2026-01-01\n---\n\n# 대체된 문서\n\n빠집니다.\n",
+	}
+	for name, content := range files {
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return root
+}
+
+func TestExportExcludesInternalByDefault(t *testing.T) {
+	root := makeBoundaryWiki(t)
+	out := filepath.Join(t.TempDir(), "bundle")
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out)
+	if err != nil {
+		t.Fatalf("반출 실패: %v\n%s", err, stdout)
+	}
+	names := bundleNames(t, out)
+	if len(names) != 1 || names[0] != "context/공개.md" {
+		t.Fatalf("번들 = %v, 기대 context/공개.md 하나", names)
+	}
+	// 빠진 것을 반드시 말한다.
+	for _, want := range []string{
+		"민감도가 internal 인 문서 1개",
+		"--include-internal",
+		"indexable 이 false 인 문서 1개",
+		"status 가 superseded 인 문서 1개",
+	} {
+		if !strings.Contains(stdout, want) {
+			t.Errorf("출력에 %q 가 없습니다:\n%s", want, stdout)
+		}
+	}
+}
+
+func TestExportIncludeInternalOpensAndSaysSo(t *testing.T) {
+	root := makeBoundaryWiki(t)
+	out := filepath.Join(t.TempDir(), "bundle")
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out, "--include-internal")
+	if err != nil {
+		t.Fatalf("반출 실패: %v\n%s", err, stdout)
+	}
+	names := bundleNames(t, out)
+	if len(names) != 2 {
+		t.Fatalf("번들 = %v, 기대 2개", names)
+	}
+	if !strings.Contains(stdout, "민감도가 internal 인 문서 1개를 포함했습니다") {
+		t.Errorf("넓힌 사실이 출력에 없습니다:\n%s", stdout)
+	}
+}
+
+func TestExportBoundaryCountsInJSON(t *testing.T) {
+	root := makeBoundaryWiki(t)
+	stdout, err := runExport(t, "export", "--wiki", root,
+		"--out", filepath.Join(t.TempDir(), "bundle"), "--dry-run", "--json")
+	if err != nil {
+		t.Fatalf("반출 실패: %v\n%s", err, stdout)
+	}
+	var o exportOutcome
+	if err := json.Unmarshal([]byte(stdout), &o); err != nil {
+		t.Fatalf("JSON 파싱 실패: %v\n%s", err, stdout)
+	}
+	if o.Excluded.Internal != 1 || o.Excluded.NotIndexable != 1 || o.Excluded.Superseded != 1 {
+		t.Errorf("제외 집계 = %+v, 기대 internal/notIndexable/superseded 각 1", o.Excluded)
+	}
+	if o.IncludeInternal || o.IncludedInternal != 0 {
+		t.Errorf("포함 집계 = %v/%d, 기대 false/0", o.IncludeInternal, o.IncludedInternal)
 	}
 }

@@ -87,6 +87,11 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 문서를 뺍니다. 슬러그로 지목해도 이 제외는 뚫리지 않습니다. 반출해야
 하면 문서의 값을 고치세요.
 
+민감도가 internal 인 문서는 기본으로 빠지며 --include-internal 로 엽니다.
+승급 문서의 기본 민감도가 internal 이라 이것을 열어 두면 승급한 문서가
+전부 반출 대상이 됩니다. indexable 이 false 이거나 status 가 superseded 인
+문서도 나가지 않습니다.
+
 슬러그를 주면 그 문서만 나갑니다. 링크를 따라가지 않으므로 함께
 내보낼 문서는 함께 적으세요.
 
@@ -95,34 +100,39 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 전부에 적용합니다. 파일을 주지 않으면 치환하지 않습니다.
 
 --dry-run 은 무엇이 나갈지 봅니다. 파일을 쓰지 않습니다.`,
-		"cli.export.flag_wiki":             "대상 위키 경로",
-		"cli.export.flag_out":              "번들을 내보낼 디렉토리",
-		"cli.export.flag_replacements":     "익명화 치환 파일. 한 줄에 원문==>대체어",
-		"cli.export.flag_include_archive":  "archive 문서도 반출합니다",
-		"cli.export.flag_dry_run":          "무엇이 나갈지 봅니다. 파일을 쓰지 않습니다",
-		"cli.export.out_required":          "--%s 로 내보낼 디렉토리를 지정하세요",
-		"cli.export.flag_read_fail":        "--%s 플래그를 읽을 수 없음",
-		"cli.export.no_files":              "반출할 문서가 없습니다",
-		"cli.export.repl_read_fail":        "치환 파일을 읽을 수 없음",
-		"cli.export.repl_parse_fail":       "치환 파일 %s",
-		"cli.export.repl_empty":            "치환 파일에 규칙이 없습니다: %s",
-		"cli.export.outdir_check_fail":     "출력 디렉토리를 확인할 수 없음",
-		"cli.export.outdir_not_empty":      "출력 디렉토리가 비어 있지 않습니다: %s",
-		"cli.export.outdir_not_empty_hint": "이전 반출물이 섞이지 않도록 비우고 다시 실행하세요",
-		"cli.export.mkdir_fail":            "디렉토리를 만들 수 없음",
-		"cli.export.write_fail":            "번들 파일을 쓸 수 없음: %s",
-		"cli.export.outcome_dryrun":        "내보낼 문서 %d개 (dry-run. 아직 쓰지 않았습니다)",
-		"cli.export.outcome_done":          "내보냈습니다. 문서 %d개 -> %s",
-		"cli.export.excluded_summary":      "제외: inbox %d개, sources %d개, archive %d개",
-		"cli.export.excluded_filter":       "제외: 지목한 슬러그에 들지 않은 문서 %d개",
-		"cli.export.excluded_outside":      "제외: 단계 디렉토리 밖에 있는 문서 %d개",
-		"cli.export.excluded_unparsed":     "제외: 프론트매터를 읽을 수 없어 판정하지 못한 문서 %d개 (engram lint 로 확인하세요)",
-		"cli.export.sensitivity_on":        "민감도: private-local-only 와 restricted 문서 %d개를 제외했습니다. 뒤집는 플래그는 없습니다",
-		"cli.export.sensitivity_off":       "민감도: 이 위키는 sensitivity 속성이 꺼져 있어 거를 값이 없습니다",
-		"cli.export.anonymized_count":      "익명화: %d건을 치환했습니다",
-		"cli.export.unused_rules_warning":  "경고: 한 번도 걸리지 않은 치환 규칙이 %d건 있습니다. 사전의 오타를 확인하세요",
-		"cli.export.anonymized_none":       "익명화: 치환 파일을 주지 않아 원문 그대로 나갑니다",
-		"cli.export.dangling_links":        "번들 밖을 가리키는 위키링크 %d개 (문서 %d개). 본문은 고치지 않았습니다",
+		"cli.export.flag_wiki":              "대상 위키 경로",
+		"cli.export.flag_out":               "번들을 내보낼 디렉토리",
+		"cli.export.flag_replacements":      "익명화 치환 파일. 한 줄에 원문==>대체어",
+		"cli.export.flag_include_archive":   "archive 문서도 반출합니다",
+		"cli.export.flag_include_internal":  "민감도가 internal 인 문서도 반출합니다",
+		"cli.export.flag_dry_run":           "무엇이 나갈지 봅니다. 파일을 쓰지 않습니다",
+		"cli.export.out_required":           "--%s 로 내보낼 디렉토리를 지정하세요",
+		"cli.export.flag_read_fail":         "--%s 플래그를 읽을 수 없음",
+		"cli.export.no_files":               "반출할 문서가 없습니다",
+		"cli.export.repl_read_fail":         "치환 파일을 읽을 수 없음",
+		"cli.export.repl_parse_fail":        "치환 파일 %s",
+		"cli.export.repl_empty":             "치환 파일에 규칙이 없습니다: %s",
+		"cli.export.outdir_check_fail":      "출력 디렉토리를 확인할 수 없음",
+		"cli.export.outdir_not_empty":       "출력 디렉토리가 비어 있지 않습니다: %s",
+		"cli.export.outdir_not_empty_hint":  "이전 반출물이 섞이지 않도록 비우고 다시 실행하세요",
+		"cli.export.mkdir_fail":             "디렉토리를 만들 수 없음",
+		"cli.export.write_fail":             "번들 파일을 쓸 수 없음: %s",
+		"cli.export.outcome_dryrun":         "내보낼 문서 %d개 (dry-run. 아직 쓰지 않았습니다)",
+		"cli.export.outcome_done":           "내보냈습니다. 문서 %d개 -> %s",
+		"cli.export.excluded_summary":       "제외: inbox %d개, sources %d개, archive %d개",
+		"cli.export.excluded_filter":        "제외: 지목한 슬러그에 들지 않은 문서 %d개",
+		"cli.export.excluded_outside":       "제외: 단계 디렉토리 밖에 있는 문서 %d개",
+		"cli.export.excluded_unparsed":      "제외: 프론트매터를 읽을 수 없어 판정하지 못한 문서 %d개 (engram lint 로 확인하세요)",
+		"cli.export.excluded_not_indexable": "제외: indexable 이 false 인 문서 %d개",
+		"cli.export.excluded_superseded":    "제외: status 가 superseded 인 문서 %d개",
+		"cli.export.excluded_internal":      "제외: 민감도가 internal 인 문서 %d개. 반출하려면 --%s 플래그를 주세요",
+		"cli.export.included_internal":      "민감도가 internal 인 문서 %d개를 포함했습니다",
+		"cli.export.sensitivity_on":         "민감도: private-local-only 와 restricted 문서 %d개를 제외했습니다. 뒤집는 플래그는 없습니다",
+		"cli.export.sensitivity_off":        "민감도: 이 위키는 sensitivity 속성이 꺼져 있어 거를 값이 없습니다",
+		"cli.export.anonymized_count":       "익명화: %d건을 치환했습니다",
+		"cli.export.unused_rules_warning":   "경고: 한 번도 걸리지 않은 치환 규칙이 %d건 있습니다. 사전의 오타를 확인하세요",
+		"cli.export.anonymized_none":        "익명화: 치환 파일을 주지 않아 원문 그대로 나갑니다",
+		"cli.export.dangling_links":         "번들 밖을 가리키는 위키링크 %d개 (문서 %d개). 본문은 고치지 않았습니다",
 	})
 
 	Register(LangEN, map[string]string{
@@ -214,6 +224,11 @@ private-local-only and restricted documents are excluded. Naming a slug
 does not punch through this exclusion. If a document must go out, change
 its value.
 
+Documents whose sensitivity is internal are excluded by default and open
+with --include-internal. Promoted documents default to internal, so
+leaving it open would make every promoted document exportable. Documents
+with indexable false or status superseded do not go out either.
+
 Given slugs, only those documents go out. Links are not followed, so list
 every document to export together.
 
@@ -222,33 +237,38 @@ per line; lines starting with # are skipped. It applies to body,
 frontmatter, and file names alike. Without a file, nothing is replaced.
 
 --dry-run shows what would go out. It writes no files.`,
-		"cli.export.flag_wiki":             "Target wiki path",
-		"cli.export.flag_out":              "Directory to export the bundle into",
-		"cli.export.flag_replacements":     "Anonymization replacement file. One original==>replacement per line",
-		"cli.export.flag_include_archive":  "Also export archive documents",
-		"cli.export.flag_dry_run":          "Show what would go out. Writes no files",
-		"cli.export.out_required":          "Specify the export directory with --%s",
-		"cli.export.flag_read_fail":        "cannot read --%s flag",
-		"cli.export.no_files":              "No documents to export",
-		"cli.export.repl_read_fail":        "cannot read replacement file",
-		"cli.export.repl_parse_fail":       "replacement file %s",
-		"cli.export.repl_empty":            "replacement file has no rules: %s",
-		"cli.export.outdir_check_fail":     "cannot inspect output directory",
-		"cli.export.outdir_not_empty":      "output directory is not empty: %s",
-		"cli.export.outdir_not_empty_hint": "Empty it and run again so earlier exports do not mix in",
-		"cli.export.mkdir_fail":            "cannot create directory",
-		"cli.export.write_fail":            "cannot write bundle file: %s",
-		"cli.export.outcome_dryrun":        "Documents to export: %d (dry-run. Nothing written yet)",
-		"cli.export.outcome_done":          "Exported %d to %s",
-		"cli.export.excluded_summary":      "Excluded: %d inbox, %d sources, %d archive",
-		"cli.export.excluded_filter":       "Excluded, not among the named slugs: %d",
-		"cli.export.excluded_outside":      "Excluded, outside the stage directories: %d",
-		"cli.export.excluded_unparsed":     "Excluded, frontmatter could not be parsed: %d (check with engram lint)",
-		"cli.export.sensitivity_on":        "Sensitivity: excluded %d private-local-only and restricted documents. No flag reverses this",
-		"cli.export.sensitivity_off":       "Sensitivity: this wiki has the sensitivity attribute off, so there is nothing to filter",
-		"cli.export.anonymized_count":      "Anonymized: replaced %d occurrences",
-		"cli.export.unused_rules_warning":  "Warning: %d replacement rules never matched. Check the dictionary for typos",
-		"cli.export.anonymized_none":       "Anonymized: no replacement file given, exporting text as-is",
-		"cli.export.dangling_links":        "Wikilinks pointing outside the bundle: %d, across %d documents. Bodies were not modified",
+		"cli.export.flag_wiki":              "Target wiki path",
+		"cli.export.flag_out":               "Directory to export the bundle into",
+		"cli.export.flag_replacements":      "Anonymization replacement file. One original==>replacement per line",
+		"cli.export.flag_include_archive":   "Also export archive documents",
+		"cli.export.flag_include_internal":  "Also export documents whose sensitivity is internal",
+		"cli.export.flag_dry_run":           "Show what would go out. Writes no files",
+		"cli.export.out_required":           "Specify the export directory with --%s",
+		"cli.export.flag_read_fail":         "cannot read --%s flag",
+		"cli.export.no_files":               "No documents to export",
+		"cli.export.repl_read_fail":         "cannot read replacement file",
+		"cli.export.repl_parse_fail":        "replacement file %s",
+		"cli.export.repl_empty":             "replacement file has no rules: %s",
+		"cli.export.outdir_check_fail":      "cannot inspect output directory",
+		"cli.export.outdir_not_empty":       "output directory is not empty: %s",
+		"cli.export.outdir_not_empty_hint":  "Empty it and run again so earlier exports do not mix in",
+		"cli.export.mkdir_fail":             "cannot create directory",
+		"cli.export.write_fail":             "cannot write bundle file: %s",
+		"cli.export.outcome_dryrun":         "Documents to export: %d (dry-run. Nothing written yet)",
+		"cli.export.outcome_done":           "Exported %d to %s",
+		"cli.export.excluded_summary":       "Excluded: %d inbox, %d sources, %d archive",
+		"cli.export.excluded_filter":        "Excluded, not among the named slugs: %d",
+		"cli.export.excluded_outside":       "Excluded, outside the stage directories: %d",
+		"cli.export.excluded_unparsed":      "Excluded, frontmatter could not be parsed: %d (check with engram lint)",
+		"cli.export.excluded_not_indexable": "Excluded, indexable is false: %d",
+		"cli.export.excluded_superseded":    "Excluded, status is superseded: %d",
+		"cli.export.excluded_internal":      "Excluded, sensitivity is internal: %d. Pass --%s to export them",
+		"cli.export.included_internal":      "Included %d documents whose sensitivity is internal",
+		"cli.export.sensitivity_on":         "Sensitivity: excluded %d private-local-only and restricted documents. No flag reverses this",
+		"cli.export.sensitivity_off":        "Sensitivity: this wiki has the sensitivity attribute off, so there is nothing to filter",
+		"cli.export.anonymized_count":       "Anonymized: replaced %d occurrences",
+		"cli.export.unused_rules_warning":   "Warning: %d replacement rules never matched. Check the dictionary for typos",
+		"cli.export.anonymized_none":        "Anonymized: no replacement file given, exporting text as-is",
+		"cli.export.dangling_links":         "Wikilinks pointing outside the bundle: %d, across %d documents. Bodies were not modified",
 	})
 }

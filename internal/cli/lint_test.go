@@ -139,4 +139,38 @@ func TestLintCmd(t *testing.T) {
 			t.Errorf("위반 없음 안내가 없음:\n%s", out)
 		}
 	})
+
+	t.Run("마크다운 링크만 쓴 위키도 게이트를 넘습니다", func(t *testing.T) {
+		dir := t.TempDir()
+		// 셋이 마크다운 링크로만 서로를 가리킨다(ADR 0065). 위키링크는 한 개도 없다.
+		mdDoc := func(first, second string) string {
+			return "---\n" +
+				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+				"source_channel: manual\nderived_context: []\n---\n\n" +
+				"본문 [첫째](" + first + ".md) 와 [둘째](context/" + second + ".md) 링크\n"
+		}
+		for name, content := range map[string]string{
+			"context/a.md":     mdDoc("peer", "peer2"),
+			"context/peer.md":  mdDoc("a", "peer2"),
+			"context/peer2.md": mdDoc("a", "peer"),
+		} {
+			p := filepath.Join(dir, filepath.FromSlash(name))
+			if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+		out, err := runRoot(t, "lint", dir)
+		if err != nil {
+			t.Fatalf("마크다운 링크만 있어도 종료 코드 0이어야 함: %v\n%s", err, out)
+		}
+		for _, unwanted := range []string{"gate.min-wikilinks", "graph.orphan"} {
+			if strings.Contains(out, unwanted) {
+				t.Errorf("%s 가 나오면 안 됨:\n%s", unwanted, out)
+			}
+		}
+	})
 }

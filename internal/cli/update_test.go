@@ -180,17 +180,8 @@ func TestUpdateCmd(t *testing.T) {
 	})
 
 	t.Run("sources 문서는 updated가 생기지 않습니다", func(t *testing.T) {
-		root := makeDemoteWiki(t)
-		src := "---\ntype: source-summary\nartifact_stage: source\nstatus: sourced\n" +
-			"indexable: false\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
-			"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\n---\n\n원본\n"
-		if err := os.MkdirAll(filepath.Join(root, "sources"), 0o755); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(filepath.Join(root, "sources", "2026-01-01-raw.md"), []byte(src), 0o644); err != nil {
-			t.Fatal(err)
-		}
-		if _, err := runDemoteUpdate(t, "update", "--wiki", root, "--now", fixedNow,
+		root := makeSourcesWiki(t)
+		if _, err := runDemoteUpdate(t, "update", "--wiki", root, "--now", fixedNow, "--force",
 			"--set", "status=superseded", "sources/2026-01-01-raw.md"); err != nil {
 			t.Fatal(err)
 		}
@@ -242,4 +233,84 @@ func TestUpdateCmd(t *testing.T) {
 			t.Errorf("본문 교체에도 updated가 갱신되어야 함:\n%s", content)
 		}
 	})
+}
+
+// TestUpdateRefusesSources는 ADR 0064의 원본 보존 거절을 확인한다.
+func TestUpdateRefusesSources(t *testing.T) {
+	const target = "sources/2026-01-01-raw.md"
+
+	t.Run("--set 을 거절합니다", func(t *testing.T) {
+		root := makeSourcesWiki(t)
+		out, err := runDemoteUpdate(t, "update", "--wiki", root, "--set", "status=promoted", target)
+		if err == nil {
+			t.Fatal("원본 보존 계층은 거절이어야 합니다")
+		}
+		if !strings.Contains(out, "--force") {
+			t.Errorf("넘기는 법 안내가 없음: %s", out)
+		}
+		if strings.Contains(readWiki(t, root, target), "promoted") {
+			t.Error("거절했는데 파일이 바뀌었습니다")
+		}
+	})
+
+	t.Run("--body-from 을 거절합니다", func(t *testing.T) {
+		root := makeSourcesWiki(t)
+		bodyFile := filepath.Join(t.TempDir(), "body.md")
+		if err := os.WriteFile(bodyFile, []byte("고쳐 쓴 원본\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		out, err := runDemoteUpdate(t, "update", "--wiki", root, "--body-from", bodyFile, target)
+		if err == nil {
+			t.Fatal("원본 보존 계층은 거절이어야 합니다")
+		}
+		if !strings.Contains(out, "--force") {
+			t.Errorf("넘기는 법 안내가 없음: %s", out)
+		}
+		if content := readWiki(t, root, target); !strings.Contains(content, "원본") ||
+			strings.Contains(content, "고쳐 쓴 원본") {
+			t.Errorf("거절했는데 본문이 바뀌었습니다:\n%s", content)
+		}
+	})
+
+	t.Run("--force 는 통과시키고 무엇을 고쳤는지 냅니다", func(t *testing.T) {
+		root := makeSourcesWiki(t)
+		out, err := runDemoteUpdate(t, "update", "--wiki", root, "--force",
+			"--set", "status=superseded", target)
+		if err != nil {
+			t.Fatalf("--force 는 통과해야 합니다: %v\n%s", err, out)
+		}
+		if !strings.Contains(out, "--force") || !strings.Contains(out, "status=superseded") {
+			t.Errorf("무엇을 고쳤는지 안내가 없음: %s", out)
+		}
+		if !strings.Contains(readWiki(t, root, target), "status: superseded") {
+			t.Error("--force 인데 파일이 안 바뀌었습니다")
+		}
+	})
+
+	t.Run("context 문서는 그대로 통과합니다", func(t *testing.T) {
+		root := makeSourcesWiki(t)
+		out, err := runDemoteUpdate(t, "update", "--wiki", root, "--set", "status=archived", "context/note.md")
+		if err != nil {
+			t.Fatalf("context 는 거절 대상이 아닙니다: %v\n%s", err, out)
+		}
+		if strings.Contains(out, "--force") {
+			t.Errorf("context 문서에 원본 보존 안내가 나옴: %s", out)
+		}
+	})
+}
+
+// makeSourcesWiki는 sources 문서 하나를 더한 시험용 위키를 만든다.
+func makeSourcesWiki(t *testing.T) string {
+	t.Helper()
+	root := makeDemoteWiki(t)
+	src := "---\ntype: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+		"indexable: false\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
+		"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\n---\n\n원본\n"
+	if err := os.MkdirAll(filepath.Join(root, "sources"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "sources", "2026-01-01-raw.md"), []byte(src), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return root
 }

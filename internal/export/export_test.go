@@ -77,7 +77,7 @@ func TestPlanFollowsExposureRules(t *testing.T) {
 		t.Fatalf("계획을 만들 수 없습니다: %v", err)
 	}
 	got := relSet(res)
-	for _, want := range []string{"index.md", "context/hub.md", "context/peer.md"} {
+	for _, want := range []string{"index.md", "context/peer.md"} {
 		if _, ok := got[want]; !ok {
 			t.Errorf("%s 가 번들에 없습니다", want)
 		}
@@ -85,6 +85,7 @@ func TestPlanFollowsExposureRules(t *testing.T) {
 	for _, deny := range []string{
 		"context/secret.md",         // private-local-only
 		"context/limited.md",        // restricted
+		"context/hub.md",            // internal. 기본 제외 (ADR 0063)
 		"archive/old.md",            // 기본 제외
 		"inbox/2026-08-01-rough.md", // 미검수
 		"sources/2026-08-01-src.md", // 원본 보존 계층
@@ -96,15 +97,43 @@ func TestPlanFollowsExposureRules(t *testing.T) {
 	if res.Exposure.ExcludedSensitive != 2 {
 		t.Errorf("민감도 제외 = %d, 기대 2", res.Exposure.ExcludedSensitive)
 	}
+	// hub 와 아크미인프라-현황 둘이다. archive/old.md 는 위치로 먼저 걸린다.
+	if res.Exposure.ExcludedInternal != 2 {
+		t.Errorf("internal 제외 = %d, 기대 2", res.Exposure.ExcludedInternal)
+	}
+	if res.Exposure.IncludedInternal != 0 {
+		t.Errorf("internal 포함 = %d, 기대 0", res.Exposure.IncludedInternal)
+	}
 	if res.Exposure.ExcludedInbox != 1 || res.Exposure.ExcludedSources != 1 {
 		t.Errorf("inbox/sources 제외 = %d/%d, 기대 1/1",
 			res.Exposure.ExcludedInbox, res.Exposure.ExcludedSources)
 	}
 }
 
+func TestPlanIncludeInternal(t *testing.T) {
+	root, cfg := makeWiki(t, "team")
+	res, err := Plan(root, cfg, Options{IncludeInternal: true})
+	if err != nil {
+		t.Fatalf("계획을 만들 수 없습니다: %v", err)
+	}
+	got := relSet(res)
+	if _, ok := got["context/hub.md"]; !ok {
+		t.Error("--include-internal 인데 internal 문서가 없습니다")
+	}
+	if _, ok := got["context/secret.md"]; ok {
+		t.Error("--include-internal 이 private-local-only 제외까지 뚫었습니다")
+	}
+	if res.Exposure.ExcludedInternal != 0 {
+		t.Errorf("internal 제외 = %d, 기대 0", res.Exposure.ExcludedInternal)
+	}
+	if res.Exposure.IncludedInternal != 2 {
+		t.Errorf("internal 포함 = %d, 기대 2", res.Exposure.IncludedInternal)
+	}
+}
+
 func TestPlanIncludeArchive(t *testing.T) {
 	root, cfg := makeWiki(t, "team")
-	res, err := Plan(root, cfg, Options{IncludeArchive: true})
+	res, err := Plan(root, cfg, Options{IncludeArchive: true, IncludeInternal: true})
 	if err != nil {
 		t.Fatalf("계획을 만들 수 없습니다: %v", err)
 	}
@@ -176,7 +205,8 @@ func TestPlanSlugUnknown(t *testing.T) {
 func TestPlanReplacesBodyAndFilename(t *testing.T) {
 	root, cfg := makeWiki(t, "team")
 	res, err := Plan(root, cfg, Options{
-		Rules: []Rule{{From: "아크미인프라", To: "사내 인프라"}},
+		IncludeInternal: true,
+		Rules:           []Rule{{From: "아크미인프라", To: "사내 인프라"}},
 	})
 	if err != nil {
 		t.Fatalf("계획을 만들 수 없습니다: %v", err)
@@ -216,7 +246,8 @@ func TestPlanCollisionAfterReplacement(t *testing.T) {
 	root, cfg := makeWiki(t, "team")
 	// hub 와 peer 를 같은 이름으로 만드는 규칙이다.
 	_, err := Plan(root, cfg, Options{
-		Rules: []Rule{{From: "peer", To: "hub"}},
+		IncludeInternal: true,
+		Rules:           []Rule{{From: "peer", To: "hub"}},
 	})
 	if err == nil || !strings.Contains(err.Error(), "같은 경로") {
 		t.Fatalf("파일명 충돌 오류 = %v", err)
@@ -235,11 +266,11 @@ func TestPlanReplacementEmptiesFilename(t *testing.T) {
 
 func TestPlanIsDeterministicRegardlessOfSlugOrder(t *testing.T) {
 	root, cfg := makeWiki(t, "team")
-	a, err := Plan(root, cfg, Options{Slugs: []string{"peer", "hub"}})
+	a, err := Plan(root, cfg, Options{IncludeInternal: true, Slugs: []string{"peer", "hub"}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := Plan(root, cfg, Options{Slugs: []string{"hub", "peer"}})
+	b, err := Plan(root, cfg, Options{IncludeInternal: true, Slugs: []string{"hub", "peer"}})
 	if err != nil {
 		t.Fatal(err)
 	}
