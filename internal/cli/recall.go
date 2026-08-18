@@ -76,7 +76,7 @@ func newRecallCmd() *cobra.Command {
 				fmt.Fprintln(cmd.ErrOrStderr(), i18n.T("cli.recall.warn_stale"))
 			}
 
-			scored, err := scoreChunks(root, ix.Search(query, limit), query)
+			scored, err := scoreChunks(root, ix.Search(query, recallCandidateDocs), query)
 			if err != nil {
 				return err
 			}
@@ -126,6 +126,18 @@ type recallScored struct {
 	body                 string
 	score                int
 }
+
+// recallCandidateDocs는 조각을 뽑기 전에 훑는 문서 수다. --limit 과
+// 무관하게 고정한다.
+//
+// 예전에는 --limit 을 그대로 문서 후보 수로 넘겼다. 그러면 --limit 1 이
+// BM25 1위 문서 하나만 훑고 그 안의 최고 조각을 내므로, 2위 문서에 더
+// 높은 점수의 조각이 있어도 못 본다. 실제로 --limit 1 이 --limit 5 의
+// 1위와 다른 조각을 냈다(ADR 0059).
+//
+// 문서 점수와 조각 점수는 다른 척도라 어떤 상한도 근사다. 상한을
+// --limit 과 분리해 두면 적어도 --limit 을 바꿔도 순위가 흔들리지 않는다.
+const recallCandidateDocs = 50
 
 // scoreChunks는 후보 문서들을 헤딩 단위로 자르고 질의 토큰이 조각마다
 // 얼마나 걸리는지 센다. 토크나이저는 index.Tokenize 를 그대로 쓴다.

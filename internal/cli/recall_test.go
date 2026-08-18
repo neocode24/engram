@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -227,4 +228,80 @@ func TestRecallCmd(t *testing.T) {
 			t.Fatalf("거절되어야 함: %v\n%s", err, out)
 		}
 	})
+}
+
+// TestRecallLimitIsStable은 --limit 을 바꿔도 상위 조각의 순서가 흔들리지
+// 않는지 본다. 예전에는 --limit 을 문서 후보 수로 그대로 넘겨서 --limit 1 이
+// BM25 1위 문서만 훑았다. 2위 문서에 더 높은 점수의 조각이 있으면 못 봤고,
+// 그래서 --limit 1 이 --limit 5 의 1위와 다른 조각을 냈다(ADR 0059).
+func TestRecallLimitIsStable(t *testing.T) {
+	// 문서 둘을 둔다. thin 은 질의어가 문서 전체에 옅게 퍼져 BM25 문서
+	// 점수가 높지만 조각 하나하나는 약하다. deep 은 문서 점수가 낮아도
+	// 한 절에 질의어가 몰려 조각 점수가 높다.
+	head := "---\n" +
+		"type: concept\nartifact_stage: context\nstatus: promoted\n" +
+		"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+		"source_channel: manual\nderived_context: []\n" +
+		"---\n\n"
+	root := t.TempDir()
+	files := map[string]string{
+		"engram.yaml": "preset: personal\n",
+		"context/thin.md": head + "# 얇은 문서\n\n캐시.\n\n" +
+			"## 가\n\n캐시.\n\n## 나\n\n캐시.\n\n## 다\n\n캐시.\n",
+		"context/deep.md": head + "# 깊은 문서\n\n서두입니다.\n\n" +
+			"## 무효화\n\n캐시 캐시 캐시 캐시 캐시 무효화를 다룹니다.\n",
+	}
+	for name, content := range files {
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if out, err := runRecall(t, "reindex", root); err != nil {
+		t.Fatalf("reindex 실패: %v\n%s", err, out)
+	}
+
+	top := func(limit int) []string {
+		t.Helper()
+		out, err := runRecall(t, "recall", "--wiki", root, "--json",
+			"--limit", strconv.Itoa(limit), "캐시")
+		if err != nil {
+			t.Fatalf("recall 실패: %v\n%s", err, out)
+		}
+		var res struct {
+			Chunks []struct {
+				Slug      string `json:"slug"`
+				StartLine int    `json:"startLine"`
+			} `json:"chunks"`
+		}
+		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
+			t.Fatalf("JSON 파싱 실패: %v\n%s", err, out)
+		}
+		keys := make([]string, 0, len(res.Chunks))
+		for _, c := range res.Chunks {
+			keys = append(keys, c.Slug+":"+strconv.Itoa(c.StartLine))
+		}
+		return keys
+	}
+
+	full := top(10)
+	if len(full) < 3 {
+		t.Fatalf("조각이 셋 이상 나와야 시험이 성립한다: %v", full)
+	}
+	for _, n := range []int{1, 2, 3} {
+		got := top(n)
+		if len(got) != n {
+			t.Errorf("--limit %d 가 조각 %d개를 냈다: %v", n, len(got), got)
+			continue
+		}
+		for i := range got {
+			if got[i] != full[i] {
+				t.Errorf("--limit %d 의 %d위가 다르다: %q, 전체에서는 %q",
+					n, i+1, got[i], full[i])
+			}
+		}
+	}
 }

@@ -315,7 +315,7 @@ func searchJSON(root, query string, limit int) (searchResponse, error) {
 			return searchResponse{}, err
 		}
 	}
-	results := ix.Search(query, limit)
+	results := ix.Search(query, recallCandidateDocs)
 	res := searchResponse{Query: query, IndexStatus: status, Results: make([]searchHit, 0, len(results))}
 	for i, r := range results {
 		res.Results = append(res.Results, searchHit{
