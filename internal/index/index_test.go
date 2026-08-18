@@ -160,6 +160,60 @@ func TestBuildAndSearch(t *testing.T) {
 	})
 }
 
+// TestFieldWeights는 필드 가중치가 순위를 실제로 움직이는지 본다.
+// 본문 쪽 문서가 질의어를 더 많이 담고 있어도 제목과 분류 축이 이긴다.
+// 가중치를 전부 1.0으로 되돌리면 이 단언이 깨진다(ADR 0061).
+func TestFieldWeights(t *testing.T) {
+	// 슬러그는 색인 대상이 아니므로 파일명에 질의어를 넣지 않는다.
+	// 동점일 때 슬러그 오름차순이 되도록 본문 쪽을 앞 글자로 둔다.
+	const filler = "위키 문서를 정리하는 일반적인 설명 문장이다."
+
+	t.Run("제목에 있는 낱말이 본문에만 있는 낱말을 이깁니다", func(t *testing.T) {
+		// 본문 쪽 문서가 질의어를 세 번 담는다. 가중치가 전부 1.0이면
+		// 그쪽이 이기고, 제목 가중치가 붙어야 뒤집힌다.
+		dir, walked, _ := writeWiki(t, map[string]string{
+			"context/a-doc.md": simpleDoc("context",
+				"# 문서 하나\n\n캐시 무효화 캐시 무효화 캐시 무효화\n"+filler),
+			"context/b-doc.md": simpleDoc("context",
+				"# 캐시 무효화\n\n문서 하나\n"+filler),
+		})
+		ix, err := Build(dir, walked, DefaultWeights())
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := ix.Search("캐시 무효화", 2)
+		if len(got) != 2 {
+			t.Fatalf("두 문서가 다 걸려야 함: %+v", got)
+		}
+		if got[0].Slug != "b-doc" {
+			t.Fatalf("제목이 이겨야 함. 1위=%s 점수=%v", got[0].Slug, got)
+		}
+	})
+
+	t.Run("topics에 있는 낱말이 본문에만 있는 낱말을 이깁니다", func(t *testing.T) {
+		withTopics := "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+			"source_channel: manual\nderived_context: []\ntopics:\n  - 캐시 무효화\n---\n\n" +
+			"# 다른 제목\n\n" + filler + "\n" + filler
+		dir, walked, _ := writeWiki(t, map[string]string{
+			"context/a-doc.md": simpleDoc("context",
+				"# 또 다른 이야기\n\n캐시 무효화를 다룬다.\n"+filler),
+			"context/b-doc.md": withTopics,
+		})
+		ix, err := Build(dir, walked, DefaultWeights())
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := ix.Search("캐시 무효화", 2)
+		if len(got) != 2 {
+			t.Fatalf("두 문서가 다 걸려야 함: %+v", got)
+		}
+		if got[0].Slug != "b-doc" {
+			t.Fatalf("topics가 이겨야 함. 1위=%s 점수=%v", got[0].Slug, got)
+		}
+	})
+}
+
 // repeat은 문자열을 n번 이어 붙인다.
 func repeat(s string, n int) string {
 	out := ""

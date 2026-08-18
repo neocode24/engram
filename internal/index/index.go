@@ -1,6 +1,5 @@
 // Package index는 위키 검색 색인을 만들고 질의에 BM25 순위로 답한다.
-// 랭킹을 소유해야 upstream parity 비교에 검색 순위를 넣을 수 있으므로
-// 외부 검색 라이브러리를 쓰지 않는다. ADR 0010.
+// 순수 Go로 두어 코어의 CGO_ENABLED=0 을 지킨다. ADR 0010, 0061.
 package index
 
 import (
@@ -15,8 +14,9 @@ import (
 )
 
 // SchemaVersion는 색인 JSON의 스키마 버전이다. 다르면 색인을 무시하고
-// 낡은 것으로 취급한다.
-const SchemaVersion = 1
+// 낡은 것으로 취급한다. 가중치가 바뀌면 같은 문서의 TF 값이 달라지므로
+// 올린다. 2는 필드 가중치 도입이다(ADR 0061).
+const SchemaVersion = 2
 
 // IndexDirName은 색인이 놓이는 위키 루트의 캐시 디렉토리다. gitignore 대상이다.
 const IndexDirName = ".engram"
@@ -30,8 +30,12 @@ const (
 	bm25B  = 0.75
 )
 
-// FieldWeights는 색인 대상 필드별 가중치다. 기본값은 전부 1.0이고
-// 튜닝은 나중에 한다.
+// FieldWeights는 색인 대상 필드별 가중치다. 값은 본문을 1로 둔 배수이며
+// 근거는 ADR 0061에 있다.
+//
+// 슬러그는 필드가 아니다. 기본 슬러그가 제목에서 파생되므로 같은 낱말이
+// 이미 제목에 있고, 슬러그 토큰은 문서마다 고유해 bridge 의 코사인
+// 유사도를 무너뜨린다. 두 결과 모두 실측했다(ADR 0061).
 type FieldWeights struct {
 	Title  float64
 	Body   float64
@@ -39,9 +43,9 @@ type FieldWeights struct {
 	Tags   float64
 }
 
-// DefaultWeights는 전부 1.0인 기본 가중치다.
+// DefaultWeights는 기본 가중치다. 본문을 1로 두고 나머지를 올린다.
 func DefaultWeights() FieldWeights {
-	return FieldWeights{Title: 1, Body: 1, Topics: 1, Tags: 1}
+	return FieldWeights{Title: 5, Body: 1, Topics: 3, Tags: 3}
 }
 
 // DocEntry는 문서 하나의 색인 항목이다. 크기와 수정 시각은 신선도
@@ -76,6 +80,9 @@ func Build(wikiRoot string, walked []walk.Doc, w FieldWeights) (*Index, error) {
 		}
 		tf := map[string]float64{}
 		title := docTitle(wd)
+		// 제목은 본문의 첫 헤딩에서 뽑으므로 아래 본문 색인에도 그대로
+		// 들어간다. 제목 낱말의 실효 가중치는 Title + Body 다. 헤딩을
+		// 본문에서 걷어내지 않는 것은 헤딩이 본문의 일부이기 때문이다.
 		addTokens(tf, Tokenize(title), w.Title)
 		addTokens(tf, Tokenize(wd.Parsed.Body), w.Body)
 		for _, f := range wd.Parsed.Fields {
@@ -86,7 +93,8 @@ func Build(wikiRoot string, walked []walk.Doc, w FieldWeights) (*Index, error) {
 				addTokens(tf, Tokenize(strings.Join(f.List, " ")), w.Tags)
 			}
 		}
-		// 프론트매터의 다른 속성은 색인하지 않는다. 필터링용이지 검색어가 아니다.
+		// 프론트매터의 다른 속성은 색인하지 않는다. 검색어가 아니라 판정
+		// 대상이며, 무엇을 감출지는 색인이 아니라 internal/expose 가 정한다.
 		length := 0.0
 		for _, n := range tf {
 			length += n
@@ -150,8 +158,8 @@ type SearchResult struct {
 }
 
 // Search는 질의를 BM25 순위로 검색해 상위 결과를 반환한다.
-// 동점인 문서의 순위는 슬러그 순으로 고정한다. 검색 순위는 ADR 0005의
-// parity 비교 축이므로 이 순서가 흔들리면 안 된다.
+// 동점인 문서의 순위는 슬러그 순으로 고정한다. 같은 위키와 같은 질의는
+// 언제나 같은 순서를 내야 골든 스냅샷과 교재의 실측 출력이 성립한다.
 func (ix *Index) Search(query string, limit int) []SearchResult {
 	if len(ix.Docs) == 0 || ix.AvgLength == 0 {
 		return nil

@@ -311,6 +311,8 @@ engram은 이 절차를 커맨드 둘로 이미 표현할 수 있다. `source`�
 
 `indexable`은 지금 `promote`가 context 문서에 참을, `capture`가 inbox 문서에 거짓을 초기값으로 쓰는 방식으로만 지켜진다. 사람이 프론트매터를 고쳐 값을 바꿔도 lint는 잡지 않는다. 결정할 시점은 검색 인덱스가 민감 자료를 걸러 내야 할 필요가 생겼을 때다. security-rules의 이행과 같은 때에 볼 문제다.
 
+**engram의 검색 색인에는 이 판정을 넣지 않기로 했다**([ADR 0061](decisions/0061-field-weights-and-what-the-index-is-not.md)). upstream의 `indexable`은 외부 RAG의 색인 자격 선언이고 engram의 `search`는 승급을 준비하며 `inbox`와 `sources`를 훑는 도구라 대상이 다르다. 남에게 도달하는 경로(`serve`, `export`)에서 민감도를 거르는 일은 `internal/expose`가 이미 하고 있다.
+
 ## 7. 명세가 바뀌면 무슨 일이 도는가
 
 [ADR 0005](decisions/0005-upstream-contract-and-harness.md)가 정하고 [ADR 0029](decisions/0029-upstream-vendoring-and-parity-execution.md)가 다듬은 3층 harness가 명세 변화를 다룬다.

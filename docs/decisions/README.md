@@ -75,6 +75,7 @@
 | [0058](0058-promote-to-sources-moves-evidence.md) | promote --to sources가 inbox의 증거를 옮긴다 | 2026-08-17 | accepted |
 | [0059](0059-recall-candidate-pool-is-independent-of-limit.md) | recall의 문서 후보 수는 --limit과 무관하게 고정한다 | 2026-08-18 | accepted |
 | [0060](0060-search-line-shows-stage-not-path.md) | search 목록은 경로 대신 단계를 내고 제목은 --json에만 담는다 | 2026-08-18 | accepted |
+| [0061](0061-field-weights-and-what-the-index-is-not.md) | 색인 필드에 가중치를 주고 슬러그는 색인하지 않는다 | 2026-08-18 | accepted |
 
 ## 공개 범위 밖
 
@@ -123,3 +124,4 @@
 | 0001 | Homebrew 배포가 0007에서 후퇴했다가 0012에서 복권되어 원문과 일치한다 | [0012](0012-distribution-via-personal-homebrew-tap.md) 본문 |
 | 0005 | "계약 파일"이라는 명칭이 "규칙 명세"로 바뀌었다. 결론은 그대로다 | [0034](0034-rule-spec-terminology.md) 본문 |
 | 0029 | 상동. 제목의 "계약"은 당시 명칭으로 읽는다 | [0034](0034-rule-spec-terminology.md) 본문 |
+| 0010 | 자체 구현의 둘째 근거인 parity 보증이 성립하지 않는다. upstream에 `search`가 없어 비교할 대상이 없다. 첫째 근거인 한국어 토크나이저와 0007의 CGO 제약으로 결정은 유지된다 | [0061](0061-field-weights-and-what-the-index-is-not.md) 본문 |
