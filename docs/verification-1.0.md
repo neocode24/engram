@@ -13,7 +13,7 @@
 | 대상 | 저장소 `bbe07bc` (`fix: 파이썬이 소스를 읽을 때 인코딩을 명시한다`). `.git`, `private/`, 이미지 원본을 뺀 소스 전체 |
 | 환경 | Linux amd64. Go 1.26.6을 소스에서 빌드해 썼다. `golang.org/x/*`와 `go.yaml.in`은 사내망처럼 막힌 환경이라 GitHub 미러로 `replace`했다. 검증용 변경이며 저장소에는 넣지 않았다 |
 | 정식 검증 | `go build ./...`, `go vet ./...`, `go test ./...` (harness 여섯 포함), `go test -race ./internal/...`, 교차 빌드 windows/amd64, darwin/arm64, linux/arm64 (`CGO_ENABLED=0`), `scripts/check-adr.py` |
-| 기능 검증 | 빈 디렉토리에서 위키 넷을 만들어 커맨드 스물여덟을 전부 실행. README의 5분 시나리오, 게이트 유예, sources 파생, demote, archive 링크 유지, mv, update, lint 규칙 16종 유발, 프리셋 상향과 하향 migrate, git 위 sync, eject 산출물과 Python 린터 판정 대조, skills install, MCP stdio 핸드셰이크와 도구 호출, serve 노출 범위와 경로 탈출과 POST, team 프리셋 sensitivity 제외, export 치환, `--json` 전 조회 커맨드 5회 반복 해시 비교 |
+| 기능 검증 | 빈 디렉토리에서 위키 넷을 만들어 커맨드 스물여덟을 전부 실행. README의 5분 시나리오, 게이트 유예, sources 파생, demote, archive 링크 유지, mv, update, lint 규칙 17종 유발, 프리셋 상향과 하향 migrate, git 위 sync, eject 산출물과 Python 린터 판정 대조, skills install, MCP stdio 핸드셰이크와 도구 호출, serve 노출 범위와 경로 탈출과 POST, team 프리셋 sensitivity 제외, export 치환, `--json` 전 조회 커맨드 5회 반복 해시 비교 |
 | 검증하지 않은 것 | Homebrew tap 갱신과 실제 릴리스 워크플로(비공개 저장소라 실행 불가), Windows 콘솔 직결 항목(기존 문서와 같은 상태), upstream 동등성(`ENGRAM_UPSTREAM` 없음), 시맨틱 검색 층(없음) |
 
 ## 통과한 것
@@ -23,7 +23,7 @@
 - 게이트: 거절 사유는 `min_wikilinks` 하나다. 빈 위키에서 유예되고(`gate.deferred`), 대상이 늘면 켜진다. `context/` 문서를 다시 `promote`하면 거절한다. 도착지에 문서가 있으면 덮어쓰지 않는다.
 - `promote`: `inbox/`는 이동하고 `sources/`는 파생을 만들며 원본은 그대로 남는다. `derived_from`과 `derived_context`가 양방향으로 기록된다.
 - `demote`는 파생 문서를 내릴 때 원본의 `derived_context`가 어긋난다고 알린다. `archive`는 슬러그를 유지하고 들어오는 링크 수를 알린다. `mv --dry-run`이 바꿀 것을 미리 보여 준다.
-- lint 규칙 16종이 전부 유발되고 메시지마다 고치는 법이 붙는다. `location.stage-agreement`는 방향에 따라 error와 warn으로 갈린다(ADR 0035). `sources.updated`, `taxonomy.forms`(error), `taxonomy.topics`(warn), `body.max-lines`, `link.broken`, `frontmatter.*`, `schema.allowed-value` 확인.
+- lint 규칙 17종이 전부 유발되고 메시지마다 고치는 법이 붙는다. `location.stage-agreement`는 방향에 따라 error와 warn으로 갈린다(ADR 0035). `sources.updated`, `taxonomy.forms`(error), `taxonomy.topics`(warn), `body.max-lines`, `link.broken`, `frontmatter.*`, `schema.allowed-value` 확인.
 - `migrate`: 프리셋 상향은 기본값을 채우고, 하향은 값이 있는 필드를 `--force` 없이는 지우지 않으며 그동안 lint가 `schema.axis-off`로 알린다. `sync`는 git이 없으면 거절하고 있으면 dry-run이 기본이다.
 - `eject`: 파일 아홉을 만들고 이미 있으면 `--force` 없이 덮지 않는다. 내보낸 `scripts/lint-frontmatter.py`가 정상 위키에서 0, 깨진 프론트매터에서 1, 게이트 미달에서 reject를 낸다. `engram lint`와 같다.
 - MCP: 도구 열. 쓰기는 `capture` 하나이고 `inbox`에만 쓴다. `promote`를 부르면 `unknown tool`. 도구는 `wiki` 인자를 받지 않는다(`additional properties` 거절). `resurface`를 MCP로 불러도 제시 이력 파일이 바뀌지 않는다.

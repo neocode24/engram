@@ -61,6 +61,12 @@ func newNewCmd() *cobra.Command {
 				fm["related"] = values
 			}
 			fm["created"] = Now(cmd).Format("2006-01-02")
+			// promote와 같은 진입점으로 민감도와 시크릿을 검사한다(ADR 0069).
+			// new는 문서를 지어 만들므로 제목과 골격이 검사 대상이다.
+			sensitivity, _ := fm["sensitivity"].(string)
+			if err := checkContextGuards(sensitivity, cfg, skeletonBody(title)); err != nil {
+				return err
+			}
 
 			walked, err := walk.Files(root, cfg)
 			if err != nil {

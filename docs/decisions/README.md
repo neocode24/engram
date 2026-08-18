@@ -83,6 +83,7 @@
 | [0066](0066-rediscovery-reads-inbound-links-and-ignores-bulk-commits.md) | 재발견은 인바운드 링크를 보고 대량 커밋을 신호에서 뺀다 | 2026-08-19 | accepted |
 | [0067](0067-stale-days-default-is-thirty.md) | 노후 기준일 기본값을 30일로 한다 | 2026-08-19 | accepted |
 | [0068](0068-model-command-manages-embeddings-only.md) | model 커맨드는 임베딩만 관리한다 | 2026-08-19 | accepted |
+| [0069](0069-secrets-and-sensitivity-block-promotion-and-export.md) | 시크릿과 민감도가 승급과 반출을 막는다 | 2026-08-19 | accepted |
 
 ## 공개 범위 밖
 
@@ -126,6 +127,7 @@
 | 0028 | 재발견 선정은 경과일과 제시 이력으로 정렬한다 | [0066](0066-rediscovery-reads-inbound-links-and-ignores-bulk-commits.md) 인바운드 가중 점수로 정렬하고 제시 이력은 쿨다운 필터로 옮긴다 |
 | 0009 | 노후 기준일 기본값은 90일이다 | [0067](0067-stale-days-default-is-thirty.md) 30일로 바꾼다. 실측에서 90 이면 후보가 0 건이다 |
 | 0007 | 시맨틱은 model pull 로 받는 선택적 사이드카다 | [0068](0068-model-command-manages-embeddings-only.md) 관리 대상을 임베딩 하나로 못 박는다 |
+| 0063 | 노출 판정이 반출에서 internal 을 뺀다 | [0069](0069-secrets-and-sensitivity-block-promotion-and-export.md) 승급과 반출에서 시크릿과 높은 민감도를 막는다 |
 
 ## 근거만 갱신된 경우
 

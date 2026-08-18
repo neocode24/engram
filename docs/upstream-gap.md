@@ -134,7 +134,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### G7. 민감도에 따른 승급 제한 부재
+### G7. 민감도에 따른 승급 제한 부재 (닫힘, ADR 0069)
 
 **upstream 규정**: `agents/workflows/context-node-add.md:53`, `AGENTS.md:12`(Core Principle 4), `promotion-review-checklist.md:52-57`가 민감정보(계정/토큰/개인정보/내부 보안)는 context 승급 금지한다.
 
@@ -218,7 +218,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### G13. 시크릿 스캔 부재
+### G13. 시크릿 스캔 부재 (닫힘, ADR 0069)
 
 **upstream 규정**: `AGENTS.md:69-89` Git Completion Policy가 pre-commit 게이트가 frontmatter lint, `index.md` 동기화, 시크릿 스캔 셋을 자동 수행한다(`.githooks/pre-commit:29,63,77`)고 규정한다.
 
@@ -744,7 +744,7 @@ engram이 관여하지 않는다.
 
 **upstream 규정**: `scripts/lint-frontmatter.sh:271-282`가 색인 자격 삼단 검사를 규정한다. `inbox` + `indexable != false`는 FAIL, `source` + `indexable != false`는 WARN, `context` + `indexable != true`는 WARN다.
 
-**engram 대응**: 대응 없음. engram lint 규칙 16종에 `indexable` 값 검사가 없다(B19 참조).
+**engram 대응**: 대응 없음. engram lint 규칙 17종에 `indexable` 값 검사가 없다(B19 참조).
 
 **영향**: 색인 자격 검사가 없다.
 
@@ -1136,7 +1136,7 @@ engram이 관여하지 않는다.
 
 **upstream 규정**: `inbox-processing-matrix.md:204`가 시효가 있는 자료는 유효 기간(validity window)이나 재검토 날짜를 표시한다고 규정한다. `atlassian-mcp-intake.md:196`도 같다.
 
-**engram 대응**: 그런 필드가 없다. `rg -ni 'review_by|valid_until|validity|freshness|review_date' --type go internal/ cmd/`는 색인 신선도 주석만 잡는다. lint 규칙 16종에도 없다.
+**engram 대응**: 그런 필드가 없다. `rg -ni 'review_by|valid_until|validity|freshness|review_date' --type go internal/ cmd/`는 색인 신선도 주석만 잡는다. lint 규칙 17종에도 없다.
 
 **영향**: 시효 자료 추적이 없다.
 
@@ -1174,7 +1174,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### F56. 공개 문맥 통과 차이
+### F56. 공개 문맥 통과 차이 (닫힘, ADR 0069)
 
 **upstream 규정**: `blog-publishing-pipeline.md:149-159`가 공개 반출 전 공개 문맥 통과 다섯 항목을 검사한다. 회사명, 내부 URL, 내부 프로젝트명, 계정 식별자, 토큰, 사설 경로를 제거하고 내부 운영 맥락을 공개 개념으로 다시 쓴다.
 
@@ -1216,7 +1216,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### F59. 토큰과 API 키 승급 금지
+### F59. 토큰과 API 키 승급 금지 (닫힘, ADR 0069)
 
 **upstream 규정**: `claude-code-operating-practices.md:53`이 토큰, API 키, 페어링 코드, 개인 설정값은 위키 context로 승급하지 않는다고 규정한다.
 

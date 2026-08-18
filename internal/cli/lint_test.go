@@ -174,3 +174,45 @@ func TestLintCmd(t *testing.T) {
 		}
 	})
 }
+
+func TestLintSecuritySecret(t *testing.T) {
+	t.Run("시크릿을 error로 고발합니다", func(t *testing.T) {
+		dir := makeWiki(t)
+		p := filepath.Join(dir, "context", "열쇠.md")
+		body := "---\n" +
+			"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+			"source_channel: manual\nderived_context: []\n" +
+			"---\n\n토큰은 ghp_0123456789abcdefghijklmnopqrstuvwxyzABCD 입니다.\n"
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		out, err := runRoot(t, "lint", "--json", dir)
+		if err == nil {
+			t.Fatal("error 위반이 있으므로 종료 코드 1이어야 함")
+		}
+		var res lint.Result
+		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
+			t.Fatalf("JSON 파싱 실패: %v\n출력: %s", err, out)
+		}
+		var found bool
+		for _, v := range res.Violations {
+			if v.Rule != "security.secret" {
+				continue
+			}
+			found = true
+			if v.Severity != lint.SevError {
+				t.Errorf("등급 = %s, 기대 error", v.Severity)
+			}
+			if v.Path != "context/열쇠.md" || v.Line != 13 {
+				t.Errorf("위치 = %s:%d, 기대 context/열쇠.md:13", v.Path, v.Line)
+			}
+			if strings.Contains(v.Message, "ghp_") {
+				t.Errorf("위반 메시지에 값이 실림: %s", v.Message)
+			}
+		}
+		if !found {
+			t.Fatalf("security.secret 위반이 없음:\n%s", out)
+		}
+	})
+}

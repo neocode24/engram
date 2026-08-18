@@ -171,6 +171,56 @@ func TestExportRequiresOut(t *testing.T) {
 	}
 }
 
+// addSecretDoc은 반출 가능한 문서 하나에 시크릿을 싣는다.
+func addSecretDoc(t *testing.T, root string) {
+	t.Helper()
+	p := filepath.Join(root, "context", "열쇠.md")
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	body := "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+		"sensitivity: internal\nindexable: true\ncreated: 2026-01-01\n---\n\n" +
+		"# 열쇠\n\n토큰은 ghp_0123456789abcdefghijklmnopqrstuvwxyzABCD 입니다.\n"
+	if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestExportRejectsSecrets(t *testing.T) {
+	root := makeExportWiki(t)
+	addSecretDoc(t, root)
+	out := filepath.Join(t.TempDir(), "bundle")
+	_, err := runExport(t, "export", "--wiki", root, "--out", out, "--include-internal")
+	if err == nil || !strings.Contains(err.Error(), "반출을 중단") {
+		t.Fatalf("거절 오류 = %v", err)
+	}
+	if !strings.Contains(err.Error(), "github-token") || strings.Contains(err.Error(), "ghp_") {
+		t.Fatalf("규칙 이름과 줄만 알려야 합니다:\n%v", err)
+	}
+	if _, e := os.Stat(out); !os.IsNotExist(e) {
+		t.Error("거절했는데 출력 디렉토리에 썼음")
+	}
+}
+
+func TestExportPassesReplacedSecret(t *testing.T) {
+	root := makeExportWiki(t)
+	addSecretDoc(t, root)
+	dict := filepath.Join(t.TempDir(), "repl.txt")
+	if err := os.WriteFile(dict, []byte(
+		"ghp_0123456789abcdefghijklmnopqrstuvwxyzABCD==>[자리표시자]\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out := filepath.Join(t.TempDir(), "bundle")
+	stdout, err := runExport(t, "export", "--wiki", root, "--out", out,
+		"--include-internal", "--replacements", dict)
+	if err != nil {
+		t.Fatalf("치환으로 지운 시크릿은 통과해야 함: %v\n%s", err, stdout)
+	}
+	if names := bundleNames(t, out); len(names) != 2 {
+		t.Errorf("번들 = %v, 기대 2개", names)
+	}
+}
+
 func TestExportJSON(t *testing.T) {
 	root := makeExportWiki(t)
 	out := filepath.Join(t.TempDir(), "bundle")

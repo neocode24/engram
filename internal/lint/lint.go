@@ -15,6 +15,7 @@ import (
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
 	"github.com/neocode24/engram/internal/i18n"
+	"github.com/neocode24/engram/internal/secret"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
 )
@@ -114,6 +115,8 @@ var (
 		"lint.rule.schema_allowed_value")
 	ruleSchemaAxisOff = newRule("schema.axis-off", "lint.severity.error",
 		"lint.rule.schema_axis_off")
+	ruleSecuritySecret = newRule("security.secret", "lint.severity.error",
+		"lint.rule.security_secret")
 	ruleLocationStageAgreement = newRule("location.stage-agreement", "lint.severity.error_or_warn",
 		"lint.rule.location_stage_agreement")
 	ruleTaxonomyForms = newRule("taxonomy.forms", "lint.severity.error",
@@ -296,6 +299,7 @@ func scanDoc(w walk.Doc, cfg config.Config) (scannedDoc, []Violation) {
 	sd.checkTaxonomy(cfg, add)
 	sd.checkSourcesUpdated(add)
 	sd.checkMaxLines(cfg, add)
+	sd.checkSecrets(add)
 	return sd, vs
 }
 
@@ -518,6 +522,18 @@ func (s *scannedDoc) checkMaxLines(cfg config.Config, add func(Severity, Rule, i
 		add(SevWarn, ruleBodyMaxLines, lineOfKey(s.content, "artifact_stage"),
 			i18n.T("lint.violation.max_lines.message", n, cfg.Thresholds.MaxLines),
 			i18n.T("lint.violation.max_lines.fix"))
+	}
+}
+
+// checkSecrets는 문서 전문에서 시크릿으로 보이는 문자열을 검사한다.
+// internal/secret 이 단일 판정 함수다. promote, export 와 같은 것을 써서
+// 커맨드가 통과시킨 문서를 lint 가 거절하지 않게 한다(ADR 0069).
+// 위반은 규칙 이름과 줄만 낸다. 값이 출력으로 옮겨지는 것 자체가 유출이다.
+func (s *scannedDoc) checkSecrets(add func(Severity, Rule, int, string, string)) {
+	for _, f := range secret.Scan(s.content) {
+		add(SevError, ruleSecuritySecret, f.Line,
+			i18n.T("lint.violation.security_secret.message", f.Rule),
+			i18n.T("lint.violation.security_secret.fix"))
 	}
 }
 

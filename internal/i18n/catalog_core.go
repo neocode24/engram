@@ -56,6 +56,8 @@ func init() {
 		"core.export.rename_empty":    "치환 결과 파일명이 비었습니다: %s",
 		"core.export.rename_path_sep": "치환 결과 파일명에 경로 구분자가 들어갔습니다: %s -> %s",
 		"core.export.collision":       "치환 뒤 두 문서가 같은 경로가 됩니다: %s 와 %s 가 모두 %s",
+		"core.export.secret_blocked": "시크릿으로 보이는 것이 있어 반출을 중단했습니다. 아직 아무 파일도 쓰지 않았습니다. 규칙 이름과 줄 번호만 알립니다",
+		"core.export.secret_finding": "  %s: %s, %d번째 줄",
 		// resurface
 		"core.resurface.walk_fail":          "위키를 순회할 수 없음",
 		"core.resurface.no_context":         "context 단계 문서가 없습니다",
@@ -179,6 +181,8 @@ func init() {
 		"core.export.rename_empty":    "renaming left an empty filename: %s",
 		"core.export.rename_path_sep": "the renamed filename contains a path separator: %s -> %s",
 		"core.export.collision":       "two documents map to the same path after renaming: %s and %s both become %s",
+		"core.export.secret_blocked": "export stopped because something looks like a secret. No files have been written. Only the rule and line number are reported",
+		"core.export.secret_finding": "  %s: %s, line %d",
 		// resurface
 		"core.resurface.walk_fail":          "cannot walk the wiki",
 		"core.resurface.no_context":         "no context documents",

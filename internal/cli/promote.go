@@ -65,7 +65,17 @@ func newPromoteCmd() *cobra.Command {
 			}
 			switch toStage {
 			case "", stageNameContext:
+				// 민감도와 시크릿을 본다. 파일 전문을 주어 거절의 줄 번호가
+				// 사용자가 편집기에서 보는 줄과 같게 한다(ADR 0069).
+				if err := checkContextGuards(fieldString(d, "sensitivity"), cfg, string(raw)); err != nil {
+					return err
+				}
 			case stageNameSources:
+				// 민감도는 보지 않는다. sources 는 노출 판정에서 이미
+				// 닫혀 있다. 시크릿은 증거 계층에도 두면 안 된다(ADR 0069).
+				if err := checkSecrets(string(raw)); err != nil {
+					return err
+				}
 				return promoteToSources(cmd, root, cfg, srcPath, d, stage)
 			default:
 				return errors.New(i18n.T("cli.promote.to_invalid", toStage,

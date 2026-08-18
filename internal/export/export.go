@@ -18,6 +18,7 @@ import (
 	"github.com/neocode24/engram/internal/expose"
 	"github.com/neocode24/engram/internal/graph"
 	"github.com/neocode24/engram/internal/i18n"
+	"github.com/neocode24/engram/internal/secret"
 )
 
 // Options는 반출 범위와 익명화 사전이다.
@@ -141,6 +142,13 @@ func Plan(root string, cfg config.Config, opts Options) (Result, error) {
 	}
 
 	if err := checkCollisions(res.Files); err != nil {
+		return Result{}, err
+	}
+
+	// 시크릿 검사는 치환 뒤 본문을 본다. 사전으로 지운 것은 통과해야
+	// 한다. 하나라도 걸리면 계획 전체를 거절한다. 부분 반출을 하지
+	// 않는다. 파일이 기계 밖으로 나가는 행위는 되돌릴 수 없다(ADR 0069).
+	if err := checkSecrets(res.Files); err != nil {
 		return Result{}, err
 	}
 
@@ -279,6 +287,25 @@ func checkCollisions(files []File) error {
 		seen[f.Rel] = f.Source
 	}
 	return nil
+}
+
+// checkSecrets는 번들에 들어갈 파일 전부에 시크릿 스캔을 돈다. 값은
+// 내지 않는다. 규칙 이름과 줄 번호만 낸다. 거절 메시지에 시크릿 값이
+// 실리면 그 메시지가 로그와 터미널로 옮겨지므로 그것 자체가 유출이다.
+func checkSecrets(files []File) error {
+	var lines []string
+	for _, f := range files {
+		for _, fd := range secret.Scan(f.Content) {
+			if len(lines) == 0 {
+				lines = append(lines, i18n.T("core.export.secret_blocked"))
+			}
+			lines = append(lines, i18n.T("core.export.secret_finding", f.Rel, fd.Rule, fd.Line))
+		}
+	}
+	if len(lines) == 0 {
+		return nil
+	}
+	return errors.New(strings.Join(lines, "\n"))
 }
 
 // addCounts는 규칙별 건수를 누적한다.
