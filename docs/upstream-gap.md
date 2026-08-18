@@ -1,12 +1,27 @@
 # upstream 미해결 항목
 
-> 다섯 감사 보고서(A/B/C/D/E)에서 "없음" 또는 "다르게 구현됨" 판정을 받은 항목을 중복 제거하고 카테고리별로 정리한 문서다. 각 항목은 upstream 규정, engraph 대응, 영향, 카테고리를 포함한다. 나중에 무엇을 만들지 고를 때 읽는 문서이므로 항목마다 판단 재료가 갖춰져야 한다.
+> 다섯 감사 보고서(A/B/C/D/E)에서 "없음" 또는 "다르게 구현됨" 판정을 받은 항목을 중복 제거하고 카테고리별로 정리한 문서다. 각 항목은 upstream 규정, engram 대응, 영향, 카테고리를 포함한다. 나중에 무엇을 만들지 고를 때 읽는 문서이므로 항목마다 판단 재료가 갖춰져야 한다.
 
 ## 카테고리
 
 - **경계**: 공개 경계, 보안, 민감도, 접근 제어, 출처 관리 관련
 - **재발견**: 재발견 루프, bridge, resurface, 색인 관련
 - **기능**: 그 외의 기능 구현, 인터페이스, 운용 절차
+
+## 선언과 구현이 어긋난 것
+
+위 셋은 주제별 분류다. 그것과 별개로 **engram이 스스로 선언한 규칙과 실제 동작이 어긋나는 항목**을 따로 모은다. 이쪽은 "덜 만들었다"가 아니라 "말한 것과 다르게 동작한다"이므로 무엇을 더 만들지와 무관하게 닫아야 한다.
+
+| 항목 | 무엇을 선언했나 | 실제 동작 |
+|---|---|---|
+| [G4](#g4-indexable-값-읽기-부재) | `lint`가 `indexable`을 모든 문서의 필수 필드로 요구한다 | 그 값을 판정에 쓰는 코드가 없다 |
+| [G5](#g5-status-superseded-필터-부재) | [ADR 0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md)가 `serve`는 검수된 지식만 보여준다고 정했다 | 노출 판정이 `status`를 보지 않는다 |
+| [G8](#g8-sensitivity-internal-반출-누락) | `export`가 민감도로 반출을 거른다 | 승급 문서의 기본 민감도가 `internal`이고 그 값은 안 걸린다 |
+| [G9](#g9-sources-원본-보존-위반) | `source` 커맨드가 원본 보존을 계약이라 선언한다 | `update`가 같은 문서 본문을 경고만 내고 고친다 |
+| [G1](#g1-indexmd-자동-갱신-부재) | [ADR 0055](decisions/0055-agents-change-the-wiki-only-through-commands.md)가 에이전트는 커맨드로만 위키를 바꾼다고 정했다 | `index.md`를 바꾸는 커맨드가 없다 |
+| [F62](#f62-마크다운-링크-파싱-부재) | `link.broken`과 `graph.orphan`이 문서 사이 관계를 판정한다 | 마크다운 링크를 아예 안 세므로 실측에서 링크 166개가 0으로 읽혔다 |
+
+`sources`의 `source_refs` 값 검사 부재([G6](#g6-source_refs-값-검사-부재))는 이 목록에 넣지 않는다. upstream `scripts/lint-frontmatter.sh`도 존재만 보므로 engram 고유의 어긋남이 아니다.
 
 ---
 
@@ -98,7 +113,7 @@
 
 ### G8. `sensitivity: internal` 반출 누락
 
-**upstream 규정**: `agents/workflows/blog-publish.md:79-80`가 역류 시 `scope: work` / `sensitivity: internal` 맥락은 발행처에서 추상화·제거한다. 실명·계정·토큰·내부 보안 세부는 역류·발행 금지한다.
+**upstream 규정**: `agents/workflows/blog-publish.md:79-80`가 역류 시 `scope: work` / `sensitivity: internal` 맥락은 발행처에서 추상화하거나 제거한다. 실명, 계정, 토큰, 내부 보안 세부는 역류와 발행을 금지한다.
 
 **engram 대응**: `export --help`가 빼는 것은 `private-local-only`와 `restricted` 둘뿐이다. `internal`은 그대로 나간다. `scope: work`는 반출 판정에 아예 쓰이지 않는다.
 
@@ -342,9 +357,9 @@
 
 ### F3. 인입 시점 채널 추론 부재
 
-**upstream 규정**: `agents/workflows/text-drop-intake.md:64-80`이 파일명, 크기, 첫 20줄을 읽어 채널·날짜·slug·민감도를 추론하고 먼저 제시해 확인을 받는다. 추론할 수 없으면 추측하지 말고 묻는다. `source_channel`을 본문의 화자 표기, "Teams 모임", Confluence 매크오 흔적, 메일 헤더에서 추론한다.
+**upstream 규정**: `agents/workflows/text-drop-intake.md:64-80`이 파일명, 크기, 첫 20줄을 읽어 채널, 날짜, slug, 민감도를 추론하고 먼저 제시해 확인을 받는다. 추론할 수 없으면 추측하지 말고 묻는다. `source_channel`을 본문의 화자 표기, "Teams 모임", Confluence 매크오 흔적, 메일 헤더에서 추론한다.
 
-**engram 대응**: `internal/skills/SKILL.md`가 "제목과 슬러그를 사용자에게 묻지 마라. 내용에서 추론하고 확인만 받는다"고 적어 제목/슬러그는 같다. 채널·날짜·민감도 추론과 확인은 없다. `engram capture --help`에 `--channel`이 없다. `source`와 `promote`에만 있다.
+**engram 대응**: `internal/skills/SKILL.md`가 "제목과 슬러그를 사용자에게 묻지 마라. 내용에서 추론하고 확인만 받는다"고 적어 제목/슬러그는 같다. 채널과 날짜와 민감도의 추론과 확인은 없다. `engram capture --help`에 `--channel`이 없다. `source`와 `promote`에만 있다.
 
 **영향**: 인입 시점에 채널을 줄 방법이 없다. `source_channel` 속성이 켜진 위키에서 inbox 문서는 전부 필수 필드를 빈 값으로 갖는다.
 
@@ -378,7 +393,7 @@
 
 ### F6. 직급 추상화 부재
 
-**upstream 규정**: `agents/workflows/meeting-intake-promote.md:45`, `:48`가 직급은 역할 중심으로 추상화한다. 실명·직함·내부 의사결정은 L0에서만 보존하고 source/L2는 추상화한다.
+**upstream 규정**: `agents/workflows/meeting-intake-promote.md:45`, `:48`가 직급은 역할 중심으로 추상화한다. 실명, 직함, 내부 의사결정은 L0에서만 보존하고 source/L2는 추상화한다.
 
 **engram 대응**: 치환은 `export --replacements` 사용자 사전 하나뿐이고(ADR 0046) 반출 시점에만 돈다. 승급 시 추상화하는 경로가 없다.
 
@@ -392,7 +407,7 @@
 
 **upstream 규정**: `agents/workflows/text-drop-intake.md:119`이 회사 식별자(실명, 조직명)는 llm-wiki 내부에서 보존한다. 익명화는 블로그 export 시점의 일이다.
 
-**engram 대응**: ADR 0046. `export --replacements` 사용자 사전이 본문·프론트매터·파일명에 적용된다. 위키 안에서는 치환하지 않는다.
+**engram 대응**: ADR 0046. `export --replacements` 사용자 사전이 본문과 프론트매터와 파일명에 적용된다. 위키 안에서는 치환하지 않는다.
 
 **영향**: 구현됨(ADR 0046)
 
@@ -426,7 +441,7 @@
 
 ### F10. 소스 준비 스크립트 거부
 
-**upstream 규정**: `agents/workflows/voice-memo-intake.md:172`가 소스 준비 스크립트가 `inbox/voice-memos/` 밖 candidate를 거절하고, inbox·non-indexable·`voice-memo-intake` workflow가 아닌 후보를 거절한다.
+**upstream 규정**: `agents/workflows/voice-memo-intake.md:172`가 소스 준비 스크립트가 `inbox/voice-memos/` 밖 candidate를 거절하고, inbox가 아니거나 색인 대상이거나 `voice-memo-intake` workflow가 아닌 후보를 거절한다.
 
 **engram 대응**: `promote`가 대상 문서의 `workflow`나 `source_channel` 값으로 승급 자격을 제한하지 않는다. 위치는 `location.stage-agreement`가 보지만 워크플로 소속은 보지 않는다.
 
@@ -786,7 +801,7 @@
 
 ### F40. 부분 supersede 표기 차이
 
-**upstream 규정**: `context/decisions/hermes-gateway-single-host-operating-model.md:51-57`, `:69-70`이 **부분 supersede를 조항 단위로 표기**한다고 규정한다. 대체된 문서 본문 상단에 "부분 supersede (2026-08-07): mobile-inbox 조항은 [[...]]로 대체되었다. ... 조항은 그대로 유효하다"를 넣고, 대체한 문서에도 `## Supersedes` 절을 둔다.
+**upstream 규정**: upstream `context/decisions/`의 게이트웨이 운용 결정 문서(파일명은 사내 시스템 이름을 담아 옮기지 않는다. 원본은 `private/upstream-audit-2026-08-18/C-decisions.md` 참조)가 **부분 supersede를 조항 단위로 표기**한다고 규정한다. 대체된 문서 본문 상단에 "부분 supersede (2026-08-07): mobile-inbox 조항은 [[...]]로 대체되었다. ... 조항은 그대로 유효하다"를 넣고, 대체한 문서에도 `## Supersedes` 절을 둔다.
 
 **engram 대응**: ADR 0015가 같은 개념을 다르게 실현했다. `amended` 상태가 "결론은 유효하나 일부 절이 후속 ADR로 대체되었다"(0015:23)이고, 어느 절이 대체됐는지는 `docs/decisions/README.md` 개정 그래프에 둔다. 본문 소급 수정을 금지하므로 upstream처럼 문서 안에 표기하지 않는다(0015:14).
 
@@ -1012,7 +1027,7 @@
 
 ---
 
-### F59. 토큰·API 키 승급 금지
+### F59. 토큰과 API 키 승급 금지
 
 **upstream 규정**: `claude-code-operating-practices.md:53`이 토큰, API 키, 페어링 코드, 개인 설정값은 위키 context로 승급하지 않는다고 규정한다.
 

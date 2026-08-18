@@ -342,7 +342,23 @@ upstream 감사 보고서 5개(A/B/C/D/E)를 바탕으로 규범 문서별 미�
 - `indexable` 값 읽기 부재 (A8, B19, B29, C11, C12, E37)
 - 임베딩/시맨틱 검색 부재 (B1, B14, C1, C7, D21)
 
-이 커버리지 표는 2026-08-18 기준 감사 결과를 정리한 것이다. 상세 내용은 `docs/upstream-gap.md`에 각 항목별 upstream 규정, engraph 대응, 영향, 출처를 포함하여 기록되어 있다.
+이 커버리지 표는 2026-08-18 기준 감사 결과를 정리한 것이다. 상세 내용은 `docs/upstream-gap.md`에 각 항목별 upstream 규정, engram 대응, 영향, 출처를 포함하여 기록되어 있다. 감사 보고서 원본은 `private/upstream-audit-2026-08-18/`에 있고 gitignore 대상이라 커밋되지 않는다. 실체는 upstream `meta/engram/`에 백업한다([ADR 0033](decisions/0033-private-backup-and-fail-closed-boundary.md)).
+
+### 6.2 왜 이 발견들이 이제껏 감지되지 않았나
+
+**`scripts/upstream-sync.py`가 보는 범위가 좁다.** 그 스크립트는 upstream `AGENTS.md`를 **계약 파일 목록을 뽑는 데만** 쓰고, 변경분은 `meta/CHANGELOG.md`에서만 만든다. 그런데 `AGENTS.md` 본문의 규범문은 `meta/CHANGELOG.md`의 규율 대상이 아니다.
+
+동기화 대상 밖에 있는 것은 아래와 같다. 6.1 표의 미해결 128건 가운데 대부분이 여기서 나왔다.
+
+| 범위 | 성격 |
+|---|---|
+| `AGENTS.md` 본문 | 저장소 작업 계약. 문체, 특수문자, 커밋, inbox 경계 규칙이 여기 있다 |
+| 단계 디렉토리 `README.md` | 각 단계가 무엇을 요구하는지. `inbox/README.md`가 [ADR 0058](decisions/0058-promote-to-sources-moves-evidence.md)을 낳은 자리다 |
+| `meta/templates/` | 문서 형태를 규정한다. 승급 산출물의 절 구성이 여기 있다 |
+| `scripts/` | **실제로 도는 규칙과 실측 상수.** 재발견 루프의 임계값 전부가 여기 있다 |
+| `context/decisions/`, `context/procedures/`, `context/systems/` | 무엇을 해 보고 왜 버렸는지. 실측 근거가 여기 있다 |
+
+**즉 이 발견 대부분은 구조적으로 감지될 수 없었다.** 4.9절이 "바뀌어도 통보되지 않는다"고 적어 둔 것이 이 상태이며, 그 절은 문제를 기록했을 뿐 해소하지 않았다. 동기화 범위를 넓힐지는 `docs/upstream-gap.md`의 항목과 함께 정한다.
 
 ## 7. 명세가 바뀌면 무슨 일이 도는가
 
