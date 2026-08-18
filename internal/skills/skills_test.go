@@ -35,10 +35,12 @@ func TestDoc(t *testing.T) {
 			"승인 없이 실행하지 마라",        // 승인 뒤에야 promote 한다
 			"원문 보존을 반드시 묻는다",       // 되돌릴 수 없는 판단은 사람 몫
 			"파일을 직접 만들거나 고치지 마라",   // 커맨드로만 바꾼다
-			"--dry-run",  // 스스로 검증
-			"--json",     // 조회의 주 경로
-			"--now",      // 기준 시각
-			"rules show", // 규칙의 진실원
+			"--dry-run",     // 스스로 검증
+			"--json",        // 조회의 주 경로
+			"--now",         // 기준 시각
+			"rules show",    // 규칙의 진실원
+			"파일을 직접 읽지 않는다", // 위키 내용은 recall로 꺼낸다
+			"recall",        // 위키 내용을 꺼내는 커맨드
 		} {
 			if !strings.Contains(doc, want) {
 				t.Errorf("문서에 %q 없음. 경계 문구가 지워졌다", want)

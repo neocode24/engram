@@ -76,6 +76,7 @@
 | [0059](0059-recall-candidate-pool-is-independent-of-limit.md) | recall의 문서 후보 수는 --limit과 무관하게 고정한다 | 2026-08-18 | accepted |
 | [0060](0060-search-line-shows-stage-not-path.md) | search 목록은 경로 대신 단계를 내고 제목은 --json에만 담는다 | 2026-08-18 | accepted |
 | [0061](0061-field-weights-and-what-the-index-is-not.md) | 색인 필드에 가중치를 주고 슬러그는 색인하지 않는다 | 2026-08-18 | accepted |
+| [0062](0062-agents-read-the-wiki-through-recall.md) | 에이전트는 위키 내용을 recall로 꺼낸다 | 2026-08-18 | accepted |
 
 ## 공개 범위 밖
 
@@ -113,6 +114,7 @@
 | 0052 | promote는 제안만 하고 사람이 실행한다 | [0057](0057-approval-attaches-to-content-not-to-the-command.md) 승인을 받은 뒤 에이전트가 실행한다. 스킬 경로에 한한다 |
 | 0022 | promote는 inbox를 옮기고 sources에서 파생한다 | [0058](0058-promote-to-sources-moves-evidence.md) --to sources로 inbox에서 sources로 옮기는 길을 더한다 |
 | 0009 | 게이트는 문서의 고유 위키링크 수를 센다 | [0054](0054-gate-counts-only-links-that-resolve.md) 대상이 실재하는 링크만 센다 |
+| 0052 | 스킬 문서가 반드시 담는 것은 여덟이다 | [0062](0062-agents-read-the-wiki-through-recall.md) 위키 내용을 recall로 꺼내라는 지시를 더해 아홉이 된다 |
 
 ## 근거만 갱신된 경우
 
