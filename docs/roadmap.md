@@ -63,6 +63,14 @@
 
 1.0을 출하한 뒤에 연다. 지금 여는 것은 출하를 미루는 일이다.
 
+### 재발견의 의미 축 (구현 완료)
+
+[0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)와 [0075](decisions/0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md)로 결정하고 구현했다. `model pull`과 `model status`가 생기고 `bridge`가 축 둘을 갖는다. 핸즈온 6단계가 이 기능 위에 서 있다.
+
+실측이다. 데모 위키 스물다섯 문서에서 첫 `bridge`가 2분 45초이고 벡터 캐시가 남아 다음부터는 즉시 끝난다. 의미 축 단독으로 잡은 쌍이 둘 나왔고 그중 하나는 낱말이 거의 안 겹치는데 같은 문제의 원인과 대책인 쌍이다.
+
+**동등성 검증이 lint에 이어 두 번째 축을 얻었다.** upstream `llm-wiki`의 같은 80문서에서 코사인 0.72 이상이 upstream 45쌍, engram 45쌍으로 같다. 순수 Go ONNX가 upstream의 PyTorch MPS를 재현한다.
+
 ### 용어 정규화와 사전 갱신 루프
 
 **방향은 확정이다. 사전을 빈 채로 출하하고 쓰는 사람이 채워 간다.** `topics`와 `forms`를 다루는 방식 그대로다. upstream의 `meta/terminology-normalization.md`는 156줄짜리 조직 어휘 목록이라 내용을 공개할 수 없다([0029](decisions/0029-upstream-vendoring-and-parity-execution.md)). engram은 **메커니즘만** 준다.
