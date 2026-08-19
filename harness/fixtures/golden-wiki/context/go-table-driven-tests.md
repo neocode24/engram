@@ -6,7 +6,8 @@ indexable: true
 tags:
   - go
   - testing
-source_refs: []
+source_refs:
+  - sources/tech-talk-summary.md
 derived_from:
   - sources/tech-talk-summary.md
 related:

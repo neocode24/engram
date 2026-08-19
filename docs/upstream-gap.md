@@ -15,11 +15,11 @@
 
 | 자리 | 뜻 | 건수 |
 |---|---|---|
-| 코드 | lint 규칙, 게이트, 판정, 커맨드 동작 | 46 |
+| 코드 | lint 규칙, 게이트, 판정, 커맨드 동작 | 44 |
 | 설정 | `engram.yaml`의 값 | 10 |
 | 데모 | `examples/personal` 데모 위키가 보여 줄 본보기 | 7 |
 | 교재 | `docs/course/`가 가르칠 것 | 5 |
-| 밖 | engram이 관여하지 않는다 | 34 |
+| 밖 | engram이 관여하지 않는다 | 36 |
 
 **`코드`와 `설정`이 만들 것이다.** 나머지는 데모 위키와 교재의 몫이거나
 engram이 관여하지 않는다.
@@ -120,7 +120,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### G6. `source_refs` 값 검사 부재
+### G6. `source_refs` 값 검사 부재 (닫힘, ADR 0073)
 
 **upstream 규정**: `context/systems/indexing-config.md:130-141`가 색인 문서는 source 증거로 추적 가능해야 한다고 규정한다. "시스템은 출처 증명이 누락된 것을 보완하지 않는다. 승급 문서의 `source_refs` 누락은 검수 이슈로 다뤄야 한다."(`:141`)
 
@@ -754,15 +754,15 @@ engram이 관여하지 않는다.
 
 ---
 
-### F26. 단계별 provenance 차이
+### F26. 단계별 provenance 차이 (해당 없음)
 
 **upstream 규정**: `scripts/lint-frontmatter.sh:284-301`이 단계별 provenance를 규정한다. `context`/`agent-workflow`/`index`는 `source_refs` + `related` 필수, `source`는 `derived_context` 필수다.
 
 **engram 대응**: `internal/lint/lint.go:349-363`. `source`는 `source_refs derived_from derived_context`, `context`는 `source_refs derived_from related`다. upstream보다 `derived_from`만큼 더 요구한다. 둘 다 존재만 보고 값이 비었는지는 안 본다.
 
-**영향**: provenance 요구사항이 다르다.
+**영향**: provenance 요구사항이 다르다. engram이 upstream보다 더 엄하다.
 
-**자리**: 코드
+**자리**: 밖. engram이 upstream보다 `derived_from`을 추가로 요구하는 더 엄한 쪽의 어긋남이므로 맞출 이유가 없다. 다만 그 차이의 근거가 어느 ADR에도 적혀 있지 않다. `promote`가 파생을 만들 때 그 필드를 채우므로 도구의 산출물은 통과하고 손으로 만든 문서만 걸린다
 
 **출처**: B30
 
@@ -782,7 +782,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### F28. `updated` 갱신 대상 차이
+### F28. `updated` 갱신 대상 차이 (닫힘, ADR 0072)
 
 **upstream 규정**: `scripts/sync_updated_field.py:29-30`이 `updated` 갱신 대상은 `context`와 `agents/workflows`뿐이다. "sources/는 원본 보존이라 건드리지 않는다."
 
@@ -810,7 +810,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### F30. `created`/`sourced_at` 백필 대상 차이
+### F30. `created`/`sourced_at` 백필 대상 차이 (닫힘, ADR 0072)
 
 **upstream 규정**: `scripts/backfill_source_dates.py:30`이 `created`/`sourced_at` 백필 대상은 `sources/summaries manifests transcripts`뿐이다.
 
@@ -838,7 +838,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### F32. 파일명 날짜 추론 부재
+### F32. 파일명 날짜 추론 부재 (닫힘, ADR 0072)
 
 **upstream 규정**: `scripts/backfill_source_dates.py:32-34, 74-81`이 `created` 재료는 파일명 날짜 접두사다. `YYYY-MM-DD-slug`와 `YYYY-MM-slug` 둘 다 받는다. "연월까지만 아는 자료가 54개 있어."
 
@@ -852,7 +852,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### F33. 미커밋 파일 날짜 채움 부재
+### F33. 미커밋 파일 날짜 채움 부재 (의도적 제외, ADR 0037)
 
 **upstream 규정**: `scripts/backfill_source_dates.py:124-127`이 아직 커밋되지 않은 파일은 `sourced_at`을 오늘 날짜로 채운다.
 
@@ -860,7 +860,7 @@ engram이 관여하지 않는다.
 
 **영향**: 미커밋 파일 날짜가 비어 있다.
 
-**자리**: 코드
+**자리**: 밖. 안 한다. [ADR 0037](decisions/0037-sync-corrects-dates-from-git.md)이 근거를 갖고 이미 결정했다. "커밋되지 않은 파일은 건너뛴다. git 이력이 없으므로 채울 값이 없다. 실패로 다루면 새 문서를 만든 직후 `sync`가 항상 실패한다." `sync`의 정의가 "git 이력에서 날짜를 정정한다"이므로 upstream처럼 오늘 날짜로 채우면 정정이 아니라 추정이고 커맨드의 성격이 달라진다
 
 **출처**: B37
 
@@ -1314,7 +1314,7 @@ engram이 관여하지 않는다.
 
 ---
 
-### F66. `sources.updated` 등급 차이
+### F66. `sources.updated` 등급 차이 (닫힘, ADR 0073)
 
 **upstream 규정**: `scripts/lint-frontmatter.sh:224-225`, CHANGELOG `2026-08-08`("source artifact must not carry `updated`")를 **FAIL**로 처리한다.
 

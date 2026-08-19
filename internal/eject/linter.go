@@ -509,11 +509,20 @@ def check_docs(root, cfg):
 	b.WriteString(`
         sources_dir = STAGE_DIRS.get("source", "sources")
         if "updated" in fields and (rel == sources_dir or rel.startswith(sources_dir + "/")):
-            add(rel, line_of_key(text, "updated"), "sources.updated", "warn",
+            add(rel, line_of_key(text, "updated"), "sources.updated", "error",
 `)
 	b.WriteString(pyViolation("                ",
 		"eject.linter.sources_updated.message", "",
 		"eject.linter.sources_updated.fix", "", ")\n"))
+	b.WriteString(`
+        if stage == "context" and not doc["root"] and "source_refs" in cfg["axes"]:
+            refs = fields.get("source_refs")
+            if isinstance(refs, list) and not refs:
+                add(rel, line_of_key(text, "source_refs"), "graph.empty-provenance", "warn",
+`)
+	b.WriteString(pyViolation("                ",
+		"eject.linter.empty_provenance.message", "",
+		"eject.linter.empty_provenance.fix", "", ")\n"))
 	b.WriteString(`
         if line_count(text) > cfg["max_lines"]:
             add(rel, line_of_key(text, "artifact_stage"), "body.max-lines", "warn",

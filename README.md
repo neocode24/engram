@@ -300,7 +300,7 @@ flowchart LR
 | `update` | Update a document's frontmatter and body |
 | `reindex` | Build the search index. The only command that writes it |
 | `migrate` | Conform existing documents to the current config and rules. `--dry-run` by default |
-| `sync` | Correct `updated` and `sourced_at` from git history. `--dry-run` by default |
+| `sync` | Correct date fields from git history, with filename prefixes as fallback. `--dry-run` by default |
 | `rules show` | Print every rule that applies to this wiki, read-only |
 | `eject` | Hand over the rules as spec documents and a Python linter. One way |
 | `skills install` | Install the skill document into an agent. The whole of the LLM integration |

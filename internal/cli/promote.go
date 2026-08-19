@@ -480,6 +480,10 @@ func promoteFields(src []doc.Field, related []string, derivedFrom string) []doc.
 	}
 	if derivedFrom != "" {
 		fields = mergeListField(fields, "derived_from", []string{derivedFrom})
+		// 파생의 원본은 증거이기도 하므로 source_refs 에도 넣는다.
+		// derived_from 은 무엇에서 나왔나이고 source_refs 는 무엇이 이것을
+		// 뒷받침하나인데 파생의 원본은 둘 다에 해당한다(ADR 0073).
+		fields = mergeListField(fields, "source_refs", []string{derivedFrom})
 	}
 	return fields
 }

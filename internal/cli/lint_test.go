@@ -114,7 +114,7 @@ func TestLintCmd(t *testing.T) {
 		ctxDoc := func(related, body string) string {
 			return "---\n" +
 				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
-				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"indexable: true\nsource_refs:\n  - sources/원본.md\nderived_from: []\n" +
 				"related:\n  - \"[[" + related + "]]\"\nsource_channel: manual\nderived_context: []\n" +
 				"---\n\n본문 [[" + body + "]] 링크\n"
 		}

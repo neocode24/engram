@@ -5,7 +5,8 @@ status: promoted
 indexable: true
 tags:
   - documentation
-source_refs: []
+source_refs:
+  - sources/tech-talk-summary.md
 derived_from: []
 related: []
 source_channel: manual

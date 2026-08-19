@@ -4,7 +4,7 @@
       "rule": "taxonomy.forms",
       "severity": "error",
       "path": "context/cli-flag-conventions.md",
-      "line": 15,
+      "line": 16,
       "message": "form 값이 forms 폐쇄 집합에 없습니다: /"cheatsheet/" (허용값: note, summary, howto, reference)",
       "fix": "form 값을 허용값 중 하나로 바꿉니다"
     },
@@ -28,7 +28,7 @@
       "rule": "gate.min-wikilinks",
       "severity": "reject",
       "path": "context/go-table-driven-tests.md",
-      "line": 12,
+      "line": 13,
       "message": "이어지는 위키링크가 0개로 min_wikilinks 2개에 못 미칩니다",
       "fix": "위키에 있는 문서를 가리키는 링크를 related 필드나 본문에 2개 더 추가하세요. 없는 슬러그, 자기 자신, inbox 문서는 세지 않습니다"
     },
@@ -36,7 +36,7 @@
       "rule": "link.broken",
       "severity": "warn",
       "path": "context/go-table-driven-tests.md",
-      "line": 13,
+      "line": 14,
       "message": "깨진 위키링크: [[test-coverage-matrix]]에 해당하는 문서가 없습니다",
       "fix": "슬러그를 고치거나 [[test-coverage-matrix]] 문서를 만드세요"
     },
@@ -44,7 +44,7 @@
       "rule": "link.broken",
       "severity": "warn",
       "path": "context/go-table-driven-tests.md",
-      "line": 35,
+      "line": 36,
       "message": "깨진 위키링크: [[test-coverage-matrix]]에 해당하는 문서가 없습니다",
       "fix": "슬러그를 고치거나 [[test-coverage-matrix]] 문서를 만드세요"
     },
@@ -52,7 +52,7 @@
       "rule": "gate.min-wikilinks",
       "severity": "reject",
       "path": "context/markdown-link-syntax.md",
-      "line": 10,
+      "line": 11,
       "message": "이어지는 위키링크가 0개로 min_wikilinks 2개에 못 미칩니다",
       "fix": "위키에 있는 문서를 가리키는 링크를 related 필드나 본문에 2개 더 추가하세요. 없는 슬러그, 자기 자신, inbox 문서는 세지 않습니다"
     },
@@ -63,6 +63,14 @@
       "line": 1,
       "message": "artifact_stage 필드가 없습니다",
       "fix": "프론트매터에 artifact_stage 필드를 채우세요"
+    },
+    {
+      "rule": "graph.empty-provenance",
+      "severity": "warn",
+      "path": "context/sqlite-foreign-keys.md",
+      "line": 8,
+      "message": "context 문서의 source_refs가 빈 배열입니다",
+      "fix": "뒷받침하는 원본을 sources에 두고 그 경로를 source_refs에 넣으세요. inbox의 원본은 promote --to sources로 먼저 옮길 수 있습니다"
     },
     {
       "rule": "taxonomy.topics",
@@ -116,7 +124,7 @@
   "summary": {
     "files": 10,
     "error": 2,
-    "warn": 7,
+    "warn": 8,
     "reject": 3,
     "skippedInbox": 6
   }

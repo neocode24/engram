@@ -51,7 +51,7 @@
 | [0034](0034-rule-spec-terminology.md) | upstream 규칙 문서를 계약이 아니라 규칙 명세라 부른다 | 2026-08-16 | accepted |
 | [0035](0035-stage-mismatch-severity-by-direction.md) | 위치와 단계의 불일치는 방향에 따라 등급을 나눈다 | 2026-08-16 | accepted |
 | [0036](0036-non-document-files-in-stage-dirs.md) | 단계 디렉토리 안의 비문서 마크다운을 순회에서 제외한다 | 2026-08-16 | accepted |
-| [0037](0037-sync-corrects-dates-from-git.md) | sync는 git 이력에서 날짜를 정정하고 프론트매터 병합은 맡지 않는다 | 2026-08-16 | accepted |
+| [0037](0037-sync-corrects-dates-from-git.md) | sync는 git 이력에서 날짜를 정정하고 프론트매터 병합은 맡지 않는다 | 2026-08-16 | amended |
 | [0038](0038-migrate-conforms-documents-to-current-rules.md) | migrate는 기존 문서를 지금의 설정과 규칙에 맞춘다 | 2026-08-16 | accepted |
 | [0039](0039-eject-emits-rule-specs-and-a-python-linter.md) | eject는 규칙 명세와 표준 라이브러리 Python 린터를 내보낸다 | 2026-08-16 | accepted |
 | [0040](0040-gate-follows-the-directory-not-the-declaration.md) | 게이트는 선언이 아니라 디렉토리를 따르고 artifact_stage 누락은 오류다 | 2026-08-16 | accepted |
@@ -86,6 +86,8 @@
 | [0069](0069-secrets-and-sensitivity-block-promotion-and-export.md) | 시크릿과 민감도가 승급과 반출을 막는다 | 2026-08-19 | accepted |
 | [0070](0070-lint-skips-inbox-by-default.md) | lint는 기본으로 inbox를 검사하지 않는다 | 2026-08-19 | accepted |
 | [0071](0071-lint-checks-indexable-stage-and-deprecated-fields.md) | lint가 색인 자격과 폐기 필드를 검사한다 | 2026-08-19 | accepted |
+| [0072](0072-date-fields-are-written-only-where-they-are-read.md) | 날짜 필드는 그 값을 읽는 단계에만 쓴다 | 2026-08-19 | accepted |
+| [0073](0073-provenance-must-not-be-empty.md) | 증거 필드는 비어 있으면 안 된다 | 2026-08-19 | accepted |
 
 ## 공개 범위 밖
 
@@ -131,6 +133,8 @@
 | 0007 | 시맨틱은 model pull 로 받는 선택적 사이드카다 | [0068](0068-model-command-manages-embeddings-only.md) 관리 대상을 임베딩 하나로 못 박는다 |
 | 0063 | 노출 판정이 반출에서 internal 을 뺀다 | [0069](0069-secrets-and-sensitivity-block-promotion-and-export.md) 승급과 반출에서 시크릿과 높은 민감도를 막는다 |
 | 0009 | 필수 필드 검사는 단계별로 모든 문서에 적용된다 | [0070](0070-lint-skips-inbox-by-default.md) inbox 는 기본 범위 밖이고 --include-inbox 로 연다 |
+| 0037 | sync 는 git 이력에서 날짜를 정정한다 | [0072](0072-date-fields-are-written-only-where-they-are-read.md) 이력이 없으면 파일명 접두사를 보조로 쓰고 대상 단계를 좁힌다 |
+| 0022 | promote 는 sources 에서 파생을 만들며 derived_from 을 채운다 | [0073](0073-provenance-must-not-be-empty.md) source_refs 도 함께 채운다 |
 
 ## 근거만 갱신된 경우
 

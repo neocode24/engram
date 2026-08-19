@@ -15,7 +15,8 @@ taxonomy의 문서 필드는 설정의 복수 키에 맞춰 `form` 하나와 `to
 
 각 문서는 lint 가 판정해야 할 사례를 하나씩 대표한다.
 기대 판정이 사례 하나에 정확히 대응하도록 문서 하나에는 이상이 하나만 있다.
-예외는 깨진 링크로, go-table-driven-tests.md 가 함께 담는다.
+예외는 깨진 링크로, go-table-driven-tests.md 가 함께 담는다. sqlite-foreign-keys.md 는
+빈 source_refs 경고를 함께 담는다.
 
 | 파일 | 대표하는 사례 | 기대 판정 |
 |---|---|---|
@@ -25,7 +26,7 @@ taxonomy의 문서 필드는 설정의 복수 키에 맞춰 `form` 하나와 `to
 | context/go-table-driven-tests.md | 위키링크 1개뿐. min_wikilinks 2 게이트 거절. 링크 대상이 없어 깨진 링크이기도 함 | 거결 |
 | inbox/orphan-note.md | 위키링크 0개인 고아 문서 | 경고 |
 | context/cli-flag-conventions.md | forms 폐쇄 집합에 없는 값 (cheatsheet) | 오류 |
-| context/sqlite-foreign-keys.md | topics 개방 집합에 없는 값 (sqlite). 문서는 통과 | 경고 |
+| context/sqlite-foreign-keys.md | topics 개방 집합에 없는 값 (sqlite) 과 빈 source_refs 배열 | 경고 둘 |
 | inbox/wrong-stage.md | artifact_stage 허용값 아닌 값 (draft) | 오류 |
 | context/markdown-link-syntax.md | 코드 펜스와 인라인 코드 안에 가짜 링크. 실제 링크 0개. 펜스 안을 세면 판정이 틀어진다 | 거결 |
 | inbox/crlf-meeting-note.md | CRLF 줄바꿈. 링크 줄 번호는 LF 문서와 같게 잡혀야 함 | 정상 |

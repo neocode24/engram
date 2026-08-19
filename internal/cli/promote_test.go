@@ -433,7 +433,12 @@ func TestPromoteFillsContextFields(t *testing.T) {
 			t.Fatal(err)
 		}
 		raw := readWikiFile(t, filepath.Join(dir, "context"), "talk.md")
-		for _, want := range []string{"source_refs: []\n", "related: []\n", "tags: []\n", "derived_context: []\n"} {
+		// 파생의 원본은 증거이기도 하므로 source_refs 에도 들어간다(ADR 0073).
+		for _, want := range []string{
+			"source_refs:\n  - sources/2025-11-08-talk.md\n",
+			"derived_from:\n  - sources/2025-11-08-talk.md\n",
+			"related: []\n", "tags: []\n", "derived_context: []\n",
+		} {
 			if !strings.Contains(raw, want) {
 				t.Errorf("내용에 %q 없음:\n%s", want, raw)
 			}

@@ -6,6 +6,7 @@ source_channel:
 tags: []
 source_refs:
   - https://example.com/km-primer
+  - sources/2026-02-10-km-primer.md
 derived_from:
   - sources/2026-02-10-km-primer.md
 derived_context: []

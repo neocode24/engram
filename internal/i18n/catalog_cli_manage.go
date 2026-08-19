@@ -144,17 +144,18 @@ inbox에 있으면서 context라고 선언한 문서는 선언이 inbox로 내�
 		"cli.migrate.empty_value":     "(빈 값)",
 
 		// sync
-		"cli.sync.short": "git 이력에서 updated와 sourced_at을 정정합니다",
+		"cli.sync.short": "git 이력과 파일명에서 날짜 필드를 정정합니다",
 		"cli.sync.long": `git 이력에서 날짜 필드를 정정합니다.
 
-updated 는 그 파일의 마지막 커밋 날짜로, sourced_at 은 최초 커밋
-날짜로 채웁니다. created 는 git 이 모르는 필드라 건드리지 않습니다.
-sources 계층 문서에는 updated 를 넣지 않습니다. 원본 보존 계층이라
-updated 가 최신이 되면 신선도를 오해하게 만들기 때문입니다.
+updated 는 context 단계 문서에만 쓰고 마지막 커밋 날짜로 채웁니다.
+sourced_at 은 sources 단계 문서에만 쓰고 최초 커밋 날짜로 정정합니다.
+created 는 비어 있을 때만 채웁니다. 재료는 git 최초 커밋 날짜를 우선하고
+이력이 없으면 파일명의 날짜 접두사(YYYY-MM-DD- 또는 YYYY-MM-)를 봅니다.
+이미 있는 값은 지우지 않습니다. 지우는 것은 migrate 의 일입니다.
 
 기본은 dry-run 입니다. 실제로 쓰려면 --apply 를 주세요.
 값이 이미 같으면 쓰지 않으므로 두 번 돌려도 같은 결과입니다.
-커밋되지 않은 파일은 이력이 없으므로 건너뛰고 개수를 알립니다.
+커밋되지 않은 파일 중 파일명에 재료가 없는 것은 건너뛰고 개수를 알립니다.
 워킹트리가 더러워도 판정 근거가 커밋 이력이라 그대로 돕니다.`,
 		"cli.sync.flag_read_fail": "--%s 플래그를 읽을 수 없음",
 		"cli.sync.walk_fail":      "위키를 순회할 수 없음",
@@ -168,6 +169,7 @@ updated 가 최신이 되면 신선도를 오해하게 만들기 때문입니다
 		"cli.sync.current":        "현재 %s",
 		"cli.sync.uncommitted":    "커밋되지 않은 문서 %d개는 건너뛰었습니다",
 		"cli.sync.bulk_only":      "문서 %[2]d개 이상을 한 번에 고친 커밋에만 등장하는 문서 %[1]d개는 날짜를 채우지 않았습니다",
+		"cli.sync.filename_dates": "파일명 접두사에서 날짜를 채운 필드는 %d개입니다",
 
 		// rules
 		"cli.rules.short": "이 위키에 적용되는 규칙을 다룹니다",
@@ -432,17 +434,19 @@ or demote.`,
 		"cli.migrate.empty_value":     "(empty)",
 
 		// sync
-		"cli.sync.short": "Corrects updated and sourced_at from git history",
+		"cli.sync.short": "Corrects date fields from git history and filenames",
 		"cli.sync.long": `Corrects date fields from git history.
 
-updated is filled with the file's last commit date, and sourced_at with its
-first commit date. created is left alone because git does not know it.
-Documents in the sources layer get no updated. It is the original-preservation
-layer, and a fresh updated there would mislead freshness reads.
+updated is written only to context-stage documents, with the file's last
+commit date. sourced_at is written only to sources-stage documents,
+corrected to the first commit date. created is filled only when empty:
+the first commit date comes first, and when there is no history the date
+prefix of the filename (YYYY-MM-DD- or YYYY-MM-) is used.
+Existing values are never erased. Erasing is migrate's job.
 
 The default is a dry run. Pass --apply to write.
 Values already equal are not written, so running twice gives the same result.
-Uncommitted files have no history, so they are skipped and counted.
+Uncommitted files without a usable filename prefix are skipped and counted.
 A dirty worktree is fine: the verdict rests on commit history.`,
 		"cli.sync.flag_read_fail": "Cannot read the --%s flag",
 		"cli.sync.walk_fail":      "Cannot walk the wiki",
@@ -456,6 +460,7 @@ A dirty worktree is fine: the verdict rests on commit history.`,
 		"cli.sync.current":        "now %s",
 		"cli.sync.uncommitted":    "Skipped %d uncommitted documents",
 		"cli.sync.bulk_only":      "Left dates unfilled for %[1]d documents that appear only in commits touching %[2]d or more documents at once",
+		"cli.sync.filename_dates": "Filled %d fields from filename prefixes",
 
 		// rules
 		"cli.rules.short": "Manage the rules applied to this wiki",

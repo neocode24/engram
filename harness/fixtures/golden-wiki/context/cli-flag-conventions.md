@@ -5,7 +5,8 @@ status: promoted
 indexable: true
 tags:
   - cli
-source_refs: []
+source_refs:
+  - sources/tech-talk-summary.md
 derived_from: []
 related:
   - "[[testing-pyramid]]"

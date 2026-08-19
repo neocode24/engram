@@ -67,7 +67,7 @@ func cleanContextDoc(related, body string) string {
 		"status: promoted\n" +
 		"indexable: true\n" +
 		"tags: []\n" +
-		"source_refs: []\n" +
+		"source_refs:\n  - sources/원본.md\n" +
 		"derived_from: []\n" +
 		"related:\n  - \"[[" + related + "]]\"\n" +
 		"source_channel: manual\n" +
@@ -387,12 +387,12 @@ func TestRun(t *testing.T) {
 			"engram.yaml": "topics: [go]\nbroad_topic_pct: 25\nmin_wikilinks: 0\n",
 			"context/a.md": "---\n" +
 				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
-				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"indexable: true\nsource_refs:\n  - sources/원본.md\nderived_from: []\n" +
 				"related:\n  - \"[[b]]\"\nsource_channel: manual\nderived_context: []\n" +
 				"topics:\n  - go\n---\n\n본문 [[b]] 링크\n",
 			"context/b.md": "---\n" +
 				"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
-				"indexable: true\nsource_refs: []\nderived_from: []\n" +
+				"indexable: true\nsource_refs:\n  - sources/원본.md\nderived_from: []\n" +
 				"related:\n  - \"[[a]]\"\nsource_channel: manual\nderived_context: []\n" +
 				"topics:\n  - go\n---\n\n본문 [[a]] 링크\n",
 		})
@@ -471,7 +471,7 @@ func TestRun(t *testing.T) {
 		}
 	})
 
-	t.Run("sources 문서에 updated가 있으면 warn이다", func(t *testing.T) {
+	t.Run("sources 문서에 updated가 있으면 error다", func(t *testing.T) {
 		res := runLint(t, map[string]string{
 			"sources/s.md": "---\n" +
 				"type: source-summary\nartifact_stage: source\nstatus: sourced\n" +
@@ -480,8 +480,46 @@ func TestRun(t *testing.T) {
 				"---\n\n원본\n",
 		})
 		vs := findByRule(res, "sources.updated")
+		if len(vs) != 1 || vs[0].Severity != SevError {
+			t.Fatalf("sources.updated error가 있어야 함: %+v", res.Violations)
+		}
+	})
+
+	t.Run("빈 source_refs를 가진 context 문서는 empty-provenance warn이다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/a.md": cleanContextDoc("b", "b"),
+			"context/b.md": cleanContextDoc("a", "a"),
+		})
+		// cleanContextDoc 은 채워진 source_refs 를 쓰므로 걸리지 않는다.
+		if vs := findByRule(res, "graph.empty-provenance"); len(vs) != 0 {
+			t.Fatalf("값이 있는 문서가 걸렸음: %+v", vs)
+		}
+		empty := strings.Replace(cleanContextDoc("b", "b"),
+			"source_refs:\n  - sources/원본.md\n", "source_refs: []\n", 1)
+		res = runLint(t, map[string]string{
+			"context/a.md": empty,
+			"context/b.md": cleanContextDoc("a", "a"),
+		})
+		vs := findByRule(res, "graph.empty-provenance")
 		if len(vs) != 1 || vs[0].Severity != SevWarn {
-			t.Fatalf("sources.updated warn이 있어야 함: %+v", res.Violations)
+			t.Fatalf("empty-provenance warn이 있어야 함: %+v", res.Violations)
+		}
+		if !strings.Contains(vs[0].Fix, "promote --to sources") {
+			t.Errorf("고치는 법에 증거를 남기는 경로가 없음: %s", vs[0].Fix)
+		}
+	})
+
+	t.Run("source_refs 키가 없으면 missing-field만 잡는다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"context/a.md": strings.Replace(cleanContextDoc("b", "b"),
+				"source_refs:\n  - sources/원본.md\n", "", 1),
+			"context/b.md": cleanContextDoc("a", "a"),
+		})
+		if vs := findByRule(res, "graph.empty-provenance"); len(vs) != 0 {
+			t.Errorf("키가 없는 문서를 중복해서 잡았음: %+v", vs)
+		}
+		if vs := findByRule(res, "frontmatter.missing-field"); len(vs) != 1 {
+			t.Errorf("missing-field 가 잡아야 함: %+v", vs)
 		}
 	})
 

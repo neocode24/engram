@@ -142,14 +142,112 @@ func TestSyncCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("sourced_at 은 최초 커밋 날짜로 채웁니다", func(t *testing.T) {
+	t.Run("context 문서에는 sourced_at 을 쓰지 않습니다", func(t *testing.T) {
 		root := makeSyncWiki(t)
 		if _, err := runSync(t, "sync", "--wiki", root, "--apply"); err != nil {
 			t.Fatal(err)
 		}
 		content := readWiki(t, root, "context/note.md")
-		if !strings.Contains(content, "sourced_at: 2026-01-01") {
-			t.Errorf("sourced_at 이 최초 커밋 날짜가 아님:\n%s", content)
+		if strings.Contains(content, "sourced_at:") {
+			t.Errorf("파생 단계에 sourced_at 이 생겼음:\n%s", content)
+		}
+	})
+
+	t.Run("이미 있는 sourced_at 은 지우지 않습니다", func(t *testing.T) {
+		root := makeSyncWiki(t)
+		writeWikiFileAt(t, root, "context/note.md", strings.Replace(
+			readWiki(t, root, "context/note.md"),
+			"created: 2020-01-01\n", "created: 2020-01-01\nsourced_at: 2019-12-31\n", 1))
+		syncCommitAll(t, root, "2026-03-03", "셋째 커밋")
+		if _, err := runSync(t, "sync", "--wiki", root, "--apply"); err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(readWiki(t, root, "context/note.md"), "sourced_at: 2019-12-31") {
+			t.Errorf("이미 있는 sourced_at 이 지워졌음:\n%s", readWiki(t, root, "context/note.md"))
+		}
+	})
+
+	t.Run("inbox 와 archive 문서에는 updated 를 쓰지 않습니다", func(t *testing.T) {
+		root := makeSyncWiki(t)
+		writeWikiFileAt(t, root, "inbox/memo.md",
+			"---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\n---\n\n메모\n")
+		writeWikiFileAt(t, root, "archive/old.md",
+			"---\ntype: concept\nartifact_stage: archive\nstatus: archived\nindexable: false\n---\n\n옛 문서\n")
+		syncCommitAll(t, root, "2026-03-03", "셋째 커밋")
+		if _, err := runSync(t, "sync", "--wiki", root, "--apply"); err != nil {
+			t.Fatal(err)
+		}
+		for _, name := range []string{"inbox/memo.md", "archive/old.md"} {
+			if strings.Contains(readWiki(t, root, name), "updated:") {
+				t.Errorf("%s 에 updated 가 생겼음:\n%s", name, readWiki(t, root, name))
+			}
+		}
+		// context/note.md 는 둘째 커밋이 마지막이므로 그 날짜를 받는다.
+		if !strings.Contains(readWiki(t, root, "context/note.md"), "updated: 2026-02-02") {
+			t.Errorf("context 는 updated 를 받아야 함:\n%s", readWiki(t, root, "context/note.md"))
+		}
+	})
+
+	t.Run("git 이력이 있는 문서의 created 는 최초 커밋 날짜로 채웁니다", func(t *testing.T) {
+		root := makeSyncWiki(t)
+		// index.md 는 created 가 없고 이력이 있다.
+		if _, err := runSync(t, "sync", "--wiki", root, "--apply"); err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(readWiki(t, root, "index.md"), "created: 2026-01-01") {
+			t.Errorf("created 가 최초 커밋 날짜가 아님:\n%s", readWiki(t, root, "index.md"))
+		}
+	})
+
+	t.Run("git 이력이 없는 문서는 파일명 접두사로 created 를 채웁니다", func(t *testing.T) {
+		root := makeSyncWiki(t)
+		writeWikiFileAt(t, root, "inbox/2026-03-15-회의록.md",
+			"---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\n---\n\n메모\n")
+		writeWikiFileAt(t, root, "inbox/2026-04-발표자료.md",
+			"---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\n---\n\n메모\n")
+		out, err := runSync(t, "sync", "--wiki", root, "--apply", "--json")
+		if err != nil {
+			t.Fatalf("sync 실패: %v\n%s", err, out)
+		}
+		var res syncOutcome
+		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
+			t.Fatalf("JSON 파싱 실패: %v\n%s", err, out)
+		}
+		if !strings.Contains(readWiki(t, root, "inbox/2026-03-15-회의록.md"), "created: 2026-03-15") {
+			t.Errorf("날짜 접두사가 created 로 들어가지 않음:\n%s", readWiki(t, root, "inbox/2026-03-15-회의록.md"))
+		}
+		if !strings.Contains(readWiki(t, root, "inbox/2026-04-발표자료.md"), "created: 2026-04") {
+			t.Errorf("연월 접두사가 created 로 들어가지 않음:\n%s", readWiki(t, root, "inbox/2026-04-발표자료.md"))
+		}
+		if res.FilenameDates != 2 {
+			t.Errorf("파일명 재료 필드 수 = %d, want 2", res.FilenameDates)
+		}
+		text, err := runSync(t, "sync", "--wiki", root)
+		if err != nil {
+			t.Fatalf("sync 실패: %v\n%s", err, text)
+		}
+		// 이미 채웠으므로 두 번째에는 재료가 남지 않는다.
+		if strings.Contains(text, "파일명 접두사") {
+			t.Errorf("이미 채운 뒤에도 파일명 안내가 나옴: %s", text)
+		}
+	})
+
+	t.Run("git 이력이 있으면 파일명을 보지 않습니다", func(t *testing.T) {
+		root := makeSyncWiki(t)
+		writeWikiFileAt(t, root, "context/2020-05-05-옛날문서.md",
+			"---\ntype: concept\nartifact_stage: context\nstatus: promoted\nindexable: true\n"+
+				"tags: []\nsource_refs:\n  - sources/2026-01-01-원본.md\nderived_from: []\n"+
+				"related:\n  - \"[[index]]\"\nsource_channel: manual\nderived_context: []\n---\n\n본문\n")
+		syncCommitAll(t, root, "2026-03-03", "셋째 커밋")
+		if _, err := runSync(t, "sync", "--wiki", root, "--apply"); err != nil {
+			t.Fatal(err)
+		}
+		content := readWiki(t, root, "context/2020-05-05-옛날문서.md")
+		if !strings.Contains(content, "created: 2026-03-03") {
+			t.Errorf("파일명 날짜가 git 이력을 이겼음:\n%s", content)
+		}
+		if strings.Contains(content, "created: 2020-05-05") {
+			t.Errorf("git 이력이 있는데 파일명을 봤음:\n%s", content)
 		}
 	})
 

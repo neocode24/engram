@@ -2,7 +2,7 @@
 number: 0037
 title: sync는 git 이력에서 날짜를 정정하고 프론트매터 병합은 맡지 않는다
 date: 2026-08-16
-status: accepted
+status: amended
 ---
 
 # sync의 범위

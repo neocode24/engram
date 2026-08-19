@@ -32,7 +32,7 @@ engram은 같은 규칙을 두 곳으로 옮겼다. **결정론적으로 판정�
 
 | 방향 | 무엇 | 어긴 결과 |
 |---|---|---|
-| 코드로 강제 | lint 규칙 19종과 승급 게이트 | 종료 코드 1. 승급이 막힌다 |
+| 코드로 강제 | lint 규칙 20종과 승급 게이트 | 종료 코드 1. 승급이 막힌다 |
 | 설정으로 열어 둠 | `engram.yaml`의 속성과 임계값 | 위키마다 다르게 정한다 |
 | 사람과 에이전트에 남김 | 판단이 필요한 것 | 도구가 관여하지 않는다 |
 
@@ -42,7 +42,7 @@ engram은 같은 규칙을 두 곳으로 옮겼다. **결정론적으로 판정�
 
 ## 4. 명세 7종 대응표
 
-lint 규칙 19종은 이 절 전체에서 각각 정확히 한 번씩 등장한다. 규칙 ID는 `internal/lint/lint.go`에 실재하는 값만 쓴다.
+lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한다. 규칙 ID는 `internal/lint/lint.go`에 실재하는 값만 쓴다.
 
 ### 4.1 frontmatter-schema.md
 
@@ -60,7 +60,7 @@ lint 규칙 19종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 | `schema.axis-off` | error | 설정이 끈 속성가 문서에 있음 |
 | `schema.indexable-stage` | error 또는 warn | 단계와 `indexable` 값의 정합. `inbox`에서 `false`가 아니면 error, `source`와 `context`에서 단계 기본값에서 벗어나면 warn. `archive`는 검사하지 않는다([0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md)) |
 | `schema.deprecated-field` | error | `deprecated_fields`에 적은 폐기 필드가 프론트매터에 있음([0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md)) |
-| `sources.updated` | warn | `sources/` 문서가 `updated` 필드를 가짐 |
+| `sources.updated` | error | `sources/` 문서가 `updated` 필드를 가짐. 원본 보존 계약이 깨진 흔적이므로 승급을 막는다([0073](decisions/0073-provenance-must-not-be-empty.md)) |
 
 `promote`와 `new`는 이 명세의 단계별 필드를 채워 쓴다. 채우는 값의 진실원은 `internal/wiki`의 단계별 초기값이다.
 
@@ -110,8 +110,9 @@ lint 규칙 19종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 |---|---|---|
 | `link.broken` | warn | 위키링크가 가리키는 문서가 위키에 없음 |
 | `graph.orphan` | warn | 들어오는 관계와 나가는 관계가 모두 없음 |
+| `graph.empty-provenance` | warn | `context` 문서의 `source_refs`가 빈 배열. 키가 없으면 `frontmatter.missing-field`가 잡는다([0073](decisions/0073-provenance-must-not-be-empty.md)) |
 
-고아 판정은 관계 필드(`derived_from`, `derived_context`, `source_refs`)를 위키링크와 같은 기준으로 센다. `promote`가 `sources/` 문서에서 파생을 만들 때 `derived_from`과 `derived_context`를 양방향으로 기록하므로([ADR 0022](decisions/0022-promote-moves-inbox-derives-sources.md)), 파이프라인의 산출물을 검사기가 못 보면 안 된다.
+고아 판정은 관계 필드(`derived_from`, `derived_context`, `source_refs`)를 위키링크와 같은 기준으로 센다. `promote`가 `sources/` 문서에서 파생을 만들 때 `derived_from`과 `derived_context`를 양방향으로 기록하므로([ADR 0022](decisions/0022-promote-moves-inbox-derives-sources.md)), 파이프라인의 산출물을 검사기가 못 보면 안 된다. `source_refs`도 같은 자리에서 채운다([0073](decisions/0073-provenance-must-not-be-empty.md)).
 
 **설정으로 열어 둔 것.** `related`, `source_refs`, `derived_from`, `derived_context` 속성의 on/off.
 

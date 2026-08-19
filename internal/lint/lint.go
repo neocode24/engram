@@ -125,7 +125,7 @@ var (
 		"lint.rule.location_stage_agreement")
 	ruleTaxonomyForms = newRule("taxonomy.forms", "lint.severity.error",
 		"lint.rule.taxonomy_forms")
-	ruleSourcesUpdated = newRule("sources.updated", "lint.severity.warn",
+	ruleSourcesUpdated = newRule("sources.updated", "lint.severity.error",
 		"lint.rule.sources_updated")
 	ruleTaxonomyTopics = newRule("taxonomy.topics", "lint.severity.warn",
 		"lint.rule.taxonomy_topics")
@@ -135,6 +135,8 @@ var (
 		"lint.rule.link_broken")
 	ruleGraphOrphan = newRule("graph.orphan", "lint.severity.warn",
 		"lint.rule.graph_orphan")
+	ruleGraphEmptyProvenance = newRule("graph.empty-provenance", "lint.severity.warn",
+		"lint.rule.graph_empty_provenance")
 	ruleGateDeferred = newRule("gate.deferred", "lint.severity.warn",
 		"lint.rule.gate_deferred")
 	ruleWikiBroadTopic = newRule("wiki.broad-topic", "lint.severity.warn",
@@ -347,6 +349,7 @@ func scanDoc(w walk.Doc, cfg config.Config) (scannedDoc, []Violation) {
 	sd.checkDeprecatedFields(cfg, add)
 	sd.checkTaxonomy(cfg, add)
 	sd.checkSourcesUpdated(add)
+	sd.checkEmptyProvenance(cfg, add)
 	sd.checkMaxLines(cfg, add)
 	sd.checkSecrets(add)
 	return sd, vs
@@ -607,15 +610,39 @@ func (s *scannedDoc) checkTaxonomy(cfg config.Config, add func(Severity, Rule, i
 }
 
 // checkSourcesUpdated는 sources 계층 문서의 updated 필드를 검사한다.
+// 원본 보존 위반은 승급을 막는다(ADR 0073). update 가 sources 문서를
+// 거절로 막은 것과 같은 계약이다(ADR 0064).
 func (s *scannedDoc) checkSourcesUpdated(add func(Severity, Rule, int, string, string)) {
 	if _, ok := s.fields["updated"]; !ok {
 		return
 	}
 	if s.rel == sourcesDirName || strings.HasPrefix(s.rel, sourcesDirName+"/") {
-		add(SevWarn, ruleSourcesUpdated, lineOfKey(s.content, "updated"),
+		add(SevError, ruleSourcesUpdated, lineOfKey(s.content, "updated"),
 			i18n.T("lint.violation.sources_updated.message"),
 			i18n.T("lint.violation.sources_updated.fix"))
 	}
+}
+
+// checkEmptyProvenance는 context 단계 문서의 source_refs 가 빈 배열인지
+// 검사한다. 키가 아예 없으면 frontmatter.missing-field 가 잡으므로 여기서는
+// 값이 있는 경우만 본다(ADR 0073). 빈 배열인지의 판정은 결정론적이지만
+// 무엇을 증거로 삼을지는 사람이 정하므로 등급은 warn 이다. 색인 문서는
+// 승급 대상이 아니라 위키의 구조 자체이므로 뺀다. 증거를 인용할 문서가
+// 아니며 init 의 산출물을 도구가 스스로 경고하는 꼴이 된다(ADR 0019).
+func (s *scannedDoc) checkEmptyProvenance(cfg config.Config, add func(Severity, Rule, int, string, string)) {
+	if s.stage != string(wiki.StageContext) || !cfg.Axes[config.AxisSourceRefs] {
+		return
+	}
+	if isRootFile(s.rel, cfg) {
+		return
+	}
+	f, ok := s.fields["source_refs"]
+	if !ok || f.Kind != doc.KindStringList || len(f.List) > 0 {
+		return
+	}
+	add(SevWarn, ruleGraphEmptyProvenance, lineOfKey(s.content, "source_refs"),
+		i18n.T("lint.violation.empty_provenance.message"),
+		i18n.T("lint.violation.empty_provenance.fix"))
 }
 
 // checkMaxLines는 문서 줄 수 상한을 검사한다.
