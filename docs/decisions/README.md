@@ -152,3 +152,4 @@
 | 0005 | "계약 파일"이라는 명칭이 "규칙 명세"로 바뀌었다. 결론은 그대로다 | [0034](0034-rule-spec-terminology.md) 본문 |
 | 0029 | 상동. 제목의 "계약"은 당시 명칭으로 읽는다 | [0034](0034-rule-spec-terminology.md) 본문 |
 | 0010 | 자체 구현의 둘째 근거인 parity 보증이 성립하지 않는다. upstream에 `search`가 없어 비교할 대상이 없다. 첫째 근거인 한국어 토크나이저와 0007의 CGO 제약으로 결정은 유지된다 | [0061](0061-field-weights-and-what-the-index-is-not.md) 본문 |
+| 0074 | upstream MPS 속도를 주석의 "12초"가 아니라 실제로 돌려 쟀다. 전수 인코딩 13.27초이며 순수 Go와의 배율이 84배가 아니라 76배다. 결정은 유지된다 | [upstream-gap.md](../upstream-gap.md) R1 |

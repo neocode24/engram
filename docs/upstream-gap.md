@@ -272,7 +272,7 @@ engram이 관여하지 않는다.
 
 ## 재발견
 
-### R1. 임베딩/시맨틱 검색 부재
+### R1. 임베딩/시맨틱 검색 부재 (결정 완료, ADR 0074와 0075. 구현 중)
 
 **upstream 규정**: `scripts/wiki_resurface.py:8-10, 289-292`, `context/decisions/wiki-resurface-loop.md:78-83`이 bridge는 단어 겹침과 bge-m3 임베딩을 둘 다 돌려 합집합을 본다. "실측상 상위 15쌍 중 겹치는 것이 1쌍뿐이었다." 자연어 질의에서 의미 방식이 어휘 방식을 압도했다는 실측이 있다.
 
@@ -283,6 +283,17 @@ engram이 관여하지 않는다.
 **자리**: 코드
 
 **출처**: B1, B14, C1, C7, D21
+
+**결정과 실측**: [ADR 0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)가 백엔드와 모델을, [ADR 0075](decisions/0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md)가 벡터의 단위와 하한 둘을 정했다.
+
+upstream 쪽 속도를 실제로 돌려 쟀다. 같은 기계(Apple M4 Pro), upstream `context/` 80문서, `EMBED_CHARS = 2000`, `SentenceTransformer('BAAI/bge-m3', device='mps')`, `batch_size=8` 조건이다.
+
+| 항목 | 값 |
+|---|---|
+| 모델 적재 | 14.09초 |
+| 전수 인코딩 80문서 | **13.27초** (문서당 0.166초) |
+
+**0074가 인용한 upstream 주석의 "주 1회 12초 정도"가 전수 인코딩 시간이 맞다.** 캐시가 걸린 증분 시간이 아니다. 0074는 그 주석값 12초를 기준으로 순수 Go가 84배 느리다고 적었는데, 실측 13.27초로 다시 계산하면 **76배**다. 결론은 바뀌지 않는다.
 
 ---
 
