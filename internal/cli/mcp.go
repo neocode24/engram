@@ -257,8 +257,8 @@ func registerMCPTools(s *mcp.Server, root string) {
 		if err != nil {
 			return nil, nil, err
 		}
-		res := bridge.Run(ix, graph.Build(walked), st, min, limit)
-		out := bridgeResponse{Min: min, IndexStale: stale, Pairs: make([]bridgePairJSON, 0, len(res.Pairs))}
+		res := bridge.Run(ix, graph.Build(walked), st, bridge.Options{Min: min, Limit: limit})
+		out := bridgeResponse{Min: min, MinEmbed: 0, IndexStale: stale, Pairs: make([]bridgePairJSON, 0, len(res.Pairs))}
 		for _, p := range res.Pairs {
 			out.Pairs = append(out.Pairs, bridgePairJSON{A: p.A, B: p.B, Score: round2(p.Score)})
 		}

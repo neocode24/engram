@@ -8,7 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/neocode24/engram/internal/bridge"
 	"github.com/neocode24/engram/internal/config"
+	"github.com/neocode24/engram/internal/embed"
 	"github.com/neocode24/engram/internal/index"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/spf13/cobra"
@@ -249,6 +251,128 @@ func TestBridgeCmd(t *testing.T) {
 		}
 		if !strings.Contains(out+errOut, "engram init") {
 			t.Errorf("안내에 engram init 이 없습니다: %s", out)
+		}
+	})
+}
+
+// seedVectors는 makeBridgeWiki 의 context 문서 세 개에 임베딩 벡터를
+// 심는다. go 와 rust 는 같은 방향, tea 는 직교 방향이다. 색인과 같은
+// 방식으로 제목과 본문을 이어 키를 계산한다.
+func seedVectors(t *testing.T, root string) {
+	t.Helper()
+	ix := index.Load(root)
+	if ix == nil {
+		t.Fatal("색인이 있어야 합니다")
+	}
+	cfg, err := config.Load(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	walked, err := walk.Files(root, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bodies := map[string]string{}
+	for _, wd := range walked {
+		bodies[wd.Rel] = wd.Parsed.Body
+	}
+	docs := make([]embed.ComputeDoc, 0, 3)
+	for _, e := range ix.Docs {
+		if strings.HasPrefix(e.Path, "context/") {
+			docs = append(docs, embed.ComputeDoc{Path: e.Path, Title: e.Title, Body: bodies[e.Path]})
+		}
+	}
+	vecs := map[string][]float32{}
+	for _, d := range docs {
+		v := []float32{1, 0}
+		if d.Path == "context/tea.md" {
+			v = []float32{0, 1}
+		}
+		vecs[embed.Key(d.Title+"\n"+d.Body)] = v
+	}
+	keep := map[string]bool{}
+	for k := range vecs {
+		keep[k] = true
+	}
+	if err := embed.SaveCache(root, vecs, keep); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestBridgeEmbedAxis(t *testing.T) {
+	// 모델이 없으면 경고 한 줄을 내고 단어 축만으로 계속한다.
+	t.Run("모델이 없으면 경고하고 단어 축만 돈다", func(t *testing.T) {
+		t.Setenv(embed.EnvModelDir, t.TempDir())
+		out, errOut, err := runBridge(t, "bridge", "--wiki", makeBridgeWiki(t))
+		if err != nil {
+			t.Fatalf("모델이 없어도 종료 코드 0 이어야 합니다: %v\n%s%s", err, out, errOut)
+		}
+		if !strings.Contains(errOut, "단어 축만") {
+			t.Errorf("모델 없음 경고가 없습니다: %s", errOut)
+		}
+		if !strings.Contains(out, "go  rust") {
+			t.Errorf("단어 축 결과가 나와야 합니다: %s", out)
+		}
+	})
+
+	t.Run("캐시가 차 있으면 의미 축이 켜지고 축을 밝힌다", func(t *testing.T) {
+		t.Setenv(embed.EnvModelDir, t.TempDir())
+		root := makeBridgeWiki(t)
+		seedVectors(t, root)
+		out, _, err := runBridge(t, "bridge", "--wiki", root)
+		if err != nil {
+			t.Fatalf("에러: %v\n%s", err, out)
+		}
+		// go-rust 는 단어도 겹치고 임베딩도 같은 방향이다.
+		if !strings.Contains(out, "단어+의미  go  rust") {
+			t.Errorf("두 축을 모두 밝혀야 합니다:\n%s", out)
+		}
+	})
+
+	t.Run("--json 은 minEmbed 와 axes 를 낸다", func(t *testing.T) {
+		t.Setenv(embed.EnvModelDir, t.TempDir())
+		root := makeBridgeWiki(t)
+		seedVectors(t, root)
+		out, _, err := runBridge(t, "bridge", "--json", "--wiki", root)
+		if err != nil {
+			t.Fatalf("에러: %v\n%s", err, out)
+		}
+		var res bridgeResponse
+		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
+			t.Fatalf("JSON 파싱 실패: %v\n%s", err, out)
+		}
+		if res.MinEmbed != 0.72 {
+			t.Errorf("minEmbed 기본값: %v", res.MinEmbed)
+		}
+		if len(res.Pairs) == 0 || len(res.Pairs[0].Axes) == 0 {
+			t.Fatalf("axes 가 비어 있습니다: %s", out)
+		}
+		if res.Pairs[0].Axes[0] != bridge.AxisTerm {
+			t.Errorf("첫 축: %+v", res.Pairs[0].Axes)
+		}
+	})
+
+	t.Run("설정 파일의 bridge 하한을 따른다", func(t *testing.T) {
+		t.Setenv(embed.EnvModelDir, t.TempDir())
+		root := makeBridgeWiki(t)
+		p := filepath.Join(root, "engram.yaml")
+		if err := os.WriteFile(p, []byte("preset: personal\nbridge_word_min: 0.95\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		indexBridgeWiki(t, root)
+		out, _, err := runBridge(t, "bridge", "--json", "--wiki", root)
+		if err != nil {
+			t.Fatalf("에러: %v\n%s", err, out)
+		}
+		var res bridgeResponse
+		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
+			t.Fatal(err)
+		}
+		if res.Min != 0.95 {
+			t.Errorf("설정 파일의 단어 하한을 따라야 합니다: %v", res.Min)
+		}
+		if len(res.Pairs) != 0 {
+			t.Errorf("단어 하한 0.95 면 단어 축 쌍이 없어야 합니다: %s", out)
 		}
 	})
 }

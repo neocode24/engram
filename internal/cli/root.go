@@ -101,6 +101,7 @@ func newRootCmd() *cobra.Command {
 	root.AddCommand(newEjectCmd())
 	root.AddCommand(newSkillsCmd())
 	root.AddCommand(newMCPCmd())
+	root.AddCommand(newModelCmd())
 	root.AddCommand(newServeCmd())
 	root.AddCommand(newExportCmd())
 	root.AddCommand(newVersionCmd())

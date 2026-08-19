@@ -33,8 +33,23 @@ const ModelName = "bge-m3"
 const EnvModelDir = "ENGRAM_MODEL_DIR"
 
 // onnxFilename은 모델 디렉토리 안의 그래프 파일 이름이다. 가중치는
-// 같은 디렉토리의 model.onnx_data 에 따로 있다.
-const onnxFilename = "model.onnx"
+// 같은 디렉토리의 model.onnx_data 에 따로 있고 이 그래프가 그 이름을
+// 내부에서 참조한다.
+const onnxFilename = "sentence_transformers.onnx"
+
+// outputName은 문장 벡터를 꺼낼 ONNX 출력 이름이다.
+//
+// bge-m3 는 CLS 풀링을 쓴다. BAAI/bge-m3 의 1_Pooling/config.json 이
+// pooling_mode_cls_token 을 참으로 두었다. 그런데 hugot 의 특징추출
+// 파이프라인은 출력이 토큰 임베딩이면 평균 풀링을 강제하며 선택지를
+// 주지 않는다. 평균 풀링을 bge-m3 에 쓰면 유사도 분포가 뭉개져 하한이
+// 필터 구실을 못 한다. upstream 과 같은 80문서에서 코사인 0.72 이상이
+// upstream 45쌍인데 평균 풀링은 2897쌍이었다.
+//
+// 그래서 풀링이 그래프 안에 들어 있는 sentence_transformers.onnx 를
+// 받고 그 출력을 골라 쓴다. 이렇게 하면 hugot 이 이미 풀링된 벡터를
+// 받아 정규화만 한다. 실측에서 0.72 이상이 45쌍으로 upstream 과 같다.
+const outputName = "sentence_embedding"
 
 // ModelDir는 모델이 놓이는 디렉토리를 반환한다.
 //

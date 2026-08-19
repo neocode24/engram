@@ -57,8 +57,13 @@ func Open() (Encoder, error) {
 		ModelPath:    dir,
 		Name:         ModelName,
 		OnnxFilename: onnxFilename,
-		// 정규화해 두면 코사인 유사도가 내적과 같아진다.
-		Options: []hugot.FeatureExtractionOption{pipelines.WithNormalization()},
+		Options: []hugot.FeatureExtractionOption{
+			// 정규화해 두면 코사인 유사도가 내적과 같아진다.
+			pipelines.WithNormalization(),
+			// sentence_embedding 출력을 골라야 CLS 풀링이 된다. 이유는
+			// outputName 상수의 주석에 있다.
+			pipelines.WithOutputName(outputName),
+		},
 	})
 	if err != nil {
 		_ = session.Destroy()

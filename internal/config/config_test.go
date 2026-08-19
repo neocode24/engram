@@ -32,7 +32,7 @@ func TestLoad(t *testing.T) {
 				if c.Preset != DefaultPreset {
 					t.Errorf("프리셋 = %q, want %q", c.Preset, DefaultPreset)
 				}
-				if want := (Thresholds{MinWikilinks: 2, StaleDays: 30, MaxLines: 1000, BroadTopicPct: 25}); c.Thresholds != want {
+				if want := (Thresholds{MinWikilinks: 2, StaleDays: 30, MaxLines: 1000, BroadTopicPct: 25, BridgeWordMin: DefaultBridgeWordMin, BridgeEmbedMin: DefaultBridgeEmbedMin}); c.Thresholds != want {
 					t.Errorf("임계값 = %+v, want %+v", c.Thresholds, want)
 				}
 				if want := []string{"inbox", "sources", "context", "archive"}; !reflect.DeepEqual(c.PageDirs, want) {
@@ -98,6 +98,28 @@ func TestLoad(t *testing.T) {
 					t.Errorf("파일에 없는 임계값이 기본값이 아님: %+v", c.Thresholds)
 				}
 			},
+		},
+		{
+			name: "bridge 하한 둘은 각각 덮어쓴다",
+			yaml: "bridge_word_min: 0.18\nbridge_embed_min: 0.75\n",
+			check: func(t *testing.T, c Config) {
+				if c.Thresholds.BridgeWordMin != 0.18 || c.Thresholds.BridgeEmbedMin != 0.75 {
+					t.Errorf("bridge 하한 = %+v, want 0.18, 0.75", c.Thresholds)
+				}
+				if c.Origins["bridge_word_min"] != OriginFile || c.Origins["bridge_embed_min"] != OriginFile {
+					t.Errorf("출처 = %+v", c.Origins)
+				}
+			},
+		},
+		{
+			name:    "bridge 하한은 코사인 범위 밖이면 거절한다",
+			yaml:    "bridge_embed_min: 1.5\n",
+			wantErr: "범위 밖",
+		},
+		{
+			name:    "bridge 하한은 실수가 아니면 거절한다",
+			yaml:    "bridge_word_min: 많음\n",
+			wantErr: "실수가 아님",
 		},
 		{
 			name: "프리셋 위에서 축을 개별적으로 켠다",

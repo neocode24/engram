@@ -133,6 +133,51 @@ inbox 와 sources 는 나가지 않습니다. archive 는 --include-archive 로
 		"cli.export.unused_rules_warning":   "경고: 한 번도 걸리지 않은 치환 규칙이 %d건 있습니다. 사전의 오타를 확인하세요",
 		"cli.export.anonymized_none":        "익명화: 치환 파일을 주지 않아 원문 그대로 나갑니다",
 		"cli.export.dangling_links":         "번들 밖을 가리키는 위키링크 %d개 (문서 %d개). 본문은 고치지 않았습니다",
+
+		// model 커맨드
+		"cli.model.short": "임베딩 모델을 내려받고 상태를 봅니다",
+		"cli.model.long": `임베딩 모델을 내려받고 상태를 봅니다.
+
+모델은 위키가 아니라 사용자 전역 캐시에 둡니다. ENGRAM_MODEL_DIR 로
+경로를 바꿉니다. 모델이 없어도 bridge 는 단어 방식만으로 돌아갑니다.`,
+		"cli.model.pull.short": "임베딩 모델을 내려받습니다",
+		"cli.model.pull.long": `bge-m3 모델 파일 여섯을 HuggingFace 에서 내려받아 모델 디렉토리에 놓습니다.
+약 2.3GB 이므로 시간이 걸립니다.
+
+내려받기는 커밋 SHA 로 고정한 리비전에서 받으므로 언제 실행해도 같은
+바이트를 받고, 받은 뒤 sha256 로 검증합니다. 중간에 끊겨도 다음 실행이
+이어받습니다. 이미 있고 체크섬이 맞은 파일은 받지 않습니다.
+
+--from 으로 오프라인 자료에서 가져올 수 있습니다. 디렉토리 또는
+tar 아카이브(tar, tar.gz)를 받습니다. 여섯 파일이 자료의 루트에 평평하게
+있거나 저장소 배치처럼 onnx/ 아래에 있으면 됩니다. 가져온 파일도 같은
+검증을 지나므로 기대하는 내용과 다르면 실패합니다.`,
+		"cli.model.flag_from":       "오프라인으로 가져올 tar 또는 디렉토리 경로",
+		"cli.model.pull_fail":       "모델을 내려받을 수 없습니다",
+		"cli.model.checksum_fail":   "내려받은 파일의 체크섬이 기대값과 다릅니다. 다시 실행해 보세요",
+		"cli.model.import_fail":     "오프라인 자료를 가져올 수 없습니다",
+		"cli.model.already_present": "모델이 이미 있습니다: %s",
+		"cli.model.skip_file":       "이미 있어 건너뜁니다: %s",
+		"cli.model.pull_done":       "내려받기를 마쳤습니다: %s",
+		"cli.model.import_done":     "가져왔습니다. 파일 %d개 -> %s",
+		"cli.model.progress":        "%s: %s / %s (%d%%)",
+		"cli.model.status.short":    "임베딩 모델의 상태를 봅니다",
+		"cli.model.status.long": `모델 디렉토리의 파일별 존재 여부와 크기를 보여줍니다.
+
+--verify 를 주면 sha256 체크섬을 계산해 검증합니다. 모델 전체가
+2.3GB 라서 시간이 걸립니다. 기본은 존재와 크기만 봅니다.`,
+		"cli.model.flag_verify":       "sha256 체크섬을 계산해 검증합니다 (2.3GB 를 읽으므로 시간이 걸립니다)",
+		"cli.model.status.dir":        "모델 디렉토리: %s",
+		"cli.model.status.revision":   "리비전: %s",
+		"cli.model.cell_missing":      "없음",
+		"cli.model.cell_size":         "%d / %d 바이트",
+		"cli.model.cell_sum_ok":       "체크섬 일치",
+		"cli.model.cell_sum_bad":      "체크섬 불일치",
+		"cli.model.status.total":      "합계: %s / %s, 파일 %d/%d개",
+		"cli.model.status.complete":   "모델이 온전합니다",
+		"cli.model.status.present":    "파일이 모두 있습니다. 내용은 검사하지 않았습니다. engram model status --verify 로 확인하세요",
+		"cli.model.status.corrupt":    "모델이 훼손되었습니다",
+		"cli.model.status.incomplete": "모델이 온전하지 않습니다. engram model pull 로 채우세요",
 	})
 
 	Register(LangEN, map[string]string{
@@ -270,5 +315,53 @@ frontmatter, and file names alike. Without a file, nothing is replaced.
 		"cli.export.unused_rules_warning":   "Warning: %d replacement rules never matched. Check the dictionary for typos",
 		"cli.export.anonymized_none":        "Anonymized: no replacement file given, exporting text as-is",
 		"cli.export.dangling_links":         "Wikilinks pointing outside the bundle: %d, across %d documents. Bodies were not modified",
+
+		// model command
+		"cli.model.short": "Download and inspect the embedding model",
+		"cli.model.long": `Download and inspect the embedding model.
+
+The model lives in the user's global cache, not in the wiki. Override the
+path with ENGRAM_MODEL_DIR. Without a model, bridge still runs on the
+lexical path alone.`,
+		"cli.model.pull.short": "Download the embedding model",
+		"cli.model.pull.long": `Downloads the six bge-m3 model files from HuggingFace into the model
+directory. About 2.3GB, so it takes a while.
+
+The download is pinned to a revision by commit SHA, so every run fetches
+the same bytes, and each file is verified with sha256 afterward. If a run
+is interrupted, the next one resumes. Files already present with a valid
+checksum are not downloaded again.
+
+Offline import: pass a directory or a tar archive (tar, tar.gz) with
+--from. The six files may sit flat at the root or under onnx/ as in the
+repository layout. Imported files go through the same verification, so
+material that does not match the expected contents fails.`,
+		"cli.model.flag_from":       "Offline source: a tar archive or directory path",
+		"cli.model.pull_fail":       "cannot download the model",
+		"cli.model.checksum_fail":   "the downloaded file's checksum differs from the expected value. Try running it again",
+		"cli.model.import_fail":     "cannot import from the offline source",
+		"cli.model.already_present": "the model is already present: %s",
+		"cli.model.skip_file":       "already present, skipping: %s",
+		"cli.model.pull_done":       "download finished: %s",
+		"cli.model.import_done":     "imported %d files -> %s",
+		"cli.model.progress":        "%s: %s / %s (%d%%)",
+		"cli.model.status.short":    "show the embedding model's status",
+		"cli.model.status.long": `Shows per-file presence and size in the model directory.
+
+With --verify, computes the sha256 checksum of each file. The model is
+2.3GB total, so this takes time. Without it, only presence and size are
+checked.`,
+		"cli.model.flag_verify":       "verify by computing sha256 checksums (reads 2.3GB, takes time)",
+		"cli.model.status.dir":        "model directory: %s",
+		"cli.model.status.revision":   "revision: %s",
+		"cli.model.cell_missing":      "missing",
+		"cli.model.cell_size":         "%d / %d bytes",
+		"cli.model.cell_sum_ok":       "checksum ok",
+		"cli.model.cell_sum_bad":      "checksum mismatch",
+		"cli.model.status.total":      "total: %s / %s, files %d/%d",
+		"cli.model.status.complete":   "the model is complete",
+		"cli.model.status.present":    "all files are present. Contents were not checked. Verify with engram model status --verify",
+		"cli.model.status.corrupt":    "the model is corrupt",
+		"cli.model.status.incomplete": "the model is incomplete. Fill it with engram model pull",
 	})
 }

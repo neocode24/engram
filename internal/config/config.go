@@ -21,6 +21,14 @@ import (
 // ConfigFileName은 위키 루트에 두는 설정 파일 이름이다. ADR 0017.
 const ConfigFileName = "engram.yaml"
 
+// bridge 하한 기본값이다. 단어 축 0.30 은 ADR 0028 이후 쓰던 값이다.
+// 임베딩 축 0.72 는 upstream 실측값에서 출발했다(ADR 0075). 토크나이저가
+// 달라 단어 축을 upstream 값 0.18 로 옮기지 않았다.
+const (
+	DefaultBridgeWordMin  = 0.30
+	DefaultBridgeEmbedMin = 0.72
+)
+
 // Preset은 프론트매터 속성의 시작점이 되는 프리셋이다. 포함 관계는
 // minimal이 personal에, personal이 team에 포함된다. ADR 0009, 0048.
 type Preset string
@@ -118,12 +126,15 @@ const (
 )
 
 // Thresholds는 게이트와 경고의 임계값이다. min_wikilinks만 승급 거절
-// 사유이고 나머지는 경고에 쓰인다.
+// 사유이고 나머지는 경고에 쓰인다. bridge 하한 둘은 코사인 유사도의
+// 축별 값으로 단어 축과 임베딩 축이 눈금이 다르므로 따로 둔다(ADR 0075).
 type Thresholds struct {
-	MinWikilinks  int
-	StaleDays     int
-	MaxLines      int
-	BroadTopicPct int
+	MinWikilinks   int
+	StaleDays      int
+	MaxLines       int
+	BroadTopicPct  int
+	BridgeWordMin  float64
+	BridgeEmbedMin float64
 }
 
 // OpenSet은 미정의 값이 경고인 값 집합이다.
@@ -220,7 +231,7 @@ func defaults() Config {
 		Preset:      DefaultPreset,
 		Axes:        presetAxes(DefaultPreset),
 		Schema:      defaultSchema(),
-		Thresholds:  Thresholds{MinWikilinks: 2, StaleDays: 30, MaxLines: 1000, BroadTopicPct: 25},
+		Thresholds:  Thresholds{MinWikilinks: 2, StaleDays: 30, MaxLines: 1000, BroadTopicPct: 25, BridgeWordMin: DefaultBridgeWordMin, BridgeEmbedMin: DefaultBridgeEmbedMin},
 		PageDirs:    []string{"inbox", "sources", "context", "archive"},
 		RootFiles:   []string{"index.md"},
 		IgnoreFiles: []string{"README.md"},
@@ -228,7 +239,7 @@ func defaults() Config {
 	}
 	// 프리셋 키 자체는 기본값에서 왔다. 속성의 on/off는 프리셋이 정했다.
 	cfg.Origins["preset"] = OriginDefault
-	for _, k := range []string{"types", "topics", "forms", "min_wikilinks", "stale_days", "max_lines", "broad_topic_pct", "page_dirs", "root_files", "ignore_files", "deprecated_fields"} {
+	for _, k := range []string{"types", "topics", "forms", "min_wikilinks", "stale_days", "max_lines", "broad_topic_pct", "bridge_word_min", "bridge_embed_min", "page_dirs", "root_files", "ignore_files", "deprecated_fields"} {
 		cfg.Origins[k] = OriginDefault
 	}
 	for _, a := range allAxes() {
@@ -353,6 +364,20 @@ func build(doc map[string]any) (Config, error) {
 			}
 			cfg.Thresholds.BroadTopicPct = n
 			cfg.Origins[key] = OriginFile
+		case "bridge_word_min":
+			f, err := cosineThresholdOf(key, val)
+			if err != nil {
+				return Config{}, err
+			}
+			cfg.Thresholds.BridgeWordMin = f
+			cfg.Origins[key] = OriginFile
+		case "bridge_embed_min":
+			f, err := cosineThresholdOf(key, val)
+			if err != nil {
+				return Config{}, err
+			}
+			cfg.Thresholds.BridgeEmbedMin = f
+			cfg.Origins[key] = OriginFile
 		case "page_dirs":
 			list, err := stringListOf("page_dirs", val)
 			if err != nil {
@@ -417,6 +442,34 @@ func thresholdOf(key string, v any, min int) (int, error) {
 		return 0, errors.New(i18n.T("core.config.threshold_range", key, n, min))
 	}
 	return n, nil
+}
+
+// cosineThresholdOf는 코사인 유사도 하한 키를 실수로 변환하고 범위를
+// 검사한다. 코사인 하한으로 쓸 수 있는 값은 0 에서 1 이다.
+func cosineThresholdOf(key string, v any) (float64, error) {
+	f, ok := floatValue(v)
+	if !ok {
+		return 0, errors.New(i18n.T("core.config.not_float", key, v))
+	}
+	if f < 0 || f > 1 {
+		return 0, errors.New(i18n.T("core.config.cosine_range", key, f))
+	}
+	return f, nil
+}
+
+// floatValue는 YAML 파서가 내놓을 수 있는 실수 계열을 float64로 통일한다.
+func floatValue(v any) (float64, bool) {
+	switch n := v.(type) {
+	case float64:
+		return n, true
+	case int:
+		return float64(n), true
+	case int64:
+		return float64(n), true
+	case uint64:
+		return float64(n), true
+	}
+	return 0, false
 }
 
 // intValue는 YAML 파서가 내놓을 수 있는 정수 계열을 int로 통일한다.

@@ -145,8 +145,14 @@ fail 항목이 하나라도 있으면 종료 코드 1로 끝납니다. warn은 0
 
 		// bridge
 		"cli.bridge.short": "유사한데 링크가 없는 문서 쌍을 찾습니다",
-		"cli.bridge.long": `검색 색인의 TF 벡터로 context 문서끼리 코사인 유사도를 재고,
-유사도가 높은데 링크가 없는 쌍을 보여줍니다.
+		"cli.bridge.long": `두 축으로 context 문서끼리 유사도를 재고, 유사한데 링크가 없는
+쌍을 보여줍니다. 단어 축은 색인의 TF 벡터로 코사인 유사도를 재고,
+의미 축은 임베딩 벡터로 유사도를 잽니다. 두 축은 하한이 따로이고 각각을
+통과한 쌍의 합집합을 내며, 어느 축이 잡았는지 함께 보여줍니다.
+
+임베딩 모델이 없으면 경고를 내고 단어 축만으로 계산합니다.
+임베딩 계산은 이 커맨드가 필요할 때만 하고 결과는 .engram/vectors.json
+에 캐시합니다. 문서가 많으면 첫 계산에 시간이 걸리므로 진행률을 냅니다.
 
 후보에서 기각한 쌍은 engram-state.yaml 에 영구 기록되어 다시 나오지 않습니다.
 --reject 로 기각하고 --unreject 로 되돌립니다. 기각 기록은 git 이 추적합니다.
@@ -161,11 +167,18 @@ fail 항목이 하나라도 있으면 종료 코드 1로 끝납니다. warn은 0
 		"cli.bridge.no_index":           "검색 색인이 없습니다. engram reindex 로 색인을 만든 뒤 다시 실행하세요",
 		"cli.bridge.walk_fail":          "위키를 순회할 수 없음",
 		"cli.bridge.warn_stale":         "경고: 색인이 낡았습니다. 낡은 색인으로 진행합니다. engram reindex로 갱신하세요",
-		"cli.bridge.flag_min":           "코사인 유사도 하한",
+		"cli.bridge.warn_no_model":      "경고: 임베딩 모델이 없어 단어 축만으로 계산합니다. 모델을 받으면 의미 축이 켜집니다",
+		"cli.bridge.embed_progress":     "임베딩 계산 중 %d/%d",
+		"cli.bridge.embed_fail":         "임베딩 계산을 하지 못함",
+		"cli.bridge.flag_min":           "단어 축의 코사인 유사도 하한",
+		"cli.bridge.flag_min_embed":     "의미 축의 임베딩 유사도 하한",
 		"cli.bridge.flag_limit":         "낼 쌍 수 상한",
 		"cli.bridge.flag_reject":        "기각할 슬러그 둘 (예: --reject a b)",
 		"cli.bridge.flag_unreject":      "기각을 되돌릴 슬러그 둘",
 		"cli.bridge.flag_wiki":          "대상 위키 경로",
+		"cli.bridge.axis_term":          "단어",
+		"cli.bridge.axis_embed":         "의미",
+		"cli.bridge.axis_both":          "단어+의미",
 		"cli.bridge.reject_missing":     "위키에 없는 슬러그라 기각하지 못했습니다: %s\n슬러그를 확인하세요. 문서를 찾으려면 engram search 를 쓰세요",
 		"cli.bridge.already_rejected":   "이미 기각된 쌍입니다: %s %s",
 		"cli.bridge.reject_save_fail":   "기각을 저장할 수 없음",
@@ -175,8 +188,14 @@ fail 항목이 하나라도 있으면 종료 코드 1로 끝납니다. warn은 0
 		"cli.bridge.unrejected":         "기각을 되돌렸습니다: %s %s",
 		"cli.bridge.no_pairs":           "후보가 없습니다",
 		"cli.bridge.stats":              "  context 문서 %d개, 링크로 이어진 쌍 %d, 기각된 쌍 %d, min %.2f 미달 %d",
-		"cli.bridge.header":             "유사도가 높은데 링크가 없는 문서 쌍 (min %.2f)",
+		"cli.bridge.stats_axes":         "  context 문서 %d개, 링크로 이어진 쌍 %d, 기각된 쌍 %d, 하한 미달 %d",
+		"cli.bridge.header":             "유사도가 높은데 링크가 없는 문서 쌍 (단어 min %.2f)",
+		"cli.bridge.header_axes":        "유사도가 높은데 링크가 없는 문서 쌍 (단어 min %.2f, 의미 min %.2f)",
 		"cli.bridge.reject_hint":        "     기각하려면: engram bridge --reject %s %s",
+
+		// config float 임계값. bridge 축 하한 검사가 쓴다.
+		"core.config.not_float":    "%s 값이 실수가 아님: %v",
+		"core.config.cosine_range": "%s 값이 코사인 하한 범위 밖임: %v (0 이상 1 이하)",
 
 		// digest
 		"cli.digest.short": "기간 안의 위키 변화를 집계합니다",
@@ -357,8 +376,16 @@ pin the reference time with --now.
 
 		// bridge
 		"cli.bridge.short": "Find similar document pairs without links",
-		"cli.bridge.long": `Compute cosine similarity between context documents from the TF vectors of the
-search index and show pairs with high similarity but no link.
+		"cli.bridge.long": `Score context document pairs on two axes and show similar pairs without a
+link. The word axis computes cosine similarity on the TF vectors of the search
+index; the semantic axis scores embedding vectors. The two axes have separate
+lower bounds, and the result is the union of pairs passing either axis, labeled
+with the axis that caught each pair.
+
+Without an embedding model the command warns and runs the word axis only.
+Embeddings are computed only when this command needs them and cached in
+.engram/vectors.json. The first run on a large wiki takes a while and prints
+progress.
 
 Pairs rejected from the candidates are recorded permanently in
 engram-state.yaml and never come back. Reject with --reject and undo with
@@ -374,11 +401,18 @@ A stale index warns and proceeds as is.`,
 		"cli.bridge.no_index":           "no search index. Build one with engram reindex, then run again",
 		"cli.bridge.walk_fail":          "cannot walk the wiki",
 		"cli.bridge.warn_stale":         "warning: the index is stale. Proceeding with the stale index. Run engram reindex to refresh",
-		"cli.bridge.flag_min":           "cosine similarity lower bound",
+		"cli.bridge.warn_no_model":      "warning: no embedding model. Running the word axis only. The semantic axis turns on once a model is present",
+		"cli.bridge.embed_progress":     "computing embeddings %d/%d",
+		"cli.bridge.embed_fail":         "cannot compute embeddings",
+		"cli.bridge.flag_min":           "lower bound of the word-axis cosine similarity",
+		"cli.bridge.flag_min_embed":     "lower bound of the semantic-axis embedding similarity",
 		"cli.bridge.flag_limit":         "pair limit",
 		"cli.bridge.flag_reject":        "two slugs to reject (e.g. --reject a b)",
 		"cli.bridge.flag_unreject":      "two slugs to unreject",
 		"cli.bridge.flag_wiki":          "target wiki path",
+		"cli.bridge.axis_term":          "word",
+		"cli.bridge.axis_embed":         "semantic",
+		"cli.bridge.axis_both":          "word+semantic",
 		"cli.bridge.reject_missing":     "cannot reject: slug not in the wiki: %s\nCheck the slug. Use engram search to find documents",
 		"cli.bridge.already_rejected":   "Pair already rejected: %s %s",
 		"cli.bridge.reject_save_fail":   "cannot save the rejection",
@@ -388,8 +422,14 @@ A stale index warns and proceeds as is.`,
 		"cli.bridge.unrejected":         "Unrejected: %s %s",
 		"cli.bridge.no_pairs":           "No candidates",
 		"cli.bridge.stats":              "  context documents: %d, linked pairs: %d, rejected pairs: %d, below min %.2f: %d",
-		"cli.bridge.header":             "Similar document pairs without links (min %.2f)",
+		"cli.bridge.stats_axes":         "  context documents: %d, linked pairs: %d, rejected pairs: %d, below the bounds: %d",
+		"cli.bridge.header":             "Similar document pairs without links (word min %.2f)",
+		"cli.bridge.header_axes":        "Similar document pairs without links (word min %.2f, semantic min %.2f)",
 		"cli.bridge.reject_hint":        "     To reject: engram bridge --reject %s %s",
+
+		// config float 임계값. bridge 축 하한 검사가 쓴다.
+		"core.config.not_float":    "%s value is not a number: %v",
+		"core.config.cosine_range": "%s value is outside the cosine bound range: %v (0 to 1)",
 
 		// digest
 		"cli.digest.short": "Summarize wiki changes over a period",
