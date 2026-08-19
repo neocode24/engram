@@ -182,10 +182,36 @@ func buildDemo(t *testing.T, dir string) {
 		r.run("update", "--wiki", dir, "--body-from", f, rel)
 	}
 
+	// 8. 실습 재료에서 승급한 문서들. examples/materials 의 원재료
+	// 하나가 문서 하나가 된다. 재발견은 문서가 적으면 보여 줄 것이
+	// 없으므로 스무 개대를 만든다.
+	for _, d := range materialDocs {
+		if d.created != "" {
+			r.run("source", "--wiki", dir, "--title", d.title, "--slug", d.slug,
+				"--created", d.created, "--ref", "https://example.com/"+d.slug,
+				"외부 자료의 원문 발췌. 이 계층은 고치지 않는다.")
+			r.run("promote", "--wiki", dir, "--type", d.kind,
+				"--related", "index", "--related", "promotion-pipeline",
+				"sources/"+d.created+"-"+d.slug+".md")
+			continue
+		}
+		r.run("capture", "--wiki", dir, "--title", d.title, "--slug", d.slug,
+			"승급 전 원문. 4단계에서 정리한다.")
+		r.run("promote", "--wiki", dir, "--type", d.kind,
+			"--related", "index", "--related", "promotion-pipeline",
+			"inbox/"+capturedDate+"-"+d.slug+".md")
+	}
+
 	fill("index.md", docBody(t, "index.md"))
 	fill("context/promotion-pipeline.md", docBody(t, "promotion-pipeline.md"))
 	fill("context/wikilink-graph.md", docBody(t, "wikilink-graph.md"))
 	fill("context/km-primer.md", docBody(t, "km-primer.md"))
+	// 본문은 전부 승급이 끝난 뒤에 채운다. 서로를 가리키는 링크가 있어
+	// 승급 시점에는 상대가 아직 없을 수 있기 때문이다. 게이트는 승급할
+	// 때 --related 로 통과시키고 본문의 관계는 나중에 넣는다.
+	for _, d := range materialDocs {
+		fill("context/"+d.slug+".md", docBody(t, d.slug+".md"))
+	}
 
 	// 색인은 만들지 않는다. .engram/ 은 캐시이고 gitignore 대상이라
 	// 커밋되지 않으므로 여기서 만들어도 사라진다. 데모를 받은 사람이
@@ -358,4 +384,48 @@ func docBody(t *testing.T, name string) string {
 		t.Fatalf("본문을 읽을 수 없음: %v", err)
 	}
 	return string(b)
+}
+
+// capturedDate는 capture 가 파일명에 붙이는 날짜다. fixedNow 의 날짜부다.
+const capturedDate = "2026-03-02"
+
+// materialDoc는 examples/materials 의 재료 하나에서 승급한 데모 문서다.
+//
+// created 가 비어 있지 않으면 남의 글이라 source 로 들어와 파생을 만든다.
+// 원본이 sources 에 남는다. 비어 있으면 우리 것이라 capture 로 들어와
+// 그대로 옮겨진다. 이 갈림이 3단계와 4단계가 가르치는 것이다.
+type materialDoc struct {
+	slug    string
+	title   string
+	kind    string
+	created string
+}
+
+// materialDocs는 데모 위키가 재료에서 만들어 내는 문서 전부다. 본문은
+// harness/examples/bodies/<slug>.md 에 있다.
+var materialDocs = []materialDoc{
+	// 사고와 운영
+	{slug: "response-latency-incident", title: "새벽 응답 지연 사고", kind: "incident"},
+	{slug: "batch-db-contention", title: "배치와 조회가 같은 저장소를 볼 때", kind: "concept"},
+	{slug: "deploy-rollback-incident", title: "배포 뒤 오류율 상승과 롤백", kind: "incident"},
+	{slug: "disk-exhaustion-incident", title: "로그가 디스크를 채운 밤", kind: "incident"},
+	{slug: "cert-expiry-incident", title: "인증서 만료로 내부 호출이 끊긴 일", kind: "incident"},
+	{slug: "oncall-handoff", title: "온콜 인수인계에 형식이 없다", kind: "procedure"},
+	{slug: "incident-first-response", title: "장애 첫 십오 분에 할 것", kind: "procedure", created: "2026-05-02"},
+	// 설계와 도구
+	{slug: "cache-invalidation", title: "캐시 무효화를 설계하는 네 가지 방법", kind: "concept", created: "2026-02-18"},
+	{slug: "read-replica-offload", title: "조회를 읽기 전용 복제본으로 돌리기", kind: "decision"},
+	{slug: "async-queue-review", title: "동기 호출을 비동기로 뺄 때 걸리는 것", kind: "decision"},
+	{slug: "api-version-policy", title: "외부 API 를 바꿀 때", kind: "decision"},
+	{slug: "retention-policy", title: "관측 데이터를 얼마나 오래 들고 있을 것인가", kind: "concept", created: "2026-06-01"},
+	{slug: "log-search-basics", title: "로그를 검색하는 요령", kind: "procedure", created: "2026-04-05"},
+	{slug: "dashboard-cleanup", title: "대시보드가 열몇 개인데 아무도 다 안 본다", kind: "decision"},
+	// 기획과 팀
+	{slug: "user-reported-slowness", title: "사용자가 말한 느림", kind: "concept"},
+	{slug: "domain-vocabulary", title: "같은 것을 다르게 부르고 있다", kind: "concept"},
+	{slug: "priority-criteria", title: "무엇을 먼저 할지 정하는 기준이 없다", kind: "decision"},
+	{slug: "success-criteria", title: "무엇을 보고 성공이라 할 것인가", kind: "decision"},
+	{slug: "actual-work-flow", title: "실제 업무는 화면 하나로 끝나지 않는다", kind: "concept"},
+	{slug: "review-bottleneck", title: "리뷰가 두 사람에게 쏠려 있다", kind: "concept"},
+	{slug: "scope-negotiation", title: "범위를 줄일 때 무엇을 먼저 빼는가", kind: "decision"},
 }
