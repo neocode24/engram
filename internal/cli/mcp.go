@@ -11,6 +11,7 @@ import (
 	"github.com/neocode24/engram/internal/bridge"
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/digest"
+	"github.com/neocode24/engram/internal/embed"
 	"github.com/neocode24/engram/internal/graph"
 	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/index"
@@ -75,8 +76,9 @@ type mcpLimitArgs struct {
 
 // mcpBridgeArgs는 bridge 도구의 입력이다.
 type mcpBridgeArgs struct {
-	Min   float64 `json:"min,omitempty" jsonschema:"코사인 유사도 하한. 생략하면 기본값"`
-	Limit int     `json:"limit,omitempty" jsonschema:"낼 쌍 수 상한. 생략하면 기본값"`
+	Min      float64 `json:"min,omitempty" jsonschema:"단어 축 코사인 하한. 생략하면 기본값"`
+	MinEmbed float64 `json:"minEmbed,omitempty" jsonschema:"임베딩 축 코사인 하한. 두 축은 눈금이 다르므로 값을 공유하지 않는다. 생략하면 기본값"`
+	Limit    int     `json:"limit,omitempty" jsonschema:"낼 쌍 수 상한. 생략하면 기본값"`
 }
 
 // mcpDigestArgs는 digest 도구의 입력이다.
@@ -238,7 +240,11 @@ func registerMCPTools(s *mcp.Server, root string) {
 		}
 		min := in.Min
 		if min <= 0 {
-			min = 0.30
+			min = cfg.Thresholds.BridgeWordMin
+		}
+		minEmbed := in.MinEmbed
+		if minEmbed <= 0 {
+			minEmbed = cfg.Thresholds.BridgeEmbedMin
 		}
 		limit := in.Limit
 		if limit <= 0 {
@@ -257,8 +263,15 @@ func registerMCPTools(s *mcp.Server, root string) {
 		if err != nil {
 			return nil, nil, err
 		}
-		res := bridge.Run(ix, graph.Build(walked), st, bridge.Options{Min: min, Limit: limit})
-		out := bridgeResponse{Min: min, MinEmbed: 0, IndexStale: stale, Pairs: make([]bridgePairJSON, 0, len(res.Pairs))}
+		// 벡터는 캐시에 있는 것만 쓴다. 계산은 문서당 12.6초라 도구 호출
+		// 안에서 할 수 없다. 캐시를 채우는 것은 bridge 커맨드의 몫이다.
+		// 축이 돌았는지는 embedAxis 로 밝힌다. 조용히 단어 축만 도는
+		// 것이 CLI 와 다른 판정을 내는 자리가 되면 안 된다.
+		vectors := embed.Cached(root, contextComputeDocs(ix, walked))
+		res := bridge.Run(ix, graph.Build(walked), st,
+			bridge.Options{Min: min, EmbedMin: minEmbed, Limit: limit, Vectors: vectors})
+		out := bridgeResponse{Min: min, MinEmbed: minEmbed, EmbedAxis: len(vectors) > 0,
+			IndexStale: stale, Pairs: make([]bridgePairJSON, 0, len(res.Pairs))}
 		for _, p := range res.Pairs {
 			out.Pairs = append(out.Pairs, bridgePairJSON{A: p.A, B: p.B, Score: round2(p.Score)})
 		}

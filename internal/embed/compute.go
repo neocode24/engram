@@ -44,6 +44,24 @@ func Compute(wikiRoot string, docs []ComputeDoc, progress func(done, total int))
 	return out, SaveCache(wikiRoot, cache, keepKeys(docs))
 }
 
+// Cached는 캐시에 이미 있는 벡터만 낸다. 모델을 열지 않고 없는 것을
+// 계산하지도 않으며 캐시를 다시 쓰지도 않는다.
+//
+// 응답이 빨라야 하는 자리에서 쓴다. 임베딩은 문서당 12.6초라 도구
+// 호출 안에서 계산할 수 없다. 캐시를 채우는 것은 bridge 커맨드의 몫이고
+// 여기서는 그 결과를 읽기만 한다. 캐시가 비어 있으면 빈 맵을 낸다.
+// 호출자는 반환된 맵이 문서 전부를 덮지 않을 수 있다는 것을 전제한다.
+func Cached(wikiRoot string, docs []ComputeDoc) map[string][]float32 {
+	cache := LoadCache(wikiRoot)
+	out := make(map[string][]float32, len(docs))
+	for _, d := range docs {
+		if v, ok := cache[Key(d.Title+"\n"+d.Body)]; ok {
+			out[d.Path] = v
+		}
+	}
+	return out
+}
+
 // compute는 캐시를 채워 문서별 벡터를 낸다. enc 가 nil 이면 필요해진
 // 시점에 Open 한다. 캐시에 없는 것이 없으면 enc 를 한 번도 열지 않는다.
 // 계산된 벡터는 cache 에도 넣으므로 호출자는 계산 후 cache 를 저장하면 된다.
@@ -51,6 +69,10 @@ func compute(cache map[string][]float32, docs []ComputeDoc, enc Encoder, progres
 	out := make(map[string][]float32, len(docs))
 	var missing []ComputeDoc
 	seen := map[string]bool{}
+	// 내용이 같은 문서가 여럿이면 인코딩은 한 번만 한다. 다만 경로는
+	// 저마다 결과를 받아야 한다. 뒤 문서를 건너뛰기만 하면 그 문서가
+	// 임베딩 축에서 통째로 빠진다.
+	dupes := map[string][]string{}
 	for _, d := range docs {
 		key := Key(d.Title + "\n" + d.Body)
 		if v, ok := cache[key]; ok {
@@ -58,11 +80,23 @@ func compute(cache map[string][]float32, docs []ComputeDoc, enc Encoder, progres
 			continue
 		}
 		if seen[key] {
+			dupes[key] = append(dupes[key], d.Path)
 			continue
 		}
 		seen[key] = true
 		missing = append(missing, d)
 	}
+	defer func() {
+		for key, paths := range dupes {
+			v, ok := cache[key]
+			if !ok {
+				continue
+			}
+			for _, p := range paths {
+				out[p] = v
+			}
+		}
+	}()
 	if len(missing) == 0 {
 		return out, nil
 	}

@@ -37,8 +37,12 @@ type bridgePairJSON struct {
 // bridgeResponse는 후보 탐색의 --json 출력이다. Min 은 단어 축 하한,
 // MinEmbed 는 임베딩 축 하한이다.
 type bridgeResponse struct {
-	Min        float64          `json:"min"`
-	MinEmbed   float64          `json:"minEmbed"`
+	Min      float64 `json:"min"`
+	MinEmbed float64 `json:"minEmbed"`
+	// EmbedAxis 는 임베딩 축이 실제로 돌았는지다. 거짓이면 이 결과는
+	// 단어 축만으로 나온 것이다. 모델이 없거나 벡터 캐시가 비어 있을
+	// 때 그렇게 된다. 소비자가 결과의 성격을 알아야 하므로 밝힌다.
+	EmbedAxis  bool             `json:"embedAxis"`
 	IndexStale bool             `json:"indexStale"`
 	Pairs      []bridgePairJSON `json:"pairs"`
 }
@@ -151,7 +155,7 @@ func newBridgeCmd() *cobra.Command {
 			opts := bridge.Options{Min: wordMin, EmbedMin: embedMin, Limit: limit, Vectors: vectors}
 			res := bridge.Run(ix, graph.Build(walked), st, opts)
 			if jsonOutput(cmd) {
-				out := bridgeResponse{Min: wordMin, MinEmbed: embedMin, IndexStale: stale, Pairs: make([]bridgePairJSON, 0, len(res.Pairs))}
+				out := bridgeResponse{Min: wordMin, MinEmbed: embedMin, EmbedAxis: len(vectors) > 0, IndexStale: stale, Pairs: make([]bridgePairJSON, 0, len(res.Pairs))}
 				for _, p := range res.Pairs {
 					out.Pairs = append(out.Pairs, bridgePairJSON{A: p.A, B: p.B, Score: round2(p.Score), Axes: p.Axes})
 				}
@@ -176,19 +180,7 @@ func newBridgeCmd() *cobra.Command {
 // 모델이 없으면 경고 한 줄을 내고 nil 을 반환해 단어 축만으로 계속하게
 // 한다. 시맨틱의 부재는 결손이 아니라 성능 저하다(ADR 0007, 0074).
 func embedVectors(cmd *cobra.Command, root string, ix *index.Index, walked []walk.Doc) (map[string][]float32, error) {
-	bodies := map[string]string{}
-	for _, wd := range walked {
-		if wd.Err == nil {
-			bodies[wd.Rel] = wd.Parsed.Body
-		}
-	}
-	docs := make([]embed.ComputeDoc, 0, len(ix.Docs))
-	for _, e := range ix.Docs {
-		if seg, _, _ := strings.Cut(e.Path, "/"); seg != "context" {
-			continue
-		}
-		docs = append(docs, embed.ComputeDoc{Path: e.Path, Title: e.Title, Body: bodies[e.Path]})
-	}
+	docs := contextComputeDocs(ix, walked)
 	if len(docs) == 0 {
 		return nil, nil
 	}
@@ -327,4 +319,24 @@ func printBridge(w io.Writer, res bridge.Result, wordMin, embedMin float64, embe
 		fmt.Fprintf(w, "%3d  %.2f  %s  %s  %s\n", i+1, round2(p.Score), axisLabel(p.Axes), p.A, p.B)
 		fmt.Fprintln(w, i18n.T("cli.bridge.reject_hint", p.A, p.B))
 	}
+}
+
+// contextComputeDocs는 색인에서 context 문서만 뽑아 임베딩 계산 대상
+// 목록으로 만든다. bridge 커맨드와 MCP 도구가 같은 목록을 써야 두
+// 경로의 판정이 갈라지지 않는다.
+func contextComputeDocs(ix *index.Index, walked []walk.Doc) []embed.ComputeDoc {
+	bodies := map[string]string{}
+	for _, wd := range walked {
+		if wd.Err == nil {
+			bodies[wd.Rel] = wd.Parsed.Body
+		}
+	}
+	docs := make([]embed.ComputeDoc, 0, len(ix.Docs))
+	for _, e := range ix.Docs {
+		if seg, _, _ := strings.Cut(e.Path, "/"); seg != "context" {
+			continue
+		}
+		docs = append(docs, embed.ComputeDoc{Path: e.Path, Title: e.Title, Body: bodies[e.Path]})
+	}
+	return docs
 }

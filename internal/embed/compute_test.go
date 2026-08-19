@@ -147,3 +147,74 @@ func TestComputePersistsToCacheFile(t *testing.T) {
 		t.Errorf("캐시 파일: %d건", len(got))
 	}
 }
+
+// TestCachedReadsOnly는 Cached 가 캐시에 있는 것만 내고 모델을 열지
+// 않는지 본다. MCP 처럼 응답이 빨라야 하는 자리가 이 경로를 쓴다.
+func TestCachedReadsOnly(t *testing.T) {
+	t.Setenv(EnvModelDir, t.TempDir()) // 모델 없음. 열면 실패한다
+	root := t.TempDir()
+	docs := []ComputeDoc{
+		{Path: "context/a.md", Title: "가", Body: "본문 가"},
+		{Path: "context/b.md", Title: "나", Body: "본문 나"},
+	}
+	// 캐시가 없으면 빈 맵이고 죽지 않는다.
+	if got := Cached(root, docs); len(got) != 0 {
+		t.Fatalf("캐시가 없는데 %d개를 냈습니다", len(got))
+	}
+	// 하나만 캐시에 넣어 둔다.
+	cache := map[string][]float32{Key("가\n본문 가"): {1, 0, 0}}
+	if err := SaveCache(root, cache, map[string]bool{Key("가\n본문 가"): true}); err != nil {
+		t.Fatal(err)
+	}
+	got := Cached(root, docs)
+	if len(got) != 1 {
+		t.Fatalf("캐시에 있는 하나만 나와야 하는데 %d개입니다", len(got))
+	}
+	if _, ok := got["context/a.md"]; !ok {
+		t.Error("캐시에 있는 문서가 빠졌습니다")
+	}
+	if _, ok := got["context/b.md"]; ok {
+		t.Error("캐시에 없는 문서를 냈습니다. 계산했다는 뜻입니다")
+	}
+}
+
+// TestComputeGivesDuplicatesTheirVector는 내용이 같은 문서가 여럿일 때
+// 두 번째 이후 문서도 벡터를 받는지 본다. 인코딩은 한 번만 하되 경로는
+// 저마다 결과를 받아야 한다. 건너뛰기만 하면 그 문서가 임베딩 축에서
+// 통째로 빠진다.
+func TestComputeGivesDuplicatesTheirVector(t *testing.T) {
+	docs := []ComputeDoc{
+		{Path: "context/a.md", Title: "같은 제목", Body: "같은 본문"},
+		{Path: "context/b.md", Title: "같은 제목", Body: "같은 본문"},
+		{Path: "context/c.md", Title: "다른 제목", Body: "다른 본문"},
+	}
+	enc := &countingEncoder{}
+	cache := map[string][]float32{}
+	out, err := compute(cache, docs, enc, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, d := range docs {
+		if _, ok := out[d.Path]; !ok {
+			t.Errorf("%s 가 벡터를 못 받았습니다", d.Path)
+		}
+	}
+	// 같은 내용은 한 번만 인코딩한다.
+	if enc.texts != 2 {
+		t.Errorf("인코딩 대상이 2건이어야 하는데 %d건입니다", enc.texts)
+	}
+}
+
+// countingEncoder는 인코딩 호출 수를 세는 시험용 인코더다.
+type countingEncoder struct{ texts int }
+
+func (e *countingEncoder) Encode(_ context.Context, texts []string) ([][]float32, error) {
+	e.texts += len(texts)
+	out := make([][]float32, len(texts))
+	for i := range texts {
+		out[i] = []float32{float32(i + 1), 0, 0}
+	}
+	return out, nil
+}
+
+func (e *countingEncoder) Close() error { return nil }
