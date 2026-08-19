@@ -127,6 +127,7 @@
 | `stale_days` | 재발견 판정 | 30 |
 | `max_lines` | 문서 길이 상한. 경고 | 1000 |
 | `broad_topic_pct` | 광범위 주제 비율 상한. 경고 | 25 |
+| `deprecated_fields` | 폐기한 프론트매터 키. 문서에 있으면 lint가 error | 빈 목록 |
 | `[embedding]` | 시맨틱 검색 선택 층 | 모델, 차원, 청크 크기 |
 
 `topics`는 열려 있고 `forms`는 닫혀 있다. lint는 `forms` 위반을 오류로, `topics` 신규 값을 경고로 다룬다. 이 구분이 없으면 taxonomy가 몇 달 만에 관리 불능이 된다.

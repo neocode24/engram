@@ -22,7 +22,7 @@
 | `source` | `sources/`에 원본을 확정한다. `updated`를 쓰지 않는다 | [0009](decisions/0009-schema-presets-and-thresholds.md) |
 | `promote` | inbox는 이동, sources는 파생 | [0021](decisions/0021-gate-deferral-when-targets-are-scarce.md), [0022](decisions/0022-promote-moves-inbox-derives-sources.md), [0023](decisions/0023-gate-targets-exclude-inbox.md) |
 | `new` | 처음부터 검수된 지식으로 `context/`에 쓴다 | 상동 |
-| `lint` | 규칙 17종. 스키마, 링크 무결성, 위치와 단계의 일치 | [0019](decisions/0019-index-documents-outside-the-gate.md) |
+| `lint` | 규칙 19종. 스키마, 링크 무결성, 위치와 단계의 일치, 색인 자격, 폐기 필드. 기본 범위는 inbox 밖 | [0019](decisions/0019-index-documents-outside-the-gate.md), [0070](decisions/0070-lint-skips-inbox-by-default.md), [0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md) |
 | `status` | 현황과 밀린 것, 다음 행동 제안 | |
 | `doctor` | 환경과 위키 점검 12종. 항목마다 복구 조치 | |
 | `resurface` | 오래 안 본 문서를 제시 이력 기준으로 꺼낸다 | [0028](decisions/0028-rediscovery-state-and-boundaries.md) |
@@ -149,7 +149,7 @@ upstream 명세 동기화 과제와 coordinator/worker 실행 체제는 `private
 ## 문서 부채
 
 - **문체 정리.** AGENTS.md가 em dash와 화살표를 금지하는데 초기 문서 다수가 위반 상태다. 린터를 붙여 한 번에 정리한다. 사용자 대면 문자열의 경어체 전환(ADR 0027)은 끝났으나 같은 린터가 이 규칙도 지켜야 재발하지 않는다.
-- ~~**규칙 명세와 구현의 대응표.**~~ `docs/spec-map.md`로 만들었다. 명세 7종, lint 규칙 17종, 설정 속성 14종의 대응이 전부 들어 있다.
+- ~~**규칙 명세와 구현의 대응표.**~~ `docs/spec-map.md`로 만들었다. 명세 7종, lint 규칙 19종, 설정 속성 14종의 대응이 전부 들어 있다.
 - ~~**`architecture.md`가 반출 경로를 담고 있지 않다.**~~ 11절을 더했다. `mcp`는 로컬이라 노출 판정을 거치지 않고 `serve`와 `export`만 거친다는 차이를 도식에 담았다.
 - **`curriculum.md` 재작성.** 여정 24개와 마일스톤이 확정되었으므로 강의 세션을 다시 매핑해야 한다. 현재 내용은 여정 5개 시절 기준이다.
 - ~~**`docs/parity.md`**~~ lint 축 측정을 마쳤다. 자동 생성이 아니라 로컬 실행 결과를 사람이 옮겨 적는다(ADR 0029).

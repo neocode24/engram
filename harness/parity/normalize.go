@@ -100,9 +100,10 @@ func ParseUpstreamOutput(out string) []Violation {
 // 이름을 꺼내는 정규식이다. 규칙 ID 혼자는 필드 구분을 못 하므로 메시지에서
 // 꺼낸다. 메시지 형식은 harness/golden 스냅샷이 지키고 있다.
 var (
-	engramMissingField = regexp.MustCompile(`필수 필드 ([a-z_]+)가 없습니다`)
-	engramAllowedValue = regexp.MustCompile(`^([a-z_]+) 값이 허용값 밖입니다`)
-	engramAxisOff      = regexp.MustCompile(`필드가 문서에 있습니다: ([a-z_]+)`)
+	engramMissingField  = regexp.MustCompile(`필수 필드 ([a-z_]+)가 없습니다`)
+	engramAllowedValue  = regexp.MustCompile(`^([a-z_]+) 값이 허용값 밖입니다`)
+	engramAxisOff       = regexp.MustCompile(`필드가 문서에 있습니다: ([a-z_]+)`)
+	engramDeprecatedFld = regexp.MustCompile(`폐기한 필드 ([a-z_]+)가 문서에 있습니다`)
 )
 
 // NormalizeEngram은 engram lint 위반 하나를 정규화한다. rule 은 lint 의
@@ -126,6 +127,12 @@ func NormalizeEngram(rule, message string) string {
 	case "schema.axis-off":
 		if m := engramAxisOff.FindStringSubmatch(message); m != nil {
 			return "schema.axis-off:" + m[1]
+		}
+	case "schema.indexable-stage":
+		return "indexable.policy"
+	case "schema.deprecated-field":
+		if m := engramDeprecatedFld.FindStringSubmatch(message); m != nil {
+			return "schema.retired-field:" + m[1]
 		}
 	}
 	return "unmapped:" + rule

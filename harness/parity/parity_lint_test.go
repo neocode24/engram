@@ -84,7 +84,9 @@ func TestLintParity(t *testing.T) {
 	if err != nil {
 		t.Fatalf("픽스처 사본의 설정을 읽을 수 없음: %v", err)
 	}
-	res, err := lint.Run(wiki, cfg)
+	// engram lint 는 기본 범위에서 inbox 를 뺀다(ADR 0070). upstream 을
+	// --include-inbox 로 돌리므로 engram 쪽도 같은 범위로 맞춘다.
+	res, err := lint.Run(wiki, cfg, lint.Options{IncludeInbox: true})
 	if err != nil {
 		t.Fatalf("engram lint 실패: %v", err)
 	}

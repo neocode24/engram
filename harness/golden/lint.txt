@@ -31,29 +31,10 @@ context/sqlite-foreign-keys.md
   [warn] 16 taxonomy.topics
     topics 값이 설정에 정의되지 않았습니다: "sqlite" (topics는 개방 집합입니다)
     고치는 법: engram.yaml의 topics 목록에 "sqlite"를 추가하세요
-inbox/misplaced-context.md
-  [error] 3 location.stage-agreement
-    문서가 inbox 디렉토리에 있지만 artifact_stage가 "context"입니다
-    고치는 법: 문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 inbox로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요
 inbox/orphan-note.md
   [warn] 1 graph.orphan
     들어오는 관계와 나가는 관계가 모두 없습니다
     고치는 법: 다른 문서의 related나 본문에서 [[orphan-note]]로 연결하거나 관계 필드로 잇으세요
-inbox/unclosed-frontmatter.md
-  [error] 1 frontmatter.unclosed
-    프론트매터가 닫는 --- 구분자 없이 끝났습니다
-    고치는 법: 프론트매터 끝에 --- 줄을 추가하세요
-inbox/voice-memo-raw.md
-  [error] 1 frontmatter.missing
-    프론트매터가 없습니다
-    고치는 법: 문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫으세요
-inbox/wrong-stage.md
-  [warn] 3 location.stage-agreement
-    문서가 inbox 디렉토리에 있지만 artifact_stage가 "draft"입니다
-    고치는 법: 문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 inbox로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요
-  [error] 3 schema.allowed-value
-    artifact_stage 값이 허용값 밖입니다: "draft" (허용값: inbox, source, context, archive)
-    고치는 법: artifact_stage 값을 허용값 중 하나로 바꿉니다
 위키 진단:
   [warn] wiki.broad-topic 주제 "documentation"
     사용 비율이 28%(4/14 문서)로 broad_topic_pct 25를 넘습니다
@@ -63,4 +44,4 @@ inbox/wrong-stage.md
     사용 비율이 28%(4/14 문서)로 broad_topic_pct 25를 넘습니다
     해당 문서: context/go-table-driven-tests.md, context/testing-pyramid.md, inbox/misplaced-context.md, sources/tech-talk-summary.md
     고치는 법: 주제를 더 세분하세요. 기준은 engram.yaml의 broad_topic_pct로 조정하세요
-검사한 파일 16개, error 6, warn 8, reject 3
+검사한 파일 10개, inbox 문서 6개를 건너뛰었습니다(--include-inbox로 검사합니다), error 2, warn 7, reject 3

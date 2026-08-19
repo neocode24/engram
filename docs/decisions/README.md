@@ -84,6 +84,8 @@
 | [0067](0067-stale-days-default-is-thirty.md) | 노후 기준일 기본값을 30일로 한다 | 2026-08-19 | accepted |
 | [0068](0068-model-command-manages-embeddings-only.md) | model 커맨드는 임베딩만 관리한다 | 2026-08-19 | accepted |
 | [0069](0069-secrets-and-sensitivity-block-promotion-and-export.md) | 시크릿과 민감도가 승급과 반출을 막는다 | 2026-08-19 | accepted |
+| [0070](0070-lint-skips-inbox-by-default.md) | lint는 기본으로 inbox를 검사하지 않는다 | 2026-08-19 | accepted |
+| [0071](0071-lint-checks-indexable-stage-and-deprecated-fields.md) | lint가 색인 자격과 폐기 필드를 검사한다 | 2026-08-19 | accepted |
 
 ## 공개 범위 밖
 
@@ -128,6 +130,7 @@
 | 0009 | 노후 기준일 기본값은 90일이다 | [0067](0067-stale-days-default-is-thirty.md) 30일로 바꾼다. 실측에서 90 이면 후보가 0 건이다 |
 | 0007 | 시맨틱은 model pull 로 받는 선택적 사이드카다 | [0068](0068-model-command-manages-embeddings-only.md) 관리 대상을 임베딩 하나로 못 박는다 |
 | 0063 | 노출 판정이 반출에서 internal 을 뺀다 | [0069](0069-secrets-and-sensitivity-block-promotion-and-export.md) 승급과 반출에서 시크릿과 높은 민감도를 막는다 |
+| 0009 | 필수 필드 검사는 단계별로 모든 문서에 적용된다 | [0070](0070-lint-skips-inbox-by-default.md) inbox 는 기본 범위 밖이고 --include-inbox 로 연다 |
 
 ## 근거만 갱신된 경우
 

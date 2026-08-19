@@ -364,7 +364,9 @@ func TestRequiredFieldsMatchLint(t *testing.T) {
 			})
 			cfg := load(t, root)
 			run(t, root, cfg, Options{Apply: true})
-			res, err := lint.Run(root, cfg)
+			// 필수 필드 대조는 문서 단위 판정 전체를 대상으로 한다. lint 의
+			// 기본 범위는 inbox 를 빼므로(ADR 0070) 여기서는 범위를 연다.
+			res, err := lint.Run(root, cfg, lint.Options{IncludeInbox: true})
 			if err != nil {
 				t.Fatal(err)
 			}

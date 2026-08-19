@@ -115,6 +115,10 @@ var (
 		"lint.rule.schema_allowed_value")
 	ruleSchemaAxisOff = newRule("schema.axis-off", "lint.severity.error",
 		"lint.rule.schema_axis_off")
+	ruleSchemaIndexableStage = newRule("schema.indexable-stage", "lint.severity.error_or_warn",
+		"lint.rule.schema_indexable_stage")
+	ruleSchemaDeprecatedField = newRule("schema.deprecated-field", "lint.severity.error",
+		"lint.rule.schema_deprecated_field")
 	ruleSecuritySecret = newRule("security.secret", "lint.severity.error",
 		"lint.rule.security_secret")
 	ruleLocationStageAgreement = newRule("location.stage-agreement", "lint.severity.error_or_warn",
@@ -154,6 +158,9 @@ type Summary struct {
 	Error  int `json:"error"`
 	Warn   int `json:"warn"`
 	Reject int `json:"reject"`
+	// SkippedInbox는 기본 범위에서 판정에서 뺀 inbox 문서 수다.
+	// IncludeInbox 를 줬으면 0 이다.
+	SkippedInbox int `json:"skippedInbox"`
 }
 
 // Result는 lint 실행 결과다.
@@ -196,11 +203,33 @@ type scannedDoc struct {
 // updated 필드를 쓰지 않는다. ADR 0009.
 const sourcesDirName = "sources"
 
+// Options는 lint 의 판정 범위다. 기본 범위는 inbox 디렉토리 문서의
+// 스키마 판정을 뺀 나머지다(ADR 0070). IncludeInbox 를 주면 inbox 문서의
+// 스키마 판정을 함께 한다. 순회와 링크 그래프, 게이트의 링크 대상 집계는
+// 어느 쪽이든 inbox 를 그대로 담는다.
+type Options struct {
+	IncludeInbox bool
+}
+
+// inInboxDir는 문서가 inbox 단계 디렉토리 아래 있는지를 반환한다.
+// 판정 범위를 나누는 기준은 운영의 진실원인 위치다(ADR 0040).
+func inInboxDir(rel string, cfg config.Config) bool {
+	dir, err := wiki.DirFor(cfg, wiki.StageInbox)
+	if err != nil {
+		return false
+	}
+	return rel == dir || strings.HasPrefix(rel, dir+"/")
+}
+
 // Run은 위키 루트를 순회해 위반 목록을 반환한다.
 // 순회와 파싱은 internal/walk 가 담당한다. 순회는 경로 기준 정렬,
 // 파일 안은 줄 번호와 규칙 ID 기준 정렬이므로 같은 위키에 대한 결과는
 // 항상 바이트까지 같다.
-func Run(wikiRoot string, cfg config.Config) (Result, error) {
+func Run(wikiRoot string, cfg config.Config, opts ...Options) (Result, error) {
+	var o Options
+	if len(opts) > 0 {
+		o = opts[0]
+	}
 	walked, err := walk.Files(wikiRoot, cfg)
 	if err != nil {
 		return Result{}, err
@@ -208,21 +237,32 @@ func Run(wikiRoot string, cfg config.Config) (Result, error) {
 	var docs []scannedDoc
 	var violations []Violation
 	for _, w := range walked {
+		// 기본 범위에서 inbox 문서는 문서 단위 판정에서 뺀다. capture 를
+		// 거치지 않은 유입 문서가 스키마 요구로 거절되면 관문이 두 번이
+		// 되고 사람들은 아예 안 넣는다(ADR 0070). 그래프 판정 대상에서는
+		// 빠지지 않는다.
+		judge := o.IncludeInbox || !inInboxDir(w.Rel, cfg)
 		if w.Err != nil {
-			violations = append(violations, parseViolations(w)...)
+			if judge {
+				violations = append(violations, parseViolations(w)...)
+			}
 			continue
 		}
 		// 프론트매터가 아예 없는 문서는 문서 단위 규칙을 적용할 수 없으므로
 		// 위반만 남기고 그래프 판정 대상에서 빠진다.
 		if !w.Parsed.HasFrontmatter {
-			violations = append(violations, newViolation(SevError, ruleFrontmatterMissing, w.Rel, 1,
-				i18n.T("lint.violation.frontmatter_missing.message"),
-				i18n.T("lint.violation.frontmatter_missing.fix")))
+			if judge {
+				violations = append(violations, newViolation(SevError, ruleFrontmatterMissing, w.Rel, 1,
+					i18n.T("lint.violation.frontmatter_missing.message"),
+					i18n.T("lint.violation.frontmatter_missing.fix")))
+			}
 			continue
 		}
 		sd, vs := scanDoc(w, cfg)
 		docs = append(docs, sd)
-		violations = append(violations, vs...)
+		if judge {
+			violations = append(violations, vs...)
+		}
 	}
 	violations = append(violations, graphRules(docs, walked, cfg)...)
 	sortViolations(violations)
@@ -235,8 +275,15 @@ func Run(wikiRoot string, cfg config.Config) (Result, error) {
 		res.WikiFindings = []WikiFinding{}
 	}
 	// 검사한 파일 수는 파싱에 실패한 문서도 포함한다. 위반은 있지만
-	// 문서로는 세지 못한 파일이 숨지 않게 하기 위해서다.
-	res.Summary.Files = len(walked)
+	// 문서로는 세지 못한 파일이 숨지 않게 하기 위해서다. 기본 범위에서
+	// 뺀 inbox 문서는 검사한 수에서도 빼고 건너뛴 수로 따로 낸다.
+	for _, w := range walked {
+		if o.IncludeInbox || !inInboxDir(w.Rel, cfg) {
+			res.Summary.Files++
+		} else {
+			res.Summary.SkippedInbox++
+		}
+	}
 	for _, v := range res.Violations {
 		switch v.Severity {
 		case SevError:
@@ -296,6 +343,8 @@ func scanDoc(w walk.Doc, cfg config.Config) (scannedDoc, []Violation) {
 	sd.checkAllowedValues(cfg, add)
 	sd.checkStageAgreement(cfg, add)
 	sd.checkAxisOff(cfg, add)
+	sd.checkIndexableStage(cfg, add)
+	sd.checkDeprecatedFields(cfg, add)
 	sd.checkTaxonomy(cfg, add)
 	sd.checkSourcesUpdated(add)
 	sd.checkMaxLines(cfg, add)
@@ -478,6 +527,59 @@ func (s *scannedDoc) checkAxisOff(cfg config.Config, add func(Severity, Rule, in
 			add(SevError, ruleSchemaAxisOff, lineOfKey(s.content, string(ax)),
 				i18n.T("lint.violation.axis_off.message", ax, cfg.Preset),
 				i18n.T("lint.violation.axis_off.fix", ax, ax))
+		}
+	}
+}
+
+// checkIndexableStage는 단계와 indexable 값의 정합을 검사한다. upstream
+// scripts/lint-frontmatter.sh 의 색인 자격 삼단 검사와 같은 판정이다.
+// inbox 의 indexable: true 는 색인되지 말아야 할 미검수 문서가 검수
+// 문서와 같은 자격을 스스로 선언하는 것이므로 error 이고, source 와
+// context 의 이탈은 승인 여부가 판단이라 warn 이다. archive 는 검사하지
+// 않는다. upstream 에 archive 단계가 없고, 폐기 문서의 색인 자격은
+// 노출 판정이 status 와 위치로 이미 정한다(ADR 0063). indexable 축이
+// 꺼진 위키에서는 판정하지 않는다. inbox 판정은 일반 스키마 판정과 같은
+// 기본 범위를 따르므로(ADR 0070) --include-inbox 없이는 돌지 않는다.
+func (s *scannedDoc) checkIndexableStage(cfg config.Config, add func(Severity, Rule, int, string, string)) {
+	if !cfg.Axes[config.AxisIndexable] {
+		return
+	}
+	f, ok := s.fields["indexable"]
+	if !ok || f.Kind != doc.KindBool {
+		// 필드가 없거나 불리언이 아니면 missing-field 나 axis-off 가 담당한다.
+		return
+	}
+	switch s.stage {
+	case "inbox":
+		if f.Bool {
+			add(SevError, ruleSchemaIndexableStage, lineOfKey(s.content, "indexable"),
+				i18n.T("lint.violation.indexable_inbox.message"),
+				i18n.T("lint.violation.indexable_inbox.fix"))
+		}
+	case "source":
+		if f.Bool {
+			add(SevWarn, ruleSchemaIndexableStage, lineOfKey(s.content, "indexable"),
+				i18n.T("lint.violation.indexable_source.message"),
+				i18n.T("lint.violation.indexable_source.fix"))
+		}
+	case "context":
+		if !f.Bool {
+			add(SevWarn, ruleSchemaIndexableStage, lineOfKey(s.content, "indexable"),
+				i18n.T("lint.violation.indexable_context.message"),
+				i18n.T("lint.violation.indexable_context.fix"))
+		}
+	}
+}
+
+// checkDeprecatedFields는 위키가 폐기하기로 한 프론트매터 키가 문서에
+// 있는지 검사한다. 값은 보지 않는다. 존재 자체가 폐기 회귀다. 무엇으로
+// 옮길지는 판단이므로 lint 는 알리고 migrate 는 지우지 않는다(ADR 0071).
+func (s *scannedDoc) checkDeprecatedFields(cfg config.Config, add func(Severity, Rule, int, string, string)) {
+	for _, key := range cfg.DeprecatedFields {
+		if _, ok := s.fields[key]; ok {
+			add(SevError, ruleSchemaDeprecatedField, lineOfKey(s.content, key),
+				i18n.T("lint.violation.deprecated_field.message", key),
+				i18n.T("lint.violation.deprecated_field.fix", key))
 		}
 	}
 }

@@ -73,52 +73,12 @@
       "fix": "engram.yaml의 topics 목록에 /"sqlite/"를 추가하세요"
     },
     {
-      "rule": "location.stage-agreement",
-      "severity": "error",
-      "path": "inbox/misplaced-context.md",
-      "line": 3,
-      "message": "문서가 inbox 디렉토리에 있지만 artifact_stage가 /"context/"입니다",
-      "fix": "문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 inbox로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요"
-    },
-    {
       "rule": "graph.orphan",
       "severity": "warn",
       "path": "inbox/orphan-note.md",
       "line": 1,
       "message": "들어오는 관계와 나가는 관계가 모두 없습니다",
       "fix": "다른 문서의 related나 본문에서 [[orphan-note]]로 연결하거나 관계 필드로 잇으세요"
-    },
-    {
-      "rule": "frontmatter.unclosed",
-      "severity": "error",
-      "path": "inbox/unclosed-frontmatter.md",
-      "line": 1,
-      "message": "프론트매터가 닫는 --- 구분자 없이 끝났습니다",
-      "fix": "프론트매터 끝에 --- 줄을 추가하세요"
-    },
-    {
-      "rule": "frontmatter.missing",
-      "severity": "error",
-      "path": "inbox/voice-memo-raw.md",
-      "line": 1,
-      "message": "프론트매터가 없습니다",
-      "fix": "문서 첫 줄에 --- 로 여는 구분자를 두고 필드를 채운 뒤 --- 로 닫으세요"
-    },
-    {
-      "rule": "location.stage-agreement",
-      "severity": "warn",
-      "path": "inbox/wrong-stage.md",
-      "line": 3,
-      "message": "문서가 inbox 디렉토리에 있지만 artifact_stage가 /"draft/"입니다",
-      "fix": "문서를 artifact_stage에 맞는 디렉토리로 옮기거나 artifact_stage를 inbox로 고치세요. 문서를 옮길 때는 engram promote, demote, archive를 쓰세요"
-    },
-    {
-      "rule": "schema.allowed-value",
-      "severity": "error",
-      "path": "inbox/wrong-stage.md",
-      "line": 3,
-      "message": "artifact_stage 값이 허용값 밖입니다: /"draft/" (허용값: inbox, source, context, archive)",
-      "fix": "artifact_stage 값을 허용값 중 하나로 바꿉니다"
     }
   ],
   "wikiFindings": [
@@ -154,9 +114,10 @@
     }
   ],
   "summary": {
-    "files": 16,
-    "error": 6,
-    "warn": 8,
-    "reject": 3
+    "files": 10,
+    "error": 2,
+    "warn": 7,
+    "reject": 3,
+    "skippedInbox": 6
   }
 }

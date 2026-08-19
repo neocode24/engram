@@ -32,7 +32,7 @@ engram은 같은 규칙을 두 곳으로 옮겼다. **결정론적으로 판정�
 
 | 방향 | 무엇 | 어긴 결과 |
 |---|---|---|
-| 코드로 강제 | lint 규칙 17종과 승급 게이트 | 종료 코드 1. 승급이 막힌다 |
+| 코드로 강제 | lint 규칙 19종과 승급 게이트 | 종료 코드 1. 승급이 막힌다 |
 | 설정으로 열어 둠 | `engram.yaml`의 속성과 임계값 | 위키마다 다르게 정한다 |
 | 사람과 에이전트에 남김 | 판단이 필요한 것 | 도구가 관여하지 않는다 |
 
@@ -42,7 +42,7 @@ engram은 같은 규칙을 두 곳으로 옮겼다. **결정론적으로 판정�
 
 ## 4. 명세 7종 대응표
 
-lint 규칙 17종은 이 절 전체에서 각각 정확히 한 번씩 등장한다. 규칙 ID는 `internal/lint/lint.go`에 실재하는 값만 쓴다.
+lint 규칙 19종은 이 절 전체에서 각각 정확히 한 번씩 등장한다. 규칙 ID는 `internal/lint/lint.go`에 실재하는 값만 쓴다.
 
 ### 4.1 frontmatter-schema.md
 
@@ -58,11 +58,13 @@ lint 규칙 17종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 | `frontmatter.missing-field` | error | 단계별 필수 필드 누락 |
 | `schema.allowed-value` | error | `artifact_stage`, `status`, `scope`, `sensitivity`, `trigger_mode` 값이 허용 집합 밖 |
 | `schema.axis-off` | error | 설정이 끈 속성가 문서에 있음 |
+| `schema.indexable-stage` | error 또는 warn | 단계와 `indexable` 값의 정합. `inbox`에서 `false`가 아니면 error, `source`와 `context`에서 단계 기본값에서 벗어나면 warn. `archive`는 검사하지 않는다([0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md)) |
+| `schema.deprecated-field` | error | `deprecated_fields`에 적은 폐기 필드가 프론트매터에 있음([0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md)) |
 | `sources.updated` | warn | `sources/` 문서가 `updated` 필드를 가짐 |
 
 `promote`와 `new`는 이 명세의 단계별 필드를 채워 쓴다. 채우는 값의 진실원은 `internal/wiki`의 단계별 초기값이다.
 
-**설정으로 열어 둔 것.** 속성 14종의 on/off(`axes`), 문서 종류 집합(`types`), 문서가 아닌 파일 목록(`ignore_files`, 기본 `README.md`). 꺼진 축의 필수성은 사라지고 `schema.axis-off`가 오히려 그 필드의 존재를 잡는다. 필수 필드 검사가 명세의 단계별 표를 그대로 옮기지 않고 프리셋에 따라 변형되는 것이 이 대응이다. 날짜 필드의 이름과 형식은 설정 키가 없이 코드에 고정되어 있다.
+**설정으로 열어 둔 것.** 속성 14종의 on/off(`axes`), 문서 종류 집합(`types`), 문서가 아닌 파일 목록(`ignore_files`, 기본 `README.md`), 폐기한 프론트매터 키 목록(`deprecated_fields`, 기본 빈 목록). 꺼진 축의 필수성은 사라지고 `schema.axis-off`가 오히려 그 필드의 존재를 잡는다. 필수 필드 검사가 명세의 단계별 표를 그대로 옮기지 않고 프리셋에 따라 변형되는 것이 이 대응이다. 날짜 필드의 이름과 형식은 설정 키가 없이 코드에 고정되어 있다.
 
 **사람에게 남긴 것.** 검토 상태(review state)의 운용, `meta/templates/`의 템플릿 관리(Template Rule), "indexable: true인데 restricted인 문서 찾기" 같은 검토 뷰의 구성이다. engram에는 검토 상태 속성이 없다.
 
@@ -136,7 +138,9 @@ lint 규칙 17종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 **이 명세가 선언하는 것.** 기본 입력 절차 여섯 단계를 정한다. 채널을 식별하고, 원본을 `sources/`에 보존하고, 처리 노트를 `inbox/`에 만들고, 남을 사실을 뽑고, 중복과 충돌을 확인하고, 승급 대상과 제목을 제안한다. 채널별로 남길 메타데이터를 정하고, 음성 원본은 커밋하지 말고 전사와 요약만 남기라고 정한다.
 
-**코드로 강제하는 것.** lint 규칙은 없다. 절차의 두 단계가 커맨드로 굳어 있다. `capture`가 검증 없이 `inbox/`에 받는 3단계이고, `source`가 원본 필드를 확정해 `sources/`에 두는 2단계다. 나머지 단계는 판단을 포함하므로 커맨드가 대신할 수 없다.
+**코드로 강제하는 것.** 문서 단위 규칙은 없다. 절차의 두 단계가 커맨드로 굳어 있다. `capture`가 검증 없이 `inbox/`에 받는 3단계이고, `source`가 원본 필드를 확정해 `sources/`에 두는 2단계다. 나머지 단계는 판단을 포함하므로 커맨드가 대신할 수 없다.
+
+**lint의 기본 판정 범위도 이 명세를 따른다.** `lint`는 기본으로 `inbox/` 문서의 스키마 판정을 하지 않고 `--include-inbox`로 연다([0070](decisions/0070-lint-skips-inbox-by-default.md)). 붙여 넣는 시점에 스키마를 요구하면 이 명세의 capture-first와 충돌하기 때문이다. 관문은 승급 시점의 한 번뿐이고 링크 그래프와 게이트의 링크 대상 집계는 어느 쪽이든 `inbox`를 담는다.
 
 **설정으로 열어 둔 것.** `source_channel` 속성. `source`의 `--channel` 플래그가 이 값을 받는다. 문서 종류 집합(`types`)도 위키별로 넓힐 수 있다.
 
@@ -287,7 +291,7 @@ LLM으로 승급 기준 전부를 판정하게 하면 그 판정은 재현되지
 | `index` 단계와 MOC | `context/mocs/`를 별도 단계로 둔다 | 없다. 의도된 차이지만 실데이터에서 5건이 거절된다 |
 | 단계 디렉토리 안의 비문서 파일 | 명세에 개념이 없다. 실데이터에는 `README.md`가 네 자리에 있다 | ~~없었다~~ `ignore_files`로 순회에서 뺀다([ADR 0036](decisions/0036-non-document-files-in-stage-dirs.md)) |
 | security-rules.md 전체 | 커밋 금지 항목과 민감 자료 취급 | 코드로 강제하는 것이 하나도 없다. `sensitivity` 축만 있다 |
-| `indexable` 단계 기본값 | wiki-artifact-schema.md가 유형별 인덱싱 기본값으로 선언. upstream lint는 위반을 검사 | 강제 규칙이 없다. 쓰기 커맨드가 단계별 초기값으로만 채운다 |
+| ~~`indexable` 단계 기본값~~ | wiki-artifact-schema.md가 유형별 인덱싱 기본값으로 선언. upstream lint는 위반을 검사 | ~~강제 규칙이 없다~~ `schema.indexable-stage`가 검사한다([0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md)). `archive`는 빠진다 |
 | `agents/workflows/` 전체 | 에이전트 절차 명세. 텍스트 드롭 인테이크, 음성 메모 인테이크 등 | 대응표가 `meta/` 명세만 덮어서 **아예 보지 않았다**. 아래에 적는다 |
 | `transcript`, `source-manifest` 종류 | wiki-artifact-schema.md 의 Artifact Types 표가 선언 | 기본 종류에 없다. `source-raw`가 전자의 일반형이고([ADR 0051](decisions/0051-sources-holds-originals-and-refined-summaries.md)) 후자는 개념 자체가 없다 |
 
@@ -317,7 +321,7 @@ engram은 이 절차를 커맨드 둘로 이미 표현할 수 있다. `source`�
 
 음성 메모 인테이크는 여정 2와 같은 자리이며 바이너리 밖 동선이다([ADR 0014](decisions/0014-llm-boundary-agent-drives-binary.md)).
 
-`indexable`은 지금 `promote`가 context 문서에 참을, `capture`가 inbox 문서에 거짓을 초기값으로 쓰는 방식으로만 지켜진다. 사람이 프론트매터를 고쳐 값을 바꿔도 lint는 잡지 않는다. 결정할 시점은 검색 인덱스가 민감 자료를 걸러 내야 할 필요가 생겼을 때다. security-rules의 이행과 같은 때에 볼 문제다.
+`indexable`은 세 층으로 지켜진다. `promote`가 context 문서에 참을, `capture`가 inbox 문서에 거짓을 초기값으로 쓰고, `schema.indexable-stage`가 사람이 프론트매터를 고쳐 값을 비튼 문서를 잡는다([0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md)). `archive`는 검사하지 않는다. 폐기 문서의 색인 자격은 노출 판정이 이미 정한다(ADR 0063).
 
 **engram의 검색 색인에는 이 판정을 넣지 않기로 했다**([ADR 0061](decisions/0061-field-weights-and-what-the-index-is-not.md)). upstream의 `indexable`은 외부 RAG의 색인 자격 선언이고 engram의 `search`는 승급을 준비하며 `inbox`와 `sources`를 훑는 도구라 대상이 다르다. 남에게 도달하는 경로(`serve`, `export`)에서 민감도를 거르는 일은 `internal/expose`가 이미 하고 있다.
 

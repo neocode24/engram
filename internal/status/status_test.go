@@ -138,15 +138,33 @@ func TestRun(t *testing.T) {
 	t.Run("lint 요약을 연동한다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
 			"engram.yaml": "preset: personal\nforms: [note]\n",
-			// form 이 폐쇄 집합에 없어 error 위반이 난다.
+			// form 이 폐쇄 집합에 없어 error 위반이 난다. inbox 문서의
+			// 위반은 lint 기본 범위 밖이고 context 문서의 위반만 잡힌다.
 			"inbox/2026-07-15-a.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\nindexable: false\nsource_channel: manual\nform: memo\ncreated: 2026-07-15\n---\n\n[[hub]] [[peer]]\n",
+			"context/hub.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\nrelated:\n  - \"[[hub]\"\n" +
+				"source_channel: manual\nderived_context: []\nform: memo\ncreated: 2026-01-01\nupdated: 2026-08-01\n---\n\n[[hub]]\n",
 		})
 		res, _ := Run(root, fixedNow)
 		if res.Lint.Files != 1 {
-			t.Errorf("lint 파일 수: got %d", res.Lint.Files)
+			t.Errorf("lint 파일 수: got %d, want 1(inbox 는 기본 범위 밖)", res.Lint.Files)
 		}
 		if res.Lint.Error < 1 {
 			t.Errorf("lint error 가 잡히지 않았다: %+v", res.Lint)
+		}
+		// status 의 lint 요약은 lint 커맨드의 기본값과 같은 수를 말해야 한다.
+		cfg, err := config.Load(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		lintRes, err := lint.Run(root, cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		sum := lintRes.Summary
+		if res.Lint.Files != sum.Files || res.Lint.Error != sum.Error ||
+			res.Lint.Warn != sum.Warn || res.Lint.Reject != sum.Reject {
+			t.Errorf("status lint 요약 %+v 이 lint 기본값 %+v 과 다르다", res.Lint, sum)
 		}
 	})
 
@@ -296,11 +314,15 @@ func TestRun(t *testing.T) {
 	t.Run("제안은 최대 3개다", func(t *testing.T) {
 		root := writeWiki(t, map[string]string{
 			"engram.yaml": "stale_days: 1\nforms: [note]\n",
-			// 승급 가능 + stale + lint error(form 위반) 세 가지와 빈 inbox 안내까지 4개 조건.
+			// 승급 가능 + stale + lint error(context 문서의 form 위반) 세 가지와
+			// 빈 inbox 안내까지 4개 조건. inbox 문서의 스키마 위반은 lint 기본
+			// 범위 밖이므로 제안거리로 쓰지 않는다.
 			"inbox/2026-07-15-ready.md": "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
-				"indexable: false\nsource_channel: manual\ncreated: 2026-07-15\nrelated:\n  - \"[[hub]]\"\nform: memo\n---\n\n[[peer]]\n",
-			"inbox/peer.md":  inboxDoc("2026-08-01", ""),
-			"context/hub.md": contextDoc("2026-01-01", "2026-01-01"),
+				"indexable: false\nsource_channel: manual\ncreated: 2026-07-15\nrelated:\n  - \"[[hub]]\"\n---\n\n[[peer]]\n",
+			"inbox/peer.md": inboxDoc("2026-08-01", ""),
+			"context/hub.md": "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\nrelated:\n  - \"[[hub]\"\n" +
+				"source_channel: manual\nderived_context: []\nform: memo\ncreated: 2026-01-01\nupdated: 2026-01-01\n---\n\n[[hub]]\n",
 		})
 		res, _ := Run(root, fixedNow)
 		if len(res.Suggestions) != 3 {

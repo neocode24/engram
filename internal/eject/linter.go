@@ -34,11 +34,12 @@ func linterScript(cfg config.Config, dirs map[string]string) string {
     "broad_topic_pct": %s,
     "page_dirs": %s,
     "root_files": %s,
-    "ignore_files": %s,`,
+    "ignore_files": %s,
+    "deprecated_fields": %s,`,
 		pyString(string(cfg.Preset)), pyList(cfg.Schema.Types), pyList(cfg.Schema.Taxonomy.Topics.Values),
 		pyList(cfg.Schema.Taxonomy.Forms.Values), pyInt(cfg.Thresholds.MinWikilinks), pyInt(cfg.Thresholds.StaleDays),
 		pyInt(cfg.Thresholds.MaxLines), pyInt(cfg.Thresholds.BroadTopicPct), pyList(cfg.PageDirs),
-		pyList(cfg.RootFiles), pyList(cfg.IgnoreFiles))
+		pyList(cfg.RootFiles), pyList(cfg.IgnoreFiles), pyList(cfg.DeprecatedFields))
 
 	var b strings.Builder
 	b.WriteString("#!/usr/bin/env python3\n")
@@ -457,6 +458,35 @@ def check_docs(root, cfg):
 	b.WriteString(pyViolation("                    ",
 		"eject.linter.axis_off.message", " % (axis, cfg[\"preset\"])",
 		"eject.linter.axis_off.fix", " % (axis, axis)", ")\n"))
+	b.WriteString(`
+        indexable = fields.get("indexable")
+        if "indexable" in cfg["axes"] and isinstance(indexable, bool):
+            if stage == "inbox" and indexable is True:
+                add(rel, line_of_key(text, "indexable"), "schema.indexable-stage", "error",
+`)
+	b.WriteString(pyViolation("                    ",
+		"eject.linter.indexable_inbox.message", "",
+		"eject.linter.indexable_inbox.fix", "", ")\n"))
+	b.WriteString(`            elif stage == "source" and indexable is True:
+                add(rel, line_of_key(text, "indexable"), "schema.indexable-stage", "warn",
+`)
+	b.WriteString(pyViolation("                    ",
+		"eject.linter.indexable_source.message", "",
+		"eject.linter.indexable_source.fix", "", ")\n"))
+	b.WriteString(`            elif stage == "context" and indexable is False:
+                add(rel, line_of_key(text, "indexable"), "schema.indexable-stage", "warn",
+`)
+	b.WriteString(pyViolation("                    ",
+		"eject.linter.indexable_context.message", "",
+		"eject.linter.indexable_context.fix", "", ")\n"))
+	b.WriteString(`
+        for key in cfg["deprecated_fields"]:
+            if key in fields:
+                add(rel, line_of_key(text, key), "schema.deprecated-field", "error",
+`)
+	b.WriteString(pyViolation("                    ",
+		"eject.linter.deprecated_field.message", " % key",
+		"eject.linter.deprecated_field.fix", " % key", ")\n"))
 	b.WriteString(`
         form = fields.get("form")
         if isinstance(form, str) and form != "":

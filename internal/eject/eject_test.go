@@ -327,7 +327,9 @@ func TestLinter(t *testing.T) {
 		writePlan(t, root, Plan(loadCfg(t, root)))
 		out, _ := runPython(t, py, filepath.Join(root, "scripts", "lint-frontmatter.py"), root)
 
-		goRes, err := lint.Run(root, loadCfg(t, root))
+		// 파이썬 린터는 inbox 를 포함한 전 범위를 판정하므로 engram 쪽도
+		// IncludeInbox 로 맞춘다. 기본 범위 비교가 아니라 판정 규칙 대조다.
+		goRes, err := lint.Run(root, loadCfg(t, root), lint.Options{IncludeInbox: true})
 		if err != nil {
 			t.Fatal(err)
 		}

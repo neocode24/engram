@@ -216,3 +216,65 @@ func TestLintSecuritySecret(t *testing.T) {
 		}
 	})
 }
+
+func TestLintIncludeInboxFlag(t *testing.T) {
+	// capture 를 거치지 않고 inbox 에 떨어진 파일이다. 기본 범위에서는
+	// 잡히지 않고 종료 코드 0 이어야 한다(ADR 0070).
+	files := map[string]string{
+		"engram.yaml": "preset: personal\n",
+		"context/peer.md": "---\n" +
+			"type: procedure\nartifact_stage: context\nstatus: promoted\n" +
+			"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+			"source_channel: manual\nderived_context: []\n---\n\n링크 없는 메모\n",
+		"inbox/dropped.md": "프론트매터 없는 메모\n",
+	}
+	dir := t.TempDir()
+	for name, content := range files {
+		p := filepath.Join(dir, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	t.Run("기본 범위는 inbox 를 건너뛰고 안내 줄을 낸다", func(t *testing.T) {
+		out, err := runRoot(t, "lint", dir)
+		if err != nil {
+			t.Fatalf("기본 범위에서는 종료 코드 0이어야 함: %v\n%s", err, out)
+		}
+		if !strings.Contains(out, "inbox 문서 1개를 건너뛰었습니다") {
+			t.Errorf("건너뛰기 안내가 없음:\n%s", out)
+		}
+		if strings.Contains(out, "frontmatter.missing") {
+			t.Errorf("inbox 위반이 기본 범위에서 나오면 안 됨:\n%s", out)
+		}
+	})
+
+	t.Run("--include-inbox 는 inbox 도 검사한다", func(t *testing.T) {
+		out, err := runRoot(t, "lint", "--include-inbox", dir)
+		if err == nil {
+			t.Fatal("error 위반이 있으므로 종료 코드 1이어야 함")
+		}
+		if !strings.Contains(out, "frontmatter.missing") {
+			t.Errorf("inbox 위반이 잡히지 않음:\n%s", out)
+		}
+		if strings.Contains(out, "건너뛰었습니다") {
+			t.Errorf("범위를 열었으면 건너뛰기 안내가 없어야 함:\n%s", out)
+		}
+	})
+
+	t.Run("건너뛴 inbox 가 없으면 안내 줄을 내지 않는다", func(t *testing.T) {
+		if err := os.Remove(filepath.Join(dir, "inbox", "dropped.md")); err != nil {
+			t.Fatal(err)
+		}
+		out, err := runRoot(t, "lint", dir)
+		if err != nil {
+			t.Fatalf("warn 은 종료 코드를 바꾸지 않는다: %v\n%s", err, out)
+		}
+		if strings.Contains(out, "건너뛰었습니다") {
+			t.Errorf("건너뛴 문서가 없으면 안내가 없어야 함:\n%s", out)
+		}
+	})
+}

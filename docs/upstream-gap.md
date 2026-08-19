@@ -684,13 +684,13 @@ engram이 관여하지 않는다.
 
 ---
 
-### F21. inbox lint 범위 차이
+### F21. inbox lint 범위 차이 (닫힘, ADR 0070)
 
 **upstream 규정**: `scripts/lint-frontmatter.sh:9-19`, `AGENTS.md:114-123`이 `inbox/`는 기본 검사 범위 밖이고 pre-commit 게이트 밖이다. "붙여 넣는 시점에 스키마를 요구하면 capture-first 와 충돌한다. inbox lint 실패는 정상이며 버그가 아니다."
 
-**engram 대응**: engram은 `inbox`를 `page_dirs`에 넣고(`internal/config/config.go:220`) 필수 필드를 요구한다. `docs/spec-map.md:302`가 프론트매터 없는 `inbox/` 파일이 `frontmatter.missing` error를 낸다고 실측으로 적었다.
+**engram 대응**: `lint`가 기본으로 `inbox/` 문서의 스키마 판정을 하지 않는다. `--include-inbox` 플래그로 연다. 순회는 그대로 `page_dirs` 전부를 돌고 링크 그래프와 게이트의 링크 대상 집계는 `inbox`를 담는다. `status`와 `digest`의 lint 요약도 같은 기본값을 따른다.
 
-**영향**: `capture`를 거치지 않는 유입 경로가 전부 lint 실패로 나타난다.
+**영향**: 닫혔다. `capture`를 거치지 않는 유입 경로가 기본 lint에서 조용히 지나간다.
 
 **자리**: 코드
 
@@ -698,13 +698,13 @@ engram이 관여하지 않는다.
 
 ---
 
-### F22. 폐기 필드 거부 부재
+### F22. 폐기 필드 거부 부재 (닫힘, ADR 0071)
 
 **upstream 규정**: `scripts/lint-frontmatter.sh:195-199`, `AGENTS.md:132`가 `quality_level`이 남아 있으면 FAIL. "폐기된 축이 다시 기어들어오지 못하게."
 
-**engram 대응**: engram에 `quality_level`이라는 개념 자체가 없다(`rg -rn 'quality_level' internal/ docs/` 무결과).
+**engram 대응**: 설정 키 `deprecated_fields`(문자열 목록, 기본 빈 목록)와 lint 규칙 `schema.deprecated-field`(error)로 막는다. upstream의 필드 이름을 박하지 않고 마이그레이션하는 사람이 목록을 채운다. `migrate`는 지우지 않는다.
 
-**영향**: 폐기 필드가 들어와도 막지 못한다.
+**영향**: 닫혔다. 목록에 넣은 키가 프론트매터에 있으면 error 다.
 
 **자리**: 설정. 폐기 필드 목록은 위키마다 다르다
 
@@ -712,13 +712,13 @@ engram이 관여하지 않는다.
 
 ---
 
-### F23. `review_after` 폐기 거부 부재
+### F23. `review_after` 폐기 거부 부재 (닫힘, ADR 0071)
 
 **upstream 규정**: `scripts/lint-frontmatter.sh:201-206`, `AGENTS.md:185-187`이 `review_after`가 남아 있으면 FAIL. 근거: "예측이라 지킬 수 없고, 지나도 아무 일이 일어나지 않는다는 것이 실측으로 확인됐다."
 
-**engram 대응**: engram에 `review_after` 개념이 없다(`rg -rn 'review_after' internal/ docs/` 무결과).
+**engram 대응**: F22와 같은 자리다. `deprecated_fields: [review_after]`로 열면 `schema.deprecated-field`가 잡는다.
 
-**영향**: 재도입 차단이 없다.
+**영향**: 닫혔다.
 
 **자리**: 설정. 폐기 필드 목록은 위키마다 다르다
 
@@ -740,13 +740,13 @@ engram이 관여하지 않는다.
 
 ---
 
-### F25. 색인 자격 삼단 검사 부재
+### F25. 색인 자격 삼단 검사 부재 (닫힘, ADR 0071)
 
 **upstream 규정**: `scripts/lint-frontmatter.sh:271-282`가 색인 자격 삼단 검사를 규정한다. `inbox` + `indexable != false`는 FAIL, `source` + `indexable != false`는 WARN, `context` + `indexable != true`는 WARN다.
 
-**engram 대응**: 대응 없음. engram lint 규칙 17종에 `indexable` 값 검사가 없다(B19 참조).
+**engram 대응**: lint 규칙 `schema.indexable-stage`가 같은 판정을 낸다. `inbox`는 error, `source`와 `context`는 warn이고 `archive`는 검사하지 않는다. `indexable` 축이 꺼진 위키에서는 판정하지 않는다. `inbox` 판정은 lint 기본 범위를 따르므로(ADR 0070) `--include-inbox`로 연다.
 
-**영향**: 색인 자격 검사가 없다.
+**영향**: 닫혔다.
 
 **자리**: 코드
 
@@ -768,13 +768,13 @@ engram이 관여하지 않는다.
 
 ---
 
-### F27. 검사 대상 디렉토리 차이
+### F27. 검사 대상 디렉토리 차이 (해당 없음)
 
 **upstream 규정**: `scripts/lint-frontmatter.sh:117-124`가 검사 대상 디렉토리 여섷을 규정한다. `context agents/workflows sources/manifests sources/transcripts sources/summaries meta/templates` + `index.md`다. `README.md`는 제외다.
 
-**engram 대응**: `internal/config/config.go:220-222`이 `page_dirs: [inbox sources context archive]`, `root_files: [index.md]`, `ignore_files: [README.md]`다. `meta/templates` 개념이 없고 `agents/workflows`가 없다.
+**engram 대응**: `internal/config/config.go`의 `page_dirs: [inbox sources context archive]`, `root_files: [index.md]`, `ignore_files: [README.md]`가 이미 그 자리다. 디렉토리 구조가 위키마다 다른 값이라 만들 것이 없다.
 
-**영향**: 검사 대상 범위가 다르다.
+**영향**: 닫혔다. 범위 차이는 설정이 이미 담는다.
 
 **자리**: 설정. `page_dirs`와 `ignore_files`가 이미 그 자리다
 
@@ -866,13 +866,13 @@ engram이 관여하지 않는다.
 
 ---
 
-### F34. 색인 자격 네 조건
+### F34. 색인 자격 네 조건 (닫힘, ADR 0063)
 
 **upstream 규정**: `scripts/list-index-candidates.sh:10-15, 68-76`이 색인 자격 네 조건 동시 충족을 규정한다. 위치가 `context/`/`agents/workflows/`/`index.md`, `artifact_stage in (context, agent-workflow, index)`, **`status == promoted`**, **`indexable == true`**, `sensitivity in (public-reference, internal)`이다.
 
-**engram 대응**: `internal/expose/expose.go`는 위치(`context` + `root_files`)와 `sensitivity` 차단(`private-local-only`, `restricted`)만 본다. `status`와 `indexable`을 읽지 않는다. ADR 0044에 두 필드 언급이 없다.
+**engram 대응**: [ADR 0063](decisions/0063-exposure-reads-indexable-status-and-scopes-internal.md)이 노출 판정을 네 조건으로 넓혔다. `internal/expose`가 위치(`context` + `root_files`)와 `sensitivity` 차단에 더해 `status`(`superseded` 제외)와 `indexable`(거짓 제외)을 읽는다. `indexable` 축이 꺼져 있으면 그 조건만 건너뛴다. 채널이 `context` 하나로 다른 것은 engram의 단계 구조가 그렇다는 것이다.
 
-**영향**: 색인 자격 판단이 다르다.
+**영향**: 닫혔다.
 
 **자리**: 코드
 
@@ -1076,13 +1076,13 @@ engram이 관여하지 않는다.
 
 ---
 
-### F49. 음성 메모 후보 등록 승인
+### F49. 음성 메모 후보 등록 승인 (닫힘, ADR 0070)
 
 **upstream 규정**: `voice-memo-candidate-registration.md:96-100`이 등록된 inbox 후보는 `scripts/lint-frontmatter.sh --include-inbox`를 통과해야 한다고 규정한다.
 
-**engram 대응**: engram lint는 inbox 문서에도 필수 필드 검사를 항상 적용한다(`internal/lint/lint.go:342-344`, 기본 필수 `type`, `artifact_stage`, `status`, `indexable`). 켜고 끄는 플래그가 없다(`lint --help`에 `--wiki`뿐).
+**engram 대응**: `lint`의 기본 범위가 `inbox`를 뺀다(ADR 0070). `--include-inbox`를 주면 inbox 문서의 스키마 판정을 돌린다. upstream이 등록 후보를 `--include-inbox`로 검사하는 절차와 같은 모양으로 열린다.
 
-**영향**: inbox 문서도 lint를 통과해야 한다.
+**영향**: 닫혔다. 등록 검사는 `--include-inbox`로 한다.
 
 **자리**: 코드
 
@@ -1370,13 +1370,13 @@ engram이 관여하지 않는다.
 
 ---
 
-### F70. 색인 제외 차이
+### F70. 색인 제외 차이 (닫힘, ADR 0071)
 
 **upstream 규정**: `AGENTS.md:14`(Core Principle 6)이 "RAG/시스템은 raw mixed inbox가 아니라 승인된 `context/`만 인덱싱한다"고 규정한다.
 
-**engram 대응**: `serve`(ADR 0044)와 `export`(ADR 0046)가 `internal/expose`로 inbox와 sources를 닫는다. 다만 `engram search`/`recall`의 색인은 단계를 가리지 않는다. upstream lint는 추가로 `inbox artifacts must be indexable false`(`scripts/lint-frontmatter.sh:272-273`)를 FAIL로 잡는데 engram은 잡지 않는다(실측: `inbox/idx.md`에 `indexable: true`를 넣어도 위반 없음).
+**engram 대응**: `serve`(ADR 0044)와 `export`(ADR 0046)가 `internal/expose`로 inbox와 sources를 닫는다. `engram search`/`recall`의 색인이 단계를 가리지 않는 것은 [ADR 0061](decisions/0061-field-weights-and-what-the-index-is-not.md)이 의도된 차이로 정리했다. lint의 색인 자격 검사는 `schema.indexable-stage`가 잡는다(ADR 0071). `inbox` + `indexable: true`는 `--include-inbox`에서 error다.
 
-**영향**: 검색 색인에서 inbox/sources가 걸리지 않는다.
+**영향**: 닫혔다. 남는 색인 범위 차이는 ADR 0061의 결정이다.
 
 **자리**: 코드
 

@@ -26,15 +26,22 @@ func writeWiki(t *testing.T, files map[string]string) string {
 	return dir
 }
 
-// runLint는 위키를 만들어 검사하고 결과를 반환한다.
+// runLint는 위키를 만들어 검사하고 결과를 반환한다. 규칙 기계를 보는
+// 시험이므로 판정 범위는 전체로 연다(ADR 0070). 기본 범위 자체는
+// TestRunDefaultScope 가 다룬다.
 func runLint(t *testing.T, files map[string]string) Result {
+	return runLintOpt(t, files, Options{IncludeInbox: true})
+}
+
+// runLintOpt는 판정 범위를 지정해 검사한다.
+func runLintOpt(t *testing.T, files map[string]string, o Options) Result {
 	t.Helper()
 	dir := writeWiki(t, files)
 	cfg, err := config.Load(dir)
 	if err != nil {
 		t.Fatalf("설정 로드 실패: %v", err)
 	}
-	res, err := Run(dir, cfg)
+	res, err := Run(dir, cfg, o)
 	if err != nil {
 		t.Fatalf("lint 실행 실패: %v", err)
 	}
@@ -889,4 +896,185 @@ func TestOrphanIgnoresInboundDirection(t *testing.T) {
 			t.Errorf("아웃바운드가 있는 문서가 lint 고아로 판정됨: %+v", v)
 		}
 	}
+}
+
+// inboxDocWith는 indexable 값을 바꿔 쓴 inbox 문서다.
+func inboxDocWith(indexable string) string {
+	return "---\ntype: inbox-note\nartifact_stage: inbox\nstatus: inbox\n" +
+		"indexable: " + indexable + "\nsource_channel: manual\ncreated: 2026-01-01\n---\n\n메모\n"
+}
+
+// TestRunDefaultScope은 lint 의 기본 판정 범위가 inbox 를 빼는 것을 못
+// 박는다(ADR 0070). 그래프 판정은 inbox 를 그대로 담는다.
+func TestRunDefaultScope(t *testing.T) {
+	t.Run("기본 범위는 inbox 의 스키마 위반을 잡지 않는다", func(t *testing.T) {
+		files := map[string]string{
+			"engram.yaml": "preset: personal\n",
+			// capture 를 거치지 않은 유입 경로 그대로의 문서들이다.
+			"inbox/plain.md":    "프론트매터 없는 메모\n",
+			"inbox/unclosed.md": "---\ntype: inbox-note\n",
+			"inbox/badyaml.md":  "---\ntype: [안 닫힌 목록\n---\n",
+		}
+		res := runLintOpt(t, files, Options{})
+		for _, rule := range []string{"frontmatter.missing", "frontmatter.unclosed", "frontmatter.yaml"} {
+			if got := findByRule(res, rule); len(got) != 0 {
+				t.Errorf("기본 범위에서 %s 가 잡혔다: %+v", rule, got)
+			}
+		}
+		if res.Summary.SkippedInbox != 3 {
+			t.Errorf("건너뛴 inbox 문서 수 = %d, want 3", res.Summary.SkippedInbox)
+		}
+		if res.Summary.Files != 0 {
+			t.Errorf("검사한 파일 수 = %d, want 0", res.Summary.Files)
+		}
+		// IncludeInbox 를 주면 같은 위키에서 전부 잡힌다.
+		full := runLintOpt(t, files, Options{IncludeInbox: true})
+		for _, rule := range []string{"frontmatter.missing", "frontmatter.unclosed", "frontmatter.yaml"} {
+			if got := findByRule(full, rule); len(got) != 1 {
+				t.Errorf("범위를 열어도 %s 가 안 잡힌다: %+v", rule, got)
+			}
+		}
+		if full.Summary.SkippedInbox != 0 || full.Summary.Files != 3 {
+			t.Errorf("범위를 열었으면 건너뛰지 않는다: %+v", full.Summary)
+		}
+	})
+
+	t.Run("context 의 같은 결함은 기본 범위에서도 잡는다", func(t *testing.T) {
+		res := runLintOpt(t, map[string]string{
+			"engram.yaml":      "preset: personal\n",
+			"context/plain.md": "프론트매터 없는 문서\n",
+		}, Options{})
+		if got := findByRule(res, "frontmatter.missing"); len(got) != 1 {
+			t.Fatalf("context 의 결함이 기본 범위에서 안 잡힌다: %+v", res.Violations)
+		}
+		if res.Summary.SkippedInbox != 0 {
+			t.Errorf("inbox 가 없으면 건너뛴 수가 0이어야 한다: %+v", res.Summary)
+		}
+	})
+
+	t.Run("기본 범위에서도 링크 그래프는 inbox 를 담는다", func(t *testing.T) {
+		// inbox 고아 문서와 inbox 로 향하는 깨진 링크는 그대로 잡힌다.
+		res := runLintOpt(t, map[string]string{
+			"engram.yaml":    "preset: personal\n",
+			"inbox/alone.md": inboxDocWith("false"),
+			"context/a.md":   cleanContextDoc("없는문서", "b"),
+			"context/b.md":   cleanContextDoc("a", "없는문서"),
+		}, Options{})
+		if got := findByRule(res, "graph.orphan"); len(got) != 1 || got[0].Path != "inbox/alone.md" {
+			t.Fatalf("inbox 고아 판정이 그대로 돌아야 한다: %+v", got)
+		}
+		if got := findByRule(res, "link.broken"); len(got) != 2 {
+			t.Fatalf("깨진 링크 판정이 그대로 돌아야 한다: %+v", got)
+		}
+	})
+}
+
+// TestIndexableStage는 단계와 indexable 값의 정합 검사를 못 박는다
+// (ADR 0071). inbox 판정은 기본 범위를 따른다(ADR 0070).
+func TestIndexableStage(t *testing.T) {
+	t.Run("inbox 의 indexable true 는 범위를 열면 error 다", func(t *testing.T) {
+		files := map[string]string{
+			"engram.yaml":           "preset: personal\n",
+			"inbox/2026-01-01-a.md": inboxDocWith("true"),
+		}
+		if got := findByRule(runLintOpt(t, files, Options{}), "schema.indexable-stage"); len(got) != 0 {
+			t.Fatalf("기본 범위에서 inbox 판정이 돌면 안 된다: %+v", got)
+		}
+		got := findByRule(runLintOpt(t, files, Options{IncludeInbox: true}), "schema.indexable-stage")
+		if len(got) != 1 || got[0].Severity != SevError {
+			t.Fatalf("inbox + indexable true 는 error 한 건이어야 한다: %+v", got)
+		}
+	})
+
+	t.Run("source 의 indexable true 는 warn 이다", func(t *testing.T) {
+		res := runLintOpt(t, map[string]string{
+			"engram.yaml": "preset: personal\n",
+			"sources/2026-01-01-s.md": "---\ntype: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
+				"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\n---\n\n원본\n",
+		}, Options{})
+		got := findByRule(res, "schema.indexable-stage")
+		if len(got) != 1 || got[0].Severity != SevWarn || got[0].Path != "sources/2026-01-01-s.md" {
+			t.Fatalf("source + indexable true 는 warn 한 건이어야 한다: %+v", got)
+		}
+	})
+
+	t.Run("context 의 indexable false 는 warn 이다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml":  "preset: personal\n",
+			"context/a.md": strings.Replace(cleanContextDoc("b", "c"), "indexable: true", "indexable: false", 1),
+			"context/b.md": cleanContextDoc("a", "c"),
+			"context/c.md": cleanContextDoc("a", "b"),
+		})
+		got := findByRule(res, "schema.indexable-stage")
+		if len(got) != 1 || got[0].Severity != SevWarn || got[0].Path != "context/a.md" {
+			t.Fatalf("context + indexable false 는 warn 한 건이어야 한다: %+v", got)
+		}
+	})
+
+	t.Run("archive 는 indexable 값과 무관하게 잡지 않는다", func(t *testing.T) {
+		archiveDoc := func(indexable string) string {
+			return "---\ntype: concept\nartifact_stage: archive\nstatus: archived\n" +
+				"indexable: " + indexable + "\nsource_refs: []\nderived_from: []\nrelated:\n  - \"[[b]]\"\n" +
+				"source_channel: manual\nderived_context: []\n---\n\n본문\n"
+		}
+		res := runLint(t, map[string]string{
+			"engram.yaml":                 "preset: personal\n",
+			"archive/2026-01-01-false.md": archiveDoc("false"),
+			"archive/2026-01-02-true.md":  archiveDoc("true"),
+		})
+		if got := findByRule(res, "schema.indexable-stage"); len(got) != 0 {
+			t.Fatalf("archive 는 검사 대상이 아니다: %+v", got)
+		}
+	})
+
+	t.Run("indexable 축이 꺼진 위키에서는 판정하지 않는다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml":           "axes:\n  indexable: false\n",
+			"inbox/2026-01-01-a.md": inboxDocWith("true"),
+			"sources/2026-01-01-s.md": "---\ntype: source-summary\nartifact_stage: source\nstatus: sourced\n" +
+				"indexable: true\nsource_refs: []\nderived_from: []\nderived_context: []\n" +
+				"source_channel: web\ncreated: 2026-01-01\nsourced_at: 2026-01-02\n---\n\n원본\n",
+			"context/a.md": strings.Replace(cleanContextDoc("b", "c"), "indexable: true", "indexable: false", 1),
+			"context/b.md": strings.Replace(cleanContextDoc("a", "c"), "indexable: true", "indexable: false", 1),
+			"context/c.md": strings.Replace(cleanContextDoc("a", "b"), "indexable: true", "indexable: false", 1),
+		})
+		if got := findByRule(res, "schema.indexable-stage"); len(got) != 0 {
+			t.Fatalf("축이 꺼져 있으면 판정하면 안 된다: %+v", got)
+		}
+	})
+}
+
+// TestDeprecatedField은 deprecated_fields 에 적은 키가 프론트매터에 있으면
+// error 로 잡는 것을 못 박는다(ADR 0071). 값은 보지 않는다.
+func TestDeprecatedField(t *testing.T) {
+	doc := "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+		"indexable: true\nsource_refs: []\nderived_from: []\nrelated:\n  - \"[[b]]\"\n" +
+		"source_channel: manual\nderived_context: []\nretired_axis: low\n---\n\n본문\n"
+
+	t.Run("목록에 있는 키가 문서에 있으면 error 다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml":  "deprecated_fields: [retired_axis]\n",
+			"context/a.md": doc,
+			"context/b.md": cleanContextDoc("a", "a"),
+		})
+		got := findByRule(res, "schema.deprecated-field")
+		if len(got) != 1 || got[0].Severity != SevError || got[0].Path != "context/a.md" {
+			t.Fatalf("폐기 필드가 error 한 건이어야 한다: %+v", got)
+		}
+		if !strings.Contains(got[0].Message, "retired_axis") {
+			t.Errorf("메시지에 키 이름이 없음: %s", got[0].Message)
+		}
+	})
+
+	t.Run("빈 목록이면 잡지 않는다", func(t *testing.T) {
+		res := runLint(t, map[string]string{
+			"engram.yaml":  "preset: personal\n",
+			"context/a.md": doc,
+			"context/b.md": cleanContextDoc("a", "a"),
+		})
+		if got := findByRule(res, "schema.deprecated-field"); len(got) != 0 {
+			t.Fatalf("기본값은 빈 목록이므로 잡지 않는다: %+v", got)
+		}
+	})
 }

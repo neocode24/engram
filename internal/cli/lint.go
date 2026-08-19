@@ -13,6 +13,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// flagIncludeInbox는 lint 커맨드의 inbox 범위 플래그 이름이다.
+const flagIncludeInbox = "include-inbox"
+
 // newLintCmd는 위키의 스키마와 링크 무결성을 검사하는 lint 커맨드를 반환한다.
 func newLintCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -29,7 +32,11 @@ func newLintCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("%s: %w", i18n.T("cli.lint.config_read_fail"), err)
 			}
-			res, err := lint.Run(root, cfg)
+			includeInbox, err := cmd.Flags().GetBool(flagIncludeInbox)
+			if err != nil {
+				return err
+			}
+			res, err := lint.Run(root, cfg, lint.Options{IncludeInbox: includeInbox})
 			if err != nil {
 				return err
 			}
@@ -52,6 +59,7 @@ func newLintCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
+	cmd.Flags().Bool(flagIncludeInbox, false, i18n.T("cli.lint.flag_include_inbox"))
 	return cmd
 }
 
@@ -82,10 +90,18 @@ func printLintText(w io.Writer, res lint.Result) {
 	}
 	s := res.Summary
 	if len(res.Violations) == 0 && len(res.WikiFindings) == 0 {
-		fmt.Fprintln(w, i18n.T("cli.lint.summary_clean", s.Files))
+		if s.SkippedInbox > 0 {
+			fmt.Fprintln(w, i18n.T("cli.lint.summary_clean_inbox_skipped", s.Files, s.SkippedInbox))
+		} else {
+			fmt.Fprintln(w, i18n.T("cli.lint.summary_clean", s.Files))
+		}
 		return
 	}
-	fmt.Fprintln(w, i18n.T("cli.lint.summary", s.Files, s.Error, s.Warn, s.Reject))
+	if s.SkippedInbox > 0 {
+		fmt.Fprintln(w, i18n.T("cli.lint.summary_inbox_skipped", s.Files, s.SkippedInbox, s.Error, s.Warn, s.Reject))
+	} else {
+		fmt.Fprintln(w, i18n.T("cli.lint.summary", s.Files, s.Error, s.Warn, s.Reject))
+	}
 }
 
 // previewPaths는 문서 목록을 보기 좋게 줄인다. 많으면 앞의 몇 개만 보이고

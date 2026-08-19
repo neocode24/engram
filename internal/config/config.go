@@ -181,6 +181,10 @@ type Config struct {
 	// IgnoreFiles는 page_dirs 아래 어느 깊이에 있든 문서가 아닌 파일로
 	// 순회에서 빼는 파일명이다. ADR 0036.
 	IgnoreFiles []string
+	// DeprecatedFields는 이 위키가 폐기한 프론트매터 키다. 목록에 있는
+	// 키가 문서에 있으면 lint 가 error 로 잡는다. 폐기 목록은 위키마다
+	// 다르므로 기본값은 빈 목록이다. ADR 0071.
+	DeprecatedFields []string
 	// UnknownKeys는 설정 파일에 있었지만 스키마가 모르는 키다.
 	// 오타를 조용히 삼키지 않기 위해 호출자에게 넘긴다.
 	UnknownKeys []string
@@ -224,7 +228,7 @@ func defaults() Config {
 	}
 	// 프리셋 키 자체는 기본값에서 왔다. 속성의 on/off는 프리셋이 정했다.
 	cfg.Origins["preset"] = OriginDefault
-	for _, k := range []string{"types", "topics", "forms", "min_wikilinks", "stale_days", "max_lines", "broad_topic_pct", "page_dirs", "root_files", "ignore_files"} {
+	for _, k := range []string{"types", "topics", "forms", "min_wikilinks", "stale_days", "max_lines", "broad_topic_pct", "page_dirs", "root_files", "ignore_files", "deprecated_fields"} {
 		cfg.Origins[k] = OriginDefault
 	}
 	for _, a := range allAxes() {
@@ -370,6 +374,13 @@ func build(doc map[string]any) (Config, error) {
 			}
 			cfg.IgnoreFiles = list
 			cfg.Origins["ignore_files"] = OriginFile
+		case "deprecated_fields":
+			list, err := stringListOf("deprecated_fields", val)
+			if err != nil {
+				return Config{}, err
+			}
+			cfg.DeprecatedFields = list
+			cfg.Origins["deprecated_fields"] = OriginFile
 		default:
 			cfg.UnknownKeys = append(cfg.UnknownKeys, key)
 		}

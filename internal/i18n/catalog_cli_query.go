@@ -58,17 +58,24 @@ source_refs)를 종류별로 구분해 보여줍니다. 슬러그에 해당하�
 경로를 생략하면 현재 디렉토리입니다.
 
 등급은 error, warn, reject 셋입니다. error와 reject는 승급을 막아
-종료 코드 1로 끝나고 warn은 통과시키되 알립니다.`,
-		"cli.lint.config_read_fail":     "위키 설정을 읽을 수 없음",
-		"cli.lint.blocking_violation":   "승급을 막는 위반이 있습니다",
-		"cli.lint.fix":                  "    고치는 법: %s",
-		"cli.lint.wiki_findings_header": "위키 진단:",
-		"cli.lint.wiki_finding_line":    "  [%s] %s 주제 %q",
-		"cli.lint.wiki_finding_ratio":   "    사용 비율이 %d%%(%d/%d 문서)로 broad_topic_pct %d를 넘습니다",
-		"cli.lint.wiki_finding_paths":   "    해당 문서: %s",
-		"cli.lint.summary_clean":        "검사한 파일 %d개, 위반 없음",
-		"cli.lint.summary":              "검사한 파일 %d개, error %d, warn %d, reject %d",
-		"cli.lint.more_paths":           " 외 %d개",
+종료 코드 1로 끝나고 warn은 통과시키되 알립니다.
+
+기본 검사 범위는 inbox 디렉토리를 뺀 나머지입니다. inbox 문서도
+검사하려면 --include-inbox를 주세요. 링크 그래프와 승급 게이트는
+어느 쪽이든 inbox를 포함합니다.`,
+		"cli.lint.config_read_fail":            "위키 설정을 읽을 수 없음",
+		"cli.lint.blocking_violation":          "승급을 막는 위반이 있습니다",
+		"cli.lint.flag_include_inbox":          "inbox 디렉토리 문서의 스키마 판정을 함께 돌립니다",
+		"cli.lint.fix":                         "    고치는 법: %s",
+		"cli.lint.wiki_findings_header":        "위키 진단:",
+		"cli.lint.wiki_finding_line":           "  [%s] %s 주제 %q",
+		"cli.lint.wiki_finding_ratio":          "    사용 비율이 %d%%(%d/%d 문서)로 broad_topic_pct %d를 넘습니다",
+		"cli.lint.wiki_finding_paths":          "    해당 문서: %s",
+		"cli.lint.summary_clean":               "검사한 파일 %d개, 위반 없음",
+		"cli.lint.summary":                     "검사한 파일 %d개, error %d, warn %d, reject %d",
+		"cli.lint.summary_clean_inbox_skipped": "검사한 파일 %d개, inbox 문서 %d개를 건너뛰었습니다(--include-inbox로 검사합니다), 위반 없음",
+		"cli.lint.summary_inbox_skipped":       "검사한 파일 %d개, inbox 문서 %d개를 건너뛰었습니다(--include-inbox로 검사합니다), error %d, warn %d, reject %d",
+		"cli.lint.more_paths":                  " 외 %d개",
 
 		// status
 		"cli.status.short": "위키 현황과 밀린 것을 보여줍니다",
@@ -260,17 +267,24 @@ in the wiki matches the slug. Finding broken links is one use of this command.`,
 Without a path, the current directory is used.
 
 Severities are error, warn, and reject. error and reject block promotion and
-end with exit code 1; warn passes with a notice.`,
-		"cli.lint.config_read_fail":     "cannot read wiki config",
-		"cli.lint.blocking_violation":   "There are violations that block promotion",
-		"cli.lint.fix":                  "    Fix: %s",
-		"cli.lint.wiki_findings_header": "Wiki findings:",
-		"cli.lint.wiki_finding_line":    "  [%s] %s topic %q",
-		"cli.lint.wiki_finding_ratio":   "    Usage %d%% (%d/%d documents) exceeds broad_topic_pct %d",
-		"cli.lint.wiki_finding_paths":   "    Documents: %s",
-		"cli.lint.summary_clean":        "Files checked: %d, no violations",
-		"cli.lint.summary":              "Files checked: %d, error %d, warn %d, reject %d",
-		"cli.lint.more_paths":           " and %d more",
+end with exit code 1; warn passes with a notice.
+
+The default scope excludes the inbox directory. Pass --include-inbox to also
+check inbox documents. The link graph and the promotion gate include inbox
+either way.`,
+		"cli.lint.config_read_fail":            "cannot read wiki config",
+		"cli.lint.blocking_violation":          "There are violations that block promotion",
+		"cli.lint.flag_include_inbox":          "also judge inbox documents against the schema",
+		"cli.lint.fix":                         "    Fix: %s",
+		"cli.lint.wiki_findings_header":        "Wiki findings:",
+		"cli.lint.wiki_finding_line":           "  [%s] %s topic %q",
+		"cli.lint.wiki_finding_ratio":          "    Usage %d%% (%d/%d documents) exceeds broad_topic_pct %d",
+		"cli.lint.wiki_finding_paths":          "    Documents: %s",
+		"cli.lint.summary_clean":               "Files checked: %d, no violations",
+		"cli.lint.summary":                     "Files checked: %d, error %d, warn %d, reject %d",
+		"cli.lint.summary_clean_inbox_skipped": "Files checked: %d, skipped %d inbox documents (check with --include-inbox), no violations",
+		"cli.lint.summary_inbox_skipped":       "Files checked: %d, skipped %d inbox documents (check with --include-inbox), error %d, warn %d, reject %d",
+		"cli.lint.more_paths":                  " and %d more",
 
 		// status
 		"cli.status.short": "Show wiki status and what is waiting",

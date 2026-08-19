@@ -262,7 +262,10 @@ func compareLinters(t *testing.T, wiki string) {
 		t.Fatalf("eject 실패(종료 코드 %d):\n%s", code, out)
 	}
 
-	engOut, engCode := run(t, binaryPath, "lint", wiki)
+	// 파이썬 린터는 inbox 를 포함한 전 범위를 판정한다. engram lint 의
+	// 기본 범위는 inbox 를 빼므로(ADR 0070) 같은 판정을 대조하려면 범위를
+	// 연다.
+	engOut, engCode := run(t, binaryPath, "lint", "--include-inbox", wiki)
 	pyOut, pyCode := run(t, pythonPath, filepath.Join(wiki, "scripts", "lint-frontmatter.py"), wiki)
 
 	if engCode != pyCode {

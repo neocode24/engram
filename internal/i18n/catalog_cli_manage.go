@@ -68,6 +68,10 @@ root_files: [index.md]
 # 문서가 아닌 마크다운. 같은 파일명이면 깊이와 무관하게 순회에서 뺍니다.
 # 기본값은 README.md 하나입니다. 비워 두면 README.md도 문서로 검사합니다.
 # ignore_files: [README.md]
+
+# 이 위키가 폐기한 프론트매터 키. 목록에 있는 키가 문서에 있으면 lint가
+# error로 잡습니다. 기본값은 빈 목록이고 마이그레이션할 때 채웁니다.
+# deprecated_fields: [quality_level, review_after]
 `,
 		"cli.init.index_title":     "# engram 위키",
 		"cli.init.index_intro":     "이 문서는 위키의 첫 문서입니다. 위키를 소개하는 안내로 바꿉니다.",
@@ -351,6 +355,10 @@ root_files: [index.md]
 # the walk regardless of depth. The default is README.md alone. Empty means
 # README.md is also checked as a document.
 # ignore_files: [README.md]
+
+# Frontmatter keys this wiki has retired. A listed key present in a document
+# is a lint error. The default is an empty list; fill it when migrating.
+# deprecated_fields: [quality_level, review_after]
 `,
 		"cli.init.index_title":     "# engram wiki",
 		"cli.init.index_intro":     "This is the first document of the wiki. Replace it with an introduction.",
