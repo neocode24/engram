@@ -99,7 +99,8 @@
 | `rules show` | eject 없이 내장 규칙을 읽기 전용 출력 | |
 | `skills install` | 에이전트 스킬 문서를 설치 | LLM 통합의 전부 ([0014](decisions/0014-llm-boundary-agent-drives-binary.md)) |
 | `serve` | 웹 UI | |
-| `model pull` | 시맨틱 검색용 모델 내려받기 | 선택 층 ([0007](decisions/0007-platform-and-distribution.md)) |
+| `model pull` | 재발견용 임베딩 모델 내려받기 | 선택 층. bge-m3 fp32 2.3GB ([0007](decisions/0007-platform-and-distribution.md), [0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)) |
+| `model status` | 모델 경로와 무결성 | `--verify`로 체크섬까지 본다 |
 | `self-update` | 릴리스 체크섬 검증 후 갱신 | |
 | `export` | 문서 반출. 노출 규칙은 `serve`와 같고 익명화는 사용자 사전으로 한다 | 여정 14 ([0046](decisions/0046-pack-exports-files-and-anonymizes-by-user-dictionary.md), [0047](decisions/0047-export-not-pack.md)) |
 
@@ -181,7 +182,9 @@
 - ~~교육용 데모 위키의 내용.~~ `examples/personal`로 만들었다. 커맨드 시퀀스의 생성물이며 `harness/examples`가 재생성해 대조한다.
 - ~~`serve` 웹 UI의 쓰기 범위.~~ [0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md)가 읽기 전용으로 정했다. 제안 접수도 두지 않는다.
 - ~~MCP 노출 시 도구 단위 분해.~~ [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md)이 도구 열로 정했다. 쓰기는 `capture` 하나다.
-- `engram model`이 관리할 모델의 범위. 임베딩만인가, STT와 TTS까지인가. 커맨드 구조는 [0007](decisions/0007-platform-and-distribution.md)에 있고 사이드카라 근간과 충돌하지 않는다. 목록만 정하면 된다. 상세는 `roadmap.md`에 있다.
+- ~~`engram model`이 관리할 모델의 범위.~~ [0068](decisions/0068-model-command-manages-embeddings-only.md)이 임베딩 하나로 정했다. STT와 TTS는 범위 밖이다.
+- ~~임베딩을 무엇으로 어떻게 돌릴 것인가.~~ [0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)가 bge-m3 fp32와 순수 Go로 정했다. onnxruntime 사이드카는 재검토 조건을 걸어 두었다.
+- 검색에 의미 축을 더할 것인가. [0075](decisions/0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md)가 `bridge`의 단위만 정하고 검색은 범위 밖으로 두었다. 조각 단위 벡터와 순위 융합을 함께 정해야 한다.
 
 ## 관련
 

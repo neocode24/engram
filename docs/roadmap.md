@@ -57,7 +57,7 @@
 
 1. **저장소 공개 전환과 첫 릴리스.** 둘이 한 묶음이다. private인 동안 Homebrew가 아카이브를 받을 수 없으므로 tap 갱신을 먼저 켜면 Formula가 죽은 링크를 가리킨다(ADR [0042](decisions/0042-release-artifacts-and-workflow.md)). **코드 쪽은 더 막는 것이 없다.**
 2. **비교 축을 늘린다.** 동등성 검증이 지금 보는 것은 lint 위반 목록 하나다. `resurface` 선정 순위가 다음이다. 나머지 둘은 해당 커맨드가 생길 때.
-3. **Windows 재검증** — 다음 버전 검증 때 함께 한다. 콘솔 직결 항목은 2차 검증 당시 스크립트가 출력을 캡처해 버려 실제로는 파이프를 검증하고 있었다. 스크립트를 고쳐 두었으나 실행하지 않았다. `autocrlf` 항목은 VM에 git이 없어 여전히 미검증이다.
+3. **Windows 재검증.** 다음 버전 검증 때 함께 한다. 콘솔 직결 항목은 2차 검증 당시 스크립트가 출력을 캡처해 버려 실제로는 파이프를 검증하고 있었다. 스크립트를 고쳐 두었으나 실행하지 않았다. `autocrlf` 항목은 VM에 git이 없어 여전히 미검증이다.
 
 ## 다음 트랙 (1.1)
 
@@ -120,16 +120,13 @@
 
 [0007](decisions/0007-platform-and-distribution.md)이 `engram model pull`을 사이드카로 정해 두었으나 구현이 없고 어느 마일스톤에도 없다. **사이드카이므로 바이너리는 순수 Go로 남는다.** CGO나 LLM 경계와 충돌하지 않는다.
 
-**순수 Go로 ONNX 추론이 되는 경로를 확인했다.** `hugot`이 백엔드 둘을 갖고 있고 그중 하나가 `gomlx`의 순수 Go CPU 백엔드다. onnxruntime 공유 라이브러리도 네이티브 토크나이저도 타지 않는다. 빌드를 실제로 돌렸다.
+**순수 Go로 ONNX 추론이 되는 경로를 확인했다.** `hugot`이 백엔드 둘을 갖고 있고 그중 하나가 `gomlx`의 순수 Go CPU 백엔드다. onnxruntime 공유 라이브러리도 네이티브 토크나이저도 타지 않는다. `CGO_ENABLED=0`으로 darwin/arm64와 windows/amd64 교차 빌드가 둘 다 통과했고 이 패키지를 링크한 바이너리가 23MB다.
 
-| 대상 | 결과 |
-|---|---|
-| `CGO_ENABLED=0` darwin/arm64 | 빌드 성공 |
-| `CGO_ENABLED=0` windows/amd64 교차 빌드 | 빌드 성공 |
+**추론까지 실제로 재서 [0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)로 닫았다.** 그 과정에서 전제 하나가 깨졌다. 순수 Go 백엔드에서 도는 것은 **fp32뿐**이다. int8 양자화판은 RSS 22.7GB에서 14분 넘게 적재가 끝나지 않고, fp16은 `unsupported dtype Float16`으로 죽는다. 그래서 받을 것은 2.27GB 하나이며 이는 upstream이 받는 것과 같다.
 
-바이너리가 22MB 남짓 늘어난다. **추론이 실제로 도는지는 아직 재지 않았다.** 모델을 받아야 하고, 순수 Go 백엔드가 bge-m3의 연산자를 다 덮는지와 CPU 속도가 쓸 만한지가 미지수다. 이 측정이 아래 미결정의 입력이다.
+속도는 Apple Silicon에서 upstream의 84분의 1이다. 원인이 gomlx의 SIMD 경로가 `amd64` 전용이고 arm64/NEON 경로가 없는 것임을 코드에서 확인했다. onnxruntime을 쓰면 22배지만 cgo와 네이티브 라이브러리 둘이 붙어 [0007](decisions/0007-platform-and-distribution.md)의 계약을 깬다. **계산 시점을 `reindex`가 아니라 `bridge`로 옮겨 순수 Go를 유지하기로 했다.** 재검토 조건은 `context/` 200문서 또는 첫 `bridge` 30분이다.
 
-관리 대상은 임베딩 하나로 정해졌다([0068](decisions/0068-model-command-manages-embeddings-only.md)). STT와 TTS는 engram의 범위가 아니다.
+관리 대상은 임베딩 하나로 정해졌다([0068](decisions/0068-model-command-manages-embeddings-only.md)). STT와 TTS는 engram의 범위가 아니다. 벡터의 단위와 하한 둘은 [0075](decisions/0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md)에 있다.
 
 ## 알려진 빈틈
 
