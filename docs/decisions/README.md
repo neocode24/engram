@@ -82,12 +82,14 @@
 | [0065](0065-markdown-links-count-as-relations.md) | 마크다운 링크도 문서 사이의 관계로 센다 | 2026-08-19 | accepted |
 | [0066](0066-rediscovery-reads-inbound-links-and-ignores-bulk-commits.md) | 재발견은 인바운드 링크를 보고 대량 커밋을 신호에서 뺀다 | 2026-08-19 | accepted |
 | [0067](0067-stale-days-default-is-thirty.md) | 노후 기준일 기본값을 30일로 한다 | 2026-08-19 | accepted |
-| [0068](0068-model-command-manages-embeddings-only.md) | model 커맨드는 임베딩만 관리한다 | 2026-08-19 | accepted |
+| [0068](0068-model-command-manages-embeddings-only.md) | model 커맨드는 임베딩만 관리한다 | 2026-08-19 | amended |
 | [0069](0069-secrets-and-sensitivity-block-promotion-and-export.md) | 시크릿과 민감도가 승급과 반출을 막는다 | 2026-08-19 | accepted |
 | [0070](0070-lint-skips-inbox-by-default.md) | lint는 기본으로 inbox를 검사하지 않는다 | 2026-08-19 | accepted |
 | [0071](0071-lint-checks-indexable-stage-and-deprecated-fields.md) | lint가 색인 자격과 폐기 필드를 검사한다 | 2026-08-19 | accepted |
 | [0072](0072-date-fields-are-written-only-where-they-are-read.md) | 날짜 필드는 그 값을 읽는 단계에만 쓴다 | 2026-08-19 | accepted |
 | [0073](0073-provenance-must-not-be-empty.md) | 증거 필드는 비어 있으면 안 된다 | 2026-08-19 | accepted |
+| [0074](0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md) | 임베딩은 순수 Go로 돌리고 모델은 bge-m3 fp32로 고정한다 | 2026-08-19 | accepted |
+| [0075](0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md) | 임베딩은 문서에 붙고 축마다 자기 하한을 갖는다 | 2026-08-19 | accepted |
 
 ## 공개 범위 밖
 
@@ -135,6 +137,9 @@
 | 0009 | 필수 필드 검사는 단계별로 모든 문서에 적용된다 | [0070](0070-lint-skips-inbox-by-default.md) inbox 는 기본 범위 밖이고 --include-inbox 로 연다 |
 | 0037 | sync 는 git 이력에서 날짜를 정정한다 | [0072](0072-date-fields-are-written-only-where-they-are-read.md) 이력이 없으면 파일명 접두사를 보조로 쓰고 대상 단계를 좁힌다 |
 | 0022 | promote 는 sources 에서 파생을 만들며 derived_from 을 채운다 | [0073](0073-provenance-must-not-be-empty.md) source_refs 도 함께 채운다 |
+| 0068 | 넷째 논거가 int8 양자화판 585MB 를 전제한다 | [0074](0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md) 그 판은 순수 Go 에서 돌지 않는다. 실제 대상은 fp32 2.27GB 하나다 |
+| 0068 | 순수 Go 의 실제 동작과 속도는 미측정이다 | [0074](0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md) 측정해 닫는다. fp32 에 한해 돌고 계산 시점을 bridge 로 옮겨 쓴다 |
+| 0028 | bridge 는 코사인 하한 하나로 후보를 거른다 | [0075](0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md) 단어 축과 임베딩 축이 각자 하한을 갖고 합집합을 본다 |
 
 ## 근거만 갱신된 경우
 

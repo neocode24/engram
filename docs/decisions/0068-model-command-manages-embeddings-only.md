@@ -2,7 +2,7 @@
 number: 0068
 title: model 커맨드는 임베딩만 관리한다
 date: 2026-08-19
-status: accepted
+status: amended
 ---
 
 # model 커맨드는 임베딩만 관리한다
