@@ -2,7 +2,7 @@
 number: 0075
 title: 임베딩은 문서에 붙고 축마다 자기 하한을 갖는다
 date: 2026-08-19
-status: accepted
+status: amended
 ---
 
 # 임베딩은 문서에 붙고 축마다 자기 하한을 갖는다

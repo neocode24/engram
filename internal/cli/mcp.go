@@ -64,6 +64,15 @@ type mcpQueryArgs struct {
 	Limit int    `json:"limit,omitempty" jsonschema:"결과 상한. 생략하면 기본값"`
 }
 
+// mcpSearchArgs는 search 도구의 입력이다. 의미 축 여부가 붙는 점만
+// mcpQueryArgs 와 다르다. recall 은 의미 축을 쓰지 않으므로 공용 타입에
+// 넣지 않는다. 도구가 받지 않는 인자를 스키마에 내면 에이전트가 준다.
+type mcpSearchArgs struct {
+	Query    string `json:"query" jsonschema:"검색 질의"`
+	Limit    int    `json:"limit,omitempty" jsonschema:"결과 상한. 생략하면 기본값"`
+	Semantic bool   `json:"semantic,omitempty" jsonschema:"참이면 낱말 대신 의미로 순위를 매긴다. context 문서만 대상이고 bridge가 만든 벡터가 있어야 한다"`
+}
+
 // mcpSlugArgs는 슬러그를 받는 조회 도구의 입력이다.
 type mcpSlugArgs struct {
 	Slug string `json:"slug" jsonschema:"조회할 슬러그"`
@@ -115,15 +124,15 @@ func registerMCPTools(s *mcp.Server, root string) {
 		return nil, ingestResult{Path: path, Slug: slug, Stage: string(wiki.StageInbox)}, nil
 	})
 
-	mcp.AddTool[mcpQueryArgs, any](s, &mcp.Tool{
+	mcp.AddTool[mcpSearchArgs, any](s, &mcp.Tool{
 		Name:        "search",
 		Description: i18n.T("cli.mcp.tool_search"),
-	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpQueryArgs) (*mcp.CallToolResult, any, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpSearchArgs) (*mcp.CallToolResult, any, error) {
 		limit := in.Limit
 		if limit <= 0 {
 			limit = 10
 		}
-		res, err := searchJSON(root, in.Query, limit)
+		res, err := searchJSON(root, in.Query, limit, in.Semantic)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -300,15 +309,22 @@ func registerMCPTools(s *mcp.Server, root string) {
 
 // searchJSON은 search 커맨드의 --json 출력과 같은 구조를 만든다.
 // 판정을 다시 만들지 않고 CLI 와 같은 경로를 돈다.
-func searchJSON(root, query string, limit int) (searchResponse, error) {
+//
+// semantic 이 참이면 의미 축으로 순위를 매긴다. 문서 벡터는 캐시에서
+// 읽기만 하므로 도구 호출 안에서 계산이 일어나지 않는다. 질의 하나를
+// 벡터로 만드는 데 모델 적재까지 1초 안쪽이라 도구 호출이 감당한다.
+// 벡터나 모델이 없으면 에러를 낸다. 에이전트가 그것을 읽고 semantic
+// 없이 다시 부를 수 있다.
+func searchJSON(root, query string, limit int, semantic bool) (searchResponse, error) {
 	cfg, err := config.Load(root)
 	if err != nil {
 		return searchResponse{}, err
 	}
 	ix := index.Load(root)
 	status := indexMissing
+	var walked []walk.Doc
 	if ix != nil {
-		walked, err := walk.Files(root, cfg)
+		walked, err = walk.Files(root, cfg)
 		if err != nil {
 			return searchResponse{}, err
 		}
@@ -319,7 +335,7 @@ func searchJSON(root, query string, limit int) (searchResponse, error) {
 		}
 	}
 	if ix == nil {
-		walked, err := walk.Files(root, cfg)
+		walked, err = walk.Files(root, cfg)
 		if err != nil {
 			return searchResponse{}, err
 		}
@@ -328,8 +344,18 @@ func searchJSON(root, query string, limit int) (searchResponse, error) {
 			return searchResponse{}, err
 		}
 	}
-	results := ix.Search(query, limit)
-	res := searchResponse{Query: query, IndexStatus: status, Results: make([]searchHit, 0, len(results))}
+	axis := axisTerm
+	var results []index.SearchResult
+	if semantic {
+		results, err = semanticSearch(root, query, ix, walked, limit)
+		if err != nil {
+			return searchResponse{}, err
+		}
+		axis = axisSemantic
+	} else {
+		results = ix.Search(query, limit)
+	}
+	res := searchResponse{Query: query, Axis: axis, IndexStatus: status, Results: make([]searchHit, 0, len(results))}
 	for i, r := range results {
 		res.Results = append(res.Results, searchHit{
 			Rank: i + 1, Slug: r.Slug, Title: r.Title,

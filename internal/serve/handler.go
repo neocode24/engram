@@ -2,24 +2,30 @@ package serve
 
 import (
 	"bytes"
-	"embed"
+	embedfs "embed"
 	"fmt"
 	"html/template"
+	"math"
 	"net/http"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/neocode24/engram/internal/bridge"
+	"github.com/neocode24/engram/internal/embed"
 	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/index"
+	"github.com/neocode24/engram/internal/resurface"
+	"github.com/neocode24/engram/internal/state"
 	"github.com/neocode24/engram/internal/status"
+	"github.com/neocode24/engram/internal/walk"
 )
 
 // 정적 자산은 바이너리에 임베드한다. 실행 시 파일도 네트워크도 필요하지
 // 않아야 폐쇄망에서 쓸 수 있다(ADR 0044).
 //
 //go:embed templates/*.html
-var templateFS embed.FS
+var templateFS embedfs.FS
 
 //go:embed assets/engram.css
 var styleSheet []byte
@@ -29,11 +35,19 @@ const searchLimit = 20
 
 // 내비게이션 현재 위치 값이다.
 const (
-	secIndex  = "index"
-	secSearch = "search"
-	secStatus = "status"
-	secDoc    = "doc"
+	secIndex     = "index"
+	secSearch    = "search"
+	secStatus    = "status"
+	secResurface = "resurface"
+	secDoc       = "doc"
 )
+
+// resurfaceLimit는 재발견 화면에 내는 문서 수의 상한이다. 카드가 한
+// 화면을 넘으면 다시 볼 것을 고른다는 성격이 사라진다.
+const resurfaceLimit = 8
+
+// bridgeLimit는 재발견 화면에 내는 연결 후보 쌍의 상한이다.
+const bridgeLimit = 8
 
 // templates는 임베드한 템플릿을 파싱한다. 파싱 실패는 빌드에 실은 자산의
 // 문제이므로 프로그램 오류로 다룬다.
@@ -112,6 +126,43 @@ type statusData struct {
 	Promotable int
 }
 
+// docLink는 문서 하나를 가리키는 화면 자료다. 필드 이름은 docView 와
+// 맞춘다. doclist 템플릿이 둘을 같은 자리에서 받는다.
+type docLink struct {
+	Title string
+	URL   string
+	Rel   string
+}
+
+// staleCard는 다시 볼 문서 한 장이다. 며칠 안 봤는지와 몇 개가 가리키는지가
+// 다시 볼 이유이므로 제목과 함께 낸다.
+type staleCard struct {
+	Title   string
+	URL     string
+	Days    int
+	Inbound int
+}
+
+// bridgeCard는 연결 후보 쌍 한 장이다. Axis 는 어느 축이 잡았는지다.
+type bridgeCard struct {
+	A     docLink
+	B     docLink
+	Score float64
+	Axis  string
+}
+
+// resurfaceData는 재발견 화면의 자료다.
+type resurfaceData struct {
+	Chrome    chrome
+	StaleDays int
+	Stale     []staleCard
+	Bridges   []bridgeCard
+	Orphans   []docLink
+	// EmbedAxis는 의미 축이 실제로 돌았는지다. 거짓이면 연결 후보가
+	// 단어 축만으로 나온 것이라 화면에 그렇게 적는다.
+	EmbedAxis bool
+}
+
 // Handler는 서버의 HTTP 핸들러를 만든다. 실제 포트를 여는 것은 호출자의
 // 몫이라 이 함수만으로 시험할 수 있다.
 func (s *Server) Handler() http.Handler {
@@ -120,6 +171,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/doc/", s.handleDoc)
 	mux.HandleFunc("/search", s.handleSearch)
 	mux.HandleFunc("/status", s.handleStatus)
+	mux.HandleFunc("/resurface", s.handleResurface)
 	mux.HandleFunc("/assets/engram.css", s.handleStyle)
 	mux.HandleFunc("/", s.handleNotFound)
 	return readOnly(withHeaders(mux))
@@ -332,6 +384,139 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		Stale:      res.Backlog.Stale,
 		Promotable: res.Backlog.Promotable,
 	})
+}
+
+// handleResurface는 다시 볼 문서와 연결 후보를 낸다.
+//
+// 읽기 전용 계약을 지킨다(ADR 0076). resurface 는 dryRun 으로 불러 제시
+// 이력을 남기지 않고, bridge 는 기각 목록을 읽기만 하며 벡터는 캐시에
+// 있는 것만 쓴다. 이 화면을 열어도 CLI 의 재발견 결과가 달라지지 않는다.
+//
+// 제외된 문서는 목록에서 걷어낸다. 재발견은 위키 전체를 보므로 노출
+// 범위를 여기서 다시 걸지 않으면 감춘 문서의 제목과 경로가 그대로 샌다.
+func (s *Server) handleResurface(w http.ResponseWriter, r *http.Request) {
+	v, err := s.load()
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	data := resurfaceData{
+		Chrome: chrome{Title: i18n.T("core.serve.title_resurface"), Section: secResurface, Exposure: v.exposure},
+	}
+
+	res, err := resurface.Run(s.root, s.cfg, time.Now(), resurfaceLimit, true)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	data.StaleDays = res.StaleDays
+	for _, c := range res.Candidates {
+		i, ok := v.byPath[c.Path]
+		if !ok {
+			continue
+		}
+		data.Stale = append(data.Stale, staleCard{
+			Title: v.docs[i].Title, URL: v.docs[i].URL,
+			Days: c.AgeDays, Inbound: c.Inbound,
+		})
+	}
+	for _, o := range res.NoInbound {
+		i, ok := v.byPath[o.Path]
+		if !ok {
+			continue
+		}
+		data.Orphans = append(data.Orphans, docLink{
+			Title: v.docs[i].Title, URL: v.docs[i].URL, Rel: v.docs[i].Rel})
+	}
+
+	data.Bridges, data.EmbedAxis = s.bridgeCards(v)
+	s.render(w, http.StatusOK, "resurface.html", data)
+}
+
+// bridgeCards는 연결 후보 쌍을 화면 자료로 만든다. 두 번째 반환값은
+// 의미 축이 실제로 돌았는지다.
+//
+// 문서 벡터는 캐시에서 읽기만 한다. 여기서 계산하면 요청 하나가 수십
+// 분이 되고 그 사이 서버가 멈춘다. 캐시를 채우는 것은 bridge 커맨드의
+// 몫이며 캐시가 비어 있으면 단어 축만으로 돈다(ADR 0076).
+func (s *Server) bridgeCards(v *view) ([]bridgeCard, bool) {
+	ix := index.Load(s.root)
+	if ix == nil {
+		var err error
+		ix, err = index.Build(s.root, v.walked, index.DefaultWeights())
+		if err != nil {
+			return nil, false
+		}
+	}
+	st, err := state.Load(s.root)
+	if err != nil {
+		return nil, false
+	}
+	vectors := embed.Cached(s.root, computeDocs(ix, v.walked))
+	res := bridge.Run(ix, v.graph, st, bridge.Options{
+		Min:      s.cfg.Thresholds.BridgeWordMin,
+		EmbedMin: s.cfg.Thresholds.BridgeEmbedMin,
+		Limit:    bridgeLimit,
+		Vectors:  vectors,
+	})
+	var out []bridgeCard
+	for _, p := range res.Pairs {
+		a, aok := v.bySlug[p.A]
+		b, bok := v.bySlug[p.B]
+		if !aok || !bok {
+			continue
+		}
+		out = append(out, bridgeCard{
+			A:     docLink{Title: v.docs[a].Title, URL: v.docs[a].URL, Rel: v.docs[a].Rel},
+			B:     docLink{Title: v.docs[b].Title, URL: v.docs[b].URL, Rel: v.docs[b].Rel},
+			Score: math.Round(p.Score*100) / 100,
+			Axis:  axisLabel(p.Axes),
+		})
+	}
+	return out, len(vectors) > 0
+}
+
+// axisLabel은 쌍을 잡은 축의 이름을 낸다. 두 축이 함께 잡은 쌍과 한
+// 축만 잡은 쌍은 성격이 다르므로 읽는 사람에게 근거를 밝힌다.
+func axisLabel(axes []string) string {
+	term, emb := false, false
+	for _, a := range axes {
+		switch a {
+		case bridge.AxisTerm:
+			term = true
+		case bridge.AxisEmbed:
+			emb = true
+		}
+	}
+	switch {
+	case term && emb:
+		return i18n.T("core.serve.axis_both")
+	case emb:
+		return i18n.T("core.serve.axis_embed")
+	case term:
+		return i18n.T("core.serve.axis_term")
+	}
+	return ""
+}
+
+// computeDocs는 색인에서 context 문서만 뽑아 임베딩 대상 목록으로
+// 만든다. 키가 내용 해시라 CLI 가 만든 캐시를 그대로 읽으려면 목록을
+// 만드는 규칙이 같아야 한다.
+func computeDocs(ix *index.Index, walked []walk.Doc) []embed.ComputeDoc {
+	bodies := map[string]string{}
+	for _, wd := range walked {
+		if wd.Err == nil {
+			bodies[wd.Rel] = wd.Parsed.Body
+		}
+	}
+	docs := make([]embed.ComputeDoc, 0, len(ix.Docs))
+	for _, e := range ix.Docs {
+		if seg, _, _ := strings.Cut(e.Path, "/"); seg != "context" {
+			continue
+		}
+		docs = append(docs, embed.ComputeDoc{Path: e.Path, Title: e.Title, Body: bodies[e.Path]})
+	}
+	return docs
 }
 
 // handleStyle은 임베드한 스타일시트를 낸다.

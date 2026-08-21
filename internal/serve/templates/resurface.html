@@ -1,0 +1,54 @@
+{{template "head" .Chrome}}
+<h1>재발견</h1>
+<p class="lede">오래 안 본 문서와, 비슷한데 아직 이어지지 않은 문서 쌍입니다. 이 화면은 아무것도 기록하지 않습니다. 여기서 본 문서가 engram resurface 의 후보에서 빠지지 않습니다.</p>
+
+<section class="group" aria-labelledby="stale-heading">
+  <h2 id="stale-heading">다시 볼 문서</h2>
+  {{if .Stale}}
+  <p class="note">마지막 갱신이 {{.StaleDays}}일을 넘긴 문서입니다.</p>
+  <ul class="card-list">
+  {{range .Stale}}
+    <li class="card">
+      <h3><a href="{{.URL}}">{{.Title}}</a></h3>
+      <p class="card-meta">마지막 갱신 {{.Days}}일 전. 이 문서를 가리키는 링크 {{.Inbound}}개</p>
+    </li>
+  {{end}}
+  </ul>
+  {{else}}
+  <p class="empty">다시 볼 문서가 없습니다.</p>
+  {{end}}
+</section>
+
+<section class="group" aria-labelledby="bridge-heading">
+  <h2 id="bridge-heading">연결 후보</h2>
+  {{if .EmbedAxis}}
+  <p class="note">낱말 축과 의미 축을 함께 썼습니다. 의미 축은 같은 낱말을 쓰지 않은 문서도 잡습니다.</p>
+  {{else}}
+  <p class="note" role="status">낱말 축만 썼습니다. 의미 축을 쓰려면 engram bridge 를 한 번 돌려 문서 벡터를 만드세요.</p>
+  {{end}}
+  {{if .Bridges}}
+  <ul class="card-list">
+  {{range .Bridges}}
+    <li class="card">
+      <p class="card-badge">{{.Axis}} {{printf "%.2f" .Score}}</p>
+      <h3><a href="{{.A.URL}}">{{.A.Title}}</a></h3>
+      <p class="card-link">이어질 수 있는 문서</p>
+      <h3><a href="{{.B.URL}}">{{.B.Title}}</a></h3>
+    </li>
+  {{end}}
+  </ul>
+  <p class="note">이을지 말지는 사람이 정합니다. 이 화면에는 기각 버튼이 없습니다. 기각은 engram bridge --reject 로 남깁니다.</p>
+  {{else}}
+  <p class="empty">연결 후보가 없습니다.</p>
+  {{end}}
+</section>
+
+<section class="group" aria-labelledby="orphan-heading">
+  <h2 id="orphan-heading">아무도 안 가리키는 문서</h2>
+  {{if .Orphans}}
+  {{template "doclist" .Orphans}}
+  {{else}}
+  <p class="empty">고아 문서가 없습니다.</p>
+  {{end}}
+</section>
+{{template "foot" .Chrome}}

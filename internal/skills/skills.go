@@ -9,12 +9,17 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/neocode24/engram/internal/i18n"
 )
 
 // 임베드된 스킬 문서. Go 소스에 문자열로 박지 않고 마크다운 파일 하나를
 // 그대로 싣는다. 사람이 읽고 고칠 수 있어야 하기 때문이다.
+//
+// 한 벌이며 한국어다. 언어별로 나누지 않는 이유는 ADR 0077에 있다.
+// 나눌 때는 SKILL.en.md 를 더하고 Doc 이 i18n.Current 로 고르되 없으면
+// 한국어로 떨어진다. i18n.T 의 Fallback 규율과 같다.
 //
 //go:embed SKILL.md
 var skillDoc string
@@ -28,6 +33,25 @@ const SkillName = "engram"
 // Doc은 임베드된 스킬 문서를 반환한다.
 func Doc() string {
 	return skillDoc
+}
+
+// Body는 스킬 문서에서 YAML 프론트매터를 걷어낸 본문이다. name 과
+// description 은 스킬 로더가 읽는 값이라 위키 안에서는 의미가 없고,
+// 위키의 프론트매터 규약과도 키가 다르다.
+//
+// eject 가 이 본문을 위키의 에이전트 계약 문서로 옮긴다. 판단 규칙이
+// 사용자 홈에만 있으면 위키를 복제한 사람에게 닿지 않는다(ADR 0077).
+func Body() string {
+	const fence = "---\n"
+	if !strings.HasPrefix(skillDoc, fence) {
+		return skillDoc
+	}
+	rest := skillDoc[len(fence):]
+	i := strings.Index(rest, "\n"+fence)
+	if i < 0 {
+		return skillDoc
+	}
+	return strings.TrimLeft(rest[i+1+len(fence):], "\n")
 }
 
 // candidate는 설치 대상 후보와 그 규약의 출처다.

@@ -72,6 +72,7 @@ func Plan(cfg config.Config) []Artifact {
 		{Path: "meta/promotion-rules.md", Mode: 0o644, Content: promotionRulesDoc(cfg, dirs)},
 		{Path: "meta/lint-rules.md", Mode: 0o644, Content: lintRulesDoc(cfg)},
 		{Path: "meta/wiki-layout.md", Mode: 0o644, Content: wikiLayoutDoc(cfg, dirs)},
+		{Path: "meta/agent-contract.md", Mode: 0o644, Content: agentContractDoc()},
 		{Path: "scripts/lint-frontmatter.py", Mode: 0o755, Content: linterScript(cfg, dirs)},
 		{Path: ".githooks/pre-commit", Mode: 0o755, Content: preCommitHook()},
 		{Path: "AGENTS.md", Mode: 0o644, Content: agentsDoc(cfg, dirs)},

@@ -281,3 +281,20 @@ func TestSearchLineShowsStageNotPath(t *testing.T) {
 		t.Errorf("--json 에 제목이 없음: %+v", res.Results[0])
 	}
 }
+
+func TestSearchSemanticNeedsVectors(t *testing.T) {
+	// 벡터 캐시가 없으면 계산하지 않고 안내한다. 여기서 계산하면 검색
+	// 한 번이 수십 분이 된다(ADR 0078). 모델이 없는 환경에서도 이
+	// 판정이 먼저 나야 하므로 캐시 검사가 모델 적재보다 앞에 있다.
+	dir := searchWiki(t)
+	if _, err := runSearchRoot(t, "reindex", dir); err != nil {
+		t.Fatal(err)
+	}
+	out, err := runSearchRoot(t, "search", "--wiki", dir, "--semantic", "게이트웨이")
+	if err == nil {
+		t.Fatalf("벡터가 없으면 거절되어야 함:\n%s", out)
+	}
+	if !strings.Contains(err.Error(), "engram bridge") {
+		t.Errorf("무엇을 하면 되는지 알려야 함: %v", err)
+	}
+}

@@ -89,7 +89,10 @@
 | [0072](0072-date-fields-are-written-only-where-they-are-read.md) | 날짜 필드는 그 값을 읽는 단계에만 쓴다 | 2026-08-19 | accepted |
 | [0073](0073-provenance-must-not-be-empty.md) | 증거 필드는 비어 있으면 안 된다 | 2026-08-19 | accepted |
 | [0074](0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md) | 임베딩은 순수 Go로 돌리고 모델은 bge-m3 fp32로 고정한다 | 2026-08-19 | accepted |
-| [0075](0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md) | 임베딩은 문서에 붙고 축마다 자기 하한을 갖는다 | 2026-08-19 | accepted |
+| [0075](0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md) | 임베딩은 문서에 붙고 축마다 자기 하한을 갖는다 | 2026-08-19 | amended |
+| [0076](0076-serve-shows-rediscovery-without-recording-it.md) | serve는 재발견을 기록 없이 보여준다 | 2026-08-21 | accepted |
+| [0077](0077-the-agent-contract-stays-in-the-wiki-and-the-skill-is-one-copy.md) | 에이전트 계약은 위키 안에 남고 스킬 문서는 한 벌이다 | 2026-08-21 | accepted |
+| [0078](0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md) | 의미 검색은 명시 플래그이고 캐시를 소비만 한다 | 2026-08-21 | accepted |
 
 ## 공개 범위 밖
 
@@ -140,6 +143,9 @@
 | 0068 | 넷째 논거가 int8 양자화판 585MB 를 전제한다 | [0074](0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md) 그 판은 순수 Go 에서 돌지 않는다. 실제 대상은 fp32 2.27GB 하나다 |
 | 0068 | 순수 Go 의 실제 동작과 속도는 미측정이다 | [0074](0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md) 측정해 닫는다. fp32 에 한해 돌고 계산 시점을 bridge 로 옮겨 쓴다 |
 | 0028 | bridge 는 코사인 하한 하나로 후보를 거른다 | [0075](0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md) 단어 축과 임베딩 축이 각자 하한을 갖고 합집합을 본다 |
+| 0044 | 재발견 커맨드를 노출하지 않는다 | [0076](0076-serve-shows-rediscovery-without-recording-it.md) 기록하지 않는 화면으로 노출한다. 제시 이력도 벡터 캐시도 쓰지 않는다 |
+| 0041 | 스킬 문서는 사용자 홈에만 심긴다 | [0077](0077-the-agent-contract-stays-in-the-wiki-and-the-skill-is-one-copy.md) eject 가 같은 본문을 위키 안 meta/agent-contract.md 로도 남긴다 |
+| 0075 | 임베딩을 쓰는 곳은 bridge 뿐이다 | [0078](0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md) search --semantic 과 serve 의 재발견 화면이 그 캐시를 읽는다. 계산 자리는 그대로 bridge 다 |
 
 ## 근거만 갱신된 경우
 

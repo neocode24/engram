@@ -321,3 +321,51 @@ h3 {
     gap: 1rem;
   }
 }
+
+/* 재발견 화면의 카드. 목록이 아니라 낱장으로 보여야 하나씩 판단하게 된다 */
+.card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  background: var(--panel);
+}
+
+.card h3 {
+  margin: 0.2rem 0;
+  font-size: 1rem;
+}
+
+.card-meta,
+.card-link {
+  margin: 0.2rem 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.card-link::before {
+  content: "";
+  display: block;
+  border-top: 1px dashed var(--line);
+  margin: 0.5rem 0;
+}
+
+.card-badge {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+@media (min-width: 48rem) {
+  .card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

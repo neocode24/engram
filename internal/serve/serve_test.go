@@ -373,7 +373,7 @@ func TestServeStatusPage(t *testing.T) {
 
 func TestServeRejectsWrites(t *testing.T) {
 	h := newTestServer(t, makeWiki(t, "team"), Options{})
-	targets := []string{"/", "/doc/context/hub.md", "/search", "/status", "/무엇이든"}
+	targets := []string{"/", "/doc/context/hub.md", "/search", "/status", "/resurface", "/무엇이든"}
 	methods := []string{http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodPatch}
 	for _, target := range targets {
 		for _, method := range methods {
@@ -393,7 +393,11 @@ func TestServeDoesNotTouchWiki(t *testing.T) {
 	before := hashTree(t, root)
 	h := newTestServer(t, root, Options{IncludeArchive: true})
 	for _, target := range []string{
-		"/", "/status", "/search?q=" + url.QueryEscape("승급파이프라인"), "/search",
+		// /resurface 가 여기 있는 것이 읽기 전용 계약의 시험이다. resurface 는
+		// 원래 제시 이력을 쓰고 bridge 는 벡터 캐시를 쓴다. 화면이 그 둘을
+		// 쓰지 않는지는 위키 전체 해시로만 확인된다(ADR 0076).
+		"/", "/status", "/resurface", "/resurface",
+		"/search?q=" + url.QueryEscape("승급파이프라인"), "/search",
 		docPath("context/hub.md"), docPath("context/peer.md"), docPath("index.md"),
 		docPath("archive/old.md"), docPath("inbox/2026-08-01-rough.md"),
 		"/assets/engram.css", "/없는주소",
@@ -433,6 +437,41 @@ func hashTree(t *testing.T, root string) string {
 	}
 	sort.Strings(lines)
 	return strings.Join(lines, "\n")
+}
+
+func TestServeResurfaceHidesExcluded(t *testing.T) {
+	// team 프리셋은 sensitivity 축을 켠다. private-local-only 와 restricted
+	// 문서는 재발견 후보에도 오르지 못해야 한다. resurface 와 bridge 는
+	// 위키 전체를 보므로 화면에서 다시 거르지 않으면 제목과 경로가 샌다.
+	h := newTestServer(t, makeWiki(t, "team"), Options{})
+	code, body := get(t, h, "/resurface")
+	if code != http.StatusOK {
+		t.Fatalf("상태 코드가 %d 입니다. 200 이어야 합니다", code)
+	}
+	for _, leak := range []string{
+		"로컬 전용 문서", "제한 공개 문서", "보관 문서", "러프 메모", "원본 요약",
+		"context/secret.md", "context/limited.md", "archive/old.md",
+		"inbox/2026-08-01-rough.md", "sources/2026-08-01-src.md",
+	} {
+		if strings.Contains(body, leak) {
+			t.Errorf("재발견 화면에 제외 대상 %q 가 나옵니다", leak)
+		}
+	}
+	// 노출 문서는 나와야 한다. 전부 감추면 이 시험이 무의미해진다.
+	if !strings.Contains(body, "재발견") {
+		t.Error("재발견 화면의 제목이 없습니다")
+	}
+}
+
+func TestServeResurfaceWithoutVectorsUsesWordAxisOnly(t *testing.T) {
+	// 벡터 캐시가 없는 위키다. 의미 축이 없다는 사실을 화면이 밝혀야
+	// 한다. 조용히 단어 축만 쓰면 읽는 사람이 의미 축까지 돌았다고
+	// 믿는다(ADR 0076).
+	h := newTestServer(t, makeWiki(t, "personal"), Options{})
+	_, body := get(t, h, "/resurface")
+	if !strings.Contains(body, "낱말 축만") {
+		t.Error("의미 축을 쓰지 못했다는 안내가 없습니다")
+	}
 }
 
 func TestServeAssetsAndHeaders(t *testing.T) {

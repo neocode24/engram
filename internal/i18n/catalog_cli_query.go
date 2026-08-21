@@ -9,17 +9,28 @@ func init() {
 
 색인이 신선하면 색인으로 검색합니다. 낡았으면 낡은 색인 그대로 검색하되
 경고를 냅니다. 색인이 없거나 깨졌으면 이번 실행에서만 문서를 읽어 검색합니다.
-어느 쪽이든 색인 파일을 쓰지 않습니다. 색인을 만드는 것은 reindex뿐입니다.`,
-		"cli.search.flag_read_fail":      "--%s 플래그를 읽을 수 없음",
-		"cli.search.walk_fail":           "위키를 순회할 수 없음",
-		"cli.search.warn_stale":          "경고: 색인이 낡았습니다. 낡은 색인으로 검색합니다. engram reindex로 갱신하세요",
-		"cli.search.index_build_fail":    "즉석 색인을 만들 수 없음",
-		"cli.search.notice_memory_index": "안내: 색인이 없어 이번 실행에서만 문서를 읽었습니다. engram reindex를 한 번 돌리면 검색이 빨라집니다",
-		"cli.search.flag_limit":          "결과 상한",
-		"cli.search.flag_wiki":           "대상 위키 경로",
-		"cli.search.no_results":          "결과가 없습니다",
-		"cli.search.stage_root":          "루트",
-		"cli.search.query_tokens":        "질의 %q는 다음 토큰으로 검색했습니다: %s",
+어느 쪽이든 색인 파일을 쓰지 않습니다. 색인을 만드는 것은 reindex뿐입니다.
+
+--semantic을 주면 낱말이 아니라 의미로 순위를 매깁니다. 같은 낱말을
+쓰지 않은 문서도 잡히지만 대상이 context 문서로 좁아집니다. 문서 벡터는
+bridge가 만들어 둔 것을 읽기만 하므로 bridge를 한 번도 돌리지 않았으면
+쓸 수 없습니다.`,
+		"cli.search.flag_read_fail":       "--%s 플래그를 읽을 수 없음",
+		"cli.search.walk_fail":            "위키를 순회할 수 없음",
+		"cli.search.warn_stale":           "경고: 색인이 낡았습니다. 낡은 색인으로 검색합니다. engram reindex로 갱신하세요",
+		"cli.search.index_build_fail":     "즉석 색인을 만들 수 없음",
+		"cli.search.notice_memory_index":  "안내: 색인이 없어 이번 실행에서만 문서를 읽었습니다. engram reindex를 한 번 돌리면 검색이 빨라집니다",
+		"cli.search.flag_limit":           "결과 상한",
+		"cli.search.flag_wiki":            "대상 위키 경로",
+		"cli.search.flag_semantic":        "낱말 대신 의미로 순위를 매깁니다. context 문서만 대상이며 bridge가 만든 벡터를 씁니다",
+		"cli.search.no_results":           "결과가 없습니다",
+		"cli.search.stage_root":           "루트",
+		"cli.search.query_tokens":         "질의 %q는 다음 토큰으로 검색했습니다: %s",
+		"cli.search.semantic_header":      "의미 축으로 검색했습니다. 점수는 코사인 유사도입니다",
+		"cli.search.semantic_no_vectors":  "의미 축으로 쓸 문서 벡터가 없습니다. engram bridge를 한 번 돌리면 만들어집니다",
+		"cli.search.semantic_no_model":    "임베딩 모델이 없습니다. engram model download로 내려받으세요",
+		"cli.search.semantic_open_fail":   "임베딩 모델을 열 수 없음",
+		"cli.search.semantic_encode_fail": "질의를 벡터로 만들 수 없음",
 
 		// recall
 		"cli.recall.short": "질의에 맞는 원문 조각을 출처와 함께 냅니다",
@@ -235,17 +246,28 @@ stale_days를 넘긴 context 문서, 고아는 링크가 0개인 문서입니다
 With a fresh index, search runs on the index. When the index is stale, search
 still uses it and prints a warning. With no index or a broken one, documents
 are read for this run only. Either way no index file is written. Only reindex
-builds the index.`,
-		"cli.search.flag_read_fail":      "cannot read --%s flag",
-		"cli.search.walk_fail":           "cannot walk the wiki",
-		"cli.search.warn_stale":          "warning: the index is stale. Searching with the stale index. Run engram reindex to refresh",
-		"cli.search.index_build_fail":    "cannot build an in-memory index",
-		"cli.search.notice_memory_index": "note: no index found, documents were read for this run only. Run engram reindex once to speed up search",
-		"cli.search.flag_limit":          "result limit",
-		"cli.search.flag_wiki":           "target wiki path",
-		"cli.search.no_results":          "No results",
-		"cli.search.stage_root":          "root",
-		"cli.search.query_tokens":        "Query %q was searched with these tokens: %s",
+builds the index.
+
+With --semantic, ranking is by meaning rather than by word. Documents that
+share no words are found too, but the scope narrows to context documents.
+Document vectors are only read, never computed here, so --semantic needs
+bridge to have run at least once.`,
+		"cli.search.flag_read_fail":       "cannot read --%s flag",
+		"cli.search.walk_fail":            "cannot walk the wiki",
+		"cli.search.warn_stale":           "warning: the index is stale. Searching with the stale index. Run engram reindex to refresh",
+		"cli.search.index_build_fail":     "cannot build an in-memory index",
+		"cli.search.notice_memory_index":  "note: no index found, documents were read for this run only. Run engram reindex once to speed up search",
+		"cli.search.flag_limit":           "result limit",
+		"cli.search.flag_wiki":            "target wiki path",
+		"cli.search.flag_semantic":        "rank by meaning instead of words. Covers context documents only, using vectors built by bridge",
+		"cli.search.no_results":           "No results",
+		"cli.search.stage_root":           "root",
+		"cli.search.query_tokens":         "Query %q was searched with these tokens: %s",
+		"cli.search.semantic_header":      "Searched on the semantic axis. Scores are cosine similarity",
+		"cli.search.semantic_no_vectors":  "No document vectors available for the semantic axis. Run engram bridge once to build them",
+		"cli.search.semantic_no_model":    "The embedding model is missing. Run engram model download",
+		"cli.search.semantic_open_fail":   "cannot open the embedding model",
+		"cli.search.semantic_encode_fail": "cannot encode the query into a vector",
 
 		// recall
 		"cli.recall.short": "Return original passages matching the query, with sources",

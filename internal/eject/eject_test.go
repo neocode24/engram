@@ -12,6 +12,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/lint"
+	"github.com/neocode24/engram/internal/skills"
 )
 
 // writeWiki는 임시 디렉토리에 위키 파일들을 만들고 그 루트를 반환한다.
@@ -360,4 +361,41 @@ func TestLinter(t *testing.T) {
 			t.Fatalf("규칙 판정이 다름:\n python: %v\n engram: %v\n%s", got, want, out)
 		}
 	})
+}
+
+func TestPlanCarriesAgentContract(t *testing.T) {
+	// 판단 규칙이 사용자 홈에만 있으면 위키를 복제한 사람에게 닿지
+	// 않는다. eject 는 스킬 문서 본문을 위키 안으로 옮긴다(ADR 0077).
+	root := writeWiki(t, map[string]string{"engram.yaml": "preset: personal\n"})
+	var contract, agents string
+	for _, a := range Plan(loadCfg(t, root)) {
+		switch a.Path {
+		case "meta/agent-contract.md":
+			contract = a.Content
+		case "AGENTS.md":
+			agents = a.Content
+		}
+	}
+	if contract == "" {
+		t.Fatal("meta/agent-contract.md 가 산출물에 없습니다")
+	}
+	// 스킬 문서의 프론트매터는 스킬 로더의 것이라 위키 안에서 의미가
+	// 없다. 걷어내지 않으면 위키의 프론트매터 규약과 키가 충돌한다.
+	if strings.HasPrefix(contract, "---\nname:") {
+		t.Error("스킬 프론트매터가 걷히지 않았습니다")
+	}
+	// 두 벌로 쓰지 않는다는 것이 이 산출물의 계약이다. 본문이 스킬
+	// 문서와 다르면 위키와 스킬이 서로 다른 계약을 갖게 된다.
+	if !strings.Contains(contract, skills.Body()) {
+		t.Error("본문이 스킬 문서와 다릅니다")
+	}
+	// 판단 규칙의 핵심이 실제로 넘어갔는지 본다.
+	for _, must := range []string{"승급 준비는 네 일이다", "쓰기 경계", "sources 는 네 자리가 아니다"} {
+		if !strings.Contains(contract, must) {
+			t.Errorf("판단 규칙 %q 가 없습니다", must)
+		}
+	}
+	if !strings.Contains(agents, "meta/agent-contract.md") {
+		t.Error("AGENTS.md 가 계약 문서를 가리키지 않습니다")
+	}
 }
