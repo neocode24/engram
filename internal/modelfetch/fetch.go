@@ -1,4 +1,12 @@
-package embed
+// Package modelfetch은 크기와 체크섬을 고정한 모델 파일을 받고 검증한다.
+//
+// 표준 라이브러리만 쓴다. 그것이 이 패키지가 따로 있는 이유다.
+// internal/embed 에 두면 그 패키지의 추론 의존(hugot, gomlx)이 함께
+// 링크되어, 임베딩을 쓰지 않는 바이너리가 추론 스택을 통째로 지고
+// 간다. voice 모듈이 그 경우다(ADR 0080, 0081).
+//
+// 어떤 모델인지는 이 패키지가 모른다. 호출자가 ModelFile 목록을 준다.
+package modelfetch
 
 import (
 	"archive/tar"
@@ -14,18 +22,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"slices"
 	"strings"
 )
-
-// Revision은 내려받기를 고정하는 HuggingFace 커밋 SHA 다. main 을 쓰지
-// 않는 이유는 같은 model pull 이 언제 돌아도 같은 바이트를 받아야 하기
-// 때문이다(ADR 0074). Xenova/bge-m3 의 2026-02-10 시점 HEAD 다.
-const Revision = "4de13258303883538bd53b696b452bf8099f0858"
-
-// DownloadBase는 내려받기 URL 의 앞부분이다. 파일의 저장소 안 경로를
-// 붙여 쓴다. 테스트는 이 값을 httptest 서버 주소로 바꿔 끼운다.
-const DownloadBase = "https://huggingface.co/Xenova/bge-m3/resolve/" + Revision
 
 // 내려받기 실패의 종류다. 호출자가 문구를 고르게 보내는 값이다.
 var (
@@ -39,10 +37,17 @@ var (
 
 // ModelFile은 모델을 이루는 파일 하나의 기대값이다.
 type ModelFile struct {
-	// Remote는 저장소 안 경로다. onnx/ 아래의 둘과 루트의 넷이 있다.
+	// Base는 이 파일만의 내려받기 URL 앞부분이다. 비면 호출자가 준
+	// 기본 base 를 쓴다.
+	//
+	// 모델 하나가 호스트 하나에서 오지 않는 경우가 있다. 음성 모델이
+	// 그렇다. whisper 는 HuggingFace 에, 화자 임베딩은 GitHub 릴리스에
+	// 있다(ADR 0081). 그때 파일마다 호스트를 준다.
+	Base string
+	// Remote는 base 뒤에 붙는 경로다.
 	Remote string
-	// Name은 ModelDir 안에 놓이는 파일 이름이다. Remote 와 달리
-	// 평평하다. onnx/ 계층을 만들지 않는다.
+	// Name은 모델 디렉토리 안에 놓이는 파일 이름이다. Remote 와 달리
+	// 평평하다. 원격의 디렉토리 계층을 만들지 않는다.
 	Name string
 	// Size는 바이트 크기다.
 	Size int64
@@ -50,41 +55,21 @@ type ModelFile struct {
 	SHA256 string
 }
 
-// modelFiles는 기대값 여섯이다. 크기와 sha256 은 리비전 4de1325 에서
-// 실제로 받아 계산했고 LFS 파일 둘은 HuggingFace API 의 lfs.oid 와
-// 같은 값임을 겹쳐 확인했다.
-var modelFiles = []ModelFile{
-	{Remote: "onnx/sentence_transformers.onnx", Name: "sentence_transformers.onnx", Size: 724923, SHA256: "c53a8fe59f64ae6babb972b59b6679d8173e88b378637eba495ed0f7227f3dca"},
-	{Remote: "onnx/model.onnx_data", Name: "model.onnx_data", Size: 2266820608, SHA256: "1eebfb28493f67bba03ce0ef64bfdc7fc5a3bd9d7493f818bb1d78cd798416b4"},
-	{Remote: "tokenizer.json", Name: "tokenizer.json", Size: 17082821, SHA256: "6710678b12670bc442b99edc952c4d996ae309a7020c1fa0096dd245c2faf790"},
-	{Remote: "config.json", Name: "config.json", Size: 770, SHA256: "734a79bf12d388c1467a4e3ab625f45de7f6906cffcfb93a1eca1787504bed95"},
-	{Remote: "tokenizer_config.json", Name: "tokenizer_config.json", Size: 1173, SHA256: "7e4c1cc848840aeccdd763458c18dd525eb0f795c992e00ebe9c28554e7db2d4"},
-	{Remote: "special_tokens_map.json", Name: "special_tokens_map.json", Size: 964, SHA256: "8c785abebea9ae3257b61681b4e6fd8365ceafde980c21970d001e834cf10835"},
-}
-
-// ModelFiles는 기대값 여섯의 복사본을 반환한다.
-func ModelFiles() []ModelFile {
-	return slices.Clone(modelFiles)
-}
-
 // ProgressFn은 내려받기 진행률을 받는 콜백이다. received 가 total 에
 // 이르면 그 파일이 끝난 것이다. 이미 있어 건너뛴 파일에는 부르지
 // 않는다. 건너뜀은 Download 의 반환값으로 안다.
 type ProgressFn func(name string, received, total int64)
 
-// Download는 모델 파일 여섯을 base URL 에서 dir 로 받는다. 이미 있고
-// 체크섬이 맞은 파일은 받지 않고 그 이름을 돌려준다.
+// Download는 files 를 dir 로 받는다. 이미 있고 체크섬이 맞은 파일은
+// 받지 않고 그 이름을 돌려준다. 파일에 Base 가 있으면 그것을 쓰고
+// 없으면 인자로 받은 base 를 쓴다.
 //
 // 이어받기는 Range 로 한다. 부분 파일이 있으면 그 지점부터 받고 서버가
 // 206 을 주지 않으면 처음부터 받는다. Ctrl-C 로 죽어도 다음 실행이 이어
 // 받을 수 있도록 임시 파일을 쓰지 않고 대상 파일에 직접 쓰며 검증은
 // 다 받은 뒤에 한다. hugot 의 DownloadModel 을 쓰지 않는 이유는
 // 체크섬 고정도 이어받기도 진행률도 호출자 손에 없기 때문이다(ADR 0074).
-func Download(ctx context.Context, client *http.Client, base, dir string, prog ProgressFn) ([]string, error) {
-	return downloadModel(ctx, client, base, dir, modelFiles, prog)
-}
-
-func downloadModel(ctx context.Context, client *http.Client, base, dir string, files []ModelFile, prog ProgressFn) ([]string, error) {
+func Download(ctx context.Context, client *http.Client, base, dir string, files []ModelFile, prog ProgressFn) ([]string, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
 	}
@@ -114,6 +99,9 @@ func downloadFile(ctx context.Context, client *http.Client, base, dir string, f 
 	offset, err := resumeOffset(dst, f)
 	if err != nil {
 		return false, err
+	}
+	if f.Base != "" {
+		base = f.Base
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+"/"+f.Remote, nil)
 	if err != nil {
@@ -168,7 +156,7 @@ func resumeOffset(path string, f ModelFile) (int64, error) {
 
 // writeBody는 응답 몸통을 대상 파일에 쓴다. 이어받기면 offset 으로
 // 가고 처음부터 받으면 비운다. 임시 파일을 쓰지 않고 직접 쓰는 이유는
-// downloadModel 의 주석에 있다.
+// Download 의 주석에 있다.
 func writeBody(body io.Reader, dst string, offset int64, f ModelFile, prog ProgressFn) (int64, error) {
 	out, err := openForResume(dst, offset)
 	if err != nil {
@@ -285,13 +273,9 @@ type FileStatus struct {
 }
 
 // Inspect는 dir 안 모델 파일의 상태를 낸다. verify 가 참일 때만
-// sha256 을 계산한다. 2.3GB 를 읽는 비용을 기본으로 물지 않게
-// 하기 위해서다.
-func Inspect(dir string, verify bool) ([]FileStatus, error) {
-	return inspectModel(dir, modelFiles, verify)
-}
-
-func inspectModel(dir string, files []ModelFile, verify bool) ([]FileStatus, error) {
+// sha256 을 계산한다. 기가바이트를 읽는 비용을 기본으로 물지
+// 않게 하기 위해서다.
+func Inspect(dir string, files []ModelFile, verify bool) ([]FileStatus, error) {
 	out := make([]FileStatus, 0, len(files))
 	for _, f := range files {
 		s := FileStatus{Name: f.Name, ExpectedSize: f.Size, ExpectedSHA256: f.SHA256}
@@ -321,17 +305,13 @@ func inspectModel(dir string, files []ModelFile, verify bool) ([]FileStatus, err
 	return out, nil
 }
 
-// Import는 오프라인 자료에서 파일 여섯을 가져와 dir 에 놓는다. src 는
+// Import는 오프라인 자료에서 files 를 가져와 dir 에 놓는다. src 는
 // 디렉토리 또는 tar 아카이브다. tar 는 묶음 그대로와 gzip 으로 묶은
 // 것 둘 다 받는다. 항목 이름은 평평한 파일 이름이거나 저장소처럼
 // onnx/ 아래에 있는 경로다. 어떤 배치로 와도 ModelDir 에는 평평하게
 // 놓는다. 가져온 파일은 내려받기와 같은 검증을 지나므로 내용이 기대값과
 // 다르면 실패한다. 가져다 놓은 파일 이름 목록을 돌려준다.
-func Import(src, dir string) ([]string, error) {
-	return importModel(src, dir, modelFiles)
-}
-
-func importModel(src, dir string, files []ModelFile) ([]string, error) {
+func Import(src, dir string, files []ModelFile) ([]string, error) {
 	fi, err := os.Stat(src)
 	if err != nil {
 		return nil, err
@@ -410,8 +390,8 @@ func writeVerified(r io.Reader, dst string, f ModelFile) error {
 	return verifyDownloaded(dst, f)
 }
 
-// importFromTar는 tar 아카이브에서 가져온다. 기대한 여섯과 이름이
-// 맞는 항목만 풀고 나머지는 건너뛴다. 경계 밖 경로는 애초에 여섯과
+// importFromTar는 tar 아카이브에서 가져온다. 기대한 목록과 이름이
+// 맞는 항목만 풀고 나머지는 건너뛴다. 경계 밖 경로는 애초에 목록과
 // 이름이 같지 않으므로 풀리지 않는다.
 func importFromTar(src, into string, files []ModelFile) ([]string, error) {
 	archive, err := os.Open(src)

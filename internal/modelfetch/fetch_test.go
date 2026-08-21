@@ -1,4 +1,4 @@
-package embed
+package modelfetch
 
 import (
 	"archive/tar"
@@ -113,7 +113,7 @@ func TestDownloadModelFetchesEveryFile(t *testing.T) {
 	dir := t.TempDir()
 
 	calls := 0
-	skipped, err := downloadModel(context.Background(), srv.Client(), srv.URL, dir, files,
+	skipped, err := Download(context.Background(), srv.Client(), srv.URL, dir, files,
 		func(name string, received, total int64) { calls++ })
 	if err != nil {
 		t.Fatalf("에러 없이 받아야 함: %v", err)
@@ -145,7 +145,7 @@ func TestDownloadModelResumesPartialFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := downloadModel(context.Background(), srv.Client(), srv.URL, dir, files, nil); err != nil {
+	if _, err := Download(context.Background(), srv.Client(), srv.URL, dir, files, nil); err != nil {
 		t.Fatalf("이어받기가 실패함: %v", err)
 	}
 	if got := srv.ranges["model.onnx_data"]; got != "bytes=100000-" {
@@ -171,7 +171,7 @@ func TestDownloadModelRestartsFromScratch(t *testing.T) {
 		if err := os.WriteFile(target, bodies["onnx/model.onnx_data"][:100_000], 0o644); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := downloadModel(context.Background(), srv.Client(), srv.URL, dir, files, nil); err != nil {
+		if _, err := Download(context.Background(), srv.Client(), srv.URL, dir, files, nil); err != nil {
 			t.Fatalf("처음부터 받기가 실패함: %v", err)
 		}
 		got, err := os.ReadFile(target)
@@ -191,7 +191,7 @@ func TestDownloadModelRestartsFromScratch(t *testing.T) {
 		if err := os.WriteFile(target, wrong, 0o644); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := downloadModel(context.Background(), srv.Client(), srv.URL, dir, files, nil); err != nil {
+		if _, err := Download(context.Background(), srv.Client(), srv.URL, dir, files, nil); err != nil {
 			t.Fatalf("다시 받기가 실패함: %v", err)
 		}
 		if _, ok := srv.ranges["model.onnx"]; ok {
@@ -218,7 +218,7 @@ func TestDownloadModelRejectsChecksumMismatch(t *testing.T) {
 		tampered[0] ^= 0xFF
 		return tampered
 	})
-	_, err := downloadModel(context.Background(), srv.Client(), srv.URL, t.TempDir(), files, nil)
+	_, err := Download(context.Background(), srv.Client(), srv.URL, t.TempDir(), files, nil)
 	if !errors.Is(err, ErrChecksum) {
 		t.Fatalf("ErrChecksum 이어야 함: %v", err)
 	}
@@ -235,7 +235,7 @@ func TestDownloadModelSkipsIntactFiles(t *testing.T) {
 		}
 	}
 
-	skipped, err := downloadModel(context.Background(), srv.Client(), srv.URL, dir, files, nil)
+	skipped, err := Download(context.Background(), srv.Client(), srv.URL, dir, files, nil)
 	if err != nil {
 		t.Fatalf("에러 없이 지나가야 함: %v", err)
 	}
@@ -260,7 +260,7 @@ func TestDownloadModelRejectsServerError(t *testing.T) {
 	}))
 	defer srv.Close()
 	files := fakeTable(fakeBodies())
-	_, err := downloadModel(context.Background(), srv.Client(), srv.URL, t.TempDir(), files, nil)
+	_, err := Download(context.Background(), srv.Client(), srv.URL, t.TempDir(), files, nil)
 	if err == nil {
 		t.Fatal("서버 에러를 받아야 함")
 	}
@@ -281,7 +281,7 @@ func TestInspectModelReportsPresenceAndChecksum(t *testing.T) {
 	}
 
 	t.Run("기본은 존재와 크기만 봅니다", func(t *testing.T) {
-		got, err := inspectModel(dir, files, false)
+		got, err := Inspect(dir, files, false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -311,7 +311,7 @@ func TestInspectModelReportsPresenceAndChecksum(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(dir, "model.onnx"), wrong, 0o644); err != nil {
 			t.Fatal(err)
 		}
-		got, err := inspectModel(dir, files, true)
+		got, err := Inspect(dir, files, true)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -346,7 +346,7 @@ func TestImportModelFromDirectory(t *testing.T) {
 			}
 		}
 		into := t.TempDir()
-		done, err := importModel(src, into, files)
+		done, err := Import(src, into, files)
 		if err != nil {
 			t.Fatalf("가져오기 실패: %v", err)
 		}
@@ -368,7 +368,7 @@ func TestImportModelFromDirectory(t *testing.T) {
 			}
 		}
 		into := t.TempDir()
-		if _, err := importModel(src, into, files); err != nil {
+		if _, err := Import(src, into, files); err != nil {
 			t.Fatalf("가져오기 실패: %v", err)
 		}
 		assertDirMatches(t, into, files, bodies)
@@ -379,7 +379,7 @@ func TestImportModelFromDirectory(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(src, "config.json"), bodies["config.json"], 0o644); err != nil {
 			t.Fatal(err)
 		}
-		_, err := importModel(src, t.TempDir(), files)
+		_, err := Import(src, t.TempDir(), files)
 		if !errors.Is(err, ErrMissingFile) {
 			t.Fatalf("ErrMissingFile 이어야 함: %v", err)
 		}
@@ -398,7 +398,7 @@ func TestImportModelFromDirectory(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		_, err := importModel(src, t.TempDir(), files)
+		_, err := Import(src, t.TempDir(), files)
 		if !errors.Is(err, ErrChecksum) {
 			t.Fatalf("ErrChecksum 이어야 함: %v", err)
 		}
@@ -432,7 +432,7 @@ func TestImportModelFromTar(t *testing.T) {
 	t.Run("묶음 그대로를 가져옵니다", func(t *testing.T) {
 		src := buildTar(t, entries, false)
 		into := t.TempDir()
-		done, err := importModel(src, into, files)
+		done, err := Import(src, into, files)
 		if err != nil {
 			t.Fatalf("가져오기 실패: %v", err)
 		}
@@ -452,7 +452,7 @@ func TestImportModelFromTar(t *testing.T) {
 	t.Run("gzip 묶음도 가져옵니다", func(t *testing.T) {
 		src := buildTar(t, entries, true)
 		into := t.TempDir()
-		if _, err := importModel(src, into, files); err != nil {
+		if _, err := Import(src, into, files); err != nil {
 			t.Fatalf("가져오기 실패: %v", err)
 		}
 		assertDirMatches(t, into, files, bodies)
@@ -461,7 +461,7 @@ func TestImportModelFromTar(t *testing.T) {
 	t.Run("항목이 모자라면 실패합니다", func(t *testing.T) {
 		partial := map[string][]byte{"config.json": bodies["config.json"]}
 		src := buildTar(t, partial, false)
-		_, err := importModel(src, t.TempDir(), files)
+		_, err := Import(src, t.TempDir(), files)
 		if !errors.Is(err, ErrMissingFile) {
 			t.Fatalf("ErrMissingFile 이어야 함: %v", err)
 		}
@@ -475,7 +475,7 @@ func TestImportModelFromTar(t *testing.T) {
 		wrong := bytes.Repeat([]byte("!"), len(bodies["config.json"]))
 		tampered["config.json"] = wrong
 		src := buildTar(t, tampered, false)
-		_, err := importModel(src, t.TempDir(), files)
+		_, err := Import(src, t.TempDir(), files)
 		if !errors.Is(err, ErrChecksum) {
 			t.Fatalf("ErrChecksum 이어야 함: %v", err)
 		}
@@ -515,31 +515,4 @@ func buildTar(t *testing.T, entries map[string][]byte, gz bool) string {
 		t.Fatal(err)
 	}
 	return path
-}
-
-func TestModelFilesTable(t *testing.T) {
-	// 리비전 4de1325 에서 실제로 받아 계산한 기대값 그대로를 못 박는다.
-	// 상수 하나가 바뀌면 이 시험이 잡는다.
-	want := []ModelFile{
-		{"onnx/sentence_transformers.onnx", "sentence_transformers.onnx", 724923, "c53a8fe59f64ae6babb972b59b6679d8173e88b378637eba495ed0f7227f3dca"},
-		{"onnx/model.onnx_data", "model.onnx_data", 2266820608, "1eebfb28493f67bba03ce0ef64bfdc7fc5a3bd9d7493f818bb1d78cd798416b4"},
-		{"tokenizer.json", "tokenizer.json", 17082821, "6710678b12670bc442b99edc952c4d996ae309a7020c1fa0096dd245c2faf790"},
-		{"config.json", "config.json", 770, "734a79bf12d388c1467a4e3ab625f45de7f6906cffcfb93a1eca1787504bed95"},
-		{"tokenizer_config.json", "tokenizer_config.json", 1173, "7e4c1cc848840aeccdd763458c18dd525eb0f795c992e00ebe9c28554e7db2d4"},
-		{"special_tokens_map.json", "special_tokens_map.json", 964, "8c785abebea9ae3257b61681b4e6fd8365ceafde980c21970d001e834cf10835"},
-	}
-	files := ModelFiles()
-	if !slices.Equal(files, want) {
-		t.Fatalf("기대값 표가 다릅니다:\n got: %+v\nwant: %+v", files, want)
-	}
-	var total int64
-	for _, f := range files {
-		if strings.Contains(f.Name, "/") {
-			t.Errorf("저장 이름이 평평해야 함: %q", f.Name)
-		}
-		total += f.Size
-	}
-	if want := int64(2_284_631_259); total != want {
-		t.Errorf("여섯의 합계가 %d여야 함: %d", want, total)
-	}
 }

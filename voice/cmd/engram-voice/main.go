@@ -1,0 +1,62 @@
+// engram-voice는 오디오를 전사 텍스트로 바꾼다.
+//
+// 위키에 쓰지 않는다. 전사 결과를 낼 뿐이고 위키로 넣는 것은
+// engram capture 의 일이다(ADR 0079). 그래서 이 바이너리는 위키 규약을
+// 알 필요가 없다.
+package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+)
+
+func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	if err := run(ctx, os.Args[1:]); err != nil {
+		if errors.Is(err, context.Canceled) {
+			// Ctrl-C 다. 이어받기가 되므로 다시 돌리면 된다.
+			fmt.Fprintln(os.Stderr, "\n중단했습니다. 다시 실행하면 이어받습니다")
+			os.Exit(130)
+		}
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		os.Exit(1)
+	}
+}
+
+func run(ctx context.Context, args []string) error {
+	if len(args) == 0 {
+		usage()
+		return errors.New("커맨드가 필요합니다")
+	}
+	switch args[0] {
+	case "model":
+		return runModel(ctx, http.DefaultClient, args[1:], os.Stdout)
+	case "-h", "--help", "help":
+		usage()
+		return nil
+	default:
+		usage()
+		return fmt.Errorf("모르는 커맨드: %s", args[0])
+	}
+}
+
+func usage() {
+	fmt.Fprint(os.Stderr, `engram-voice는 오디오를 전사 텍스트로 바꿉니다.
+
+위키에 쓰지 않습니다. 전사 결과를 표준 출력으로 내며 위키에 넣는 것은
+engram capture 가 합니다.
+
+사용법:
+  engram-voice model pull [--model <크기>] [--from <경로>]
+  engram-voice model status [--model <크기>] [--verify]
+
+크기는 large-v3(기본), medium, small 입니다.
+`)
+}
