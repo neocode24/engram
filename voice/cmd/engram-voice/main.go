@@ -38,6 +38,8 @@ func run(ctx context.Context, args []string) error {
 	switch args[0] {
 	case "model":
 		return runModel(ctx, http.DefaultClient, args[1:], os.Stdout)
+	case "transcribe":
+		return runTranscribe(args[1:], os.Stdout)
 	case "-h", "--help", "help":
 		usage()
 		return nil
@@ -54,9 +56,18 @@ func usage() {
 engram capture 가 합니다.
 
 사용법:
+  engram-voice transcribe <오디오> [--speakers N] [--json]
   engram-voice model pull [--model <크기>] [--from <경로>]
   engram-voice model status [--model <크기>] [--verify]
 
 크기는 large-v3(기본), medium, small 입니다.
+
+화자 수를 아는 값이 있으면 --speakers 로 주세요. 생략하면 추정하는데
+그 값은 믿을 수 없습니다.
+
+전사 결과는 표준 출력으로 나가고 진행률은 표준 오류로 나갑니다.
+그대로 위키에 넣으려면 이렇게 씁니다.
+
+  engram-voice transcribe 회의.m4a --speakers 3 | engram capture --title "회의"
 `)
 }
