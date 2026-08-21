@@ -97,7 +97,13 @@ chmod 644 "$STAGE"/README.md "$STAGE"/LICENSE
 
 echo "포장 $NAME"
 if [ "$GOOS" = windows ]; then
-	(cd "$OUTDIR" && zip -qr "$NAME.zip" "$NAME")
+	# zip 이 Windows 에 늘 있지는 않다. PowerShell 은 늘 있다.
+	if command -v zip >/dev/null; then
+		(cd "$OUTDIR" && zip -qr "$NAME.zip" "$NAME")
+	else
+		powershell -NoProfile -Command \
+			"Compress-Archive -Path '$OUTDIR/$NAME' -DestinationPath '$OUTDIR/$NAME.zip' -Force"
+	fi
 else
 	tar -C "$OUTDIR" -czf "$OUTDIR/$NAME.tar.gz" "$NAME"
 fi

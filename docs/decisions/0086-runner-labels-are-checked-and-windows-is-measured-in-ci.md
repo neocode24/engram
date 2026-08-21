@@ -2,7 +2,7 @@
 number: 0086
 title: 러너 라벨을 실제로 확인하고 Windows는 CI에서 먼저 잰다
 date: 2026-08-21
-status: accepted
+status: amended
 ---
 
 # 러너 라벨을 실제로 확인하고 Windows는 CI에서 먼저 잰다
