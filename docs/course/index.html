@@ -236,11 +236,11 @@ body.read #hint{display:none}
     <ol style="font-size:1.1em;line-height:1.7">
       <li class="frag">LLM wiki가 무엇이고(내가 소유한 저장 공간에 두는 second brain), RAG와 어디서 갈라지는지 한 문장으로 말할 수 있다.</li>
       <li class="frag">"승급"이라는 개념이 왜 이 체계의 전부인지 안다.</li>
-      <li class="frag">디렉토리가 분류함이 아니라 <strong>성숙 단계</strong>라는 관점을 갖는다.</li>
+      <li class="frag">디렉토리가 분류함이 아니라 <strong>성숙 단계</strong>라는 관점을 갖고, 그 구조가 곧 <strong>찾는 수단</strong>이라는 것을 안다.</li>
       <li class="frag">engram이 무엇을 강제하고 무엇을 사람에게 남기는지, 그 경계의 기준을 안다.</li>
       <li class="frag">개인 위키가 조직 자산이 되려면 무엇이 더 필요한지 질문을 갖고 돌아간다.</li>
     </ol>
-    <p class="foot frag">진행: 1장 원론 (10분), 2장 내가 추구하는 wiki (12분), 3장 해결 방향 (10분), 4장 engram (20분, 시연 포함), 5장 개인에서 조직으로 (8분)</p>
+    <p class="foot frag">진행: 1장 원론 (12분), 2장 내가 추구하는 wiki (12분), 3장 해결 방향 (10분), 4장 engram (24분, 시연 포함), 5장 개인에서 조직으로 (8분)</p>
   </div>
   <aside class="notes">
     <p>다섯째 항목이 답이 아니라 질문인 이유를 미리 말해 둔다. 5장은 지금 코드에 없는 부분이 많고, 강사도 답을 다 갖고 있지 않다. 그 사실을 감추지 않는 것이 이 자료의 태도다.</p>
@@ -415,6 +415,62 @@ body.read #hint{display:none}
   <aside class="notes">
     <p>수강생 중 RAG를 만들어 본 사람이 반박할 수 있다. "RAG도 캐시하면 되지 않나." 좋은 질문이고 답은 이렇다. 캐시는 같은 질의에만 답한다. wiki는 정리된 결론이 <em>다른</em> 질의의 재료가 된다. 카파시 원문의 표현으로는 "nothing is built up"이 RAG의 문제다.</p>
     <p>engram 관점에서 이 슬라이드의 오른쪽 그림에 링크(엣지)가 그려지는 순간을 잘 봐 두라고 말한다. 4장에서 "링크가 2개 미만이면 승급을 거절한다"가 나올 때 이 그림으로 돌아온다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>그럼 찾는 건 어떻게 하나. 길이 둘이다.</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">위키도 결국 찾아야 한다. 문서가 수백이면 목록으로는 못 찾는다. RAG를 안 쓰기로 했으니 이 질문이 남는다.</p>
+        <ul>
+          <li class="frag"><strong>길 1. 검색 인프라를 세운다.</strong> 문서를 조각내어 벡터 저장소에 넣고 질의마다 유사도로 꺼낸다. 성능은 좋다. 대신 색인 파이프라인, 임베딩 서버, 저장소가 따라오고 위키를 고칠 때마다 다시 태워야 한다.</li>
+          <li class="frag"><strong>길 2. 구조 자체를 찾을 수 있게 만든다.</strong> 디렉토리와 파일명과 프론트매터를 규칙적으로 두고, 에이전트가 목록과 grep으로 직접 훑는다. 세울 인프라가 없다.</li>
+          <li class="frag">이 자료는 <strong>길 2</strong>다. 대신 조건이 붙는다. <strong>구조가 규칙적이어야 한다.</strong> 슬러그가 예측 가능하고 단계가 넷으로 고정되고 프론트매터 키가 일정해야 에이전트가 훑을 수 있다.</li>
+          <li class="frag">그래서 3장의 규칙들은 정리를 위한 규칙이 아니다. <strong>찾기 위한 규칙이다.</strong> 이 순서를 뒤집으면 규칙이 잔소리로 보인다.</li>
+        </ul>
+        <p class="frag" style="margin-top:.6em">길 2에도 구멍이 하나 있다. <strong>같은 낱말을 안 쓴 문서는 훑어도 안 나온다.</strong> 거기에만 모델을 쓴다. 4장에서 그 자리를 정확히 짚는다.</p>
+      </div>
+      <div>
+        <svg class="fig" viewBox="0 0 440 320" aria-label="검색 인프라를 세우는 길과 구조를 규칙적으로 두는 길">
+          <defs><marker id="ar1b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+          <text class="lbl" x="0" y="16" font-weight="700">길 1. 인프라를 세운다</text>
+          <g class="lbl s">
+            <rect class="box dim" x="0" y="32" width="86" height="30" rx="6"/><text x="43" y="52" text-anchor="middle">문서</text>
+            <rect class="box dim" x="104" y="32" width="86" height="30" rx="6"/><text x="147" y="52" text-anchor="middle">조각내기</text>
+            <rect class="box dim" x="208" y="32" width="96" height="30" rx="6"/><text x="256" y="52" text-anchor="middle">임베딩 서버</text>
+            <rect class="box warn" x="322" y="32" width="106" height="30" rx="6"/><text x="375" y="52" text-anchor="middle">벡터 저장소</text>
+          </g>
+          <path class="ln thin" d="M86 47 L 102 47" marker-end="url(#ar1b)"/>
+          <path class="ln thin" d="M190 47 L 206 47" marker-end="url(#ar1b)"/>
+          <path class="ln thin" d="M304 47 L 320 47" marker-end="url(#ar1b)"/>
+          <text class="lbl s" x="214" y="84" text-anchor="middle" fill="var(--rej)">문서를 고치면 이 줄을 다시 태운다</text>
+
+          <text class="lbl" x="0" y="130" font-weight="700">길 2. 구조를 규칙적으로 둔다</text>
+          <g class="lbl s">
+            <rect class="box" x="0" y="146" width="200" height="120" rx="10"/>
+            <text class="lbl m" x="14" y="168">context/</text>
+            <text x="26" y="188">배치-경합.md</text>
+            <text x="26" y="206">읽기-복제본.md</text>
+            <text x="26" y="224">응답-지연-사고.md</text>
+            <text class="lbl m" x="14" y="250" fill="var(--acc)">type, status, created</text>
+          </g>
+          <g class="a d2">
+            <rect class="box acc" x="248" y="180" width="180" height="52" rx="10"/>
+            <text class="lbl s" x="338" y="203" text-anchor="middle">에이전트가</text>
+            <text class="lbl s" x="338" y="221" text-anchor="middle">목록과 grep으로 훑는다</text>
+            <path class="ln acc draw d2" d="M200 206 L 246 206" marker-end="url(#ar1b)"/>
+          </g>
+          <g class="a d4"><text class="lbl s" x="220" y="294" text-anchor="middle" fill="var(--acc)">세울 것이 없다. 대신 구조가 흐트러지면 곧바로 못 찾는다</text></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>길 1을 깎아내리지 않는다. 벡터 저장소를 세워 주는 도구들이 있고 규모가 크면 그쪽이 맞다. 이 자료가 길 2를 고른 이유는 <strong>개인 위키 규모에서 운영 비용이 이득보다 컸기 때문</strong>이고, 그 판단은 규모가 바뀌면 뒤집힌다. 실제로 작성자는 길 1의 도구를 세워서 써 본 뒤 개념만 남기고 뺐다.</p>
+    <p>이 슬라이드가 3장 전체의 동기다. 수강생이 3장에서 "왜 이렇게 까다롭게 정하나"라고 느낄 때 여기로 돌아온다. <em>구조가 곧 색인이기 때문에</em> 까다로운 것이다.</p>
+    <p>"조각내기"라는 말을 잠깐 푼다. 문서를 문단 단위로 쪼개 각각을 벡터로 만드는 것이다. 4장에서 engram이 조각이 아니라 문서 하나에 벡터를 붙인다는 이야기가 나올 때 이 낱말을 다시 쓴다.</p>
   </aside>
 </section>
 
@@ -1085,7 +1141,7 @@ body.read #hint{display:none}
         <table>
           <tr><th style="white-space:nowrap">커맨드</th><th>축</th><th style="white-space:nowrap">단위</th><th>남기는 상태</th></tr>
           <tr><td><code>resurface</code></td><td>시간. 오래 안 봄</td><td style="white-space:nowrap">문서 하나씩</td><td>제시 이력 (<code>.engram/</code>, 지워도 됨)</td></tr>
-          <tr><td><code>bridge</code></td><td>관계. 유사한데 링크 없음</td><td>문서 쌍</td><td>기각 쌍 (<code>engram-state.yaml</code>, git 추적)</td></tr>
+          <tr><td><code>bridge</code></td><td>관계. 낱말 축과 의미 축</td><td>문서 쌍</td><td>기각 쌍 (<code>engram-state.yaml</code>, git 추적)</td></tr>
           <tr><td><code>digest</code></td><td>기간. 창 안의 변화</td><td>집계</td><td>없음</td></tr>
         </table>
         <ul class="small" style="margin-top:.6em">
@@ -1128,6 +1184,106 @@ body.read #hint{display:none}
 
 <section class="slide" data-ch="4">
   <div class="in">
+    <h2>낱말이 안 겹치면 못 찾는다. 그 자리에만 모델을 쓴다.</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">1장에서 남겨 둔 구멍이다. 같은 이야기를 다른 낱말로 쓴 문서는 훑어도 안 나온다.</p>
+        <table>
+          <tr><th>축</th><th>재는 것</th><th>비용</th></tr>
+          <tr><td>낱말</td><td>색인의 낱말 빈도로 코사인</td><td>없음. 색인이 이미 있다</td></tr>
+          <tr><td>의미</td><td>문서를 벡터로 만들어 코사인</td><td>문서 하나 12.6초</td></tr>
+        </table>
+        <p class="frag small" style="margin-top:.6em"><strong>축을 섞지 않는다.</strong> 하한을 따로 두고 각각 통과한 쌍의 합집합을 내며, 어느 축이 잡았는지 함께 낸다. 점수의 뜻이 축마다 다르기 때문이다.</p>
+        <p class="frag" style="margin-top:.8em">실측이다. 데모 위키 문서 스물다섯에서 후보 열 쌍이 나왔고 <strong>그중 둘은 의미 축만 잡았다.</strong></p>
+        <pre class="frag small"><code>3  0.75  의미  배치-경합  읽기-복제본
+5  0.72  의미  배포-롤백  응답-지연-사고</code></pre>
+        <p class="frag small">"배치가 데이터베이스를 잡는다"와 "조회를 복제본으로 돌린다"는 겹치는 낱말이 거의 없다. 사람이 보면 같은 문제다. 이 둘이 모델을 켜는 값어치의 전부이고, 켜지 않으면 그냥 사라진다.</p>
+      </div>
+      <div>
+        <p class="lead">모델이 닿는 자리는 셋이다. <strong>계산하는 곳은 하나다.</strong></p>
+        <table>
+          <tr><th style="white-space:nowrap">자리</th><th>하는 일</th></tr>
+          <tr><td><code>bridge</code></td><td><strong>계산하고 캐시에 쓴다.</strong> 첫 실행이 오래 걸린다</td></tr>
+          <tr><td><code>search --semantic</code></td><td>캐시를 읽는다. 질의만 그 자리에서 벡터로 만든다</td></tr>
+          <tr><td><code>serve</code> 재발견 화면</td><td>캐시를 읽는다. 계산하지 않는다</td></tr>
+        </table>
+        <p class="frag small" style="margin-top:.6em">질의 하나는 0.2초에서 0.4초다. 문서 하나 12.6초와 자릿수가 다르다. 밀어 넣는 글자 수가 다르기 때문이고, 그래서 의미 검색은 즉시 되고 첫 <code>bridge</code>는 오래 걸린다.</p>
+        <div class="cols" style="margin-top:.8em">
+          <div class="card frag"><span class="tag">낱말 축</span><h3>데이터베이스 경합</h3><p class="small">1위 응답-지연-사고<br>그 낱말이 본문에 있다</p></div>
+          <div class="card frag"><span class="tag acc">의미 축</span><h3>데이터베이스 경합</h3><p class="small">1위 배치-경합<br>실제로 그 주제인 문서다</p></div>
+        </div>
+        <p class="frag small" style="margin-top:.6em">같은 질의다. 둘 다 맞고 쓸모가 다르다. 그래서 고르게 한다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>모델을 왜 안 켜도 되게 만들었는지 말한다. 없으면 경고 한 줄 내고 낱말 축으로 계속 간다. <strong>의미 축의 부재는 결손이 아니라 성능 저하다.</strong> 폐쇄망과 첫 설치를 위해 이 자세를 지킨다.</p>
+    <p>모델은 2.2GB이고 <code>engram model download</code>로 받는다. 받지 않으면 위 표에서 <code>bridge</code>가 낱말 축만 쓰고 나머지 둘은 무엇을 하면 되는지 알려 주고 멈춘다.</p>
+    <p>수강생이 "왜 문서 하나에 벡터를 붙이나, 조각마다 붙이면 더 정확하지 않나"라고 물을 수 있다. 실측으로 답한다. 문서 여든하나가 조각 748개가 되어 아홉 배가 되고, <code>bridge</code>가 재는 것은 "이 두 <em>문서</em>가 이어질 만한가"라 조각 단위 점수를 다시 문서로 접어야 한다. 접는 규칙을 새로 정하느니 문서에 붙인다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>위키는 git이고, 화면은 갈아 끼운다</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">위키의 실체는 마크다운 파일과 git 이력이다. 보는 방법은 그 위에 얹는 것이고 하나로 고정되지 않는다.</p>
+        <ul>
+          <li class="frag"><strong>편집기</strong> 파일을 직접 연다. 늘 되는 길이다.</li>
+          <li class="frag"><strong>노트 앱</strong> 같은 디렉토리를 볼트로 열면 위키링크와 그래프 뷰가 그대로 붙는다. 프론트매터가 속성으로 보인다. <strong>이것이 프론트매터를 일정하게 유지한 대가로 받는 것이다.</strong></li>
+          <li class="frag"><strong><code>engram serve</code></strong> 읽기 전용 웹 뷰어다. 쓰기 경로가 없고 <code>context/</code>와 색인만 보인다. 팀에 보여 주려면 승급해야 한다.</li>
+          <li class="frag"><strong>자기 화면</strong> 모든 조회 커맨드가 <code>--json</code>을 낸다. 그 페이로드를 받아 자기 사이트에 카드로 뿌리는 것은 위키 밖의 일이고, 그래서 마음대로 해도 된다.</li>
+        </ul>
+        <p class="frag" style="margin-top:.6em">넷 중 무엇을 쓰든 파일은 그대로다. <strong>화면을 바꾸는 것이 위키를 바꾸는 것이 아니다.</strong> 이것이 마크다운과 git 위에 지은 대가다.</p>
+      </div>
+      <div>
+        <p class="lead small"><code>serve</code>의 재발견 화면. 잡은 축을 카드에 적는다.</p>
+        <svg class="fig" viewBox="0 0 440 300" aria-label="serve 재발견 화면의 카드 배치">
+          <rect class="box dim" x="0" y="0" width="440" height="34" rx="6"/>
+          <text class="lbl s" x="14" y="22">engram 위키   문서 목록  검색  <tspan fill="var(--acc)" font-weight="700">재발견</tspan>  위키 현황</text>
+
+          <text class="lbl m" x="0" y="60" font-weight="700">다시 볼 문서</text>
+          <g class="a d1">
+            <rect class="box" x="0" y="70" width="210" height="56" rx="8"/>
+            <text class="lbl s" x="14" y="92" fill="var(--acc)">배치와 조회가 같은 저장소를 볼 때</text>
+            <text class="lbl s" x="14" y="112" fill="var(--mute)">마지막 갱신 172일 전. 링크 1개</text>
+          </g>
+          <g class="a d2">
+            <rect class="box" x="228" y="70" width="212" height="56" rx="8"/>
+            <text class="lbl s" x="242" y="92" fill="var(--acc)">대시보드가 열몇 개인데</text>
+            <text class="lbl s" x="242" y="112" fill="var(--mute)">마지막 갱신 172일 전. 링크 0개</text>
+          </g>
+
+          <text class="lbl m" x="0" y="154" font-weight="700">연결 후보</text>
+          <g class="a d3">
+            <rect class="box acc" x="0" y="164" width="210" height="90" rx="8"/>
+            <text class="lbl s" x="14" y="184" fill="var(--mute)">의미 0.75</text>
+            <text class="lbl s" x="14" y="206" fill="var(--acc)">배치와 조회가 같은 저장소를</text>
+            <text class="lbl s" x="14" y="224" fill="var(--mute)">이어질 수 있는 문서</text>
+            <text class="lbl s" x="14" y="244" fill="var(--acc)">조회를 읽기 전용 복제본으로</text>
+          </g>
+          <g class="a d4">
+            <rect class="box" x="228" y="164" width="212" height="90" rx="8"/>
+            <text class="lbl s" x="242" y="184" fill="var(--mute)">낱말+의미 0.76</text>
+            <text class="lbl s" x="242" y="206" fill="var(--acc)">범위를 줄일 때 무엇을 먼저</text>
+            <text class="lbl s" x="242" y="224" fill="var(--mute)">이어질 수 있는 문서</text>
+            <text class="lbl s" x="242" y="244" fill="var(--acc)">무엇을 보고 성공이라 할 것인가</text>
+          </g>
+          <g class="a d5"><text class="lbl s" x="220" y="280" text-anchor="middle" fill="var(--mute)">기각 버튼이 없다. 판단은 커맨드로 남긴다</text></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>이 화면이 아무것도 기록하지 않는다는 것을 짚는다. 새로고침해도 <code>resurface</code>의 제시 이력이 줄지 않고 벡터를 계산하지도 않는다. <strong>화면을 보는 것은 제시가 아니다.</strong> 그래서 CLI와 화면이 서로 다른 후보를 낼 수 있고, 그것이 버그가 아니라 설계다.</p>
+    <p>기각 버튼을 두지 않은 이유를 묻는 수강생이 있다. 기각은 위키에 영구히 남는 사람의 판단이고, 인증 없는 웹에 그 경로를 두면 읽기 전용이 아니게 된다. 화면은 커맨드를 알려 주고 멈춘다.</p>
+    <p>노트 앱 이야기에서 특정 제품 이름을 굳이 고르지 않는다. 마크다운 볼트를 여는 도구면 무엇이든 된다는 것이 요점이고, 그 요점이 <em>파일을 소유한다</em>는 1장 주장의 구체적인 값어치다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
     <h2>원하면 하드모드로: eject는 규칙의 소유권을 넘긴다</h2>
     <div class="cols">
       <div>
@@ -1148,6 +1304,7 @@ body.read #hint{display:none}
         <p class="lead">그동안 자신을 막아 온 강제력의 실체를 파일로 열어 본다. 도구 학습이 아니라 체계 학습으로 착지한다.</p>
         <ul>
           <li class="frag"><code>eject</code>는 제품에서 나가는 문이 아니다. 규칙 명세와 Python 린터, git hook을 위키 안에 풀어 준다. 이후 사용자가 마음대로 고친다.</li>
+          <li class="frag">나오는 것이 형식 규칙만은 아니다. <code>meta/agent-contract.md</code>가 함께 나온다. <strong>무엇을 원문 그대로 넣을지, 무엇을 올릴 값어치가 있다고 볼지, 어디서 사람에게 물을지</strong>는 린터가 판정할 수 없는 판단이고 그것을 규정하는 문서다. 에이전트가 읽던 계약이 이제 위키 안에 있다.</li>
           <li class="frag">내보낸 뒤에도 <code>search</code>, <code>recall</code>, <code>resurface</code>, <code>bridge</code>, <code>digest</code>는 그대로 동작한다. 연산은 넘어가지 않는다.</li>
           <li class="frag">내보낸 Python 린터가 <code>engram lint</code>와 같은 판정을 내는지 대조하는 검증이 CI에서 돈다.</li>
           <li class="frag">eject 없이 규칙만 보려면 <code>rules show</code>. 이 위키에 지금 적용되는 규칙 전부를 읽기 전용으로 낸다.</li>
@@ -1159,6 +1316,7 @@ body.read #hint{display:none}
   </div>
   <aside class="notes">
     <p>2장에서 본 스크립트 운영과 여기가 만난다. eject하면 정확히 2장의 형태(명세 문서 + 린터 + hook)가 나온다. 다만 이제는 명세와 린터가 같은 코드에서 생성되므로 어긋나지 않는다.</p>
+    <p>산출물이 얇아 보인다는 반응이 나온다. 숫자로 답한다. 파일은 열 개이고 그중 <code>scripts/lint-frontmatter.py</code>가 25KB, <code>meta/agent-contract.md</code>가 12KB다. 스크립트가 하나뿐인 이유는 나머지를 바이너리가 하기 때문이다. 재발견, 색인, 그래프 계산은 파일로 표현되지 않는다. <strong>eject가 안 뱉는 것은 못 뱉는 것이 아니라 뱉을 이유가 없는 것이다.</strong></p>
     <p>"되돌리기(seal)"가 없는 이유를 물으면 이렇게 답한다. eject 후 규칙을 고치지 않을 거면 eject할 이유가 없었고, 고쳤다면 되돌리기는 그 작업을 버리는 것이다. 정직하게 구현하면 "당신의 수정을 지웁니다"가 된다.</p>
     <p>이 슬라이드가 8세션 마무리의 예고다. 마지막에 수강생에게 확장 지점 셋을 짚어 준다. 설정(단계 이름, 속성, 임계값), eject한 규칙(판정 자체), 스킬 문서(에이전트가 자기 위키를 어떻게 다룰지)다. 바꾸지 말라고 하지 않는다. 바꿀 수 있게 만들어 두었다는 것을 알려 주는 것이 마지막 일이다.</p>
   </aside>

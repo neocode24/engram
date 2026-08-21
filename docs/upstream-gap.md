@@ -272,7 +272,7 @@ engram이 관여하지 않는다.
 
 ## 재발견
 
-### R1. 임베딩/시맨틱 검색 부재 (결정 완료, ADR 0074와 0075. 구현 중)
+### R1. 임베딩/시맨틱 검색 부재 (해소. ADR 0074, 0075, 0078)
 
 **upstream 규정**: `scripts/wiki_resurface.py:8-10, 289-292`, `context/decisions/wiki-resurface-loop.md:78-83`이 bridge는 단어 겹침과 bge-m3 임베딩을 둘 다 돌려 합집합을 본다. "실측상 상위 15쌍 중 겹치는 것이 1쌍뿐이었다." 자연어 질의에서 의미 방식이 어휘 방식을 압도했다는 실측이 있다.
 
@@ -308,6 +308,21 @@ upstream 쪽 속도를 실제로 돌려 쟀다. 같은 기계(Apple M4 Pro), ups
 | 중앙 코사인 | 0.523 | 0.530 | 0.790 |
 
 평균 풀링은 유사도 분포를 뭉개서 하한이 필터 구실을 못 한다. 풀링이 그래프 안에 든 `sentence_transformers.onnx` 를 받고 `sentence_embedding` 출력을 고르는 것으로 고쳤다. 가중치 파일은 sha256 이 같아 그대로 쓴다.
+
+**시맨틱 검색은 [ADR 0078](decisions/0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md)이 닫았다.** upstream 규정 중 "자연어 질의에서 의미 방식이 어휘 방식을 압도한다"는 부분이 `bridge` 하나로는 닿지 않는 자리였다. `search --semantic`이 그 자리를 받는다.
+
+막고 있던 것은 질의 인코딩 비용 추정이었다. 문서 하나가 12.6초이므로 질의도 그러리라 보았으나 실측이 다르다.
+
+| 대상 | 시간 |
+|---|---|
+| 모델 적재 | 530 ms |
+| 질의 5자 | 167 ms |
+| 질의 15자 | 441 ms |
+| 문서 하나 2000자 | 12.6 s |
+
+`search --semantic` 전체 실측이 0.96초다. 문서 벡터는 `bridge`가 만든 캐시를 읽기만 하므로 계산 자리는 여전히 `bridge` 하나다. `serve`의 재발견 화면도 같은 캐시를 읽는다([ADR 0076](decisions/0076-serve-shows-rediscovery-without-recording-it.md)).
+
+남은 차이는 대상 범위다. 벡터가 `context/`에만 있어 `sources/` 원본은 의미 축에 안 잡힌다. 넓히려면 upstream 실측 기준으로 문서 81개가 234개가 되어 첫 계산이 15분에서 45분이 된다. 받아들이고 도움말에 밝혔다.
 
 **0074 가 적은 판별 간격도 평균 풀링으로 잰 값이다.** CLS 로 다시 재면 0.0737 이 아니라 **0.1217** 이다. `multilingual-e5-small` 의 0.0254 와 비교하면 3배가 아니라 4.8배다. bge-m3 를 불리하게 재고도 결론이 같았으므로 결정은 유지되고 근거가 강해진다.
 

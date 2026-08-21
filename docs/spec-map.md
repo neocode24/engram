@@ -355,6 +355,8 @@ upstream 감사 보고서 5개(A/B/C/D/E)를 바탕으로 규범 문서별 미�
 - `indexable` 값 읽기 부재 (A8, B19, B29, C11, C12, E37)
 - 임베딩/시맨틱 검색 부재 (B1, B14, C1, C7, D21)
 
+**표 이후 해소된 것.** "임베딩/시맨틱 검색 부재"(B1, B14, C1, C7, D21)는 닫혔다. ADR [0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)와 [0075](decisions/0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md)가 `bridge`에 의미 축을 넣었고 [0078](decisions/0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md)이 `search --semantic`을, [0076](decisions/0076-serve-shows-rediscovery-without-recording-it.md)이 `serve`의 재발견 화면을 더했다. 계산 자리는 `bridge` 하나이고 나머지는 캐시를 읽는다. 상세는 `docs/upstream-gap.md` R1에 있다.
+
 이 커버리지 표는 2026-08-18 기준 감사 결과를 정리한 것이다. 상세 내용은 `docs/upstream-gap.md`에 각 항목별 upstream 규정, engram 대응, 영향, 출처를 포함하여 기록되어 있다. 감사 보고서 원본은 `private/upstream-audit-2026-08-18/`에 있고 gitignore 대상이라 커밋되지 않는다. 실체는 upstream `meta/engram/`에 백업한다([ADR 0033](decisions/0033-private-backup-and-fail-closed-boundary.md)).
 
 ### 6.2 왜 이 발견들이 이제껏 감지되지 않았나
