@@ -74,14 +74,23 @@ jobs:
     # cross-build 잡처럼 한 러너에서 여섯을 돌 수 없고 대상 OS 의
     # 러너에서 각각 돈다.
     #
-    # windows 는 넣지 않았다. sherpa-onnx-go-windows 가 mingw 툴체인을
-    # 요구하는데 러너 이미지에 그것이 쓸 수 있는 형태로 있는지 확인하지
-    # 않았다. 안 된다고 판단한 것이 아니라 재지 않은 것이다.
+    # windows 는 재는 중이다(ADR 0086). 러너 이미지에 gcc 15.2.0 이
+    # 있고 sherpa-onnx-go-windows 가 mingw 트리플을 쓰므로 될 법하지만
+    # 링크와 DLL 해결까지 되는지는 돌려 봐야 안다. 실패해도 main 을
+    # 막지 않게 두고 결과를 본 뒤 릴리스 대상에 넣을지 정한다.
+    #
+    # windows/arm64 는 넣지 않는다. sherpa-onnx-go-windows 에 i686 과
+    # x86_64 트리플만 있고 arm64 라이브러리가 없다.
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
+        experimental: [false]
+        include:
+          - os: windows-latest
+            experimental: true
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     defaults:
       run:
         working-directory: voice

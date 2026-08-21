@@ -98,8 +98,9 @@
 | [0081](0081-default-whisper-model-is-large-v3.md) | 기본 whisper 모델은 large-v3이고 배포는 단일 바이너리가 아니다 | 2026-08-21 | amended |
 | [0082](0082-speaker-count-is-asked-not-guessed.md) | 화자 수는 사람에게 묻고 추정치에는 신뢰할 수 없다고 적는다 | 2026-08-21 | accepted |
 | [0083](0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md) | 용어 사전은 후처리만 하고 쓰는 모델에 붙어 자란다 | 2026-08-21 | accepted |
-| [0084](0084-voice-ships-on-fewer-platforms-than-engram.md) | engram-voice는 본체보다 적은 플랫폼에 배포하고 릴리스 경로가 다르다 | 2026-08-21 | accepted |
+| [0084](0084-voice-ships-on-fewer-platforms-than-engram.md) | engram-voice는 본체보다 적은 플랫폼에 배포하고 릴리스 경로가 다르다 | 2026-08-21 | amended |
 | [0085](0085-synthetic-speech-is-not-teaching-material.md) | 합성 음성은 음성 세션의 교재가 될 수 없고 수강생은 자기 목소리를 녹음한다 | 2026-08-21 | accepted |
+| [0086](0086-runner-labels-are-checked-and-windows-is-measured-in-ci.md) | 러너 라벨을 실제로 확인하고 Windows는 CI에서 먼저 잰다 | 2026-08-21 | accepted |
 
 ## 공개 범위 밖
 
@@ -155,6 +156,8 @@
 | 0075 | 임베딩을 쓰는 곳은 bridge 뿐이다 | [0078](0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md) search --semantic 과 serve 의 재발견 화면이 그 캐시를 읽는다. 계산 자리는 그대로 bridge 다 |
 | 0068 | STT 는 범위 밖이라고만 적고 어디로 가는지는 열어 둔다 | [0079](0079-voice-is-a-separate-binary-in-a-separate-repository.md) engram-voice 로 간다. 코어의 CGO 없음은 그대로 지킨다 |
 | 0079 | 사전을 whisper 의 initial_prompt 로 넣어 인식을 유도한다 | [0083](0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md) sherpa-onnx 의 whisper 에 프롬프트 자리가 없다. 후처리 치환만 한다 |
+| 0084 | darwin/amd64 를 macos-13 러너에서 빌드한다 | [0086](0086-runner-labels-are-checked-and-windows-is-measured-in-ci.md) 그 라벨은 2025년 12월에 없어졌다. macos-15-intel 로 바꾼다 |
+| 0084 | Windows 는 재지 않았으므로 넣지 않는다 | [0086](0086-runner-labels-are-checked-and-windows-is-measured-in-ci.md) 러너에 gcc 가 있다. CI 에 넣어 잰 뒤 릴리스에 올린다 |
 | 0081 | 배포 형태만 정하고 플랫폼과 워크플로는 남겼다 | [0084](0084-voice-ships-on-fewer-platforms-than-engram.md) 대상 넷을 정하고 러너를 나눈다. Windows 는 재지 않아 넣지 않는다 |
 | 0081 | 용어 사전이 모델 차이를 메운다는 가설은 미검증이다 | [0083](0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md) 메우지 못한다. 사전은 자기가 쌓인 모델의 오인식만 잡는다 |
 | 0005 | upstream 과 같은 판정을 내는 것이 동등성이다 | [0082](0082-speaker-count-is-asked-not-guessed.md) 화자 분할은 규칙이 아니라 추정이라 동등성을 확인만 하고 따르지 않는다 |

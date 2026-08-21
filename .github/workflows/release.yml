@@ -59,7 +59,9 @@ jobs:
       matrix:
         include:
           - { os: macos-latest, target: darwin_arm64 }
-          - { os: macos-13, target: darwin_amd64 }
+          # macos-13 은 2025년 12월에 폐기됐다. Intel 표준 러너는
+          # macos-15-intel 이며 2027년 가을에 끝난다(ADR 0086).
+          - { os: macos-15-intel, target: darwin_amd64 }
           - { os: ubuntu-latest, target: linux_amd64 }
           - { os: ubuntu-24.04-arm, target: linux_arm64 }
     runs-on: ${{ matrix.os }}

@@ -2,7 +2,7 @@
 number: 0084
 title: engram-voice는 본체보다 적은 플랫폼에 배포하고 릴리스 경로가 다르다
 date: 2026-08-21
-status: accepted
+status: amended
 ---
 
 # engram-voice는 본체보다 적은 플랫폼에 배포하고 릴리스 경로가 다르다
