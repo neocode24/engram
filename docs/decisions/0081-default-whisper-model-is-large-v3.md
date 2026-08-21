@@ -2,7 +2,7 @@
 number: 0081
 title: 기본 whisper 모델은 large-v3이고 배포는 단일 바이너리가 아니다
 date: 2026-08-21
-status: accepted
+status: amended
 ---
 
 # 기본 whisper 모델은 large-v3이고 배포는 단일 바이너리가 아니다

@@ -8,10 +8,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/neocode24/engram/voice/internal/audio"
+	"github.com/neocode24/engram/voice/internal/glossary"
 	"github.com/neocode24/engram/voice/internal/model"
 	"github.com/neocode24/engram/voice/internal/stt"
 )
@@ -23,13 +25,73 @@ const maxLine = 30
 
 // transcribeResult는 --json 이 내는 구조다.
 type transcribeResult struct {
-	Source        string     `json:"source"`
-	Model         string     `json:"model"`
-	AudioSeconds  float64    `json:"audioSeconds"`
-	Speakers      int        `json:"speakers"`
-	SpeakersGiven bool       `json:"speakersGiven"`
-	Unknown       int        `json:"unknownLines"`
-	Lines         []stt.Line `json:"lines"`
+	Source        string       `json:"source"`
+	Model         string       `json:"model"`
+	AudioSeconds  float64      `json:"audioSeconds"`
+	Speakers      int          `json:"speakers"`
+	SpeakersGiven bool         `json:"speakersGiven"`
+	Unknown       int          `json:"unknownLines"`
+	Corrections   []correction `json:"corrections,omitempty"`
+	Lines         []stt.Line   `json:"lines"`
+}
+
+// correction은 용어 사전이 바꾼 것 한 건이다. 무엇을 몇 번 바꿨는지
+// 산출물에 남긴다. 조용히 바꾸면 검수하는 사람이 도구가 손댄 자리를
+// 모른다(ADR 0083).
+type correction struct {
+	From  string `json:"from"`
+	To    string `json:"to"`
+	Count int    `json:"count"`
+}
+
+// applyGlossary는 위키의 용어 사전을 전사 줄에 적용한다. 위키를 주지
+// 않았거나 사전이 없으면 아무것도 하지 않는다. 사전이 없는 것은
+// 오류가 아니다.
+func applyGlossary(wikiRoot string, lines []stt.Line) []correction {
+	if wikiRoot == "" {
+		return nil
+	}
+	g, err := glossary.Load(wikiRoot)
+	if err != nil {
+		if errors.Is(err, glossary.ErrNotFound) {
+			fmt.Fprintf(os.Stderr, "안내: %s 에 용어 사전이 없어 교정하지 않았습니다\n", wikiRoot)
+			return nil
+		}
+		fmt.Fprintf(os.Stderr, "경고: 용어 사전을 읽지 못해 교정하지 않았습니다: %v\n", err)
+		return nil
+	}
+
+	total := map[correction]int{}
+	for i := range lines {
+		fixed, applied := g.Apply(lines[i].Text)
+		lines[i].Text = fixed
+		for _, a := range applied {
+			total[correction{From: a.Rule.Variant, To: a.Rule.Canonical}] += a.Count
+		}
+	}
+	out := make([]correction, 0, len(total))
+	for c, n := range total {
+		c.Count = n
+		out = append(out, c)
+	}
+	// 많이 바꾼 것을 앞에 둔다. 같으면 사전 순으로 고정한다.
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Count != out[j].Count {
+			return out[i].Count > out[j].Count
+		}
+		return out[i].From < out[j].From
+	})
+
+	n := 0
+	for _, c := range out {
+		n += c.Count
+	}
+	// 읽은 규칙 수와 실제로 맞은 규칙 수를 함께 낸다. 맞은 수만
+	// 내면 0 일 때 사전을 못 읽은 것으로 읽힌다.
+	fmt.Fprintf(os.Stderr,
+		"용어 사전 %s: 규칙 %d개 읽음, %d개가 맞아 %d건 교정, 검토 대상 %d개는 건드리지 않음\n",
+		filepath.Base(g.Path), len(g.Rules), len(out), n, g.Reviewed)
+	return out
 }
 
 // runTranscribe는 오디오 하나를 전사한다.
@@ -40,6 +102,7 @@ func runTranscribe(args []string, out io.Writer) error {
 	noDiar := fs.Bool("no-speakers", false, "화자 분할을 건너뜁니다")
 	asJSON := fs.Bool("json", false, "결과를 JSON 으로 냅니다")
 	keep := fs.String("keep-wav", "", "변환한 wav 를 이 경로에 남깁니다")
+	wiki := fs.String("wiki", "", "용어 사전을 읽을 위키 경로. 생략하면 교정하지 않습니다")
 	// 표준 flag 는 첫 위치 인자에서 파싱을 멈춘다. 사람은
 	// "transcribe 회의.m4a --speakers 3" 이라고 쓰므로 순서를 맞춰 준다.
 	if err := fs.Parse(flagsFirst(args)); err != nil {
@@ -108,9 +171,12 @@ func runTranscribe(args []string, out io.Writer) error {
 	lines = stt.MergeAdjacent(lines, maxLine)
 	fmt.Fprintf(os.Stderr, "전사 %s, 줄 %d개\n", humanDuration(time.Since(t1).Seconds()), len(lines))
 
+	corrections := applyGlossary(*wiki, lines)
+
 	res := transcribeResult{
 		Source: filepath.Base(src), Model: string(size), AudioSeconds: seconds,
 		Speakers: stt.CountSpeakers(speakers), SpeakersGiven: *nspk > 0, Lines: lines,
+		Corrections: corrections,
 	}
 	for _, l := range lines {
 		if l.Speaker == stt.Unknown {
@@ -134,7 +200,8 @@ func runTranscribe(args []string, out io.Writer) error {
 // 그때 사용자가 쓰는 탈출구다.
 func flagsFirst(args []string) []string {
 	takesValue := map[string]bool{"--model": true, "-model": true,
-		"--speakers": true, "-speakers": true, "--keep-wav": true, "-keep-wav": true}
+		"--speakers": true, "-speakers": true, "--keep-wav": true, "-keep-wav": true,
+		"--wiki": true, "-wiki": true}
 	var flags, rest []string
 	for i := 0; i < len(args); i++ {
 		a := args[i]
@@ -262,6 +329,7 @@ func writeTranscript(w io.Writer, res transcribeResult, noDiar bool) {
 		fmt.Fprintf(w, "- 화자를 붙이지 못한 줄: %d개\n", res.Unknown)
 	}
 	fmt.Fprintln(w, "- 이름은 도구가 붙이지 않습니다. 번호를 사람 이름으로 바꾸세요")
+	writeCorrections(w, res.Corrections)
 	fmt.Fprint(w, "\n## 본문\n\n")
 	for _, l := range res.Lines {
 		who := ""
@@ -269,6 +337,25 @@ func writeTranscript(w io.Writer, res transcribeResult, noDiar bool) {
 			who = speakerLabel(l.Speaker) + ": "
 		}
 		fmt.Fprintf(w, "[%s -> %s] %s%s\n\n", clock(l.Start), clock(l.End), who, l.Text)
+	}
+}
+
+// writeCorrections는 용어 사전이 바꾼 것을 산출물에 남긴다.
+//
+// 조용히 바꾸면 검수하는 사람이 도구가 손댄 자리를 모른다. 사전이
+// 틀렸을 때 그것을 발견할 길이 이 목록뿐이다(ADR 0083).
+func writeCorrections(w io.Writer, cs []correction) {
+	if len(cs) == 0 {
+		return
+	}
+	n := 0
+	for _, c := range cs {
+		n += c.Count
+	}
+	fmt.Fprintf(w, "\n### 용어 교정 %d건\n\n", n)
+	fmt.Fprint(w, "사전이 바꾼 것입니다. 틀린 것이 있으면 사전을 고치세요.\n\n")
+	for _, c := range cs {
+		fmt.Fprintf(w, "- `%s` -> `%s` (%d회)\n", c.From, c.To, c.Count)
 	}
 }
 

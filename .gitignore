@@ -3,6 +3,7 @@
 # Go
 bin/
 /engram
+/voice/engram-voice
 *.test
 
 # 공개 경계 밖 (ADR 0024)
