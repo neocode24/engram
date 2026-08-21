@@ -176,7 +176,7 @@
 | 0.4 | `eject`, `rules show`, `migrate`, `sync` (완료) | 12, 13, 16 |
 | 1.0 | `skills install`, MCP, `serve`, `export`, 배포 (완료) | 8, 14, 15, 17, 21, 23 |
 
-여정 2(음성)는 외부 전사기 의존이라 별도 트랙이다. 바이너리는 "외부 전사 결과를 수용하는 인터페이스"만 정의하고 전사 자체를 내장하지 않는다.
+여정 2(음성)는 외부 전사기 의존이라 별도 트랙이다. 바이너리는 "외부 전사 결과를 수용하는 인터페이스"만 정의하고 전사 자체를 내장하지 않는다. 그 별도 트랙이 무엇인지는 [0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md)가 정했다. **별도 저장소의 `engram-voice`이며 위키에 쓰지 않는다.** 전사 텍스트를 낼 뿐이고 위키로 넣는 것은 `capture`가 한다.
 
 `--now` 플래그는 `resurface`가 나오는 0.3이 아니라 **처음부터** 넣는다. 나중에 넣으면 그 전까지 측정한 동등성 검증 수치가 전부 무의미해진다.
 
@@ -185,9 +185,11 @@
 - ~~교육용 데모 위키의 내용.~~ `examples/personal`로 만들었다. 커맨드 시퀀스의 생성물이며 `harness/examples`가 재생성해 대조한다.
 - ~~`serve` 웹 UI의 쓰기 범위.~~ [0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md)가 읽기 전용으로 정했다. 제안 접수도 두지 않는다.
 - ~~MCP 노출 시 도구 단위 분해.~~ [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md)이 도구 열로 정했다. 쓰기는 `capture` 하나다.
-- ~~`engram model`이 관리할 모델의 범위.~~ [0068](decisions/0068-model-command-manages-embeddings-only.md)이 임베딩 하나로 정했다. STT와 TTS는 범위 밖이다.
+- ~~`engram model`이 관리할 모델의 범위.~~ [0068](decisions/0068-model-command-manages-embeddings-only.md)이 임베딩 하나로 정했다. STT와 TTS는 범위 밖이며, STT가 어디로 가는지는 [0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md)가 별도 저장소로 정했다.
 - ~~임베딩을 무엇으로 어떻게 돌릴 것인가.~~ [0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)가 bge-m3 fp32와 순수 Go로 정했다. onnxruntime 사이드카는 재검토 조건을 걸어 두었다.
-- 검색에 의미 축을 더할 것인가. [0075](decisions/0075-embedding-attaches-to-the-document-and-each-axis-has-its-own-floor.md)가 `bridge`의 단위만 정하고 검색은 범위 밖으로 두었다. 조각 단위 벡터와 순위 융합을 함께 정해야 한다.
+- ~~검색에 의미 축을 더할 것인가.~~ [0078](decisions/0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md)이 `search --semantic`으로 정했다. 순위 융합은 두지 않고 축을 고르게 하며, 벡터는 `bridge`가 만든 캐시를 읽기만 한다.
+- `type` 닫힌 집합에 `transcript`를 더할 것인가. [0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md)가 남긴 이음매다. 화자가 갈린 전사는 `source-raw`도 `source-summary`도 아니다. 전사 산출물을 실제로 승급해 본 뒤 판단한다.
+- `engram-voice`의 기본 whisper 크기. int8 기준 large-v3 1.72GB, medium 0.90GB, small 0.36GB다. 실제 한국어 녹음으로 재고 정한다([0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md)).
 
 ## 관련
 
