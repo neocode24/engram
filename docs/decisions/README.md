@@ -99,6 +99,7 @@
 | [0082](0082-speaker-count-is-asked-not-guessed.md) | 화자 수는 사람에게 묻고 추정치에는 신뢰할 수 없다고 적는다 | 2026-08-21 | accepted |
 | [0083](0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md) | 용어 사전은 후처리만 하고 쓰는 모델에 붙어 자란다 | 2026-08-21 | accepted |
 | [0084](0084-voice-ships-on-fewer-platforms-than-engram.md) | engram-voice는 본체보다 적은 플랫폼에 배포하고 릴리스 경로가 다르다 | 2026-08-21 | accepted |
+| [0085](0085-synthetic-speech-is-not-teaching-material.md) | 합성 음성은 음성 세션의 교재가 될 수 없고 수강생은 자기 목소리를 녹음한다 | 2026-08-21 | accepted |
 
 ## 공개 범위 밖
 

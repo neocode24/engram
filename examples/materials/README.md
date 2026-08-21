@@ -46,6 +46,19 @@
 | `용어-정리-초안.md` | 현업, 개발, 화면이 같은 것을 다르게 부른다 |
 | `범위-조정-슬랙.txt` | 일정이 2주 남았는데 남은 일이 4주치다 |
 
+## 음성
+
+여기만 텍스트가 아니다. 그런데 **오디오 파일은 커밋되어 있지 않다.**
+
+| 파일 | 무엇 |
+|---|---|
+| `음성/알림-정리-회의.txt` | 합성 회의 대본. 화자 셋, 44줄 |
+| `음성/make.sh` | 대본을 읽어 녹음과 화자 정답을 만든다. macOS 전용 |
+
+**이 녹음은 교재가 아니다.** 합성 음성은 whisper 가 알아듣기 어려워 실습에 쓸 수 없다([0085](../../docs/decisions/0085-synthetic-speech-is-not-teaching-material.md)). 선택 세션에서 수강생은 **자기 목소리를 직접 녹음한다.**
+
+이 대본이 남아 있는 이유는 다른 데 있다. 화자 분할의 임계값을 재려면 누가 언제 말했는지의 정답이 있어야 하는데 실제 회의 녹음은 공개 경계 밖이다([0024](../../docs/decisions/0024-public-boundary-and-private-directory.md)). `make.sh` 가 대본에서 그 정답을 계산해 낸다. 돌리려면 한국어 목소리 셋을 시스템 설정에서 먼저 받아야 한다.
+
 ## 왜 이렇게 생겼나
 
 **날것이어야 한다.** 실무에서 `capture`에 들어가는 것이 날것이기 때문이다. `inbox`는 검수된 곳이 아니라 받는 곳이므로 원문이 그대로 들어간다. 정리는 승급할 때 한다.
@@ -66,9 +79,11 @@
 
 ## engram이 하지 않는 것
 
-**STT는 engram의 일이 아니다.** `회의-전사.txt`는 전사가 이미 끝난 결과다. engram은 음성을 다루지 않으며 앞으로도 다루지 않는다. 전사는 사용자가 자기 도구로 하고 engram은 그 결과 텍스트만 받는다([0014](../../docs/decisions/0014-llm-boundary-agent-drives-binary.md)).
+**STT는 `engram` 바이너리의 일이 아니다.** `회의-전사.txt`는 전사가 이미 끝난 결과다. `engram`은 음성을 열지 않으며 그 결과 텍스트만 받는다([0014](../../docs/decisions/0014-llm-boundary-agent-drives-binary.md)).
 
-`docs/journeys.md`의 여정 2가 그 동선이며, 바이너리 밖이라 커맨드가 없다.
+전사를 하는 것은 **별도 바이너리 `engram-voice`**다([0079](../../docs/decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md), [0080](../../docs/decisions/0080-voice-is-a-nested-module-in-this-repository.md)). 같은 저장소의 중첩 모듈 `voice/`에 있고 선택 사항이다. 그쪽도 **위키에 쓰지 않는다.** 전사 텍스트를 표준 출력으로 낼 뿐이고 위키에 넣는 것은 `engram capture`가 한다.
+
+`docs/journeys.md`의 여정 2가 그 동선이고 8세션 이후의 선택 세션이다. `음성/` 디렉토리가 그 실습 재료다.
 
 ## 쓰는 법
 

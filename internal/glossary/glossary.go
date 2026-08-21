@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"unicode/utf8"
 )
 
 // 사전 파일 이름 후보다. 앞의 것을 먼저 본다.
@@ -208,20 +209,46 @@ type Applied struct {
 // 무엇을 바꿨는지 반드시 알린다. 조용히 바꾸면 사람이 전사를 검수할 때
 // 도구가 손댄 자리를 모른다. 사전이 틀렸을 때 그것을 발견할 길이 그
 // 목록뿐이다.
+//
+// **한 번 바꾼 자리를 다시 보지 않는다.** 규칙마다 ReplaceAll 을 돌리면
+// 앞 규칙이 낸 정규형을 뒤 규칙이 다시 잡는다. 실측으로 `임계을`이
+// `임계값`이 된 뒤 `임계` 규칙에 다시 걸려 `임계값값`이 됐다. 그래서
+// 왼쪽에서 오른쪽으로 한 번만 훑고 맞은 만큼 건너뛴다.
+//
+// 규칙은 이미 긴 변형이 앞에 오도록 정렬되어 있으므로 앞에서부터 처음
+// 맞는 것이 가장 긴 것이다.
 func (g *Glossary) Apply(text string) (string, []Applied) {
 	if g == nil || len(g.Rules) == 0 {
 		return text, nil
 	}
-	var applied []Applied
-	for _, r := range g.Rules {
-		n := strings.Count(text, r.Variant)
-		if n == 0 {
+	counts := make([]int, len(g.Rules))
+	var b strings.Builder
+	b.Grow(len(text))
+	for i := 0; i < len(text); {
+		hit := -1
+		for j, r := range g.Rules {
+			if strings.HasPrefix(text[i:], r.Variant) {
+				hit = j
+				break
+			}
+		}
+		if hit < 0 {
+			_, size := utf8.DecodeRuneInString(text[i:])
+			b.WriteString(text[i : i+size])
+			i += size
 			continue
 		}
-		text = strings.ReplaceAll(text, r.Variant, r.Canonical)
-		applied = append(applied, Applied{Rule: r, Count: n})
+		b.WriteString(g.Rules[hit].Canonical)
+		counts[hit]++
+		i += len(g.Rules[hit].Variant)
 	}
-	return text, applied
+	var applied []Applied
+	for j, n := range counts {
+		if n > 0 {
+			applied = append(applied, Applied{Rule: g.Rules[j], Count: n})
+		}
+	}
+	return b.String(), applied
 }
 
 // TotalReplacements는 치환 횟수의 합이다.

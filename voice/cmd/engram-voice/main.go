@@ -64,7 +64,7 @@ func usage() {
 engram capture 가 합니다.
 
 사용법:
-  engram-voice transcribe <오디오> [--speakers N] [--json]
+  engram-voice transcribe <오디오> [--speakers N] [--wiki <위키>] [--json]
   engram-voice model pull [--model <크기>] [--from <경로>]
   engram-voice model status [--model <크기>] [--verify]
   engram-voice version
@@ -73,6 +73,9 @@ engram capture 가 합니다.
 
 화자 수를 아는 값이 있으면 --speakers 로 주세요. 생략하면 추정하는데
 그 값은 믿을 수 없습니다.
+
+--wiki 를 주면 그 위키의 meta/terminology.md 를 읽어 전사 뒤에 용어를
+교정합니다. 사전은 위키가 소유하고 사람이 채웁니다.
 
 전사 결과는 표준 출력으로 나가고 진행률은 표준 오류로 나갑니다.
 그대로 위키에 넣으려면 이렇게 씁니다.

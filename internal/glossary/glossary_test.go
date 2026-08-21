@@ -130,3 +130,34 @@ func TestLoadMissingIsNotAnError(t *testing.T) {
 		t.Errorf("ErrNotFound 여야 함: %v", err)
 	}
 }
+
+// TestApplyDoesNotCascade는 앞 규칙이 낸 정규형을 뒤 규칙이 다시 잡지
+// 않는지 본다. 실측에서 `임계을`이 `임계값`이 된 뒤 `임계` 규칙에 다시
+// 걸려 `임계값값`이 됐다.
+func TestApplyDoesNotCascade(t *testing.T) {
+	g := Parse(`| 정규형 | 변형 | 자동 교정 | 설명 |
+|---|---|---|---|
+| 임계값 | 임계을, 임계 | yes | |
+`)
+	got, applied := g.Apply("임계을 처음 잡을 때")
+	if want := "임계값 처음 잡을 때"; got != want {
+		t.Errorf("%q 를 기대했으나 %q", want, got)
+	}
+	if n := TotalReplacements(applied); n != 1 {
+		t.Errorf("교정 1건을 기대했으나 %d건", n)
+	}
+}
+
+// TestApplyLongestWins는 짧은 변형이 긴 변형의 앞부분이어도 긴 쪽이
+// 먼저 잡히는지 본다.
+func TestApplyLongestWins(t *testing.T) {
+	g := Parse(`| 정규형 | 변형 | 자동 교정 | 설명 |
+|---|---|---|---|
+| 헬스체크 | 스체크 | yes | |
+| 검사 | 체크 | yes | |
+`)
+	got, _ := g.Apply("스체크가 실패했다")
+	if want := "헬스체크가 실패했다"; got != want {
+		t.Errorf("%q 를 기대했으나 %q", want, got)
+	}
+}
