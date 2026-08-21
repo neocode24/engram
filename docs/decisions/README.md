@@ -159,4 +159,5 @@
 | 0029 | 상동. 제목의 "계약"은 당시 명칭으로 읽는다 | [0034](0034-rule-spec-terminology.md) 본문 |
 | 0010 | 자체 구현의 둘째 근거인 parity 보증이 성립하지 않는다. upstream에 `search`가 없어 비교할 대상이 없다. 첫째 근거인 한국어 토크나이저와 0007의 CGO 제약으로 결정은 유지된다 | [0061](0061-field-weights-and-what-the-index-is-not.md) 본문 |
 | 0074 | upstream MPS 속도를 주석의 "12초"가 아니라 실제로 돌려 쟀다. 전수 인코딩 13.27초이며 순수 Go와의 배율이 84배가 아니라 76배다. 결정은 유지된다 | [upstream-gap.md](../upstream-gap.md) R1 |
+| 0077 | 본문이 인용한 `SKILL.md` 11.7KB는 결정 시점 값이다. 같은 작업에서 의미 축 검색 지시를 더해 12.9KB가 되었고 `eject` 산출물은 13KB다. 규범 총량 비교(22.4KB 대 35KB)의 결론은 유지된다 | [0078](0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md) 본문 |
 | 0074 | 판별 간격 0.0737은 평균 풀링으로 잰 값이다. bge-m3의 실제 방식인 CLS 풀링으로 다시 재면 0.1217이며 e5-small과의 차이가 3배가 아니라 4.8배다. 모델 선택은 유지된다 | [upstream-gap.md](../upstream-gap.md) R1 |
