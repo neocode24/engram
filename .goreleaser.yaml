@@ -52,30 +52,37 @@ changelog:
       - "^test:"
       - "^chore:"
 
-# Homebrew tap 갱신. 지금은 꺼 둔다. 켜는 절차는 아래에 적는다.
+# Homebrew tap 갱신. neocode24/homebrew-tap 의 Casks/ 에 놓인다.
 #
-# 이 저장소가 private 인 동안 Homebrew 는 릴리스 아카이브를 받을 수
-# 없으므로 지금 켜면 Formula 가 설치되지 않는 것을 가리킨다(ADR 0042).
-# 켜는 시점은 저장소 공개 전환과 한 묶음이다. 순서를 지켜야 Formula 가
-# 죽은 링크를 가리키지 않는다.
+# Formula 가 아니라 Cask 인 이유는 [0088] 에 있다. goreleaser 2.17 에서
+# brews 키가 deprecated 라 goreleaser check 가 실패하고, Cask 의 binary
+# 아티팩트가 macOS 와 Linux 를 모두 덮는다.
 #
-# 켜는 절차.
-# 1. 저장소를 public 으로 전환한다.
-# 2. tap 저장소에 쓸 수 있는 토큰을 만들어 이 저장소의 시크릿
-#    HOMEBREW_TAP_TOKEN 으로 등록한다. 워크플로의 기본 GITHUB_TOKEN 은
-#    자기 저장소에만 쓰므로 tap 저장소에는 쓸 수 없다.
-# 3. release.yml 의 릴리스 스텝에 HOMEBREW_TAP_TOKEN 환경변수를 더하고
-#    아래 brews 절의 주석을 연다.
-# 4. 토큰 시크릿이 없는 상태로 tap 갱신을 켜면 릴리스가 절반만 성공하지
-#    않도록 실패시킨다(ADR 0042).
-#
-# brews:
-#   - repository:
-#       owner: neocode24
-#       name: homebrew-tap
-#       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-#     directory: Formula
-#     homepage: https://github.com/neocode24/engram
-#     description: 지식관리 위키의 승급 파이프라인을 다루는 CLI
-#     install: |
-#       bin.install "engram"
+# 인증은 tap 저장소의 배포키다. 토큰이 아니다. 배포키는 그 저장소
+# 하나에만 쓸 수 있어 권한이 좁고, 같은 계정의 다른 프로젝트가 이미
+# 같은 방식을 쓰고 있다. release.yml 이 시크릿을 파일로 쓰고 그 경로를
+# 여기로 넘긴다.
+homebrew_casks:
+  - name: engram
+    repository:
+      owner: neocode24
+      name: homebrew-tap
+      branch: main
+      git:
+        url: "git@github.com:neocode24/homebrew-tap.git"
+        private_key: "{{ .Env.HOMEBREW_DEPLOY_KEY_PATH }}"
+    homepage: https://github.com/neocode24/engram
+    description: 지식관리 위키의 승급 파이프라인을 강제하는 단일 Go 바이너리
+    license: MIT
+    commit_author:
+      name: engram-release
+      email: neocode24@gmail.com
+    commit_msg_template: "engram {{ .Tag }}"
+    # 코드 서명을 하지 않으므로 Gatekeeper 가 격리 속성을 붙인다.
+    # 그대로 두면 첫 실행이 막힌다. 설치 뒤에 그 속성을 지운다.
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/engram"]
+          end

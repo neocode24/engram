@@ -163,11 +163,14 @@ shasum -a 256 engram_1.0.0_darwin_arm64.tar.gz
 
 ### Homebrew (macOS, Linux)
 
-tap이 켜지면 아래 한 줄이 됩니다. **지금은 꺼져 있습니다.** 저장소 공개 전환과 함께 켭니다.
+첫 릴리스부터 켜져 있습니다.
 
 ```
-brew install neocode24/tap/engram
+brew tap neocode24/tap
+brew install --cask engram
 ```
+
+`--cask`가 붙는 이유는 [0088](../decisions/0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md)에 있습니다. 미리 컴파일한 바이너리를 놓는 자리가 Cask이며 macOS와 Linux 둘 다 됩니다.
 
 Homebrew가 알아서 PATH 위에 놓으므로 따로 할 일이 없습니다. 위치는 Apple Silicon이 `/opt/homebrew/bin/engram`, Intel Mac과 Linux가 `/usr/local/bin/engram`입니다.
 

@@ -26,7 +26,7 @@
 | [0009](0009-schema-presets-and-thresholds.md) | 스키마 프리셋과 게이트 임계값 | 2026-08-14 | amended |
 | [0010](0010-storage-index-and-korean-search.md) | 저장, 인덱스, 한국어 검색 | 2026-08-14 | accepted |
 | [0011](0011-repo-layout-and-module-name.md) | 저장소 구성과 Go 모듈명 | 2026-08-14 | amended |
-| [0012](0012-distribution-via-personal-homebrew-tap.md) | 배포 경로를 개인 Homebrew tap으로 단일화한다 | 2026-08-14 | accepted |
+| [0012](0012-distribution-via-personal-homebrew-tap.md) | 배포 경로를 개인 Homebrew tap으로 단일화한다 | 2026-08-14 | amended |
 | [0013](0013-eject-redefined-seal-removed.md) | eject를 규칙 소유권 이양으로 재정의하고 seal을 폐기한다 | 2026-08-14 | accepted |
 | [0014](0014-llm-boundary-agent-drives-binary.md) | LLM 호출을 바이너리에 두지 않고 에이전트가 바이너리를 부른다 | 2026-08-15 | accepted |
 | [0015](0015-adr-status-vocabulary-and-amendment-index.md) | ADR 상태 어휘와 개정 관계를 색인으로 관리한다 | 2026-08-15 | accepted |
@@ -102,6 +102,7 @@
 | [0085](0085-synthetic-speech-is-not-teaching-material.md) | 합성 음성은 음성 세션의 교재가 될 수 없고 수강생은 자기 목소리를 녹음한다 | 2026-08-21 | accepted |
 | [0086](0086-runner-labels-are-checked-and-windows-is-measured-in-ci.md) | 러너 라벨을 실제로 확인하고 Windows는 CI에서 먼저 잰다 | 2026-08-21 | amended |
 | [0087](0087-windows-is-measured-green-and-packaging-runs-in-ci.md) | Windows는 재서 통과했고 포장까지 CI에서 돌린다 | 2026-08-21 | accepted |
+| [0088](0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md) | Homebrew 배포는 Formula가 아니라 Cask이고 tap 접근은 배포키로 한다 | 2026-08-21 | accepted |
 
 ## 공개 범위 밖
 
@@ -157,6 +158,7 @@
 | 0075 | 임베딩을 쓰는 곳은 bridge 뿐이다 | [0078](0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md) search --semantic 과 serve 의 재발견 화면이 그 캐시를 읽는다. 계산 자리는 그대로 bridge 다 |
 | 0068 | STT 는 범위 밖이라고만 적고 어디로 가는지는 열어 둔다 | [0079](0079-voice-is-a-separate-binary-in-a-separate-repository.md) engram-voice 로 간다. 코어의 CGO 없음은 그대로 지킨다 |
 | 0079 | 사전을 whisper 의 initial_prompt 로 넣어 인식을 유도한다 | [0083](0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md) sherpa-onnx 의 whisper 에 프롬프트 자리가 없다. 후처리 치환만 한다 |
+| 0012 | Homebrew 는 Formula 로 배포한다 | [0088](0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md) goreleaser 가 brews 를 접었고 Cask 의 binary 가 Linux 도 덮는다 |
 | 0086 | Windows 는 재는 중이라 릴리스에 넣지 않는다 | [0087](0087-windows-is-measured-green-and-packaging-runs-in-ci.md) 쟀고 통과했다. 릴리스 대상이 다섯이 된다 |
 | 0084 | 릴리스 대상은 넷이다 | [0087](0087-windows-is-measured-green-and-packaging-runs-in-ci.md) windows/amd64 를 더해 다섯 |
 | 0084 | darwin/amd64 를 macos-13 러너에서 빌드한다 | [0086](0086-runner-labels-are-checked-and-windows-is-measured-in-ci.md) 그 라벨은 2025년 12월에 없어졌다. macos-15-intel 로 바꾼다 |

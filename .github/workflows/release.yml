@@ -30,12 +30,24 @@ jobs:
           # go-version-file 로 go.mod 에서 버전을 읽는다. 버전을 박지
           # 않는다. ci.yml 과 같은 방식이다.
           go-version-file: go.mod
+      # tap 저장소에 쓸 배포키를 파일로 둔다. goreleaser 가 경로를
+      # 받으므로 내용을 직접 넘길 수 없다. 시크릿이 없으면 여기서
+      # 멈춘다. 없는 채로 릴리스를 돌리면 아카이브만 올라가고 tap 이
+      # 낡은 채로 남아 절반만 성공한 릴리스가 된다(ADR 0042).
+      - name: tap 배포키 준비
+        env:
+          KEY: ${{ secrets.HOMEBREW_DEPLOY_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "HOMEBREW_DEPLOY_KEY 시크릿이 없습니다" >&2
+            exit 1
+          fi
+          install -m 600 /dev/null "$RUNNER_TEMP/tap_key"
+          printf '%s\n' "$KEY" > "$RUNNER_TEMP/tap_key"
+          echo "HOMEBREW_DEPLOY_KEY_PATH=$RUNNER_TEMP/tap_key" >> "$GITHUB_ENV"
       # goreleaser 가 .goreleaser.yaml 대로 여섯 플랫폼을 빌드하고
-      # 아카이브와 checksums.txt 를 GitHub Releases 에 올린다.
-      # Homebrew tap 갱신은 꺼 둔 상태다. 켜는 절차는 .goreleaser.yaml 의
-      # brews 절 주석에 적혀 있다. 켤 때 이 스텝의 env 에
-      # HOMEBREW_TAP_TOKEN 을 더한다. 토큰 없이 tap 갱신을 시도하면
-      # 절반만 성공한 릴리스가 남으므로 실패로 끝나야 한다(ADR 0042).
+      # 아카이브와 checksums.txt 를 GitHub Releases 에 올린 뒤
+      # neocode24/homebrew-tap 의 Casks/engram.rb 를 갱신한다.
       - name: 릴리스
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -44,6 +56,10 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_DEPLOY_KEY_PATH: ${{ env.HOMEBREW_DEPLOY_KEY_PATH }}
+      - name: tap 배포키 지우기
+        if: always()
+        run: rm -f "$RUNNER_TEMP/tap_key"
 
   voice:
     # engram-voice 는 본체와 배포 방식이 다르다(ADR 0081, 0084).

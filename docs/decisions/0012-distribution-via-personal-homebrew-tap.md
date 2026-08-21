@@ -2,7 +2,7 @@
 number: 0012
 title: 배포 경로를 개인 Homebrew tap으로 단일화한다
 date: 2026-08-15
-status: accepted
+status: amended
 ---
 
 # 배포 경로를 개인 Homebrew tap으로 단일화한다

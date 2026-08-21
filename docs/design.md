@@ -162,7 +162,7 @@
 
 ## 배포
 
-개인 Homebrew tap 단일 체계다. 태그를 밀면 릴리스 워크플로가 tap 저장소를 갱신한다. 상세는 [0012](decisions/0012-distribution-via-personal-homebrew-tap.md)에 있다.
+개인 Homebrew tap 단일 체계다. 태그를 밀면 릴리스 워크플로가 tap 저장소의 `Casks/engram.rb`를 갱신한다. 상세는 [0012](decisions/0012-distribution-via-personal-homebrew-tap.md)와 그것을 개정한 [0088](decisions/0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md)에 있다.
 
 빌드는 여섯 플랫폼이고 tier 1은 windows/amd64와 darwin/arm64다. 릴리스 차단은 tier 1 실패에만 적용한다. 코어는 순수 Go에 `CGO_ENABLED=0`이며, 시맨틱 검색은 런타임에 내려받는 사이드카다. **시맨틱 층의 부재는 기능 결손이 아니라 성능 저하로 나타나야 한다.** 이 원칙이 깨지면 모델 다운로드가 사실상 필수가 되어 층 분리가 무의미해진다.
 
