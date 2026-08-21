@@ -43,7 +43,13 @@ case "$GOOS/$GOARCH" in
 	*) echo "지원하지 않는 대상입니다: $GOOS/$GOARCH" >&2; exit 1 ;;
 esac
 
+# 모듈을 먼저 받는다. go list -m 은 내려받지 않으므로 캐시에 없으면
+# Dir 이 빈 문자열이 되고 LIBSRC 가 /lib/<트리플> 이 된다. CI 에서는
+# 앞선 빌드가 받아 둬서 안 드러났고 릴리스에서 처음 터졌다.
+go mod download "github.com/k2-fsa/sherpa-onnx-go-$PLATFORM"
+
 MODDIR="$(go list -m -f '{{.Dir}}' "github.com/k2-fsa/sherpa-onnx-go-$PLATFORM")"
+[ -n "$MODDIR" ] || { echo "모듈 디렉토리를 찾을 수 없습니다" >&2; exit 1; }
 LIBSRC="$MODDIR/lib/$TRIPLE"
 [ -d "$LIBSRC" ] || { echo "라이브러리를 찾을 수 없습니다: $LIBSRC" >&2; exit 1; }
 
@@ -97,12 +103,22 @@ chmod 644 "$STAGE"/README.md "$STAGE"/LICENSE
 
 echo "포장 $NAME"
 if [ "$GOOS" = windows ]; then
-	# zip 이 Windows 에 늘 있지는 않다. PowerShell 은 늘 있다.
+	# zip 이 Windows 에 늘 있지는 않다. 7z 를 거쳐 PowerShell 로 내려간다.
+	#
+	# PowerShell 에 넘길 때는 경로를 Windows 형식으로 바꿔야 한다. bash
+	# 쪽 경로가 /d/a/... 인데 PowerShell 이 그것을 \d\a\... 로 읽고
+	# 못 찾는다. 실측으로 릴리스가 여기서 터졌다.
 	if command -v zip >/dev/null; then
 		(cd "$OUTDIR" && zip -qr "$NAME.zip" "$NAME")
+	elif command -v 7z >/dev/null; then
+		(cd "$OUTDIR" && 7z a -tzip -bso0 -bsp0 "$NAME.zip" "$NAME")
 	else
+		src="$OUTDIR/$NAME"; dst="$OUTDIR/$NAME.zip"
+		if command -v cygpath >/dev/null; then
+			src="$(cygpath -w "$src")"; dst="$(cygpath -w "$dst")"
+		fi
 		powershell -NoProfile -Command \
-			"Compress-Archive -Path '$OUTDIR/$NAME' -DestinationPath '$OUTDIR/$NAME.zip' -Force"
+			"Compress-Archive -Path '$src' -DestinationPath '$dst' -Force"
 	fi
 else
 	tar -C "$OUTDIR" -czf "$OUTDIR/$NAME.tar.gz" "$NAME"
