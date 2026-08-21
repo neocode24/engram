@@ -27,10 +27,17 @@ func main() {
 		vad     = flag.String("vad", "", "silero_vad.onnx 경로")
 		threads = flag.Int("threads", 4, "인코딩 스레드 수")
 		out     = flag.String("out", "", "결과 JSON 경로. 비우면 표준 출력")
+		diar    = flag.Bool("diarize", false, "전사 대신 화자 분할을 잰다")
+		nspk    = flag.Int("speakers", 0, "화자 수. 0 이면 자동 추정")
+		thr     = flag.Float64("threshold", 0, "자동 추정의 군집 임계값. 0 이면 기본값")
 	)
 	flag.Parse()
-	if *wav == "" || *dir == "" || *prefix == "" || *vad == "" {
-		fmt.Fprintln(os.Stderr, "--wav, --model-dir, --prefix, --vad 가 모두 필요합니다")
+	if *wav == "" || *dir == "" {
+		fmt.Fprintln(os.Stderr, "--wav 와 --model-dir 가 필요합니다")
+		os.Exit(2)
+	}
+	if !*diar && (*prefix == "" || *vad == "") {
+		fmt.Fprintln(os.Stderr, "전사에는 --prefix 와 --vad 가 더 필요합니다")
 		os.Exit(2)
 	}
 
@@ -44,6 +51,14 @@ func main() {
 		os.Exit(1)
 	}
 	audioSeconds := float64(len(samples)) / float64(rate)
+
+	if *diar {
+		if err := runDiarize(samples, rate, *dir, *nspk, *thr, *out); err != nil {
+			fmt.Fprintln(os.Stderr, "화자 분할 실패:", err)
+			os.Exit(1)
+		}
+		return
+	}
 
 	// 구간 나누기를 먼저 끝낸다. 두 모델이 완전히 같은 입력을 받아야
 	// 차이가 모델의 것이 된다.
