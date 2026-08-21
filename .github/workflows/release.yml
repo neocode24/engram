@@ -57,6 +57,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_DEPLOY_KEY_PATH: ${{ env.HOMEBREW_DEPLOY_KEY_PATH }}
+          # 무엇을 내는지 태그로 못 박는다. 이것이 없으면 goreleaser 가
+          # git describe 로 버전을 정하는데, 한 커밋에 태그가 둘 있으면
+          # 엉뚱한 쪽을 고른다. 실측으로 v1.0.0 을 밀었더니 같은 커밋의
+          # v1.0.0-rc.2 를 릴리스하려 했다.
+          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
       - name: tap 배포키 지우기
         if: always()
         run: rm -f "$RUNNER_TEMP/tap_key"
