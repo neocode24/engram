@@ -215,7 +215,7 @@ func registerMCPTools(s *mcp.Server, root string) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, buildRulesReport(cfg), nil
+		return nil, buildRulesReport(root, cfg), nil
 	})
 
 	mcp.AddTool[mcpLimitArgs, any](s, &mcp.Tool{

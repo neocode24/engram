@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/neocode24/engram/internal/config"
+	"github.com/neocode24/engram/internal/glossary"
 	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/spf13/cobra"
@@ -35,6 +37,17 @@ type rulesDirs struct {
 	IgnoreFiles []string `json:"ignoreFiles"`
 }
 
+// rulesGlossary는 위키가 소유한 용어 사전의 요약이다. 규칙 전부를 내지
+// 않고 경로와 수만 낸다. 항목이 수백 개라 여기 풀면 읽히지 않는다.
+// 사전이 없으면 Path 가 빈 문자열이며 그것은 오류가 아니다(ADR 0083).
+type rulesGlossary struct {
+	// Path는 위키 루트 기준 상대 경로다. 절대 경로를 내면 사용자 홈이
+	// 출력에 섞인다.
+	Path     string `json:"path"`
+	Rules    int    `json:"rules"`
+	Reviewed int    `json:"reviewed"`
+}
+
 // rulesReport는 rules show가 내는 보고 전부다. --json 출력에 그대로 쓰인다.
 type rulesReport struct {
 	Preset         string              `json:"preset"`
@@ -46,6 +59,7 @@ type rulesReport struct {
 	Gate           rulesGate           `json:"gate"`
 	Rules          []lint.Rule         `json:"rules"`
 	Dirs           rulesDirs           `json:"dirs"`
+	Glossary       rulesGlossary       `json:"glossary"`
 }
 
 // displayAxes는 속성을 표기 순서에 따라 낸다. 순서는 config 의 속성 상수
@@ -82,11 +96,11 @@ func newRulesShowCmd() *cobra.Command {
 		Long:  i18n.T("cli.rules.show_long"),
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, cfg, err := ingestTarget(cmd)
+			root, cfg, err := ingestTarget(cmd)
 			if err != nil {
 				return err
 			}
-			res := buildRulesReport(cfg)
+			res := buildRulesReport(root, cfg)
 			if jsonOutput(cmd) {
 				enc := json.NewEncoder(cmd.OutOrStdout())
 				enc.SetIndent("", "  ")
@@ -101,8 +115,9 @@ func newRulesShowCmd() *cobra.Command {
 }
 
 // buildRulesReport는 설정에서 규칙 보고를 만든다. 어느 값도 여기서
-// 정하지 않고 전부 설정에서 읽는다.
-func buildRulesReport(cfg config.Config) rulesReport {
+// 정하지 않고 전부 설정에서 읽는다. 용어 사전만 설정이 아니라 위키
+// 파일에서 읽으므로 root 가 필요하다.
+func buildRulesReport(root string, cfg config.Config) rulesReport {
 	axes := make(map[string]bool, len(displayAxes()))
 	for _, ax := range displayAxes() {
 		axes[string(ax)] = cfg.Axes[ax]
@@ -140,6 +155,15 @@ func buildRulesReport(cfg config.Config) rulesReport {
 			RootFiles:   append([]string(nil), cfg.RootFiles...),
 			IgnoreFiles: append([]string(nil), cfg.IgnoreFiles...),
 		},
+	}
+	// 사전이 없는 것은 오류가 아니다. 그때는 빈 값으로 두고 출력에서
+	// 없다고 밝힌다.
+	if g, err := glossary.Load(root); err == nil {
+		path := g.Path
+		if rel, err := filepath.Rel(root, g.Path); err == nil {
+			path = rel
+		}
+		res.Glossary = rulesGlossary{Path: path, Rules: len(g.Rules), Reviewed: g.Reviewed}
 	}
 	return res
 }
@@ -232,6 +256,17 @@ func printRules(w io.Writer, res rulesReport) {
 	fmt.Fprintf(w, "  page_dirs    %s\n", strings.Join(res.Dirs.PageDirs, ", "))
 	fmt.Fprintf(w, "  root_files   %s\n", strings.Join(res.Dirs.RootFiles, ", "))
 	fmt.Fprintf(w, "  ignore_files %s\n", strings.Join(res.Dirs.IgnoreFiles, ", "))
+
+	// 용어 사전은 위키가 소유하고 engram 은 읽기만 한다. 쓰는 것은
+	// engram-voice 이며 여기서는 그것이 무엇을 들고 있는지만 낸다.
+	fmt.Fprint(w, "\n"+i18n.T("cli.rules.glossary_header")+"\n")
+	if res.Glossary.Path == "" {
+		fmt.Fprint(w, "  "+i18n.T("cli.rules.glossary_none")+"\n")
+	} else {
+		fmt.Fprint(w, "  "+i18n.T("cli.rules.glossary_found",
+			res.Glossary.Path, res.Glossary.Rules, res.Glossary.Reviewed)+"\n")
+	}
+	fmt.Fprint(w, "  "+i18n.T("cli.rules.glossary_note")+"\n")
 }
 
 // printValueSets는 허용값 집합을 이름 폭에 맞춰 정렬해 인쇄한다.

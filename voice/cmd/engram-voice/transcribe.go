@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/neocode24/engram/voice/internal/audio"
-	"github.com/neocode24/engram/voice/internal/glossary"
+	"github.com/neocode24/engram/internal/glossary"
 	"github.com/neocode24/engram/voice/internal/model"
 	"github.com/neocode24/engram/voice/internal/stt"
 )

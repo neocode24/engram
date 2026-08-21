@@ -102,7 +102,8 @@ func Load(wikiRoot string) (*Glossary, error) {
 func Parse(text string) *Glossary {
 	g := &Glossary{}
 	seen := map[string]bool{}
-	for _, raw := range strings.Split(text, "\n") {
+	lines := strings.Split(text, "\n")
+	for i, raw := range lines {
 		line := strings.TrimSpace(raw)
 		if !strings.HasPrefix(line, "|") {
 			continue
@@ -113,12 +114,18 @@ func Parse(text string) *Glossary {
 		}
 		canonical := strings.Trim(cells[0], " `")
 		auto := strings.ToLower(strings.TrimSpace(cells[2]))
-		// 머리 행과 구분 행을 거른다. 이름이 아니라 모양으로 가린다.
-		if canonical == "" || strings.HasPrefix(canonical, "---") {
+		// 구분 행과 머리 행을 거른다. 칸 이름이 아니라 모양으로 가린다.
+		// 머리 행은 바로 다음 줄이 구분 행이라는 사실로 가리며, 그래야
+		// 칸 이름이 어느 언어든 통한다. 이름으로 가리면 한국어로 쓴
+		// 사전의 머리 행이 항목으로 세어진다.
+		if canonical == "" || isSeparatorRow(line) {
+			continue
+		}
+		if i+1 < len(lines) && isSeparatorRow(strings.TrimSpace(lines[i+1])) {
 			continue
 		}
 		if !strings.HasPrefix(auto, "yes") {
-			if auto != "" && !strings.HasPrefix(auto, "auto-correct") {
+			if auto != "" {
 				g.Reviewed++
 			}
 			continue
@@ -146,6 +153,21 @@ func Parse(text string) *Glossary {
 		return a < b
 	})
 	return g
+}
+
+// isSeparatorRow는 마크다운 표의 구분 행인지 본다. 칸이 대시와 콜론과
+// 공백으로만 이루어진 행이다.
+func isSeparatorRow(line string) bool {
+	if !strings.HasPrefix(line, "|") {
+		return false
+	}
+	body := strings.Trim(line, "|")
+	if strings.TrimSpace(body) == "" {
+		return false
+	}
+	return strings.IndexFunc(body, func(r rune) bool {
+		return r != '-' && r != ':' && r != ' ' && r != '|'
+	}) < 0
 }
 
 // splitRow는 표 한 줄을 칸으로 나눈다.

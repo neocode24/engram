@@ -211,6 +211,10 @@ rules show가 규칙 전부를 읽기 전용으로 보여줍니다. eject 없이
 		"cli.rules.lint_severity_note": "등급에서 error와 reject는 lint를 종료 코드 1로 끝냅니다. warn은 알리고 통과시킵니다.",
 		"cli.rules.lint_reject_note":   "승급 시점에 문서를 거절하는 것은 reject 하나뿐입니다.",
 		"cli.rules.dirs_header":        "디렉토리",
+		"cli.rules.glossary_header":    "용어 사전",
+		"cli.rules.glossary_none":      "meta/terminology.md 가 없습니다. 없는 것도 정상이며 사람이 채웁니다.",
+		"cli.rules.glossary_found":     "%s. 자동 교정 규칙 %d개, 사람이 볼 항목 %d개.",
+		"cli.rules.glossary_note":      "사전은 위키가 소유하고 engram은 읽기만 합니다. 쓰는 것은 engram-voice의 전사 교정입니다.\n  사전은 쓰는 모델의 오인식을 담으므로 모델을 바꾸면 상당 부분이 통하지 않습니다.",
 
 		// eject
 		"cli.eject.short": "규칙 명세와 Python 린터를 위키로 내보냅니다",
@@ -502,6 +506,10 @@ Changes nothing. Rules are for reading.`,
 		"cli.rules.lint_severity_note": "Of the severities, error and reject end lint with exit code 1. warn informs and passes.",
 		"cli.rules.lint_reject_note":   "Only reject refuses a document at promotion time.",
 		"cli.rules.dirs_header":        "Directories",
+		"cli.rules.glossary_header":    "Terminology glossary",
+		"cli.rules.glossary_none":      "No meta/terminology.md. Absence is normal; a person fills it in.",
+		"cli.rules.glossary_found":     "%s. %d auto-correct rules, %d entries left for a person.",
+		"cli.rules.glossary_note":      "The wiki owns the glossary and engram only reads it. engram-voice applies it when correcting a transcript.\n  A glossary holds the misrecognitions of the model it grew against, so much of it stops working when the model changes.",
 
 		// eject
 		"cli.eject.short": "Export the rule spec and the Python linter into the wiki",

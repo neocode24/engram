@@ -406,3 +406,49 @@ func TestRulesShowTableColumns(t *testing.T) {
 		}
 	}
 }
+
+// TestRulesShowGlossary는 사전이 있을 때와 없을 때를 본다. 없는 것은
+// 오류가 아니라 아직 안 채운 상태이며 출력이 그렇게 말해야 한다(ADR 0083).
+func TestRulesShowGlossary(t *testing.T) {
+	const table = `| 정규형 | 변형 | 자동 교정 | 설명 |
+|---|---|---|---|
+| 임베딩 | 임배딩, 임베딩모델 | yes | |
+| 승급 | 승격 | review | 문맥에 따라 다름 |
+`
+	t.Run("사전이 없으면 없다고 밝힙니다", func(t *testing.T) {
+		wiki := makeRulesWiki(t, "preset: personal\n")
+		out, err := runRules(t, "rules", "show", "--wiki", wiki)
+		if err != nil {
+			t.Fatalf("실행 실패: %v\n%s", err, out)
+		}
+		if !strings.Contains(out, "용어 사전") || !strings.Contains(out, "없습니다") {
+			t.Errorf("사전이 없다는 안내가 없습니다:\n%s", out)
+		}
+	})
+
+	t.Run("사전이 있으면 경로와 수를 냅니다", func(t *testing.T) {
+		wiki := makeRulesWiki(t, "preset: personal\n")
+		if err := os.MkdirAll(filepath.Join(wiki, "meta"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(wiki, "meta", "terminology.md"), []byte(table), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		out, err := runRules(t, "rules", "show", "--json", "--wiki", wiki)
+		if err != nil {
+			t.Fatalf("실행 실패: %v\n%s", err, out)
+		}
+		var res rulesReport
+		if err := json.Unmarshal([]byte(strings.TrimSpace(out[strings.Index(out, "{"):])), &res); err != nil {
+			t.Fatalf("JSON 파싱 실패: %v", err)
+		}
+		// 변형 둘에 검토 항목 하나다.
+		if res.Glossary.Rules != 2 || res.Glossary.Reviewed != 1 {
+			t.Errorf("규칙 2개 검토 1개를 기대했으나 %+v", res.Glossary)
+		}
+		// 절대 경로가 새면 출력에 사용자 홈이 섞인다.
+		if res.Glossary.Path != filepath.Join("meta", "terminology.md") {
+			t.Errorf("위키 루트 기준 상대 경로여야 하는데 %q", res.Glossary.Path)
+		}
+	})
+}
