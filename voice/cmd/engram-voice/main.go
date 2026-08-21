@@ -15,6 +15,11 @@ import (
 	"syscall"
 )
 
+// version은 릴리스 태그다. 빌드 때 ldflags 로 박는다. 심볼 경로가
+// 틀리면 조용히 dev 로 남으므로 바꿀 때 주의한다. 루트의
+// internal/cli.version 과 같은 자리다.
+var version = "dev"
+
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -40,6 +45,9 @@ func run(ctx context.Context, args []string) error {
 		return runModel(ctx, http.DefaultClient, args[1:], os.Stdout)
 	case "transcribe":
 		return runTranscribe(args[1:], os.Stdout)
+	case "version", "--version":
+		fmt.Fprintln(os.Stdout, version)
+		return nil
 	case "-h", "--help", "help":
 		usage()
 		return nil
@@ -59,6 +67,7 @@ engram capture 가 합니다.
   engram-voice transcribe <오디오> [--speakers N] [--json]
   engram-voice model pull [--model <크기>] [--from <경로>]
   engram-voice model status [--model <크기>] [--verify]
+  engram-voice version
 
 크기는 large-v3(기본), medium, small 입니다.
 

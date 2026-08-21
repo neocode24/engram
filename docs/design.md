@@ -190,6 +190,7 @@
 - ~~검색에 의미 축을 더할 것인가.~~ [0078](decisions/0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md)이 `search --semantic`으로 정했다. 순위 융합은 두지 않고 축을 고르게 하며, 벡터는 `bridge`가 만든 캐시를 읽기만 한다.
 - `type` 닫힌 집합에 `transcript`를 더할 것인가. [0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md)가 남긴 이음매다. 화자가 갈린 전사는 `source-raw`도 `source-summary`도 아니다. 전사 산출물을 실제로 승급해 본 뒤 판단한다.
 - ~~`voice/`의 기본 whisper 크기.~~ [0081](decisions/0081-default-whisper-model-is-large-v3.md)이 large-v3 int8 로 정했다. 실제 한국어 녹음 둘에서 기준 일치율이 medium 보다 12%p 높았다. `--model medium` 은 남긴다.
+- `voice/` 의 Windows 배포. [0084](decisions/0084-voice-ships-on-fewer-platforms-than-engram.md)가 러너 이미지의 mingw 툴체인을 재지 않아 대상에서 뺐다. 재고 나서 넣는다.
 - `voice/` 의 화자 분할 파편 필터 하한. [0082](decisions/0082-speaker-count-is-asked-not-guessed.md)가 총 발화의 2% 로 두었으나 근거가 약하다. 누가 언제 말했는지의 정답이 있는 자료로 다시 잰다.
 - ~~`voice/` 의 용어 사전이 모델 차이를 메우는가.~~ [0083](decisions/0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md)이 닫았다. 메우지 못한다. 사전은 자기가 쌓인 모델의 오인식만 잡으므로 모델을 바꾸면 통하지 않는다. upstream 사전 규칙 216개가 upstream 전사본에서는 500건을 고치는데 우리 전사에서는 0건이다.
 

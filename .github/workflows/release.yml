@@ -44,3 +44,40 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  voice:
+    # engram-voice 는 본체와 배포 방식이 다르다(ADR 0081, 0084).
+    # 단일 바이너리가 아니라 바이너리와 lib/ 둘이고, CGO 라 교차 빌드가
+    # 안 되므로 goreleaser 한 잡으로 묶을 수 없다. 대상마다 그 플랫폼의
+    # 러너에서 voice/scripts/package.sh 를 돌려 아카이브를 만든다.
+    #
+    # 본체 릴리스가 먼저 끝나야 한다. gh release upload 는 이미 있는
+    # 릴리스에 파일을 더하는 것이고 그 릴리스를 goreleaser 가 만든다.
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest, target: darwin_arm64 }
+          - { os: macos-13, target: darwin_amd64 }
+          - { os: ubuntu-latest, target: linux_amd64 }
+          - { os: ubuntu-24.04-arm, target: linux_arm64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: voice/go.mod
+      # patchelf 로 모듈 캐시 rpath 를 지운다. 없으면 빌더 경로가 공개
+      # 산출물에 남는다. macOS 는 install_name_tool 이 늘 있다.
+      - name: patchelf 설치
+        if: startsWith(matrix.os, 'ubuntu')
+        run: sudo apt-get update && sudo apt-get install -y patchelf
+      - name: 포장
+        run: voice/scripts/package.sh "${GITHUB_REF_NAME#v}" "$PWD/dist"
+      - name: 릴리스에 올리기
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$GITHUB_REF_NAME" dist/*.tar.gz dist/*.sha256 --clobber

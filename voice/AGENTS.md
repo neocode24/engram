@@ -51,6 +51,16 @@
 
 호스트가 둘이라 `ModelFile` 마다 `Base` 가 있어야 한다. 비면 URL 이 `/경로` 가 되어 실패한다. 시험이 그것을 잡는다.
 
+## 배포
+
+`scripts/package.sh <버전> <출력>` 가 아카이브를 만든다. 바이너리와 `lib/` 둘이며 단일 바이너리가 아니다([0081](../docs/decisions/0081-default-whisper-model-is-large-v3.md), [0084](../docs/decisions/0084-voice-ships-on-fewer-platforms-than-engram.md)).
+
+**교차 빌드는 안 된다.** CGO 이고 sherpa-onnx 가 플랫폼마다 다른 모듈로 미리 빌드된 라이브러리를 들고 온다. 대상 플랫폼의 기계에서 돌려야 하며 스크립트가 그것을 강제한다.
+
+**모듈 캐시 rpath 를 지우는 단계를 빼지 마라.** 빼면 빌더의 홈 경로가 공개 산출물에 남는다. macOS 는 그 뒤 ad-hoc 재서명이 반드시 따라와야 한다. `install_name_tool` 이 서명을 깨뜨리고 깨진 서명이면 macOS 가 SIGKILL 로 죽인다.
+
+`go install` 로 소스에서 빌드하는 길은 그대로 돈다. 교재가 안내하는 것은 그쪽이다.
+
 ## 측정
 
 `cmd/measure` 는 모델과 설정을 견주는 자리다. 정식 커맨드가 아니며 결과를 ADR 에 남기는 데 쓴다. 사용자에게 안내하지 않는다.
