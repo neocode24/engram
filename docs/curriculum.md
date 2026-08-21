@@ -38,7 +38,7 @@
 
 여정 4(주간 뉴스)는 바이너리 밖 동선이라 세션에 넣지 않는다.
 
-여정 2(음성)는 **8세션 이후의 선택 세션**이다. 필수 경로에 넣지 않는다. 전사가 별도 저장소의 `engram-voice`이고 모델을 1GB 안팎 더 받아야 하므로, 여기서 이탈하는 수강생이 앞 여덟 세션의 이수에 영향을 받으면 안 된다([0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md)). 3세션에서는 "전사 결과와 요약만 capture한다"는 한 줄로만 다룬다.
+여정 2(음성)는 **8세션 이후의 선택 세션**이다. 필수 경로에 넣지 않는다. 전사가 별도 모듈의 `engram-voice`이고 모델을 1GB 안팎 더 받아야 하므로, 여기서 이탈하는 수강생이 앞 여덟 세션의 이수에 영향을 받으면 안 된다([0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md), [0080](decisions/0080-voice-is-a-nested-module-in-this-repository.md)). 3세션에서는 "전사 결과와 요약만 capture한다"는 한 줄로만 다룬다.
 
 | 세션 | 주제 | 도구 | 여정 | 실습 산출물 |
 |---|---|---|---|---|

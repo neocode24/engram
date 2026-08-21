@@ -93,7 +93,8 @@
 | [0076](0076-serve-shows-rediscovery-without-recording-it.md) | serve는 재발견을 기록 없이 보여준다 | 2026-08-21 | accepted |
 | [0077](0077-the-agent-contract-stays-in-the-wiki-and-the-skill-is-one-copy.md) | 에이전트 계약은 위키 안에 남고 스킬 문서는 한 벌이다 | 2026-08-21 | accepted |
 | [0078](0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md) | 의미 검색은 명시 플래그이고 캐시를 소비만 한다 | 2026-08-21 | accepted |
-| [0079](0079-voice-is-a-separate-binary-in-a-separate-repository.md) | 음성은 별도 저장소의 별도 바이너리이고 위키는 용어 사전을 소유한다 | 2026-08-21 | accepted |
+| [0079](0079-voice-is-a-separate-binary-in-a-separate-repository.md) | 음성은 별도 저장소의 별도 바이너리이고 위키는 용어 사전을 소유한다 | 2026-08-21 | amended |
+| [0080](0080-voice-is-a-nested-module-in-this-repository.md) | 음성은 이 저장소의 중첩 모듈이다 | 2026-08-21 | accepted |
 
 ## 공개 범위 밖
 
@@ -147,7 +148,8 @@
 | 0044 | 재발견 커맨드를 노출하지 않는다 | [0076](0076-serve-shows-rediscovery-without-recording-it.md) 기록하지 않는 화면으로 노출한다. 제시 이력도 벡터 캐시도 쓰지 않는다 |
 | 0041 | 스킬 문서는 사용자 홈에만 심긴다 | [0077](0077-the-agent-contract-stays-in-the-wiki-and-the-skill-is-one-copy.md) eject 가 같은 본문을 위키 안 meta/agent-contract.md 로도 남긴다 |
 | 0075 | 임베딩을 쓰는 곳은 bridge 뿐이다 | [0078](0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md) search --semantic 과 serve 의 재발견 화면이 그 캐시를 읽는다. 계산 자리는 그대로 bridge 다 |
-| 0068 | STT 는 범위 밖이라고만 적고 어디로 가는지는 열어 둔다 | [0079](0079-voice-is-a-separate-binary-in-a-separate-repository.md) 별도 저장소의 engram-voice 로 간다. 코어의 CGO 없음을 저장소 경계로 지킨다 |
+| 0068 | STT 는 범위 밖이라고만 적고 어디로 가는지는 열어 둔다 | [0079](0079-voice-is-a-separate-binary-in-a-separate-repository.md) engram-voice 로 간다. 코어의 CGO 없음은 그대로 지킨다 |
+| 0079 | 음성은 별도 저장소에 둔다 | [0080](0080-voice-is-a-nested-module-in-this-repository.md) 이 저장소의 중첩 모듈로 둔다. 별도 저장소에서는 internal/embed 재사용이 성립하지 않는다 |
 
 ## 근거만 갱신된 경우
 

@@ -2,7 +2,7 @@
 number: 0079
 title: 음성은 별도 저장소의 별도 바이너리이고 위키는 용어 사전을 소유한다
 date: 2026-08-21
-status: accepted
+status: amended
 ---
 
 # 음성은 별도 저장소의 별도 바이너리이고 위키는 용어 사전을 소유한다
