@@ -28,21 +28,23 @@
 | 세션 | 주제 | 커맨드 | 여정 | 실습 산출물 | 자료 |
 |---|---|---|---|---|---|
 | 1 | 오리엔테이션. LLM wiki 원론, 이 체계의 특별한 점, 해결 방향, engram의 역할, 개인에서 조직으로 | 시연만 | 전체 조망 | 없음 | [course/index.html](course/index.html) |
-| 2 | 설치와 첫 위키. 프리셋 셋, `engram.yaml`, 디렉토리가 성숙 단계인 이유 | `init`, `doctor`, `status`, `rules show` | 0 | 자기 위키와 `index.md` | 미작성 |
-| 3 | 넣기. 회의 중 캡처, 링크 드롭, 원본 보존. 날짜 세 필드 | `capture`, `source`, `lint` | 1, 3, 5 | inbox 문서 여럿, sources 문서 둘 | 미작성 |
-| 4 | 올리기. 게이트 거절과 교정, inbox 이동과 sources 파생의 차이, 되돌리기와 폐기 | `promote`, `new`, `demote`, `archive`, `mv`, `update` | 6, 18, 19, 20 | context 문서 셋 이상, 거절 로그 | 미작성 |
-| 5 | 꺼내 쓰기. 검색과 회수의 분리, 백링크, 검색 실패에서 재발견으로 | `reindex`, `search`, `recall`, `backlinks` | 7, 21, 22 | 자기 위키에서 뽑은 인용 조각 | 미작성 |
-| 6 | 다시 만나기. 시간, 관계, 기간 세 축. 상태가 두 곳에 나뉘는 이유 | `resurface`, `bridge`, `digest` | 9, 10, 11 | 기각 기록이 든 `engram-state.yaml` | 미작성 |
-| 7 | 에이전트 연동. 호출 방향, 스킬 문서, MCP 도구 열과 쓰기 하나 | `skills install`, `mcp` | 8, 23 | 에이전트로 capture하고 사람이 promote한 문서 | 미작성 |
-| 8 | 운영과 공유. 마이그레이션, 동기화, 읽기 전용 공유, 반출, 규칙 소유권 이양 | `migrate`, `sync`, `serve`, `export`, `eject` | 12, 13, 14, 15, 16, 17 | eject된 위키와 export 번들 | 미작성 |
+| 2 | 설치와 첫 위키. 프리셋 셋, `engram.yaml`, 디렉토리가 성숙 단계인 이유 | `init`, `doctor`, `status`, `rules show` | 0 | 자기 위키와 `index.md` | [course/hands-on.md](course/hands-on.md) 2단계 |
+| 3 | 넣기. 회의 중 캡처, 링크 드롭, 원본 보존. 날짜 세 필드 | `capture`, `source`, `lint` | 1, 3, 5 | inbox 문서 여럿, sources 문서 둘 | [course/hands-on.md](course/hands-on.md) 3단계 |
+| 4 | 올리기. 게이트 거절과 교정, inbox 이동과 sources 파생의 차이, 되돌리기와 폐기 | `promote`, `new`, `demote`, `archive`, `mv`, `update` | 6, 18, 19, 20 | context 문서 셋 이상, 거절 로그 | [course/hands-on.md](course/hands-on.md) 4단계 |
+| 5 | 꺼내 쓰기. 검색과 회수의 분리, 백링크, 검색 실패에서 재발견으로 | `reindex`, `search`, `recall`, `backlinks` | 7, 21, 22 | 자기 위키에서 뽑은 인용 조각 | [course/hands-on.md](course/hands-on.md) 5단계 |
+| 6 | 다시 만나기. 시간, 관계, 기간 세 축. 상태가 두 곳에 나뉘는 이유 | `resurface`, `bridge`, `digest` | 9, 10, 11 | 기각 기록이 든 `engram-state.yaml` | [course/hands-on.md](course/hands-on.md) 6단계 |
+| 7 | 에이전트 연동. 호출 방향, 스킬 문서, MCP 도구 열과 쓰기 하나 | `skills install`, `mcp` | 8, 23 | 에이전트로 capture하고 사람이 promote한 문서 | [course/hands-on.md](course/hands-on.md) 7단계 |
+| 8 | 운영과 공유. 마이그레이션, 동기화, 읽기 전용 공유, 반출, 규칙 소유권 이양 | `migrate`, `sync`, `serve`, `export`, `eject` | 12, 13, 14, 15, 16, 17 | eject된 위키와 export 번들 | [course/hands-on.md](course/hands-on.md) 8단계 |
 
 여정 4(주간 뉴스)는 바이너리 밖 동선이라 세션에 넣지 않는다.
 
-여정 2(음성)는 **8세션 이후의 선택 세션**이다. 필수 경로에 넣지 않는다. 전사가 별도 모듈의 `engram-voice`이고 모델을 1GB 안팎 더 받아야 하므로, 여기서 이탈하는 수강생이 앞 여덟 세션의 이수에 영향을 받으면 안 된다([0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md), [0080](decisions/0080-voice-is-a-nested-module-in-this-repository.md)). 3세션에서는 "전사 결과와 요약만 capture한다"는 한 줄로만 다룬다.
+여정 2(음성)는 **8세션 이후의 선택 세션**이다. 필수 경로에 넣지 않는다. 전사가 별도 모듈의 `engram-voice`이고 모델을 1.7GB 더 받아야 하므로, 여기서 이탈하는 수강생이 앞 여덟 세션의 이수에 영향을 받으면 안 된다([0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md), [0080](decisions/0080-voice-is-a-nested-module-in-this-repository.md)). 3세션에서는 "전사 결과와 요약만 capture한다"는 한 줄로만 다룬다.
 
-| 세션 | 주제 | 도구 | 여정 | 실습 산출물 |
-|---|---|---|---|---|
-| 선택 | 음성. 전사와 화자 분할, 용어 사전 피드백 루프, 전사 결과를 위키로 | `engram-voice`, `capture`, `promote --to sources` | 2 | 자기 녹음에서 나온 sources 문서와 사전에 추가한 항목 |
+| 세션 | 주제 | 도구 | 여정 | 실습 산출물 | 자료 |
+|---|---|---|---|---|---|
+| 선택 | 음성. 전사와 화자 분할, 용어 사전 피드백 루프, 전사 결과를 위키로 | `engram-voice`, `capture`, `promote --to sources` | 2 | 자기 녹음에서 나온 sources 문서와 사전에 추가한 항목 | [course/hands-on.md](course/hands-on.md) 선택 단계 |
+
+**수강생이 자기 목소리를 녹음한다.** 합성 음성을 준비해 주려 했으나 whisper 가 알아듣지 못해 실습이 성립하지 않았다([0085](decisions/0085-synthetic-speech-is-not-teaching-material.md)). 마이크가 없으면 짝을 지어 한 녹음을 같이 쓴다.
 
 이 세션의 핵심은 도구 사용법이 아니라 **사전이 위키 자산이라는 것**이다. 사람이 고친 오탈자가 사전에 쌓이고 다음 전사가 개선된다. 그 루프를 한 바퀴 돌려 보는 것이 이 세션의 산출물이다.
 
@@ -62,6 +64,7 @@
 | 6 | 위키가 커질수록 가치가 나오고, 사람이 손으로는 못 하는 일이다. 축이 둘이고 하나는 낱말을 보고 하나는 뜻을 본다 |
 | 7 | engram은 LLM을 부르지 않는다. 에이전트가 engram을 부른다 |
 | 8 | engram은 다리다. 건너고 나면 각자 자기 것을 짓는다. 규칙은 당신 것이 되고 어려운 계산은 도구가 계속 해 준다 |
+| 선택 | 잘못 들은 말을 고치면 그 교정이 위키에 남는다. 사전은 도구가 아니라 당신 것이다 |
 
 ## 이 과정이 무엇을 주지 않는가
 

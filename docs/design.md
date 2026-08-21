@@ -188,7 +188,7 @@
 - ~~`engram model`이 관리할 모델의 범위.~~ [0068](decisions/0068-model-command-manages-embeddings-only.md)이 임베딩 하나로 정했다. STT와 TTS는 범위 밖이며, STT가 어디로 가는지는 [0080](decisions/0080-voice-is-a-nested-module-in-this-repository.md)이 중첩 모듈 `voice/`로 정했다.
 - ~~임베딩을 무엇으로 어떻게 돌릴 것인가.~~ [0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)가 bge-m3 fp32와 순수 Go로 정했다. onnxruntime 사이드카는 재검토 조건을 걸어 두었다.
 - ~~검색에 의미 축을 더할 것인가.~~ [0078](decisions/0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md)이 `search --semantic`으로 정했다. 순위 융합은 두지 않고 축을 고르게 하며, 벡터는 `bridge`가 만든 캐시를 읽기만 한다.
-- `type` 닫힌 집합에 `transcript`를 더할 것인가. [0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md)가 남긴 이음매다. 화자가 갈린 전사는 `source-raw`도 `source-summary`도 아니다. 전사 산출물을 실제로 승급해 본 뒤 판단한다.
+- ~~`type` 닫힌 집합에 `transcript`를 더할 것인가.~~ 전사 산출물을 실제로 승급해 봤고 `source-raw`로 들어간다. [0051](decisions/0051-sources-holds-originals-and-refined-summaries.md)이 이미 정한 대로이며 기본값을 바꾸지 않는다. 그 구분이 필요한 위키는 `engram.yaml`의 `types`에 더한다.
 - ~~`voice/`의 기본 whisper 크기.~~ [0081](decisions/0081-default-whisper-model-is-large-v3.md)이 large-v3 int8 로 정했다. 실제 한국어 녹음 둘에서 기준 일치율이 medium 보다 12%p 높았다. `--model medium` 은 남긴다.
 - `voice/` 의 Windows 배포. [0084](decisions/0084-voice-ships-on-fewer-platforms-than-engram.md)가 러너 이미지의 mingw 툴체인을 재지 않아 대상에서 뺐다. 재고 나서 넣는다.
 - `voice/` 의 화자 분할 파편 필터 하한. [0082](decisions/0082-speaker-count-is-asked-not-guessed.md)가 총 발화의 2% 로 두었으나 근거가 약하다. 누가 언제 말했는지의 정답이 있는 자료로 다시 잰다.
