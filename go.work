@@ -1,0 +1,9 @@
+// 루트 모듈과 voice 모듈을 로컬에서 잇는다. voice/go.mod 에 replace 를
+// 두지 않는 이유는 go install ...@latest 가 replace 가 있는 모듈을
+// 거절하기 때문이다(ADR 0080). 개발 중에만 이 파일이 둘을 묶는다.
+go 1.26.5
+
+use (
+	.
+	./voice
+)

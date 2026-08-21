@@ -10,3 +10,7 @@ private/
 
 # goreleaser 산출물
 dist/
+
+# go.work.sum 은 로컬 모듈 그래프의 산물이라 커밋하지 않는다.
+# go.work 자체는 커밋한다(ADR 0080).
+go.work.sum

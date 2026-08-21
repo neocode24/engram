@@ -189,7 +189,8 @@
 - ~~임베딩을 무엇으로 어떻게 돌릴 것인가.~~ [0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)가 bge-m3 fp32와 순수 Go로 정했다. onnxruntime 사이드카는 재검토 조건을 걸어 두었다.
 - ~~검색에 의미 축을 더할 것인가.~~ [0078](decisions/0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md)이 `search --semantic`으로 정했다. 순위 융합은 두지 않고 축을 고르게 하며, 벡터는 `bridge`가 만든 캐시를 읽기만 한다.
 - `type` 닫힌 집합에 `transcript`를 더할 것인가. [0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md)가 남긴 이음매다. 화자가 갈린 전사는 `source-raw`도 `source-summary`도 아니다. 전사 산출물을 실제로 승급해 본 뒤 판단한다.
-- `voice/`의 기본 whisper 크기. int8 기준 large-v3 1.72GB, medium 0.90GB, small 0.36GB다. 실제 한국어 녹음으로 재고 정한다([0079](decisions/0079-voice-is-a-separate-binary-in-a-separate-repository.md)).
+- ~~`voice/`의 기본 whisper 크기.~~ [0081](decisions/0081-default-whisper-model-is-large-v3.md)이 large-v3 int8 로 정했다. 실제 한국어 녹음 둘에서 기준 일치율이 medium 보다 12%p 높았다. `--model medium` 은 남긴다.
+- `voice/` 의 용어 사전이 모델 차이를 메우는가. [0081](decisions/0081-default-whisper-model-is-large-v3.md)이 재려 했으나 표본에 사전 용어가 3개에서 6개만 나와 신호가 없었다. 사전 용어가 충분한 녹음으로 다시 잰다.
 
 ## 관련
 
