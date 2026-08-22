@@ -323,19 +323,19 @@ flowchart LR
         UC["meta/CHANGELOG.md"]
     end
 
-    subgraph HN["harness"]
+    subgraph HN["harness (공개)"]
         HV["upstream/ 스냅샷"]
         HL["upstream.lock (커밋 SHA)"]
-        HD["deltas/ 변경 기록"]
         HF["fixtures/ 골든 위키"]
     end
 
+    HD["private/deltas/ 변경 기록"]
     B["engram 바이너리"]
     P["docs/parity.md"]
 
     UM -->|"vendoring + 식별자 스캔"| HV
     HV --- HL
-    UC -->|"make upstream-sync"| HD
+    UC -->|"upstream-sync.py"| HD
     HD -->|"사람이 판단"| B
     HF --> B
     HF --> UP
@@ -343,7 +343,16 @@ flowchart LR
     UP -->|"출력 비교"| P
 ```
 
-자동 반영이 없다는 점이 설계다. 변경분은 사람이 읽고 반영 여부를 판단한다. 비교 축은 lint 위반 목록, resurface 선정 순위, 프론트매터 정규화 결과, eject 산출물 diff 넷이다. 넷 다 결정론적이라 골든 비교가 성립한다. LLM 호출이 바이너리에 없으므로 예외 구멍을 뚫을 필요가 없다.
+돌리는 커맨드는 이것 하나다. 스케줄도 훅도 없이 사람이 시작한다.
+
+```
+python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki --check   # 쓰지 않고 미리 보기
+python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki
+```
+
+**자동 반영이 없다는 점이 설계다**([0029](decisions/0029-upstream-vendoring-and-parity-execution.md)). 변경분은 사람이 읽고 반영 여부를 판단하며, `meta/CHANGELOG.md` 항목의 `impact: binary-affecting` 이 구현이 따라가야 할 표시다. delta 가 `harness/` 가 아니라 `private/` 로 가는 이유는 upstream CHANGELOG 본문에 조직 어휘가 그대로 실리기 때문이다([0030](decisions/0030-upstream-delta-is-not-a-public-artifact.md)).
+
+지금 도는 비교 축은 lint 위반 목록과 resurface 선정 순위 둘이다. [0005](decisions/0005-upstream-contract-and-harness.md)가 넷을 들었으나 나머지 둘은 아직 붙이지 않았다. 도는 둘은 결정론적이라 골든 비교가 성립한다. LLM 호출이 바이너리에 없으므로 예외 구멍을 뚫을 필요가 없다.
 
 ## 10. 전체 데이터 흐름
 

@@ -400,7 +400,7 @@ python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki --check   # 쓰지 �
 ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/parity/... -v
 ```
 
-동등성 검증은 지금 lint 위반 목록 하나의 축을 가진다. upstream 저장소가 비공개라 환경변수가 없으면 건너뛰고 **공개 저장소의 CI는 항상 건너뛴다.** 비교 축을 늘리는 작업이 남아 있다.
+동등성 검증은 지금 lint 위반 목록과 resurface 선정 순위 두 축을 가진다. upstream 저장소가 비공개라 환경변수가 없으면 건너뛰고 **공개 저장소의 CI는 항상 건너뛴다.** 비교 축을 늘리는 작업이 남아 있다.
 
 한 가지 표기를 밝혀 둔다. **upstream은 자기 문서에서 이 파일들을 여전히 "계약 파일"이라고 부른다.** `upstream-sync.py`가 upstream `AGENTS.md`의 "계약 파일" 선언 문구를 그대로 파싱해 대상 목록을 얻으므로 저쪽 표기는 바뀌지 않는다. 이 저장소가 산문에서 "규칙 명세"로 부르기로 한 것과 충돌하지 않는다. 다음 사람이 표기가 어긋났다고 오해하고 고치려 들지 않도록 하는 주석이다.
 

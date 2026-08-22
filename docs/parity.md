@@ -152,5 +152,5 @@ upstream `wiki_resurface.py`는 `context/`만 훑으므로 `index.md`와 `inbox/
 
 ## 다음
 
-- 비교 축을 늘린다. 프론트매터 정규화와 eject 산출물은 해당 커맨드가 생길 때.
+- 비교 축을 늘린다. 프론트매터 정규화는 `engram sync` 가 생겨 막힌 자리가 풀렸고 붙이는 일만 남았다. eject 산출물은 upstream 에 대응하는 것이 없어 성립하지 않는다.
 - upstream `meta/CHANGELOG.md`에 `binary-affecting` 항목이 붙으면 이 비교를 다시 돌린다.
