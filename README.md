@@ -231,6 +231,8 @@ Exposing the wiki over MCP keeps the same boundary. Of the ten tools `engram mcp
 
 Sharing over the web is narrower still. `engram serve` is read-only and shows only documents that reached `context/`. `inbox/` and `sources/` appear in no list and no URL. To be visible to the team, a document has to be promoted.
 
+For a 30-minute walkthrough where you drive an agent instead of typing commands, see [docs/course/agent-start.md](docs/course/agent-start.md). The Korean course material is in [docs/course/](docs/course/).
+
 ## Commands
 
 Twenty-eight, in five groups: put in, move up, look up, meet again, manage.
