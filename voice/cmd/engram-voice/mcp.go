@@ -8,6 +8,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/mcpserver"
 )
 
@@ -28,11 +29,11 @@ func runMCP(ctx context.Context, args []string) error {
 	s := mcp.NewServer(&mcp.Implementation{
 		Name:        "engram-voice",
 		Title:       "engram-voice",
-		Description: "오디오를 전사 텍스트로 바꿉니다. 위키에 쓰지 않으며 결과를 돌려줄 뿐입니다.",
+		Description: i18n.T("voice.mcp.desc"),
 		Version:     version,
 	}, nil)
 	registerVoiceTools(s)
-	fmt.Fprintln(os.Stderr, "engram-voice MCP 서버를 stdio 로 엽니다")
+	fmt.Fprintln(os.Stderr, i18n.T("voice.mcp.starting"))
 	return mcpserver.RunStdio(ctx, s)
 }
 
@@ -71,10 +72,8 @@ type modelStatusResult struct {
 // 위키에 넣는 것은 engram 쪽 도구다.
 func registerVoiceTools(s *mcp.Server) {
 	mcp.AddTool[mcpModelArgs, any](s, &mcp.Tool{
-		Name: "model_status",
-		Description: "전사 모델이 준비되었는지 봅니다. " +
-			"transcribe 를 부르기 전에 이것을 먼저 확인하세요. " +
-			"준비되지 않았으면 사람에게 engram-voice model pull 을 실행하라고 알리세요.",
+		Name:        "model_status",
+		Description: i18n.T("voice.mcp.tool_status"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpModelArgs) (*mcp.CallToolResult, any, error) {
 		size, dir, files, err := resolve(in.Model)
 		if err != nil {
@@ -92,19 +91,14 @@ func registerVoiceTools(s *mcp.Server) {
 			for _, f := range files {
 				total += f.Size
 			}
-			res.Hint = fmt.Sprintf("engram-voice model pull --model %s 를 실행하세요. %s 를 내려받습니다",
-				size, humanBytes(total))
+			res.Hint = i18n.T("voice.mcp.pull_hint", size, humanBytes(total))
 		}
 		return nil, res, nil
 	})
 
 	mcp.AddTool[mcpTranscribeArgs, any](s, &mcp.Tool{
-		Name: "transcribe",
-		Description: "오디오를 전사합니다. 화자 번호가 붙은 줄과 용어 교정 목록을 돌려줍니다. " +
-			"**오래 걸립니다.** 녹음 길이의 절반에서 팔 할입니다. " +
-			"화자 수를 알면 speakers 로 주세요. 모르면 사람에게 먼저 물어보세요. " +
-			"결과의 화자는 번호이고 이름이 아닙니다. 약한 근거로 이름을 지어내지 마세요. " +
-			"위키에 넣는 것은 이 도구가 하지 않습니다. engram 의 capture 도구를 쓰세요.",
+		Name:        "transcribe",
+		Description: i18n.T("voice.mcp.tool_transcribe"),
 	}, func(ctx context.Context, req *mcp.CallToolRequest, in mcpTranscribeArgs) (*mcp.CallToolResult, any, error) {
 		res, err := transcribeAudio(transcribeInput{
 			Source:     in.Audio,

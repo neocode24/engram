@@ -6,7 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/voice/internal/stt"
+	_ "github.com/neocode24/engram/voice/internal/vi18n"
 )
 
 func TestFlagsFirstReordersArgs(t *testing.T) {
@@ -53,19 +55,24 @@ func TestWriteTranscriptWarnsOnEstimatedSpeakers(t *testing.T) {
 		Speakers: 4, SpeakersGiven: false,
 		Lines: []stt.Line{{Start: 0, End: 5, Speaker: 0, Text: "가"}},
 	}
+	// 문구가 아니라 카탈로그 항목으로 견준다. 리터럴로 견주면 언어를
+	// 바꾸거나 문구를 다듬을 때마다 시험이 깨진다.
+	estimated := i18n.T("voice.out.speakers_est", 4)
+	given := i18n.T("voice.out.speakers", 4)
+
 	var b bytes.Buffer
 	writeTranscript(&b, res, false)
-	if !strings.Contains(b.String(), "믿을 수 없습니다") {
+	if !strings.Contains(b.String(), estimated) {
 		t.Errorf("추정 경고가 있어야 함:\n%s", b.String())
 	}
 
 	res.SpeakersGiven = true
 	b.Reset()
 	writeTranscript(&b, res, false)
-	if strings.Contains(b.String(), "믿을 수 없습니다") {
+	if strings.Contains(b.String(), estimated) {
 		t.Errorf("사람이 지정했으면 경고가 없어야 함:\n%s", b.String())
 	}
-	if !strings.Contains(b.String(), "사람이 지정") {
+	if !strings.Contains(b.String(), given) {
 		t.Errorf("지정했다는 사실을 적어야 함:\n%s", b.String())
 	}
 }

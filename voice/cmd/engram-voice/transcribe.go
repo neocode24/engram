@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/neocode24/engram/internal/glossary"
+	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/voice/internal/audio"
 	"github.com/neocode24/engram/voice/internal/model"
 	"github.com/neocode24/engram/voice/internal/stt"
@@ -54,10 +55,10 @@ func applyGlossary(wikiRoot string, lines []stt.Line) []correction {
 	g, err := glossary.Load(wikiRoot)
 	if err != nil {
 		if errors.Is(err, glossary.ErrNotFound) {
-			fmt.Fprintf(os.Stderr, "안내: %s 에 용어 사전이 없어 교정하지 않았습니다\n", wikiRoot)
+			fmt.Fprintln(os.Stderr, i18n.T("voice.gloss.missing", wikiRoot))
 			return nil
 		}
-		fmt.Fprintf(os.Stderr, "경고: 용어 사전을 읽지 못해 교정하지 않았습니다: %v\n", err)
+		fmt.Fprintln(os.Stderr, i18n.T("voice.gloss.failed", err))
 		return nil
 	}
 
@@ -88,9 +89,8 @@ func applyGlossary(wikiRoot string, lines []stt.Line) []correction {
 	}
 	// 읽은 규칙 수와 실제로 맞은 규칙 수를 함께 낸다. 맞은 수만
 	// 내면 0 일 때 사전을 못 읽은 것으로 읽힌다.
-	fmt.Fprintf(os.Stderr,
-		"용어 사전 %s: 규칙 %d개 읽음, %d개가 맞아 %d건 교정, 검토 대상 %d개는 건드리지 않음\n",
-		filepath.Base(g.Path), len(g.Rules), len(out), n, g.Reviewed)
+	fmt.Fprintln(os.Stderr, i18n.T("voice.gloss.report",
+		filepath.Base(g.Path), len(g.Rules), len(out), n, g.Reviewed))
 	return out
 }
 
@@ -131,33 +131,32 @@ func transcribeAudio(in transcribeInput) (transcribeResult, error) {
 
 	samples, rate, err := stt.ReadWAV(wav)
 	if err != nil {
-		return zero, fmt.Errorf("wav 를 읽을 수 없음: %w", err)
+		return zero, fmt.Errorf(i18n.T("voice.tr.wav_unreadable"), err)
 	}
 	if rate != audio.SampleRate {
-		return zero, fmt.Errorf("%dHz 가 아닙니다: %d", audio.SampleRate, rate)
+		return zero, fmt.Errorf(i18n.T("voice.tr.bad_rate"), audio.SampleRate, rate)
 	}
 	seconds := float64(len(samples)) / float64(rate)
-	fmt.Fprintf(os.Stderr, "오디오 %s, 모델 %s\n", humanDuration(seconds), size)
+	fmt.Fprintln(os.Stderr, i18n.T("voice.tr.audio_model", humanDuration(seconds), size))
 
 	var speakers []stt.Speaker
 	if !in.NoSpeakers {
 		t0 := time.Now()
 		speakers, err = stt.Diarize(samples, rate, dir, stt.DiarizeOptions{Speakers: in.Speakers})
 		if err != nil {
-			return zero, fmt.Errorf("화자 분할 실패: %w", err)
+			return zero, fmt.Errorf(i18n.T("voice.tr.diarize_failed"), err)
 		}
 		n := stt.CountSpeakers(speakers)
-		fmt.Fprintf(os.Stderr, "화자 분할 %s, 화자 %d명\n", humanDuration(time.Since(t0).Seconds()), n)
+		fmt.Fprintln(os.Stderr, i18n.T("voice.tr.diarized", humanDuration(time.Since(t0).Seconds()), n))
 		if in.Speakers <= 0 {
 			// ADR 0082. 추정한 값이라는 사실을 반드시 알린다.
-			fmt.Fprintf(os.Stderr,
-				"경고: 화자 수를 추정했습니다. 이 값은 믿을 수 없습니다. 아는 값이 있으면 --speakers 로 주세요\n")
+			fmt.Fprintln(os.Stderr, i18n.T("voice.tr.guessed"))
 		}
 	}
 
 	segs, err := stt.Segment(samples, rate, filepath.Join(dir, model.VadName))
 	if err != nil {
-		return zero, fmt.Errorf("구간 나누기 실패: %w", err)
+		return zero, fmt.Errorf(i18n.T("voice.tr.segment_failed"), err)
 	}
 
 	tr, err := stt.Open(dir)
@@ -169,7 +168,7 @@ func transcribeAudio(in transcribeInput) (transcribeResult, error) {
 	t1 := time.Now()
 	lines := tr.Transcribe(segs, speakers, transcribeProgress(os.Stderr))
 	lines = stt.MergeAdjacent(lines, maxLine)
-	fmt.Fprintf(os.Stderr, "전사 %s, 줄 %d개\n", humanDuration(time.Since(t1).Seconds()), len(lines))
+	fmt.Fprintln(os.Stderr, i18n.T("voice.tr.done", humanDuration(time.Since(t1).Seconds()), len(lines)))
 
 	res := transcribeResult{
 		Source: filepath.Base(in.Source), Model: string(size), AudioSeconds: seconds,
@@ -200,7 +199,7 @@ func runTranscribe(args []string, out io.Writer) error {
 		return err
 	}
 	if fs.NArg() != 1 {
-		return errors.New("오디오 파일 하나가 필요합니다")
+		return errors.New(i18n.T("voice.tr.need_audio"))
 	}
 
 	res, err := transcribeAudio(transcribeInput{
@@ -260,7 +259,7 @@ func requireModel(dir string, files []model.ModelFile, size model.Size) error {
 	if missing == 0 {
 		return nil
 	}
-	return fmt.Errorf("모델 파일 %d개가 없거나 온전하지 않습니다\nengram-voice model pull --model %s 를 먼저 실행하세요", missing, size)
+	return fmt.Errorf(i18n.T("voice.model.missing_files"), missing, size)
 }
 
 // prepareWAV는 전사에 넣을 wav 를 준비한다. 두 번째 반환값은 임시
@@ -268,17 +267,17 @@ func requireModel(dir string, files []model.ModelFile, size model.Size) error {
 func prepareWAV(src, keep string) (string, func(), error) {
 	noop := func() {}
 	if _, err := os.Stat(src); err != nil {
-		return "", noop, fmt.Errorf("오디오를 열 수 없음: %w", err)
+		return "", noop, fmt.Errorf(i18n.T("voice.tr.audio_open"), err)
 	}
 	conv, err := audio.FindConverter()
 	if err != nil {
 		// wav 를 그대로 받는 길은 남긴다. 변환기가 없어도 이미
 		// 16kHz 모노 wav 를 가진 사용자는 쓸 수 있어야 한다.
 		if audio.IsWAV(src) {
-			fmt.Fprintln(os.Stderr, "안내: 변환기가 없어 준 wav 를 그대로 씁니다")
+			fmt.Fprintln(os.Stderr, i18n.T("voice.tr.raw_wav"))
 			return src, noop, nil
 		}
-		return "", noop, fmt.Errorf("%w\nwav 가 아닌 파일은 변환기가 있어야 합니다", err)
+		return "", noop, fmt.Errorf(i18n.T("voice.tr.need_converter"), err)
 	}
 
 	dst := keep
@@ -291,7 +290,7 @@ func prepareWAV(src, keep string) (string, func(), error) {
 		_ = f.Close()
 		noop = func() { _ = os.Remove(dst) }
 	}
-	fmt.Fprintf(os.Stderr, "%s 로 변환 중\n", conv.Name)
+	fmt.Fprintln(os.Stderr, i18n.T("voice.tr.converting", conv.Name))
 	if err := audio.ToWAV(conv, src, dst); err != nil {
 		noop()
 		return "", func() {}, err
@@ -317,9 +316,9 @@ func transcribeProgress(w io.Writer) stt.Progress {
 		var eta string
 		if done > 0 && !fin {
 			per := time.Since(start) / time.Duration(done)
-			eta = "  남은 시간 " + humanDuration((per * time.Duration(total-done)).Seconds())
+			eta = i18n.T("voice.tr.remaining", humanDuration((per * time.Duration(total-done)).Seconds()))
 		}
-		line := fmt.Sprintf("  전사 %3d%%  %d/%d 구간%s", pct, done, total, eta)
+		line := i18n.T("voice.tr.progress", float64(pct), done, total) + eta
 		if interactive {
 			if !fin && time.Since(last) < progressInterval {
 				return
@@ -341,23 +340,23 @@ func transcribeProgress(w io.Writer) stt.Progress {
 // writeTranscript는 사람이 읽을 전사를 낸다. 이 출력이 그대로
 // engram capture 의 표준 입력이 된다(ADR 0079).
 func writeTranscript(w io.Writer, res transcribeResult, noDiar bool) {
-	fmt.Fprintf(w, "# 전사: %s\n\n", res.Source)
-	fmt.Fprintf(w, "- 길이: %s\n", humanDuration(res.AudioSeconds))
-	fmt.Fprintf(w, "- 모델: whisper %s\n", res.Model)
+	fmt.Fprintf(w, "%s\n\n", i18n.T("voice.out.heading", res.Source))
+	fmt.Fprintln(w, i18n.T("voice.out.length", humanDuration(res.AudioSeconds)))
+	fmt.Fprintln(w, i18n.T("voice.out.model", res.Model))
 	switch {
 	case noDiar:
-		fmt.Fprintln(w, "- 화자: 나누지 않음")
+		fmt.Fprintln(w, i18n.T("voice.out.no_diar"))
 	case res.SpeakersGiven:
-		fmt.Fprintf(w, "- 화자: %d명 (사람이 지정)\n", res.Speakers)
+		fmt.Fprintln(w, i18n.T("voice.out.speakers", res.Speakers))
 	default:
-		fmt.Fprintf(w, "- 화자: %d명 (추정. **이 값은 믿을 수 없습니다**)\n", res.Speakers)
+		fmt.Fprintln(w, i18n.T("voice.out.speakers_est", res.Speakers))
 	}
 	if res.Unknown > 0 {
-		fmt.Fprintf(w, "- 화자를 붙이지 못한 줄: %d개\n", res.Unknown)
+		fmt.Fprintln(w, i18n.T("voice.out.unknown_lines", res.Unknown))
 	}
-	fmt.Fprintln(w, "- 이름은 도구가 붙이지 않습니다. 번호를 사람 이름으로 바꾸세요")
+	fmt.Fprintln(w, i18n.T("voice.out.name_note"))
 	writeCorrections(w, res.Corrections)
-	fmt.Fprint(w, "\n## 본문\n\n")
+	fmt.Fprint(w, i18n.T("voice.out.body"))
 	for _, l := range res.Lines {
 		who := ""
 		if !noDiar {
@@ -379,10 +378,10 @@ func writeCorrections(w io.Writer, cs []correction) {
 	for _, c := range cs {
 		n += c.Count
 	}
-	fmt.Fprintf(w, "\n### 용어 교정 %d건\n\n", n)
-	fmt.Fprint(w, "사전이 바꾼 것입니다. 틀린 것이 있으면 사전을 고치세요.\n\n")
+	fmt.Fprint(w, i18n.T("voice.out.corr_heading", n))
+	fmt.Fprint(w, i18n.T("voice.out.corr_note"))
 	for _, c := range cs {
-		fmt.Fprintf(w, "- `%s` -> `%s` (%d회)\n", c.From, c.To, c.Count)
+		fmt.Fprintf(w, "- `%s` -> `%s` (%d)\n", c.From, c.To, c.Count)
 	}
 }
 
@@ -390,9 +389,9 @@ func writeCorrections(w io.Writer, cs []correction) {
 // 1부터 세어 낸다. 사람은 첫째를 1이라 부른다.
 func speakerLabel(id int) string {
 	if id == stt.Unknown {
-		return "화자 미상"
+		return i18n.T("voice.out.speaker_none")
 	}
-	return fmt.Sprintf("화자 %d", id+1)
+	return i18n.T("voice.out.speaker", id+1)
 }
 
 // clock은 초를 시:분:초로 만든다.
@@ -405,10 +404,10 @@ func clock(sec float64) string {
 func humanDuration(sec float64) string {
 	switch {
 	case sec < 60:
-		return fmt.Sprintf("%.1f초", sec)
+		return i18n.T("voice.dur.sec", sec)
 	case sec < 3600:
-		return fmt.Sprintf("%d분 %d초", int(sec)/60, int(sec)%60)
+		return i18n.T("voice.dur.min", int(sec)/60, int(sec)%60)
 	default:
-		return fmt.Sprintf("%d시간 %d분", int(sec)/3600, (int(sec)%3600)/60)
+		return i18n.T("voice.dur.hour", int(sec)/3600, (int(sec)%3600)/60)
 	}
 }
