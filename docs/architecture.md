@@ -350,7 +350,11 @@ python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki --check   # 쓰지 �
 python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki
 ```
 
-**자동 반영이 없다는 점이 설계다**([0029](decisions/0029-upstream-vendoring-and-parity-execution.md)). 변경분은 사람이 읽고 반영 여부를 판단하며, `meta/CHANGELOG.md` 항목의 `impact: binary-affecting` 이 구현이 따라가야 할 표시다. delta 가 `harness/` 가 아니라 `private/` 로 가는 이유는 upstream CHANGELOG 본문에 조직 어휘가 그대로 실리기 때문이다([0030](decisions/0030-upstream-delta-is-not-a-public-artifact.md)).
+**자동 반영이 없다는 점이 설계다**([0029](decisions/0029-upstream-vendoring-and-parity-execution.md)). 변경분은 사람이 읽고 반영 여부를 판단한다.
+
+**무엇이 engram 에 영향을 주는지는 engram 이 판정한다**([0094](decisions/0094-engram-watches-its-own-dependency-surface.md)). 파일별 `유지/갱신` 이 그 판정이며 `갱신` 은 규칙 명세가 실제로 바뀌었다는 뜻이다. upstream 의 `impact` 표시를 읽지 않는다. 용어 사전은 내용이 조직 어휘라 가져오지 않고 표 형식 지문만 뜬다. `internal/glossary` 가 그 형식에 기대기 때문이다.
+
+delta 가 `harness/` 가 아니라 `private/` 로 가는 이유는 upstream CHANGELOG 본문에 조직 어휘가 그대로 실리기 때문이다([0030](decisions/0030-upstream-delta-is-not-a-public-artifact.md)). delta 는 판정 근거가 아니라 왜 바꿨는지를 읽는 맥락이다.
 
 지금 도는 비교 축은 lint 위반 목록과 resurface 선정 순위 둘이다. [0005](decisions/0005-upstream-contract-and-harness.md)가 넷을 들었으나 나머지 둘은 아직 붙이지 않았다. 도는 둘은 결정론적이라 골든 비교가 성립한다. LLM 호출이 바이너리에 없으므로 예외 구멍을 뚫을 필요가 없다.
 

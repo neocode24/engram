@@ -36,6 +36,8 @@ CHECK_BOUNDARY = os.path.join(ROOT, "scripts", "check-boundary.py")
 
 # 사전 전체가 조직 어휘 목록이라 vendoring 하지 않는다 (ADR 0029).
 EXCLUDED = "terminology-normalization.md"
+# 사전 내용 대신 표 형식만 뜬 지문이 사는 파일이다.
+FORMAT_NAME = "terminology-format.md"
 
 
 def die(msg):
@@ -135,13 +137,74 @@ def apply_replacements(text, entries):
     return text, count
 
 
-def vendor_header(short, count):
-    """치환 사실을 독자에게 알리는 머리말. 원문과 다르다는 것을 알아야 한다."""
+def vendor_header(count):
+    """치환 사실을 독자에게 알리는 머리말. 원문과 다르다는 것을 알아야 한다.
+
+    **출처 커밋을 여기에 적지 않는다.** 적으면 upstream HEAD 가 움직일 때마다
+    본문이 한 글자도 안 바뀌어도 파일이 바뀌어, 파일별 유지/갱신 신호가
+    죽는다. 그 신호가 곧 "이 규칙 명세가 실제로 바뀌었나" 이므로 죽이면
+    안 된다. 커밋은 harness/upstream.lock 하나가 가진다(ADR 0094).
+    """
     line2 = f"익명화 치환 {count}건을 적용했다" if count else "치환 없음"
     return (
-        f"<!-- upstream llm-wiki meta/NAME 에서 가져왔다.\n"
-        f"     원본 커밋 {short}. {line2}.\n"
+        f"<!-- upstream llm-wiki meta/NAME 에서 가져왔다. {line2}.\n"
+        f"     출처 커밋은 harness/upstream.lock 에 있다.\n"
         f"     손으로 고치지 않는다. scripts/upstream-sync.py 가 다시 만든다. -->\n"
+    )
+
+
+def is_separator_row(line):
+    """표의 구분줄인지 모양으로 판정한다. engram 의 glossary 파서와 같은 규칙이다."""
+    if not line.startswith("|"):
+        return False
+    body = line.strip("|")
+    if not body.strip():
+        return False
+    return all(c in "-: |" for c in body)
+
+
+def terminology_fingerprint(upstream, head):
+    """용어 사전의 표 형식만 뽑는다. 사전 내용은 가져오지 않는다.
+
+    engram 의 internal/glossary 가 이 표 구조에 기댄다. 칸이 늘거나 순서가
+    바뀌거나 셋째 칸 어휘가 바뀌면 파서가 **조용히** 0건 치환으로 떨어진다.
+    그런데 이 파일은 사전 전체가 조직 어휘라 vendoring 대상이 아니므로
+    (ADR 0029) 지금까지 아무도 그 변화를 못 봤다.
+
+    형식만 뜨면 경계를 넘지 않는다. 칸 이름은 일반 명사이고, 셋째 칸은
+    **첫 낱말만** 본다. 값 전체에는 조직 식별자가 들어 있다.
+
+    머리글은 이름으로 찾지 않고 **다음 줄이 구분줄인 행**으로 찾는다.
+    파서가 쓰는 규칙과 같아야 지문이 파서의 전제를 대변한다. 이 파일에는
+    표가 여덟 개 있고 전부 같은 머리글이다.
+
+    행 수는 세지 않는다. 사전에 항목 하나만 늘어도 지문이 바뀌면 내용
+    변화와 형식 변화를 구분할 수 없게 된다.
+    """
+    r = git(upstream, "cat-file", "-e", f"{head}:meta/{EXCLUDED}", check=False)
+    if r.returncode != 0:
+        return None
+    text = git(upstream, "show", f"{head}:meta/{EXCLUDED}").stdout
+    rows = [l.strip() for l in text.splitlines() if l.strip().startswith("|")]
+    headers, firsts = set(), set()
+    for i, line in enumerate(rows):
+        if is_separator_row(line):
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if i + 1 < len(rows) and is_separator_row(rows[i + 1]):
+            headers.add(" | ".join(cells))
+            continue
+        if len(cells) >= 3 and cells[2]:
+            firsts.add(cells[2].split()[0].lower())
+    if not headers:
+        return None
+    return (
+        "<!-- upstream llm-wiki meta/" + EXCLUDED + " 의 표 형식만 뜬 지문이다.\n"
+        "     사전 내용은 조직 어휘라 가져오지 않는다(ADR 0029).\n"
+        "     engram 의 internal/glossary 가 이 형식에 기댄다(ADR 0094).\n"
+        "     손으로 고치지 않는다. scripts/upstream-sync.py 가 다시 만든다. -->\n"
+        f"표 머리글: {'; '.join(sorted(headers))}\n"
+        f"자동 교정 칸의 첫 낱말: {', '.join(sorted(firsts))}\n"
     )
 
 
@@ -264,7 +327,7 @@ def main():
         src = git(upstream, "show", f"{head}:meta/{name}").stdout
         body, n = apply_replacements(src, entries)
         total_subs += n
-        text = vendor_header(short, n).replace("NAME", name) + body
+        text = vendor_header(n).replace("NAME", name) + body
         target = os.path.join(UPSTREAM_DIR, name)
         if args.check:
             exists = os.path.exists(target)
@@ -274,7 +337,17 @@ def main():
         else:
             if write_if_changed(target, text):
                 changed_files.append(name)
+    fp = terminology_fingerprint(upstream, head)
+    fp_target = os.path.join(UPSTREAM_DIR, FORMAT_NAME)
+    if fp is None:
+        fp_state = "없음"
+    else:
+        fp_exists = os.path.exists(fp_target)
+        fp_same = fp_exists and open(fp_target, encoding="utf-8").read() == fp
+        fp_state = "유지" if fp_same else ("갱신" if fp_exists else "신규")
+
     if args.check:
+        print(f"  {fp_state} {FORMAT_NAME} (사전 표 형식)")
         print(f"총 치환 {total_subs}건 (사전 {dict_size}항목)")
         if old_lock is None:
             print(f"lock: 신규 (커밋 {short})")
@@ -286,16 +359,20 @@ def main():
             print(f"delta: private/deltas/{short}.md 생성 (binary-affecting {b}건, wiki-only {w}건)")
         return 0
 
+    if fp is not None and write_if_changed(fp_target, fp):
+        changed_files.append(FORMAT_NAME)
     written = [n for n in names]
     print(f"harness/upstream/ 에 {len(written)}개를 맞췄습니다 (치환 {total_subs}건)")
     if changed_files:
         print("  갱신: " + ", ".join(changed_files))
+    else:
+        print("  본문 변화 없음. 규칙 명세가 그대로다")
 
     # 목록에서 빠진 파일은 계약이 아니게 된 것이므로 남기지 않는다.
     stale = []
     if os.path.isdir(UPSTREAM_DIR):
         for name in os.listdir(UPSTREAM_DIR):
-            if name not in names:
+            if name not in names and name != FORMAT_NAME:
                 os.remove(os.path.join(UPSTREAM_DIR, name))
                 stale.append(name)
     if stale:

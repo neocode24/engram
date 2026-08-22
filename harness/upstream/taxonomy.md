@@ -1,5 +1,5 @@
-<!-- upstream llm-wiki meta/taxonomy.md 에서 가져왔다.
-     원본 커밋 eacb0f6. 치환 없음.
+<!-- upstream llm-wiki meta/taxonomy.md 에서 가져왔다. 치환 없음.
+     출처 커밋은 harness/upstream.lock 에 있다.
      손으로 고치지 않는다. scripts/upstream-sync.py 가 다시 만든다. -->
 # Taxonomy
 

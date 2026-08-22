@@ -383,6 +383,7 @@ upstream 감사 보고서 5개(A/B/C/D/E)를 바탕으로 규범 문서별 미�
 |---|---|---|
 | 명세 사본 고정 | 바뀌기 전에 규칙이 무엇이었나 | `harness/upstream/`, `harness/upstream.lock` |
 | 변경분 감지 | 무엇이 바뀌었나 | `scripts/upstream-sync.py`, `private/deltas/` |
+| 의존 표면 감시 | 우리가 기대는 것이 바뀌었나 | 파일별 `유지/갱신`, `harness/upstream/terminology-format.md` |
 | 동등성 검증 | 반영이 맞았나 | `harness/parity`, `docs/parity.md` |
 
 실제 명령 순서는 다음과 같다. 두 문서의 사용법에서 가져왔다.
@@ -393,7 +394,10 @@ upstream 감사 보고서 5개(A/B/C/D/E)를 바탕으로 규범 문서별 미�
 python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki
 python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki --check   # 쓰지 않고 미리 보기
 
-# 2. 변경분을 사람이 읽고 어느 규칙에 영향을 주는지 판단한다. 자동 반영은 없다.
+# 2. 파일별 유지/갱신을 보고 판단한다. 갱신이 곧 "이 규칙 명세가 실제로
+#    바뀌었다"이다. upstream 의 impact 표시를 읽지 않는다(ADR 0094).
+#    private/deltas/ 의 CHANGELOG 발췌는 왜 바꿨는지를 읽는 맥락이다.
+#    자동 반영은 없다.
 
 # 3. 반영한 뒤 동등성 검증을 돌린다. 결과는 t.Log 로만 남으므로
 #    사람이 docs/parity.md에 옮겨 적는다.

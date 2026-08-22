@@ -108,6 +108,7 @@
 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) | 지표는 사용자가 손댈 수 있는 것만 세고 센 것은 다음 행동으로 잇는다 | 2026-08-22 | accepted |
 | [0092](0092-diarization-thresholds-are-measured-against-real-recordings.md) | 화자 분할 임계값을 실제 사람 녹음으로 재고 합성 음성 경로를 닫는다 | 2026-08-22 | accepted |
 | [0093](0093-ci-runs-a-real-transcription-on-every-runner.md) | CI가 러너마다 실제 전사를 한 번 돌린다 | 2026-08-22 | accepted |
+| [0094](0094-engram-watches-its-own-dependency-surface.md) | engram이 upstream 의존 표면을 스스로 감시하고 impact 표시에 기대지 않는다 | 2026-08-22 | accepted |
 
 ## 공개 범위 밖
 
@@ -166,6 +167,8 @@
 | 0082 | 임계값을 더 만지지 않는다. 정답이 없기 때문이다 | [0092](0092-diarization-thresholds-are-measured-against-real-recordings.md) 정답이 붙은 실제 사람 녹음이 생겼다. 군집 임계값을 0.5 에서 0.70 으로 바꾼다 |
 | 0085 | 목소리 셋을 받으면 make.sh 가 화자 정답 자료를 만든다 | [0092](0092-diarization-thresholds-are-measured-against-real-recordings.md) 목소리를 바꿔도 화자가 안 갈린다. 그 길을 닫고 스크립트를 지운다 |
 | 0087 | 전사 경로는 CI 가 못 본다. 모델을 받아야 하기 때문이다 | [0093](0093-ci-runs-a-real-transcription-on-every-runner.md) small 모델 392MB 를 캐시해 러너 셋에서 한 번씩 전사한다 |
+| 0029 | delta 는 meta/CHANGELOG.md 에서 만들고 impact 가 따라갈 항목을 가린다 | [0094](0094-engram-watches-its-own-dependency-surface.md) 판정 근거를 engram 자신의 diff 로 옮긴다. CHANGELOG 는 맥락으로 남는다 |
+| 0029 | 용어 사전은 조직 어휘라 통째로 제외한다 | [0094](0094-engram-watches-its-own-dependency-surface.md) 내용은 그대로 제외하되 표 형식 지문은 뜬다. 파서가 그 형식에 기댄다 |
 | 0070 | 링크 그래프 판정과 게이트는 지금대로 inbox 를 담는다 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) graph.orphan 은 inbox 를 판정하지 않는다. link.broken 과 게이트는 그대로다 |
 | 0070 | 요약은 inbox 문서를 건너뛰었다고 알린다 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) 건너뛴 것은 스키마 판정뿐이라 문구를 그렇게 고친다 |
 | 0012 | Homebrew 는 Formula 로 배포한다 | [0088](0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md) goreleaser 가 brews 를 접었고 Cask 의 binary 가 Linux 도 덮는다 |
