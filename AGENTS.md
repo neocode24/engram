@@ -16,6 +16,8 @@
 
 ## 저장소 구조
 
+### 문서
+
 | 경로 | 역할 |
 |---|---|
 | `docs/architecture.md` | 동작 구조 전체. mermaid 도식 11종 |
@@ -23,14 +25,38 @@
 | `docs/spec-map.md` | upstream 규칙 명세와 구현의 대응. 무엇을 코드가 강제하고 무엇을 사람에게 남겼는지 |
 | `docs/design.md` | 커맨드 체계, 설정, 마일스톤 |
 | `docs/voice.md` | `engram-voice` 동작 구조. 모델 넷과 단계 다섯, upstream 과의 차이 |
+| `docs/parity.md` | upstream 스크립트와 판정을 대조한 결과. 사람이 옮겨 적는다 |
 | `docs/journeys.md` | 사용자 여정과 마일스톤 매핑 |
 | `docs/curriculum.md` | 교육 커리큘럼 |
-| `docs/course/` | 강의 자료. 공개 자산이며 사내 사례를 담지 않는다 (placeholder) |
+| `docs/course/` | 강의 자료. `hands-on.md`(강사용)와 `agent-start.md`(자습용)가 원본이고 `index.html`, `agent.html`이 그 덱이다. 공개 자산이며 사내 사례를 담지 않는다 |
+
+### 코드
+
+| 경로 | 역할 |
+|---|---|
 | `cmd/engram/`, `internal/` | Go 구현. 저장소 루트가 모듈 루트 |
-| `harness/` | 골든 픽스처, 여정 통합 테스트, 데모 위키 재생성, upstream 동등성 검증. lint 축까지 마쳤다 |
+| `voice/` | `engram-voice` 의 **중첩 모듈**. 루트의 `./...` 에 안 잡히므로 따로 빌드하고 시험한다([0080](docs/decisions/0080-voice-is-a-nested-module-in-this-repository.md)) |
+| `harness/` | 검증. `parity/`(upstream 대조), `eject/`(내보낸 린터 대조), `examples/`(데모 위키 재생성), `journey/`(여정 통합), `golden/`, `fixtures/`, `realdata/`, `upstream/`(vendored 명세 사본) |
 | `examples/personal/` | 데모 위키. 커맨드 시퀀스의 생성물이므로 손으로 고치지 않는다. `go test ./harness/examples -update`로 재생성 |
 | `examples/materials/` | 실습 재료. 수강생이 위키에 집어넣을 원재료이며 위키가 아니다. 합성 자료다 |
 | `private/` | 공개 경계 밖 자료. **gitignore 대상이라 커밋되지 않는다** ([0024](docs/decisions/0024-public-boundary-and-private-directory.md)) |
+
+### 스크립트
+
+**`scripts/` 아래 파이썬은 제작 시점 도구다. `engram` 바이너리는 이 넷 중 무엇도 부르지 않는다.** 제품이 Go 인 것과 별개이며, 언어가 섞였다고 정리 대상으로 보지 말 것.
+
+| 파일 | 무엇을 하나 | 언제 도나 |
+|---|---|---|
+| `scripts/check-boundary.py` | 공개 경계 검사. 금지 패턴이 커밋될 문서에 있는지 본다 | **커밋 훅** (`--require`), 수동 |
+| `scripts/check-adr.py` | ADR 파일의 번호, 상태값, README 색인 일치, 상대링크 | **커밋 훅**, **CI**, 수동 |
+| `scripts/check-mermaid.py` | 도식이 실제로 렌더되는지. `npx` 로 mermaid-cli 를 부른다 | **CI**, 수동 |
+| `scripts/upstream-sync.py` | upstream 명세 vendoring 과 변화 감지 | **수동만.** 사람이 시작한다([0029](docs/decisions/0029-upstream-vendoring-and-parity-execution.md)) |
+| `scripts/private-backup.sh` | `private/` 를 upstream `meta/engram/` 으로 백업 | 수동 |
+| `scripts/windows-verify.ps1` | Windows 수동 검증 절차 | 수동 |
+
+**`eject` 가 내보내는 `scripts/lint-frontmatter.py` 는 이것들과 다르다.** 그것은 사용자 손에 들어가는 **산출물**이며 언어 선택이 제품 결정이다([0039](docs/decisions/0039-eject-emits-rule-specs-and-a-python-linter.md)). engram 없이도 규칙이 돌아야 해서 표준 라이브러리 파이썬으로 낸다.
+
+`.githooks/pre-commit` 이 `check-boundary.py --require` 와 `check-adr.py` 를 부른다. 첫 작업 전에 `git config core.hooksPath .githooks` 로 켠다.
 
 ## 작업 규칙
 
