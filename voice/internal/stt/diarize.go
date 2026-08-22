@@ -24,8 +24,11 @@ const (
 	// diarThreads는 분할과 임베딩에 쓰는 스레드 수다.
 	diarThreads = 4
 	// clusterThreshold는 화자를 가르는 코사인 거리 하한이다. 낮을수록
-	// 화자를 잘게 쪼갠다. sherpa-onnx 예제의 기본값이다.
-	clusterThreshold = 0.5
+	// 화자를 잘게 쪼갠다. 화자 수를 아는 실제 사람 녹음 넷으로 재서
+	// 정했다. sherpa-onnx 예제 기본값인 0.5 는 다섯 표본 중 둘만
+	// 맞혔고 0.7 은 셋을 맞힌다. 0.78 부터는 실제로 다른 사람을
+	// 합치기 시작한다(ADR 0092).
+	clusterThreshold = 0.7
 	// minDurationOn은 이보다 짧은 발화를 버린다. 초다.
 	minDurationOn = 0.3
 	// minDurationOff는 이보다 짧은 침묵은 같은 발화로 잇는다. 초다.

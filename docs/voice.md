@@ -70,7 +70,7 @@ whisper는 30초 창을 본다. 참조 구현(mlx-whisper)은 긴 오디오를 �
 
 `segmentation.onnx`가 말한 구간을 찾고, 구간마다 `speaker-embedding.onnx`가 목소리를 벡터로 만들고, 그 벡터를 군집해 화자 번호를 붙인다.
 
-**화자 수는 사람에게 묻는다**([0082](decisions/0082-speaker-count-is-asked-not-guessed.md)). `--speakers`를 주면 그 수로 군집하고, 안 주면 거리 임계값으로 가른 뒤 경고를 낸다. 추정이 긴 녹음에서 무너지기 때문이다. 실측으로 120분 녹음이 화자 132명을 냈다.
+**화자 수는 사람에게 묻는다**([0082](decisions/0082-speaker-count-is-asked-not-guessed.md)). `--speakers`를 주면 그 수로 군집하고, 안 주면 거리 임계값 0.70 으로 가른 뒤 경고를 낸다. 그 임계값과 파편 필터 하한 2%는 화자 수를 아는 실제 사람 녹음 다섯으로 쟀다([0092](decisions/0092-diarization-thresholds-are-measured-against-real-recordings.md)). 추정이 긴 녹음에서 무너지기 때문이다. 실측으로 120분 녹음이 화자 132명을 냈다.
 
 추정한 값은 산출물에도 남는다. 전사가 그대로 위키 문서가 되므로 나중에 읽는 사람도 그 숫자가 지어낸 것인지 알아야 한다.
 
@@ -149,16 +149,18 @@ upstream `llm-wiki`의 `scripts/voice_memo_local_stt.py`가 같은 일을 한다
 
 | 대상 | 빌드 | 시험 | 릴리스 | 실제 전사를 돌려 봤나 |
 |---|---|---|---|---|
-| darwin/arm64 | CI | CI | 있음 | **있음** |
+| darwin/arm64 | CI | CI | 있음 | **CI** |
 | darwin/amd64 | 릴리스만 | 없음 | 있음 | 없음 |
-| linux/amd64 | CI | CI | 있음 | 없음 |
+| linux/amd64 | CI | CI | 있음 | **CI** |
 | linux/arm64 | 릴리스만 | 없음 | 있음 | 없음 |
-| windows/amd64 | CI | CI | 있음 | 없음 |
+| windows/amd64 | CI | CI | 있음 | **CI** |
 | windows/arm64 | **불가** | | | |
 
 windows/arm64 는 sherpa-onnx 모듈에 그 트리플의 라이브러리가 없어 성립하지 않는다([0086](decisions/0086-runner-labels-are-checked-and-windows-is-measured-in-ci.md)).
 
-**실제 오디오를 넣어 전사까지 돌려 본 것은 darwin/arm64 하나다.** 나머지는 빌드와 단위 시험까지다. 단위 시험은 모델을 열지 않으므로(1.7GB 를 받아야 한다) 전사 경로 자체는 CI 가 못 본다.
+CI 가 러너 셋에서 실제 오디오를 한 번씩 전사한다([0093](decisions/0093-ci-runs-a-real-transcription-on-every-runner.md)). 화자 수를 아는 16초짜리 표본을 넣고 화자 둘과 비어 있지 않은 본문을 확인한다. 모델은 392MB 인 small 을 쓰며 본문 글자는 보지 않는다. 전사 언어가 한국어로 박혀 있어 영어 오디오의 본문에 뜻이 없기 때문이다.
+
+**릴리스만 하는 둘(darwin/amd64, linux/arm64)은 그대로 안 돌려 봤다.** 그 러너가 CI 에 없다. 그리고 잰 것은 small 이라 large-v3 에서만 나는 결함은 이 검사가 못 본다.
 
 배포는 바이너리와 `lib/` 둘이다. 단일 바이너리가 아니다([0081](decisions/0081-default-whisper-model-is-large-v3.md), [0084](decisions/0084-voice-ships-on-fewer-platforms-than-engram.md)).
 
@@ -169,5 +171,7 @@ windows/arm64 는 sherpa-onnx 모듈에 그 트리플의 라이브러리가 없�
 - [0081 기본 whisper 모델은 large-v3이고 배포는 단일 바이너리가 아니다](decisions/0081-default-whisper-model-is-large-v3.md)
 - [0082 화자 수는 사람에게 묻고 추정치에는 신뢰할 수 없다고 적는다](decisions/0082-speaker-count-is-asked-not-guessed.md)
 - [0083 용어 사전은 후처리만 하고 쓰는 모델에 붙어 자란다](decisions/0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md)
+- [0092 화자 분할 임계값을 실제 사람 녹음으로 잰다](decisions/0092-diarization-thresholds-are-measured-against-real-recordings.md)
+- [0093 CI가 러너마다 실제 전사를 한 번 돌린다](decisions/0093-ci-runs-a-real-transcription-on-every-runner.md)
 - [architecture.md](architecture.md) engram 본체의 동작 구조
 - [course/hands-on.md](course/hands-on.md) 선택 단계 실습

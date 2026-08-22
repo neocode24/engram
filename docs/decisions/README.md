@@ -96,16 +96,18 @@
 | [0079](0079-voice-is-a-separate-binary-in-a-separate-repository.md) | 음성은 별도 저장소의 별도 바이너리이고 위키는 용어 사전을 소유한다 | 2026-08-21 | amended |
 | [0080](0080-voice-is-a-nested-module-in-this-repository.md) | 음성은 이 저장소의 중첩 모듈이다 | 2026-08-21 | accepted |
 | [0081](0081-default-whisper-model-is-large-v3.md) | 기본 whisper 모델은 large-v3이고 배포는 단일 바이너리가 아니다 | 2026-08-21 | amended |
-| [0082](0082-speaker-count-is-asked-not-guessed.md) | 화자 수는 사람에게 묻고 추정치에는 신뢰할 수 없다고 적는다 | 2026-08-21 | accepted |
+| [0082](0082-speaker-count-is-asked-not-guessed.md) | 화자 수는 사람에게 묻고 추정치에는 신뢰할 수 없다고 적는다 | 2026-08-21 | amended |
 | [0083](0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md) | 용어 사전은 후처리만 하고 쓰는 모델에 붙어 자란다 | 2026-08-21 | accepted |
 | [0084](0084-voice-ships-on-fewer-platforms-than-engram.md) | engram-voice는 본체보다 적은 플랫폼에 배포하고 릴리스 경로가 다르다 | 2026-08-21 | amended |
-| [0085](0085-synthetic-speech-is-not-teaching-material.md) | 합성 음성은 음성 세션의 교재가 될 수 없고 수강생은 자기 목소리를 녹음한다 | 2026-08-21 | accepted |
+| [0085](0085-synthetic-speech-is-not-teaching-material.md) | 합성 음성은 음성 세션의 교재가 될 수 없고 수강생은 자기 목소리를 녹음한다 | 2026-08-21 | amended |
 | [0086](0086-runner-labels-are-checked-and-windows-is-measured-in-ci.md) | 러너 라벨을 실제로 확인하고 Windows는 CI에서 먼저 잰다 | 2026-08-21 | amended |
 | [0087](0087-windows-is-measured-green-and-packaging-runs-in-ci.md) | Windows는 재서 통과했고 포장까지 CI에서 돌린다 | 2026-08-21 | accepted |
 | [0088](0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md) | Homebrew 배포는 Formula가 아니라 Cask이고 tap 접근은 배포키로 한다 | 2026-08-21 | accepted |
 | [0089](0089-voice-is-driven-by-an-agent-and-its-pipeline-is-documented.md) | 음성은 에이전트가 도구로 부르고 그 동작 구조를 문서에 적는다 | 2026-08-22 | accepted |
 | [0090](0090-the-skill-document-is-the-source-and-mcp-delivers-it-as-instructions.md) | 스킬 문서가 진실원이고 MCP는 그것을 instructions로 보낸다 | 2026-08-22 | accepted |
 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) | 지표는 사용자가 손댈 수 있는 것만 세고 센 것은 다음 행동으로 잇는다 | 2026-08-22 | accepted |
+| [0092](0092-diarization-thresholds-are-measured-against-real-recordings.md) | 화자 분할 임계값을 실제 사람 녹음으로 재고 합성 음성 경로를 닫는다 | 2026-08-22 | accepted |
+| [0093](0093-ci-runs-a-real-transcription-on-every-runner.md) | CI가 러너마다 실제 전사를 한 번 돌린다 | 2026-08-22 | accepted |
 
 ## 공개 범위 밖
 
@@ -161,6 +163,9 @@
 | 0075 | 임베딩을 쓰는 곳은 bridge 뿐이다 | [0078](0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md) search --semantic 과 serve 의 재발견 화면이 그 캐시를 읽는다. 계산 자리는 그대로 bridge 다 |
 | 0068 | STT 는 범위 밖이라고만 적고 어디로 가는지는 열어 둔다 | [0079](0079-voice-is-a-separate-binary-in-a-separate-repository.md) engram-voice 로 간다. 코어의 CGO 없음은 그대로 지킨다 |
 | 0079 | 사전을 whisper 의 initial_prompt 로 넣어 인식을 유도한다 | [0083](0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md) sherpa-onnx 의 whisper 에 프롬프트 자리가 없다. 후처리 치환만 한다 |
+| 0082 | 임계값을 더 만지지 않는다. 정답이 없기 때문이다 | [0092](0092-diarization-thresholds-are-measured-against-real-recordings.md) 정답이 붙은 실제 사람 녹음이 생겼다. 군집 임계값을 0.5 에서 0.70 으로 바꾼다 |
+| 0085 | 목소리 셋을 받으면 make.sh 가 화자 정답 자료를 만든다 | [0092](0092-diarization-thresholds-are-measured-against-real-recordings.md) 목소리를 바꿔도 화자가 안 갈린다. 그 길을 닫고 스크립트를 지운다 |
+| 0087 | 전사 경로는 CI 가 못 본다. 모델을 받아야 하기 때문이다 | [0093](0093-ci-runs-a-real-transcription-on-every-runner.md) small 모델 392MB 를 캐시해 러너 셋에서 한 번씩 전사한다 |
 | 0070 | 링크 그래프 판정과 게이트는 지금대로 inbox 를 담는다 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) graph.orphan 은 inbox 를 판정하지 않는다. link.broken 과 게이트는 그대로다 |
 | 0070 | 요약은 inbox 문서를 건너뛰었다고 알린다 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) 건너뛴 것은 스키마 판정뿐이라 문구를 그렇게 고친다 |
 | 0012 | Homebrew 는 Formula 로 배포한다 | [0088](0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md) goreleaser 가 brews 를 접었고 Cask 의 binary 가 Linux 도 덮는다 |

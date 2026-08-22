@@ -2,7 +2,7 @@
 number: 0082
 title: 화자 수는 사람에게 묻고 추정치에는 신뢰할 수 없다고 적는다
 date: 2026-08-21
-status: accepted
+status: amended
 ---
 
 # 화자 수는 사람에게 묻고 추정치에는 신뢰할 수 없다고 적는다

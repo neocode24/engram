@@ -13,9 +13,10 @@ import (
 )
 
 // runDiarize는 표본에서 화자를 갈라 결과를 낸다.
-func runDiarize(samples []float32, rate int, dir string, speakers int, threshold float64, out string) error {
+func runDiarize(samples []float32, rate int, dir string, speakers int, threshold, minRatio float64, out string) error {
 	t0 := time.Now()
-	segs, err := stt.Diarize(samples, rate, dir, stt.DiarizeOptions{Speakers: speakers, Threshold: float32(threshold)})
+	segs, err := stt.Diarize(samples, rate, dir, stt.DiarizeOptions{
+		Speakers: speakers, Threshold: float32(threshold), MinSpeechRatio: minRatio})
 	if err != nil {
 		return err
 	}

@@ -121,6 +121,72 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: voice/scripts/package.sh 0.0.0-ci "$RUNNER_TEMP/dist"
 
+  voice-transcribe:
+    # 플랫폼마다 실제로 한 번 전사한다. voice 잡의 빌드와 시험이 통과해도
+    # 모델을 적재하고 디코딩까지 가는지는 알 수 없다. 시험이 모델 파일을
+    # 요구하지 않기 때문이다. darwin/arm64 만 손으로 확인한 상태였다.
+    #
+    # 표본은 sherpa-onnx 가 화자 분할 예제로 배포하는 실제 사람 녹음이다.
+    # 파일 이름에 화자 둘이라고 적혀 있어 그것이 정답이고, 화자 수까지
+    # 함께 본다. 전사 언어는 한국어로 박혀 있어(ADR 0079) 영어 오디오의
+    # 본문은 뜻이 없다. 여기서 보는 것은 정확도가 아니라 파이프라인이
+    # 끝까지 도는가다.
+    #
+    # 모델은 small 을 쓴다. large-v3 는 1.7GB 라 러너마다 받기 무겁고,
+    # 적재와 디코딩 경로는 크기와 무관하게 같다.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: voice/go.mod
+      # 모델을 캐시한다. 키에 model.go 해시를 넣어 파일 목록이나 체크섬이
+      # 바뀌면 캐시가 무효가 되게 한다.
+      - uses: actions/cache@v4
+        with:
+          path: .models
+          key: voice-small-${{ runner.os }}-${{ hashFiles('voice/internal/model/model.go') }}
+      - name: DLL 경로 추가
+        if: runner.os == 'Windows'
+        working-directory: voice
+        run: |
+          $dir = go list -m -f '{{.Dir}}' github.com/k2-fsa/sherpa-onnx-go-windows
+          "$dir\lib\x86_64-pc-windows-gnu" >> $env:GITHUB_PATH
+      - name: 모델 받기
+        shell: bash
+        working-directory: voice
+        env:
+          ENGRAM_MODEL_DIR: ${{ github.workspace }}/.models
+        run: go run ./cmd/engram-voice model pull --model small
+      - name: 표본 받기
+        shell: bash
+        run: curl -sSLo "$RUNNER_TEMP/two-speakers.wav" https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/1-two-speakers-en.wav
+      - name: 전사
+        shell: bash
+        working-directory: voice
+        env:
+          ENGRAM_MODEL_DIR: ${{ github.workspace }}/.models
+        run: |
+          go run ./cmd/engram-voice transcribe "$RUNNER_TEMP/two-speakers.wav" \
+            --model small --json > "$RUNNER_TEMP/out.json"
+          cat "$RUNNER_TEMP/out.json"
+          # 검사는 node 로 한다. 세 러너 전부에 있고 windows 는 python3 이
+          # PATH 에 있다는 보장이 없다.
+          node -e '
+            const d = require("fs").readFileSync(process.argv[1], "utf8");
+            const r = JSON.parse(d);
+            if (r.speakers !== 2) throw new Error("화자 수가 2가 아닙니다: " + r.speakers);
+            if (!r.lines || !r.lines.length) throw new Error("전사 줄이 비었습니다");
+            if (!r.lines.some(l => l.text.trim())) throw new Error("전사 본문이 전부 비었습니다");
+            console.log(`화자 ${r.speakers}명, 줄 ${r.lines.length}개`);
+          ' "$RUNNER_TEMP/out.json"
+
   docs:
     # 문서 검사. ADR 색인 정합성과 mermaid 렌더다.
     runs-on: ubuntu-latest

@@ -53,11 +53,12 @@
 | 파일 | 무엇 |
 |---|---|
 | `음성/알림-정리-회의.txt` | 합성 회의 대본. 화자 셋, 44줄 |
-| `음성/make.sh` | 대본을 읽어 녹음과 화자 정답을 만든다. macOS 전용 |
 
-**이 녹음은 교재가 아니다.** 합성 음성은 whisper 가 알아듣기 어려워 실습에 쓸 수 없다([0085](../../docs/decisions/0085-synthetic-speech-is-not-teaching-material.md)). 선택 세션에서 수강생은 **자기 목소리를 직접 녹음한다.**
+**이 대본으로 녹음을 만들지 않는다.** 합성 음성은 whisper 가 알아듣기 어려워 실습에 쓸 수 없다([0085](../../docs/decisions/0085-synthetic-speech-is-not-teaching-material.md)). 선택 세션에서 수강생은 **자기 목소리를 직접 녹음한다.**
 
-이 대본이 남아 있는 이유는 다른 데 있다. 화자 분할의 임계값을 재려면 누가 언제 말했는지의 정답이 있어야 하는데 실제 회의 녹음은 공개 경계 밖이다([0024](../../docs/decisions/0024-public-boundary-and-private-directory.md)). `make.sh` 가 대본에서 그 정답을 계산해 낸다. 돌리려면 한국어 목소리 셋을 시스템 설정에서 먼저 받아야 한다.
+대본에서 화자 분할 정답을 만들던 `make.sh` 는 지웠다. 합성 목소리는 서로 달라도 화자 임베딩이 갈리지 않아 정답 자료가 되지 못한다([0092](../../docs/decisions/0092-diarization-thresholds-are-measured-against-real-recordings.md)). 임계값은 실제 사람 녹음으로 재며 그 자리는 `voice/scripts/measure-diarize.sh` 다.
+
+대본이 남아 있는 이유는 **읽을 자료**로서다. 음성 세션에서 이런 회의가 어떤 모양인지 보여 준다.
 
 ## 왜 이렇게 생겼나
 

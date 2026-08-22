@@ -30,6 +30,7 @@ func main() {
 		diar    = flag.Bool("diarize", false, "전사 대신 화자 분할을 잰다")
 		nspk    = flag.Int("speakers", 0, "화자 수. 0 이면 자동 추정")
 		thr     = flag.Float64("threshold", 0, "자동 추정의 군집 임계값. 0 이면 기본값")
+		ratio   = flag.Float64("min-speech-ratio", 0, "파편 필터 하한. 0 이면 기본값")
 	)
 	flag.Parse()
 	if *wav == "" || *dir == "" {
@@ -53,7 +54,7 @@ func main() {
 	audioSeconds := float64(len(samples)) / float64(rate)
 
 	if *diar {
-		if err := runDiarize(samples, rate, *dir, *nspk, *thr, *out); err != nil {
+		if err := runDiarize(samples, rate, *dir, *nspk, *thr, *ratio, *out); err != nil {
 			fmt.Fprintln(os.Stderr, "화자 분할 실패:", err)
 			os.Exit(1)
 		}
