@@ -26,12 +26,15 @@ import (
 // 전사 결과를 돌려줄 뿐이고 위키에 넣는 것은 engram 의 capture 도구다.
 // 에이전트가 둘을 이어 붙인다.
 func runMCP(ctx context.Context, args []string) error {
+	// instructions 는 initialize 응답에 실려 클라이언트가 모델 문맥에
+	// 넣는다. engram 쪽 서버가 스킬 문서 전체를 보내므로 여기서는
+	// 겹치지 않게 짧게 낸다. 규약의 진실원은 그 문서 하나다(ADR 0090).
 	s := mcp.NewServer(&mcp.Implementation{
 		Name:        "engram-voice",
 		Title:       "engram-voice",
 		Description: i18n.T("voice.mcp.desc"),
 		Version:     version,
-	}, nil)
+	}, &mcp.ServerOptions{Instructions: i18n.T("voice.mcp.instructions")})
 	registerVoiceTools(s)
 	fmt.Fprintln(os.Stderr, i18n.T("voice.mcp.starting"))
 	return mcpserver.RunStdio(ctx, s)

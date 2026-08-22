@@ -104,6 +104,7 @@
 | [0087](0087-windows-is-measured-green-and-packaging-runs-in-ci.md) | Windows는 재서 통과했고 포장까지 CI에서 돌린다 | 2026-08-21 | accepted |
 | [0088](0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md) | Homebrew 배포는 Formula가 아니라 Cask이고 tap 접근은 배포키로 한다 | 2026-08-21 | accepted |
 | [0089](0089-voice-is-driven-by-an-agent-and-its-pipeline-is-documented.md) | 음성은 에이전트가 도구로 부르고 그 동작 구조를 문서에 적는다 | 2026-08-22 | accepted |
+| [0090](0090-the-skill-document-is-the-source-and-mcp-delivers-it-as-instructions.md) | 스킬 문서가 진실원이고 MCP는 그것을 instructions로 보낸다 | 2026-08-22 | accepted |
 
 ## 공개 범위 밖
 

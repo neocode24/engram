@@ -18,6 +18,7 @@ import (
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/index"
 	"github.com/neocode24/engram/internal/mcpserver"
+	"github.com/neocode24/engram/internal/skills"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/spf13/cobra"
 )
@@ -94,7 +95,7 @@ func makeMCPWiki(t *testing.T) string {
 // connectMCP는 도구를 등록한 서버에 클라이언트로 붙는다.
 func connectMCP(t *testing.T, root string) (*mcp.ClientSession, func()) {
 	t.Helper()
-	s := mcpserver.New("engram", "dev")
+	s := mcpserver.New("engram", "dev", skills.Body())
 	registerMCPTools(s, root)
 	ctx := context.Background()
 	session, done, err := mcpserver.Connect(ctx, s)

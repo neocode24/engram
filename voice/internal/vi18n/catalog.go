@@ -15,20 +15,17 @@ import "github.com/neocode24/engram/internal/i18n"
 func init() {
 	i18n.Register(i18n.LangKO, map[string]string{
 		// 커맨드 뼈대
-		"voice.cmd.need_command": "커맨드가 필요합니다",
-		"voice.cmd.unknown":      "모르는 커맨드: %s",
-		"voice.cmd.interrupted":  "\n중단했습니다. 다시 실행하면 이어받습니다",
-		"voice.cmd.bad_lang":     "언어 값이 허용값이 아님: %q (허용값: ko, en)",
-		"voice.usage":            voiceUsageKO,
-		"voice.mcp.starting":     "engram-voice MCP 서버를 stdio 로 엽니다",
-		"voice.mcp.desc":         "오디오를 전사 텍스트로 바꿉니다. 위키에 쓰지 않으며 결과를 돌려줄 뿐입니다.",
-		"voice.mcp.tool_status":  "전사 모델이 준비되었는지 봅니다. transcribe 를 부르기 전에 이것을 먼저 확인하세요. 준비되지 않았으면 사람에게 engram-voice model pull 을 실행하라고 알리세요.",
-		"voice.mcp.tool_transcribe": "오디오를 전사합니다. 화자 번호가 붙은 줄과 용어 교정 목록을 돌려줍니다. " +
-			"오래 걸립니다. 녹음 길이의 절반에서 팔 할입니다. " +
-			"화자 수를 알면 speakers 로 주세요. 모르면 사람에게 먼저 물어보세요. " +
-			"결과의 화자는 번호이고 이름이 아닙니다. 약한 근거로 이름을 지어내지 마세요. " +
-			"위키에 넣는 것은 이 도구가 하지 않습니다. engram 의 capture 도구를 쓰세요.",
-		"voice.mcp.pull_hint": "engram-voice model pull --model %s 를 실행하세요. %s 를 내려받습니다",
+		"voice.cmd.need_command":    "커맨드가 필요합니다",
+		"voice.cmd.unknown":         "모르는 커맨드: %s",
+		"voice.cmd.interrupted":     "\n중단했습니다. 다시 실행하면 이어받습니다",
+		"voice.cmd.bad_lang":        "언어 값이 허용값이 아님: %q (허용값: ko, en)",
+		"voice.usage":               voiceUsageKO,
+		"voice.mcp.starting":        "engram-voice MCP 서버를 stdio 로 엽니다",
+		"voice.mcp.desc":            "오디오를 전사 텍스트로 바꿉니다. 위키에 쓰지 않으며 결과를 돌려줄 뿐입니다.",
+		"voice.mcp.tool_status":     "전사 모델이 준비되었는지 봅니다. 파일 목록과 준비 여부를 냅니다.",
+		"voice.mcp.tool_transcribe": "오디오를 전사합니다. 화자 번호가 붙은 줄과 용어 교정 목록을 냅니다. 녹음 길이의 절반에서 팔 할이 걸립니다.",
+		"voice.mcp.instructions":    voiceInstructionsKO,
+		"voice.mcp.pull_hint":       "engram-voice model pull --model %s 를 실행하세요. %s 를 내려받습니다",
 
 		// 전사
 		"voice.tr.need_audio":     "오디오 파일 하나가 필요합니다",
@@ -101,20 +98,17 @@ func init() {
 	})
 
 	i18n.Register(i18n.LangEN, map[string]string{
-		"voice.cmd.need_command": "A command is required",
-		"voice.cmd.unknown":      "Unknown command: %s",
-		"voice.cmd.interrupted":  "\nInterrupted. Run it again to resume",
-		"voice.cmd.bad_lang":     "Language is not an allowed value: %q (allowed: ko, en)",
-		"voice.usage":            voiceUsageEN,
-		"voice.mcp.starting":     "Opening the engram-voice MCP server on stdio",
-		"voice.mcp.desc":         "Turns audio into transcript text. It never writes to the wiki; it only returns the result.",
-		"voice.mcp.tool_status":  "Check whether the transcription model is ready. Call this before transcribe. If it is not ready, tell the person to run engram-voice model pull.",
-		"voice.mcp.tool_transcribe": "Transcribe audio. Returns lines tagged with speaker numbers and the list of glossary corrections. " +
-			"It takes a while: half to eight tenths of the recording length. " +
-			"Pass speakers if you know the count. If you do not, ask the person first. " +
-			"Speakers come back as numbers, not names. Do not invent names from weak evidence. " +
-			"This tool does not put anything in the wiki. Use engram's capture tool for that.",
-		"voice.mcp.pull_hint": "Run engram-voice model pull --model %s. It downloads %s",
+		"voice.cmd.need_command":    "A command is required",
+		"voice.cmd.unknown":         "Unknown command: %s",
+		"voice.cmd.interrupted":     "\nInterrupted. Run it again to resume",
+		"voice.cmd.bad_lang":        "Language is not an allowed value: %q (allowed: ko, en)",
+		"voice.usage":               voiceUsageEN,
+		"voice.mcp.starting":        "Opening the engram-voice MCP server on stdio",
+		"voice.mcp.desc":            "Turns audio into transcript text. It never writes to the wiki; it only returns the result.",
+		"voice.mcp.tool_status":     "Check whether the transcription model is ready. Returns the file list and readiness.",
+		"voice.mcp.tool_transcribe": "Transcribe audio. Returns lines tagged with speaker numbers and the list of glossary corrections. It takes half to eight tenths of the recording length.",
+		"voice.mcp.instructions":    voiceInstructionsEN,
+		"voice.mcp.pull_hint":       "Run engram-voice model pull --model %s. It downloads %s",
 
 		"voice.tr.need_audio":     "Exactly one audio file is required",
 		"voice.tr.audio_model":    "Audio %s, model %s",
@@ -183,6 +177,22 @@ func init() {
 	})
 }
 
+const voiceInstructionsKO = `이 서버는 오디오를 전사할 뿐이고 위키에 쓰지 않는다.
+
+- 전사 전에 model_status 로 모델을 확인한다. 준비 안 됐으면 사용자에게
+  engram-voice model pull 을 실행하라고 알리고 멈춘다. 1.7GB 라 네가
+  대신 받지 않는다.
+- **화자가 몇 명인지 사용자에게 먼저 묻는다.** 추정값은 긴 녹음에서
+  무너진다. 혼자 말한 녹음이면 noSpeakers 를 준다.
+- 결과의 화자는 번호다. **약한 근거로 이름을 지어내지 마라.** 대화에서
+  이름이 분명히 드러나지 않으면 번호를 그대로 둔다.
+- 전사를 위키에 넣는 것은 engram 의 capture 도구가 한다. 사용자 검토
+  없이 sources 나 context 로 올리지 않는다.
+
+회의록으로 정리하는 구조와 나머지 규약은 engram 스킬 문서에 있다.
+engram MCP 서버가 그것을 instructions 로 낸다.
+`
+
 const voiceUsageKO = `engram-voice는 오디오를 전사 텍스트로 바꿉니다.
 
 위키에 쓰지 않습니다. 전사 결과를 표준 출력으로 내며 위키에 넣는 것은
@@ -213,6 +223,22 @@ engram capture 가 합니다.
 그대로 위키에 넣으려면 이렇게 씁니다.
 
   engram-voice transcribe 회의.m4a --speakers 3 | engram capture --title "회의"
+`
+
+const voiceInstructionsEN = `This server only transcribes audio. It never writes to the wiki.
+
+- Call model_status before transcribing. If the model is not ready, tell
+  the person to run engram-voice model pull and stop. It is 1.7GB; do not
+  download it on their behalf.
+- **Ask the person how many speakers there are.** Guessing falls apart on
+  long recordings. Pass noSpeakers for a solo recording.
+- Speakers come back as numbers. **Do not invent names from weak
+  evidence.** If a name is not clearly stated, leave the number.
+- engram's capture tool is what puts a transcript in the wiki. Never
+  promote to sources or context without the person reviewing it.
+
+The meeting-note structure and the rest of the contract are in engram's
+skill document, which the engram MCP server sends as instructions.
 `
 
 const voiceUsageEN = `engram-voice turns audio into transcript text.

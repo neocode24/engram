@@ -13,7 +13,7 @@ import (
 // 테스트가 담당한다.
 func TestRoundTrip(t *testing.T) {
 	ctx := context.Background()
-	s := New("engram-test", "dev")
+	s := New("engram-test", "dev", "시험용 지시")
 	s.AddTool(&mcp.Tool{
 		Name:        "echo",
 		Description: "입력을 그대로 돌려주는 시험 도구",
@@ -59,5 +59,21 @@ func TestRoundTrip(t *testing.T) {
 	}
 	if text, ok := res.Content[0].(*mcp.TextContent); !ok || text.Text != "안녕" {
 		t.Errorf("왕복 결과가 틀림: %+v", res.Content[0])
+	}
+}
+
+// TestInstructionsReachClient는 initialize 응답에 지시가 실리는지 본다.
+// MCP 만 쓰는 클라이언트에는 이것이 규약을 받는 유일한 경로다(ADR 0090).
+func TestInstructionsReachClient(t *testing.T) {
+	const want = "이 서버를 이렇게 쓴다"
+	ctx := context.Background()
+	s := New("engram-test", "dev", want)
+	cs, done, err := Connect(ctx, s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer done()
+	if got := cs.InitializeResult().Instructions; got != want {
+		t.Errorf("지시가 %q 여야 하는데 %q", want, got)
 	}
 }

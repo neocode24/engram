@@ -111,6 +111,8 @@ whisper는 30초 창을 본다. 참조 구현(mlx-whisper)은 긴 오디오를 �
 
 MCP 쪽이 실제 동선이다. 사람이 회의 녹음을 손으로 전사하고 손으로 위키에 넣는 일은 잘 일어나지 않는다.
 
+규약은 스킬 문서 한 벌이 갖는다. `engram mcp` 가 그것을 `instructions` 로 통째로 내고 `engram-voice mcp` 는 자기 경계 넷만 짧게 낸다([0090](decisions/0090-the-skill-document-is-the-source-and-mcp-delivers-it-as-instructions.md)). 도구 설명에는 절차 규칙을 적지 않는다.
+
 stdio 전송 하나이며 stdout 은 프로토콜 전용이다. 진행률과 경고는 전부 stderr 로 간다. 전사가 몇 분씩 걸려 진행률이 중요한데 그것이 stdout 으로 새면 JSON-RPC 가 깨져 서버가 조용히 죽는다.
 
 ## 출력 언어

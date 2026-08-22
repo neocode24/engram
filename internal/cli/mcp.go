@@ -18,6 +18,7 @@ import (
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/neocode24/engram/internal/mcpserver"
 	"github.com/neocode24/engram/internal/resurface"
+	"github.com/neocode24/engram/internal/skills"
 	"github.com/neocode24/engram/internal/state"
 	"github.com/neocode24/engram/internal/status"
 	"github.com/neocode24/engram/internal/walk"
@@ -41,7 +42,7 @@ func newMCPCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			s := mcpserver.New("engram", version)
+			s := mcpserver.New("engram", version, skills.Body())
 			registerMCPTools(s, root)
 			fmt.Fprint(cmd.ErrOrStderr(), i18n.T("cli.mcp.starting", root)+"\n")
 			return mcpserver.RunStdio(cmd.Context(), s)

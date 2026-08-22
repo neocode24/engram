@@ -16,13 +16,19 @@ import (
 // New는 engram MCP 서버를 만든다. 도구 등록은 호출자가 한다.
 // stdout 은 프로토콜 전용이므로 어떤 옵션도 stdout 으로 로그를 보내지
 // 않는다. 진단이 필요한 호출자는 stderr 로 낸다.
-func New(name, version string) *mcp.Server {
+//
+// instructions 는 initialize 응답에 실려 클라이언트가 모델 문맥에
+// 넣는다. **스킬 문서를 여기로 보낸다.** 셸을 쥔 에이전트는
+// skills install 이 심은 파일로 규약을 읽지만 MCP 만 쓰는
+// 클라이언트에는 그 파일이 닿지 않는다. 도구 설명에 규약을 다시
+// 적으면 같은 규칙이 두 곳에 살고 한쪽만 고쳐진다(ADR 0090).
+func New(name, version, instructions string) *mcp.Server {
 	return mcp.NewServer(&mcp.Implementation{
 		Name:        name,
 		Title:       name,
 		Description: i18n.T("core.mcpserver.description"),
 		Version:     version,
-	}, nil)
+	}, &mcp.ServerOptions{Instructions: instructions})
 }
 
 // RunStdio는 stdio 전송으로 서버를 돌린다. HTTP 전송은 두지 않는다.
