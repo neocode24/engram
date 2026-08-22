@@ -2412,9 +2412,17 @@ engram 에 남습니다.
 **터미널**
 
 ```
-cd <engram 소스>/voice
-go install ./cmd/engram-voice
+go install github.com/neocode24/engram/voice/cmd/engram-voice@latest
 engram-voice help
+```
+
+**`engram` 과 경로가 다릅니다.** 중간에 `voice/` 가 들어갑니다. 이것이 별개 모듈이기 때문이며 이유는 아래에 있습니다.
+
+저장소를 이미 클론해 두었으면 그쪽에서 빌드해도 됩니다. **`voice` 디렉토리로 먼저 들어가야 합니다.** 저장소 뿌리에는 `cmd/engram-voice` 가 없습니다.
+
+```
+cd ~/engram/voice
+go install ./cmd/engram-voice
 ```
 
 ```
@@ -2441,6 +2449,43 @@ engram-voice model pull
 ```
 
 받는 동안 녹음을 준비합니다.
+
+### 왜 경로에 `voice`가 들어갑니까
+
+저장소에 모듈이 둘입니다. 하나가 아닙니다.
+
+```
+engram/
+  go.mod              모듈 하나. github.com/neocode24/engram
+  cmd/engram/         그 모듈의 실행 파일
+  internal/           그 모듈만 쓰는 코드
+
+  voice/
+    go.mod            모듈 둘. github.com/neocode24/engram/voice
+    cmd/engram-voice/ 그 모듈의 실행 파일
+    internal/         그 모듈만 쓰는 코드
+```
+
+`cmd/`는 실행 파일이 되는 자리이고 `internal/`은 Go가 강제하는 이름입니다. **`internal` 아래 있는 코드는 그 위 디렉토리 밖에서 import할 수 없습니다.** 남이 우리 내부 구조에 의존하는 것을 언어가 막아 줍니다.
+
+모듈을 굳이 나눈 이유는 하나입니다. **전사기는 C 라이브러리를 씁니다.**
+
+| | `engram` | `engram-voice` |
+|---|---|---|
+| C 의존 | 없음 | sherpa-onnx |
+| 딸려 오는 것 | Go 코드만 | 플랫폼별 미리 빌드된 라이브러리 **238MB** |
+
+한 모듈로 두면 `go install`로 `engram`만 받는 사람도 그 238MB를 받게 됩니다. 음성을 안 쓰는 사람이 대부분인데 그렇습니다.
+
+나눠 두면 안 받습니다. 확인할 수 있습니다.
+
+```
+go list -deps ./cmd/engram | grep -c k2-fsa
+```
+
+`0`이 나옵니다.
+
+`voice/`가 루트의 `internal/`을 가져다 쓰는 것은 됩니다. 모델 내려받기와 용어 사전이 그렇습니다. Go의 `internal` 규칙이 저장소가 아니라 **디렉토리 위치**를 보기 때문이며, `voice/`는 루트 아래에 있습니다.
 
 ### 무엇이 오는지 봅니다
 

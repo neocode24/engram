@@ -6,3 +6,5 @@ github.com/k2-fsa/sherpa-onnx-go-macos v1.13.6 h1:RomjkUOYDsYawgRDSbf0TsK7IKApQq
 github.com/k2-fsa/sherpa-onnx-go-macos v1.13.6/go.mod h1:ZOhUAXC62Unj0ZNfu6zxSFKcW96aXf7P3BsqiUyOBbE=
 github.com/k2-fsa/sherpa-onnx-go-windows v1.13.6 h1:iERze3L0ysXctzsn+p4Uhuj5NbqybKa78U5UTTxbs6g=
 github.com/k2-fsa/sherpa-onnx-go-windows v1.13.6/go.mod h1:5AX7TU8+P/gInjglY1ijtWUM2b8iyR0QX4yEngzMe64=
+github.com/neocode24/engram v1.0.0 h1:HY8pOVZ1VpZvhdCQooE2OhFSoT2bmxNf2lhyVQVJ0H4=
+github.com/neocode24/engram v1.0.0/go.mod h1:e9dIUGaEA2OETY+S8Yx3PVIyX6tjETz+3QEyCzG6+5I=
