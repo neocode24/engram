@@ -77,6 +77,18 @@ go install github.com/neocode24/engram/cmd/engram@latest
 
 The core is pure Go with no CGO. There are no runtime dependencies, so it builds wherever Go builds.
 
+Or from Homebrew. The middle line is required: Homebrew does not load a cask from a third-party tap without it.
+
+```sh
+brew tap neocode24/tap
+brew trust --cask neocode24/tap/engram
+brew install --cask engram
+```
+
+Pick one. Both put an `engram` on your PATH, and Homebrew's comes first, so the other one is shadowed rather than replaced. `which -a engram` shows what you have.
+
+Prebuilt archives for six platforms are on the [releases page](https://github.com/neocode24/engram/releases) with a `checksums.txt`.
+
 Or build from source.
 
 ```sh

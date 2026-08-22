@@ -163,16 +163,49 @@ shasum -a 256 engram_1.0.0_darwin_arm64.tar.gz
 
 ### Homebrew (macOS, Linux)
 
-첫 릴리스부터 켜져 있습니다.
+**세 줄입니다.** 가운데 줄을 빼면 막힙니다.
 
 ```
 brew tap neocode24/tap
+brew trust --cask neocode24/tap/engram
 brew install --cask engram
 ```
 
+가운데 줄이 없으면 이렇게 거부합니다.
+
+```
+Error: Refusing to load cask neocode24/tap/engram from untrusted tap neocode24/tap.
+```
+
+Homebrew가 공식 저장소 밖의 cask에 한 번 확인을 받습니다. 남이 만든 것을 자기 기계에 놓는 일이므로 **묻는 것이 맞습니다.** 끄는 환경 변수가 있지만 쓰지 않습니다.
+
 `--cask`가 붙는 이유는 [0088](../decisions/0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md)에 있습니다. 미리 컴파일한 바이너리를 놓는 자리가 Cask이며 macOS와 Linux 둘 다 됩니다.
 
-Homebrew가 알아서 PATH 위에 놓으므로 따로 할 일이 없습니다. 위치는 Apple Silicon이 `/opt/homebrew/bin/engram`, Intel Mac과 Linux가 `/usr/local/bin/engram`입니다.
+Homebrew가 알아서 PATH 위에 놓으므로 따로 할 일이 없습니다. Apple Silicon이 `/opt/homebrew/bin/engram`, Intel Mac과 Linux가 `/usr/local/bin/engram`이며 실체는 `Caskroom` 아래에 있고 그 자리에는 심볼릭이 놓입니다.
+
+서명하지 않은 바이너리이지만 **Gatekeeper를 따로 풀 일이 없습니다.** cask가 설치 직후 격리 속성을 지웁니다. 아카이브를 직접 받는 경우와 다른 점입니다.
+
+### 방법을 둘 이상 쓰면 하나가 가려집니다
+
+**중요합니다.** 방법 A와 Homebrew를 둘 다 하면 파일이 두 개가 되고 그중 하나만 실행됩니다. 지워지는 것이 아니라 **가려집니다.**
+
+| 방법 | 놓이는 곳 |
+|---|---|
+| Homebrew | `/opt/homebrew/bin/engram` |
+| `go install` | `~/go/bin/engram` |
+
+PATH에서 앞에 있는 쪽이 이깁니다. 방법 A의 PATH 설정이 `$PATH` **뒤에** 붙이므로 `~/go/bin`은 늘 끝쪽이고, **Homebrew가 항상 이깁니다.**
+
+어느 것이 도는지 확인하는 방법입니다.
+
+```
+which -a engram
+engram version
+```
+
+`which -a`는 PATH에 있는 것을 전부 냅니다. 두 줄 이상 나오면 겹친 것입니다. `engram version`의 `commit` 줄로 어느 쪽인지 가립니다.
+
+**둘 다 필요하지 않습니다.** 하나를 고르고 다른 하나를 지웁니다. 소스를 고쳐 가며 쓸 사람은 `go install` 쪽을 남기고 `brew uninstall --cask engram`을 합니다.
 
 ### 아카이브 직접 배치
 
@@ -302,7 +335,8 @@ engram model status --verify
 | 소스 빌드 | `go install` 하나만 안내합니다. `go build`와 수동 배치는 쓰지 않습니다 | 운영체제 셋에서 같은 한 줄이고 옮기는 단계가 없습니다 |
 | sudo | 안내하지 않습니다. `/usr/local/bin`에 직접 넣지 않습니다 | 관리자 권한이 막힌 기기가 있고, 실습이 시스템 디렉토리를 건드릴 이유가 없습니다 |
 | 실행 파일 위치 | 설치 방법과 무관하게 `~/go/bin`(Windows는 `%USERPROFILE%\go\bin`)으로 통일합니다 | 설치 방법이 둘이어도 자리는 하나여야 뒤섞이지 않습니다. Homebrew만 예외로 자기 자리를 씁니다 |
-| 겹침 처리 | `which -a`로 찾고 `engram version`으로 구분합니다 | 소스 빌드는 `dev`, 릴리스는 번호가 나오므로 구분이 확실합니다 |
+| 겹침 처리 | `which -a`로 찾고 `engram version`으로 구분합니다. **둘 다 쓰지 않고 하나를 지웁니다** | 소스 빌드는 `dev`, 릴리스는 번호가 나오므로 구분이 확실합니다. PATH 앞의 것이 이기므로 Homebrew 가 늘 이깁니다 |
+| Homebrew 신뢰 | `brew trust`를 안내에 넣습니다 | 공식 저장소 밖의 cask 는 확인 없이 설치되지 않습니다. 빼면 그 자리에서 막힙니다 |
 | 실습 재료 배포 | 저장소 클론으로만 얻습니다 | 바이너리에 임베드하면 위키 도구가 위키 아닌 파일을 뿌리게 됩니다 |
 | Windows PATH | PowerShell의 `SetEnvironmentVariable`을 씁니다 | `setx`는 PATH를 자르거나 날립니다 |
 | 클론 위치 | 홈 디렉토리 `~/engram` | 3단계가 저장소 경로로 재료를 읽습니다. 실습 위키 `~/engram-wiki` 와 이름이 비슷하므로 문서에서 늘 함께 적습니다 |
