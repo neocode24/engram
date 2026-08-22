@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>engram 에이전트 가이드: 시키는 법과 결정하는 자리</title>
+<meta name="description" content="에이전트에게 engram 위키를 시키는 법. 커맨드 대신 결정할 자리를 배우는 30분 자습 자료. 슬라이드 모드와 읽기 모드를 한 파일에 담았다.">
+<style>
+/* ---------- 토큰 ---------- */
+:root{
+  --bg:#faf8f4; --bg2:#f1ede5; --ink:#1d1d1b; --ink2:#4b4a45; --mute:#8b877e;
+  --line:#dcd7cc; --acc:#0f766e; --acc2:#d9f0ec; --warn:#b7791f; --warn2:#fbefd6;
+  --rej:#b3261e; --rej2:#f9e0dd; --ok:#2f7d4a; --ok2:#e0f2e6;
+  --term:#171a1f; --termfg:#e6e6e0; --termdim:#8a9099; --termgreen:#7bd88f; --termred:#ff7b72; --termyellow:#e3b341; --termcyan:#79c0ff;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding","Nanum Gothic Coding",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic","Segoe UI",Roboto,sans-serif;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{overflow:hidden}
+a{color:var(--acc)}
+code,kbd,pre{font-family:var(--mono)}
+code{background:var(--bg2);padding:.08em .35em;border-radius:5px;font-size:.92em}
+kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 .35em;font-size:.85em;background:#fff}
+h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-.01em}
+p{margin:.35em 0}
+ul,ol{margin:.3em 0 .3em 1.2em;padding:0}
+li{margin:.25em 0}
+strong{font-weight:700;color:var(--ink)}
+.small{font-size:.8em;color:var(--ink2)}
+.mute{color:var(--mute)}
+.acc{color:var(--acc)} .rej{color:var(--rej)} .warn{color:var(--warn)} .ok{color:var(--ok)}
+hr{border:0;border-top:1px solid var(--line);margin:1em 0}
+
+/* ---------- 상단 바 ---------- */
+#bar{position:fixed;top:0;left:0;right:0;height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;background:rgba(250,248,244,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:50;font-size:13px}
+#bar .brand{font-weight:700;letter-spacing:.02em;margin-right:6px}
+#bar .brand span{color:var(--acc)}
+#chapters{display:flex;gap:2px;flex:1;overflow:hidden}
+#chapters button{border:0;background:transparent;color:var(--mute);padding:6px 9px;border-radius:8px;cursor:pointer;font:inherit;white-space:nowrap}
+#chapters button.cur{color:var(--ink);background:var(--bg2);font-weight:600}
+#chapters button:hover{color:var(--ink)}
+#bar .ctl{display:flex;gap:6px;align-items:center}
+#bar .ctl button{border:1px solid var(--line);background:#fff;color:var(--ink2);border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit}
+#bar .ctl button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+#counter{color:var(--mute);min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
+#prog{position:fixed;top:44px;left:0;height:3px;background:var(--acc);width:0;z-index:51;transition:width .25s}
+
+/* ---------- 슬라이드 모드 ---------- */
+#deck{position:absolute;inset:47px 0 0 0;overflow:hidden}
+.slide{position:absolute;inset:0;display:none;padding:4.5vh 3vw 4vh;font-size:clamp(15px,1.32vw,20px);line-height:1.55}
+.slide.active{display:flex;flex-direction:column;justify-content:flex-start;overflow-y:auto;animation:fadein .35s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.slide .in{max-width:1460px;width:100%;margin:0 auto}
+.slide.chap .in,.slide.center .in{margin:auto}
+.slide h1{font-size:2.6em;font-weight:800;margin-bottom:.35em}
+.slide h2{font-size:1.9em;font-weight:800;margin-bottom:.55em}
+.slide h3{font-size:1.15em;font-weight:700;margin:.4em 0 .2em}
+.slide .lead{font-size:1.12em;color:var(--ink2)}
+.slide .kicker{font-size:.72em;text-transform:uppercase;letter-spacing:.14em;color:var(--acc);font-weight:700;margin-bottom:.8em}
+.slide .big{font-size:1.5em;font-weight:700;line-height:1.35}
+.slide .foot{margin-top:1.4em;font-size:.72em;color:var(--mute)}
+.slide.center{text-align:center}
+.slide.center .in > *{margin-left:auto;margin-right:auto}
+.slide.dark{background:var(--term);color:var(--termfg)}
+.slide.dark h1,.slide.dark h2,.slide.dark strong{color:#fff}
+.slide.dark .lead,.slide.dark .mute{color:#aab0b8}
+.slide.chap .kicker{font-size:.9em}
+.slide.chap h1{font-size:3em}
+.slide.chap .num{font-size:9em;font-weight:900;color:var(--acc2);line-height:1;position:absolute;right:6vw;bottom:4vh;user-select:none}
+.slide.dark.chap .num{color:#252a33}
+
+/* 프래그먼트 */
+.frag{opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s}
+.frag.on{opacity:1;transform:none}
+body.read .frag{opacity:1;transform:none}
+
+/* 격자, 카드, 표 */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2.6em;align-items:start}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.4em;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:.9em 1.1em}
+.card h3{margin-top:0}
+.card.acc{border-color:var(--acc);background:#fbfffe}
+.card.rej{border-color:var(--rej);background:#fffafa}
+.card.warn{border-color:var(--warn);background:#fffdf7}
+.tag{display:inline-block;white-space:nowrap;font-size:.7em;font-weight:700;letter-spacing:.06em;padding:.15em .55em;border-radius:999px;background:var(--bg2);color:var(--ink2);vertical-align:middle}
+.tag.acc{background:var(--acc2);color:var(--acc)} .tag.rej{background:var(--rej2);color:var(--rej)} .tag.warn{background:var(--warn2);color:var(--warn)} .tag.ok{background:var(--ok2);color:var(--ok)}
+table{border-collapse:collapse;width:100%;font-size:.88em}
+th,td{text-align:left;padding:.45em .7em;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;color:var(--ink2);font-size:.85em;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}
+.dark table th,.dark table td{border-color:#2b303a}
+pre.code{background:var(--term);color:var(--termfg);border-radius:var(--r);padding:.9em 1.1em;font-size:.78em;line-height:1.5;overflow:auto;margin:.5em 0}
+pre.code .k{color:var(--termcyan)} pre.code .s{color:var(--termgreen)} pre.code .c{color:var(--termdim)} pre.code .y{color:var(--termyellow)}
+blockquote{margin:.6em 0;padding:.5em 1em;border-left:4px solid var(--acc);background:#fff;border-radius:0 8px 8px 0;color:var(--ink2)}
+blockquote cite{display:block;font-size:.75em;color:var(--mute);margin-top:.3em;font-style:normal}
+
+/* 터미널 */
+.term{background:var(--term);color:var(--termfg);border-radius:var(--r);font-family:var(--mono);font-size:.7em;line-height:1.55;padding:0;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.18);position:relative}
+.term .tb{display:flex;align-items:center;gap:6px;padding:8px 12px;background:#0f1216;border-bottom:1px solid #262b33;font-size:.85em;color:var(--termdim)}
+.term .tb i{width:11px;height:11px;border-radius:50%;background:#3a4049;display:inline-block}
+.term .tb i:nth-child(1){background:#ff5f57}.term .tb i:nth-child(2){background:#febc2e}.term .tb i:nth-child(3){background:#28c840}
+.term .tb .t{margin-left:8px}
+.term .tb .re{margin-left:auto;cursor:pointer;border:1px solid #333a45;border-radius:6px;padding:1px 8px;color:#aab0b8;background:transparent;font:inherit}
+.term .tb .re:hover{color:#fff;border-color:#666}
+.term .body{padding:12px 16px 14px;min-height:8em;max-height:62vh;overflow:auto;white-space:pre-wrap;word-break:break-word}
+body.read .term .body{max-height:none}
+.term .p{color:var(--termgreen)} .term .cmd{color:#fff} .term .out{color:var(--termfg)} .term .err{color:var(--termred)} .term .dim{color:var(--termdim)} .term .hl{color:var(--termyellow)} .term .cy{color:var(--termcyan)}
+.term .cur{display:inline-block;width:.55em;height:1.1em;background:#cfd3d8;vertical-align:-.15em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- SVG 도식 공통 ---------- */
+svg.fig{width:100%;height:auto;display:block;overflow:visible}
+svg .lbl{font-family:var(--sans);font-size:15px;fill:var(--ink)}
+svg .lbl.s{font-size:12.5px;fill:var(--ink2)}
+svg .lbl.m{font-family:var(--mono);font-size:13px}
+svg.sm .lbl.s{font-size:12px}
+svg .lbl.w{fill:#fff}
+svg .box{fill:#fff;stroke:var(--line);stroke-width:1.5}
+svg .box.acc{fill:var(--acc2);stroke:var(--acc)}
+svg .box.rej{fill:var(--rej2);stroke:var(--rej)}
+svg .box.warn{fill:var(--warn2);stroke:var(--warn)}
+svg .box.ok{fill:var(--ok2);stroke:var(--ok)}
+svg .box.dim{fill:var(--bg2);stroke:var(--line)}
+svg .ln{stroke:var(--ink2);stroke-width:1.6;fill:none}
+svg .ln.acc{stroke:var(--acc)} svg .ln.rej{stroke:var(--rej)} svg .ln.dash{stroke-dasharray:5 5} svg .ln.thin{stroke-width:1.1;stroke:var(--mute)}
+svg .node{fill:#fff;stroke:var(--acc);stroke-width:2}
+svg .node.old{fill:var(--bg2);stroke:var(--mute)}
+svg .node.orph{fill:var(--rej2);stroke:var(--rej)}
+marker path{fill:var(--ink2)}
+marker.acc path{fill:var(--acc)}
+/* 애니메이션은 슬라이드가 활성일 때만 돈다 */
+.a{opacity:0}
+.active .a{animation:appear .5s ease forwards}
+.active .a.d1{animation-delay:.6s}.active .a.d2{animation-delay:1.2s}.active .a.d3{animation-delay:1.8s}.active .a.d4{animation-delay:2.4s}.active .a.d5{animation-delay:3s}.active .a.d6{animation-delay:3.6s}.active .a.d7{animation-delay:4.2s}.active .a.d8{animation-delay:4.8s}
+@keyframes appear{to{opacity:1}}
+.active .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.2s ease forwards}
+.active .draw.d1{animation-delay:.6s}.active .draw.d2{animation-delay:1.2s}.active .draw.d3{animation-delay:1.8s}.active .draw.d4{animation-delay:2.4s}
+@keyframes draw{to{stroke-dashoffset:0}}
+.active .pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* 이미지 슬라이드 */
+.slide.cover{background:
+  radial-gradient(1100px 600px at 85% 20%, var(--acc2) 0%, transparent 60%),
+  radial-gradient(900px 500px at 95% 90%, #f3e8d9 0%, transparent 55%),
+  var(--bg)}
+.slide.cover.hasimg{background-position:65% center;background-size:cover;background-repeat:no-repeat}
+.slide.cover .in{background:rgba(250,248,244,.9);backdrop-filter:blur(2px);border-radius:18px;padding:2em 2.4em;max-width:700px;margin:auto auto auto 0;text-align:left}
+.slide.cover h1{font-size:2.3em}
+.slide.cover.center .in > *{margin-left:0;margin-right:0}
+.slide.cover .lead{max-width:none}
+body.read .slide.cover .in{margin-left:0}
+body.read .slide.cover{background-size:cover}
+.sysfig{width:auto;max-width:100%;max-height:66vh;margin:0 auto;border-radius:var(--r);box-shadow:0 12px 40px rgba(0,0,0,.14);display:block}
+.slide.chap.dark .cols{align-items:center}
+/* 채팅 데모 */
+.chat{display:flex;flex-direction:column;gap:.55em}
+.chat .u{position:relative;align-self:flex-end;background:var(--acc);color:#fff;padding:.55em 3em .55em 1em;border-radius:14px 14px 4px 14px;max-width:86%;font-size:.95em;line-height:1.55;box-shadow:0 2px 8px rgba(15,118,110,.25)}
+.chat .u .cp{position:absolute;top:6px;right:6px;border:1px solid rgba(255,255,255,.45);background:transparent;color:#fff;border-radius:6px;padding:1px 8px;cursor:pointer;font:inherit;font-size:.72em;opacity:.85}
+.chat .u .cp:hover{opacity:1;background:rgba(255,255,255,.15)}
+.chat .u b{color:#fff}
+.chat .ag{align-self:flex-start;background:var(--warn2);border:1px solid #ecd9b0;color:var(--ink);padding:.55em 1em;border-radius:14px 14px 14px 4px;max-width:88%;font-size:.95em;line-height:1.55}
+.chat .tool{align-self:flex-start;font-family:var(--mono);font-size:.7em;background:var(--term);color:var(--termcyan);padding:.4em .9em;border-radius:8px;max-width:96%;white-space:pre-wrap;word-break:break-all}
+.chat .tout{align-self:flex-start;font-family:var(--mono);font-size:.68em;line-height:1.55;background:var(--term);color:var(--termfg);padding:.55em .9em;border-radius:8px;max-width:96%;white-space:pre-wrap;overflow-x:auto}
+.chat .tout .err{color:var(--termred)} .chat .tout .ok{color:var(--termgreen)} .chat .tout .dim{color:var(--termdim)}
+.chat .who{font-size:.66em;letter-spacing:.08em;font-weight:700;margin-bottom:-.3em;display:flex;align-items:center;gap:.4em}
+.chat .who::before{content:"";width:.6em;height:.6em;border-radius:50%;background:var(--warn)}
+.chat .who.r::before{background:var(--acc)}
+.chat .who{color:var(--warn)}
+.chat .who.r{color:var(--acc)}
+.chat .who.r{align-self:flex-end}
+
+/* 파일 발췌 (부가 정보, 작은 글자) */
+.fileq{font-family:var(--mono);font-size:.66em;line-height:1.65;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:.8em 1em;color:var(--ink2);white-space:pre-wrap}
+.fileq .cap{display:block;font-family:var(--sans);font-size:.95em;font-weight:700;color:var(--mute);margin-bottom:.5em;letter-spacing:.04em}
+/* 프롬프트 카드 */
+.prompt{position:relative;background:var(--term);color:var(--termfg);font-family:var(--mono);font-size:.72em;line-height:1.6;padding:.75em 2.6em .75em 1em;border-radius:10px;white-space:pre-wrap;margin:.45em 0}
+.prompt .cp{position:absolute;top:7px;right:7px;border:1px solid #333a45;background:transparent;color:#aab0b8;border-radius:6px;padding:2px 9px;cursor:pointer;font:inherit;font-size:.85em}
+.prompt .cp:hover{color:#fff;border-color:#667}
+/* ---------- 노트 ---------- */
+.notes{display:none}
+#notepane{position:fixed;right:0;top:47px;bottom:0;width:min(420px,40vw);background:#fff;border-left:1px solid var(--line);padding:18px 20px;overflow:auto;font-size:14px;line-height:1.6;color:var(--ink2);z-index:40;transform:translateX(100%);transition:transform .25s}
+#notepane.on{transform:none}
+#notepane h4{margin:0 0 .6em;color:var(--ink);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+#notepane p{margin:.5em 0}
+
+/* ---------- 읽기 모드 ---------- */
+body.read{overflow:auto}
+body.read #deck{position:static;inset:auto;overflow:visible;padding-top:60px}
+body.read .slide{position:relative;display:block;inset:auto;min-height:0;padding:3.2em 6vw 1.4em;font-size:clamp(15px,1.15vw,18px);animation:none;border-bottom:1px solid var(--line)}
+body.read .slide.center{text-align:left}
+body.read .slide.center .in > *{margin-left:0}
+body.read .slide.chap{padding:4em 6vw 2em;background:var(--bg2)}
+body.read .slide.chap .num{font-size:5em;bottom:.2em}
+body.read .slide.dark.chap{background:var(--term)}
+body.read .slide h1{font-size:2.1em}
+body.read .slide h2{font-size:1.6em}
+body.read .notes{display:block;max-width:1180px;margin:1.6em auto 0;padding:1em 1.2em;background:#fff;border:1px dashed var(--line);border-radius:var(--r);font-size:.9em;color:var(--ink2);line-height:1.7}
+body.read .notes::before{content:"덧붙임";display:block;font-size:.72em;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--acc);margin-bottom:.4em}
+body.read .dark .notes{background:#1f232a;border-color:#333a45;color:#c9ced5}
+body.read .dark .notes code,.dark code{background:#2b303a;color:#e6e6e0}
+body.read #notepane{display:none}
+body.read .slide.in-view .a{animation:appear .5s ease forwards}
+body.read .slide.in-view .a.d1{animation-delay:.6s}body.read .slide.in-view .a.d2{animation-delay:1.2s}body.read .slide.in-view .a.d3{animation-delay:1.8s}body.read .slide.in-view .a.d4{animation-delay:2.4s}body.read .slide.in-view .a.d5{animation-delay:3s}body.read .slide.in-view .a.d6{animation-delay:3.6s}body.read .slide.in-view .a.d7{animation-delay:4.2s}body.read .slide.in-view .a.d8{animation-delay:4.8s}
+body.read .slide.in-view .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.2s ease forwards}
+body.read .slide.in-view .draw.d1{animation-delay:.6s}body.read .slide.in-view .draw.d2{animation-delay:1.2s}body.read .slide.in-view .draw.d3{animation-delay:1.8s}body.read .slide.in-view .draw.d4{animation-delay:2.4s}
+body.read .slide.in-view .pulse{animation:pulse 1.6s ease-in-out infinite}
+body.read .slide.in-view .tok{animation-play-state:running}
+body.read .slide .tok{animation-play-state:paused}
+body.read #hint{display:none}
+
+/* 안내 */
+#hint{position:fixed;left:12px;bottom:10px;font-size:12px;color:var(--mute);z-index:40}
+#hint kbd{font-size:11px}
+@media (max-width:820px){
+  .cols,.cols3{grid-template-columns:1fr}
+  #chapters{display:none}
+  .slide{padding:3vh 5vw 5vh}
+  #notepane{width:88vw}
+}
+@media print{
+  #bar,#prog,#hint,#notepane{display:none!important}
+  body{overflow:visible}
+  #deck{position:static}
+  .slide{position:relative;display:block!important;page-break-inside:avoid;padding:2em 1em}
+  .frag{opacity:1;transform:none}
+  .notes{display:block}
+}
+</style>
+</head>
+<body>
+<div id="bar">
+  <div class="brand">engram <span>에이전트 가이드</span></div>
+  <div id="chapters"></div>
+  <div class="ctl">
+    <button id="btnNotes" title="강사 노트 (N)">노트</button>
+    <button id="btnMode" title="읽기 모드 전환 (R)">읽기 모드</button>
+    <span id="counter">1 / 1</span>
+  </div>
+</div>
+<div id="prog"></div>
+<div id="notepane"><h4>덧붙임</h4><div id="notebody"></div></div>
+<div id="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> 이동 &nbsp; <kbd>Space</kbd> 다음 &nbsp; <kbd>R</kbd> 읽기 모드 &nbsp; <kbd>N</kbd> 노트 &nbsp; <kbd>Home</kbd> <kbd>End</kbd> 처음과 끝</div>
+
+<div id="deck">
+<!-- ============ 0. 표지 ============ -->
+<section class="slide center cover" data-ch="0">
+  <div class="in">
+    <div class="kicker">engram course / agent guide / self study</div>
+    <h1>커맨드를 외우지 마세요.<br>결정할 자리를 아세요.</h1>
+    <p class="lead" style="margin:0 auto;max-width:36em">에이전트에게 engram 위키를 시키는 법. 30분이면 되고 강사가 필요 없습니다. 파란 말풍선과 검은 프롬프트 카드는 전부 <strong>복사 버튼</strong>이 있으니 그대로 붙여 쓰면서 따라오세요.</p>
+    <p class="foot">전제 둘: 셸이나 MCP를 쓰는 에이전트(Claude Code, Cursor 등), 그리고 engram 설치. 설치는 <code>hands-on.md</code> 1단계에 있습니다. 상단의 <strong>읽기 모드</strong>(단축키 R)를 누르면 스크롤 문서가 되고 덧붙임이 함께 펼쳐집니다.</p>
+  </div>
+  <aside class="notes">
+    <p>이 자료는 강의 덱(index.html), 실습 진행서(hands-on.md)와 자리가 다릅니다. 덱은 "왜 이런 체계인가"를 말하고, 실습 진행서는 커맨드를 손으로 치게 합니다. 여기서는 에이전트에게 말로 시킵니다. 실무에서 실제로 쓰는 방식이고, 그래서 외울 것은 커맨드가 아니라 어디서 당신이 결정해야 하는지입니다.</p>
+    <p>커맨드를 한 번씩 손으로 쳐 보고 싶으면 hands-on.md의 여덟 단계로 가면 됩니다. 이 자료만으로도 한 바퀴를 돌 수 있게 만들었습니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="0">
+  <div class="in">
+    <h2>한 바퀴 미리 보기</h2>
+    <svg class="fig" viewBox="0 0 1200 250" aria-label="말로 넣고, 승인으로 올리고, 질문으로 꺼내고, 놓친 것을 에이전트가 먼저 꺼내 주는 순환" style="max-width:1200px;margin:0 auto">
+      <defs><marker id="aar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker><marker id="aac" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--acc)"/></marker></defs>
+      <g class="a"><rect class="box" x="20" y="55" width="250" height="100" rx="12"/><text class="lbl" x="145" y="88" text-anchor="middle" font-weight="700">넣기</text><text class="lbl s" x="145" y="112" text-anchor="middle">"위키에 넣어 줘"</text><text class="lbl s" x="145" y="131" text-anchor="middle">글도 음성 메모도 됩니다</text></g>
+      <g class="a d1"><rect class="box rej" x="330" y="55" width="250" height="100" rx="12"/><text class="lbl" x="455" y="88" text-anchor="middle" font-weight="700">올리기</text><text class="lbl s" x="455" y="112" text-anchor="middle">에이전트가 준비하고</text><text class="lbl s" x="455" y="131" text-anchor="middle" fill="var(--rej)">당신이 승인합니다</text></g>
+      <g class="a d2"><rect class="box acc" x="640" y="55" width="250" height="100" rx="12"/><text class="lbl" x="765" y="88" text-anchor="middle" font-weight="700">꺼내 쓰기</text><text class="lbl s" x="765" y="112" text-anchor="middle">"그때 뭐였지?"</text><text class="lbl s" x="765" y="131" text-anchor="middle">search와 recall</text></g>
+      <g class="a d3"><rect class="box" x="950" y="55" width="250" height="100" rx="12"/><text class="lbl" x="1075" y="88" text-anchor="middle" font-weight="700">다시 만나기</text><text class="lbl s" x="1075" y="112" text-anchor="middle">놓친 것을 에이전트가</text><text class="lbl s" x="1075" y="131" text-anchor="middle">먼저 꺼내 줍니다</text></g>
+      <path class="ln draw" d="M270 105 L 328 105" marker-end="url(#aar)"/>
+      <path class="ln draw d1" d="M580 105 L 638 105" marker-end="url(#aar)"/>
+      <path class="ln draw d2" d="M890 105 L 948 105" marker-end="url(#aar)"/>
+      <g class="a d4"><path class="ln acc" d="M1075 155 L 1075 200 L 145 200 L 145 160" marker-end="url(#aac)"/><text class="lbl s" x="610" y="192" text-anchor="middle" fill="var(--acc)">다시 만난 것이 새 메모가 되어 순환합니다</text></g>
+    </svg>
+    <p class="frag" style="margin-top:.6em">네 자리 중 셋은 에이전트가 맡습니다. <strong>둘째 자리, 올리기의 승인만 당신 것입니다.</strong> 이 자료 전체가 그 한 자리를 설명하는 문서라고 봐도 됩니다.</p>
+  </div>
+  <aside class="notes">
+    <p>왜 승인 하나가 그렇게 중요한가. context는 검수된 지식의 자리이고, 승급은 "이것이 나중에도 쓸 지식이다"라고 선언하는 일이기 때문입니다. 그 선언을 도구나 에이전트가 대신하면 위키가 쓰레기로 차고, 그것을 알아채는 데 몇 달이 걸립니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 1. 붙이기 ============ -->
+<section class="slide chap dark" data-ch="1">
+  <div class="in">
+    <div class="kicker">1장</div>
+    <h1>에이전트에 붙입니다</h1>
+    <p class="lead">두 가지를 붙입니다. 하나는 문서(규약)이고 하나는 도구(호출 수단)입니다. 5분이면 끝납니다.</p>
+  </div>
+  <div class="num">1</div>
+  <aside class="notes"><p>문서는 에이전트가 읽는 규약(스킬)이고, 도구는 에이전트가 부르는 수단(셸 또는 MCP)입니다. 셸을 쓰는 에이전트는 문서만 붙이면 끝입니다. 커맨드는 그냥 칩니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>스킬 문서를 설치합니다</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">터미널에서 한 줄입니다. 에이전트의 스킬 디렉토리에 <code>SKILL.md</code> 한 장이 설치되고, 설치가 끝나면 <strong>에이전트를 다시 시작합니다.</strong></p>
+        <div class="term" id="demo-skills">
+          <div class="tb"><i></i><i></i><i></i><span class="t">터미널, 실제 출력 그대로</span><button class="re" type="button">다시 재생</button></div>
+          <div class="body"></div>
+          <script type="application/json" class="tscript">[
+["cmd","engram skills install --dry-run"],
+["out","심을 예정인 파일 2개 (dry-run. 아직 쓰지 않았습니다)\n  /Users/사용자/.claude/skills/engram/SKILL.md\n  /Users/사용자/.agents/skills/engram/SKILL.md\n에이전트를 다시 시작해야 스킬이 잡힐 수 있습니다"],
+["cmd","engram skills install"],
+["out","심었습니다 2개\n  /Users/사용자/.claude/skills/engram/SKILL.md\n  /Users/사용자/.agents/skills/engram/SKILL.md\n에이전트를 다시 시작해야 스킬이 잡힐 수 있습니다"]
+]</script>
+        </div>
+        <p class="small mute" style="margin-top:.5em">홈 디렉토리를 건드리므로 <code>--dry-run</code>으로 먼저 확인합니다. 실제로 있는 스킬 디렉토리를 찾아 설치하고, 없는 도구를 위해 디렉토리를 만들지 않습니다.</p>
+      </div>
+      <div>
+        <p class="lead">이 문서 한 장이 에이전트의 행동을 정합니다.</p>
+        <ul>
+          <li class="frag">새 자료는 <strong>inbox에 넣습니다.</strong> inbox 안에서는 본문 정리까지 자유롭게 합니다.</li>
+          <li class="frag">승급(<code>context</code>로 올리기)은 <strong>제안까지만</strong> 하고, 실행 전에 당신의 승인을 받습니다.</li>
+          <li class="frag">임계값이나 허용값은 이 문서에 없습니다. 위키마다 다른 규칙은 에이전트가 <code>rules show</code>로 그때그때 조회합니다. 그래서 위키가 여럿이어도 설치는 한 번입니다.</li>
+        </ul>
+        <div class="fileq frag" style="margin-top:.8em"><span class="cap">참고: SKILL.md 원문 발췌. 문서 안의 "너"는 당신이 아니라 에이전트입니다</span>네가 쓸 수 있는 곳은 inbox까지다. 새 자료는 capture로 inbox에 넣고
+inbox 문서의 본문은 update로 고칠 수 있다. 그 안에서는 자유롭게 하라.
+context로 올리는 일은 승급 게이트를 지나야 하고 확정은 사람이 한다.
+promote를 제안할 수 있지만 실행은 사람에게 맡겨라.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>스킬 문서가 하는 일은 두 가지입니다. 에이전트에게 사용법(조회는 --json으로, 규칙은 rules show에게)을 알려 주고, 경계(쓰기는 inbox까지, promote는 제안만)를 긋습니다. 셸을 쥔 에이전트를 물리적으로 막을 방법은 없으므로 이 문서가 경계의 실체이고, 에이전트가 어기면 그 자리에서 되돌리게 하면 됩니다. 6장에서 다시 다룹니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>도구: 셸이 있으면 그걸로 끝, 없으면 MCP</h2>
+    <div class="cols">
+      <div>
+        <table>
+          <tr><th>길</th><th>어떻게 부르나</th><th>언제 씁니다</th></tr>
+          <tr><td><strong>스킬 (셸)</strong></td><td>셸에서 커맨드를 실행</td><td>에이전트가 터미널을 쥐고 있을 때. Claude Code가 여기 해당합니다</td></tr>
+          <tr><td><strong>MCP</strong></td><td>도구 호출로</td><td>셸을 안 주고 싶을 때</td></tr>
+        </table>
+        <p class="frag" style="margin-top:.8em">셸을 쓰는 에이전트라면 <strong>여기서 1장이 끝입니다.</strong> 2장으로 넘어가세요. MCP만 쓰는 클라이언트는 서버를 등록합니다. Claude Code 기준입니다.</p>
+        <div class="prompt frag">claude mcp add engram -- engram mcp --wiki ~/my-wiki</div>
+        <p class="frag small"><strong>위키 경로는 등록할 때 고정합니다.</strong> 도구는 경로를 인자로 받지 않습니다. 받으면 에이전트가 아무 디렉토리나 읽을 수 있기 때문입니다. 음성 전사까지 쓰려면 <code>engram-voice mcp</code>를 하나 더 등록합니다(2장 끝).</p>
+      </div>
+      <div>
+        <p class="lead frag">MCP로 붙어도 스킬 문서가 프로토콜로 함께 전달됩니다. 셸을 쓰든 MCP를 쓰든 에이전트가 아는 규칙이 같습니다.</p>
+        <p class="frag">등록되는 도구는 열입니다.</p>
+        <pre class="code frag">backlinks, bridge, <span class="y">capture</span>, digest, lint,
+recall, resurface, rules, search, status</pre>
+        <p class="frag">목록을 한 번 보세요. <strong><span class="rej">promote가 없습니다.</span></strong> 일부러 뺐고, 이유는 6장에서 다룹니다. 지금은 하나만 기억하면 됩니다. <strong>쓰기 도구는 <code>capture</code> 하나이고 inbox에만 씁니다.</strong></p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>둘 중 하나를 고르는 것이 아닙니다. 셸을 줄 수 있는 자리에서는 스킬을 쓰고, 못 주는 자리에서는 MCP를 씁니다. 경계가 다른 두 문입니다. 능력 차이는 6장의 표에 있습니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 2. 넣기 ============ -->
+<section class="slide chap dark" data-ch="2">
+  <div class="in">
+    <div class="kicker">2장</div>
+    <h1>넣기: 말로 시킵니다</h1>
+    <p class="lead">아무것도 검사하지 않는 곳이라, 망설일 이유도 없습니다. 글도, 음성 메모도 됩니다.</p>
+  </div>
+  <div class="num">2</div>
+  <aside class="notes"><p>위키가 아직 없으면 engram init 한 줄로 만듭니다. 디렉토리 넷(inbox, sources, context, archive)은 분류함이 아니라 성숙 단계입니다. 이 하나만 이해하면 나머지가 따라옵니다. 자세한 것은 강의 덱 3장에 있습니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>"위키에 넣어 줘" <span class="tag acc" style="vertical-align:middle">직접 해 보세요</span></h2>
+    <div class="cols">
+      <div>
+        <div class="chat">
+          <div class="who r">당신</div>
+          <div class="u">회의-전사.txt 를 위키에 넣어 줘. 원문 그대로, 요약하지 말고.</div>
+          <div class="who frag">에이전트</div>
+          <div class="tool frag">engram capture --title "회의 전사" --wiki ~/my-wiki ...</div>
+          <div class="tout frag">inbox에 넣었습니다: inbox/2026-08-22-회의-전사.md
+다음: 문서를 정리한 뒤 승급하세요</div>
+          <div class="ag frag">inbox에 넣어 두었습니다. 정리해서 올릴 준비가 되면 말씀해 주세요.</div>
+        </div>
+        <p class="small mute" style="margin-top:.5em">말풍선의 복사 버튼으로 프롬프트를 그대로 가져갈 수 있습니다. 파일명만 바꾸세요.</p>
+      </div>
+      <div>
+        <p class="lead"><strong>여기서 아무것도 검사하지 않습니다.</strong> 형식도 길이도 보지 않습니다.</p>
+        <p class="frag">관문은 올라갈 때 한 번이면 되고, 넣는 자리에까지 관문을 두면 사람들이 아예 안 넣습니다. 그러니 망설이지 말고 넣으세요. 슬랙 로그, 회의 전사, 읽은 글, 반쯤 쓴 메모 전부 됩니다.</p>
+        <div class="card rej frag" style="margin-top:.8em">
+          <h3>요약해서 넣지 마세요</h3>
+          <p>에이전트가 요약하려 하면 원문 그대로 넣으라고 하세요. 무엇이 중요한지는 나중에 알게 되고, 그때 원문이 없으면 되돌릴 수 없습니다. 정리는 승급할 때 합니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>engram 자신은 요약하지 않습니다. 스킬 문서 첫 문단이 그렇게 못 박습니다. 요약이 필요하면 에이전트가 하고 그 결과를 engram에 넣습니다. 다만 inbox에 넣는 단계에서는 요약조차 하지 않는 것이 원칙입니다. inbox는 검수된 곳이 아니라 받는 곳이기 때문입니다.</p>
+    <p>출처가 분명한 원본(기사, 벤치마크, 회의 전사의 원문)은 sources에 보존하는 길도 있습니다. "원본으로 보존해 줘"라고 하면 에이전트가 capture 대신 source를 씁니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>음성 메모: 말한 것도 위키로 갑니다 <span class="tag" style="vertical-align:middle">선택</span></h2>
+    <div class="cols">
+      <div>
+        <div class="chat">
+          <div class="who r">당신</div>
+          <div class="u">회의.m4a 를 engram-voice 로 전사하고, 화자 번호를 실제 이름으로 바꿔서 위키에 넣어 줘. 화자는 2명이야. 나는 화자 1이고 다른 한 명은 지수야.</div>
+          <div class="who frag">에이전트</div>
+          <div class="tool frag">engram-voice transcribe 회의.m4a --speakers 2 | engram capture --title "알림 정리 회의"</div>
+          <div class="tout frag"><span class="dim">afconvert 로 변환 중
+오디오 3분 3초, 모델 large-v3
+화자 분할 6.7초, 화자 2명
+  전사 100%  45/45 구간
+전사 1분 50초, 줄 17개</span>
+inbox에 넣었습니다: inbox/2026-08-22-알림-정리-회의.md</div>
+          <div class="ag frag">전사해서 inbox에 넣었습니다. 화자 1을 당신으로, 화자 2를 지수로 바꿨습니다. 이름이 맞는지 봐 주세요.</div>
+        </div>
+      </div>
+      <div>
+        <ul>
+          <li class="frag">전사기는 별도 도구 <code>engram-voice</code>입니다. <strong>위키에 쓰지 않고 글만 냅니다.</strong> 위키에 넣는 것은 <code>capture</code>이고, 그래서 파이프로 이어집니다. 진행률은 표준 오류로 나가므로 전사만 넘어갑니다.</li>
+          <li class="frag"><strong>화자 수는 아는 값을 줍니다.</strong> 추정은 긴 녹음에서 무너집니다. 실측으로 120분 녹음이 화자 132명을 냈습니다. 회의에 몇 명이 있었는지는 당신이 압니다.</li>
+          <li class="frag"><strong>이름은 도구가 붙이지 않습니다.</strong> 목소리가 몇 갈래인지는 알아도 누구인지는 모릅니다. 화자 번호를 이름으로 바꾸는 것이 에이전트에게 시킬 일이고, 이름이 맞는지 보는 것이 당신 일입니다.</li>
+        </ul>
+        <p class="frag small">설치(<code>engram-voice</code>)와 모델 받기(1.7GB)는 <code>hands-on.md</code> 선택 단계에 있습니다. MCP만 쓰면 <code>engram-voice mcp</code>로 띄웁니다. 도구는 <code>transcribe</code>와 <code>model_status</code> 둘이고 위키에 쓰는 도구는 없습니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>전사에는 결론이 없습니다. 말한 순서대로 늘어놓은 것이라 무엇이 결정이고 무엇이 잡담인지 안 갈려 있습니다. 그래서 inbox로 갑니다. 원본 전사를 증거로 남기고 싶으면 "전사 원본은 sources 로 보존해 줘"라고 하면 됩니다. 결정만 추려 올리는 것은 3장의 승인 흐름 그대로입니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>잘못 들은 말은 사전에 적습니다. 사전이 위키 자산입니다.</h2>
+    <div class="cols">
+      <div>
+        <div class="chat">
+          <div class="who r">당신</div>
+          <div class="u">전사에서 잘못 들은 용어를 찾아서 meta/terminology.md 에 넣어 줘.</div>
+          <div class="who frag">에이전트</div>
+          <div class="tout frag">| 정규형     | 변형            | 자동 교정 | 설명        |
+|-----------|----------------|----------|------------|
+| 온콜      | 온로, 온콜로     | yes      | 당번 근무    |
+| 임계값     | 임계을, 임계     | yes      |            |
+| 헬스체크   | 스체크, 헬스 체크 | yes      |            |
+| 대시보드   | 대시에서        | review   | 문맥을 봐야 함 |</div>
+          <div class="ag frag">표로 정리했습니다. 확신한 것만 yes로 뒀고, 문맥을 봐야 하는 대시보드는 review로 남겼습니다.</div>
+        </div>
+      </div>
+      <div>
+        <p class="lead"><strong>셋째 칸이 승인의 자리입니다.</strong> yes면 다음 전사부터 말없이 바꾸고, review면 사람이 볼 표시만 남습니다. 망설여지면 review로 둡니다.</p>
+        <p class="frag">다음 전사에서 사전이 돕니다. 무엇을 바꿨는지도 산출물에 남습니다.</p>
+        <pre class="code frag">용어 사전 terminology.md: 규칙 6개 읽음, 4개가 맞아 4건 교정,
+검토 대상 1개는 건드리지 않음
+
+### 용어 교정 4건
+- `스체크` -> `헬스체크` (1회)
+- `온로` -> `온콜` (1회)</pre>
+        <p class="frag">사전은 위키 안의 파일이라 git이 추적합니다. 고칠 때마다 쌓여 다음 전사가 나아지고, <strong>도구를 버려도 사전은 남습니다.</strong> 위키마다 쓰는 말이 다르므로 도구가 사전을 들고 다닐 수 없습니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>사전은 정확히 일치하는 글자만 바꾸고, 지금 쓰는 모델이 틀리는 방식을 담습니다. 모델을 바꾸면 상당 부분이 통하지 않아 다시 쌓아야 합니다. 다른 whisper 구현으로 만든 사전 500건이 이 도구의 전사에서 0건을 고친 실측이 있습니다.</p>
+    <p>사전에 표준으로 정한 말은 검색에서도 힘을 냅니다. 정규형으로 통일된 뒤부터 그 말로 검색이 걸리기 시작합니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 3. 올리기 ============ -->
+<section class="slide chap dark" data-ch="3">
+  <div class="in">
+    <div class="kicker">3장</div>
+    <h1>올리기: 여기가 당신 자리입니다</h1>
+    <p class="lead">에이전트가 넷을 하고, 그중 두 번 당신에게 묻습니다.</p>
+  </div>
+  <div class="num">3</div>
+  <aside class="notes"><p>이 장이 이 자료의 핵심입니다. 커맨드는 전부 에이전트가 칩니다. 당신이 하는 일은 승인 두 번인데, 그 두 번이 이 체계 전체의 품질을 결정합니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>"올릴 만한 걸 골라서 제안해 줘" <span class="tag acc" style="vertical-align:middle">직접 해 보세요</span></h2>
+    <div class="cols">
+      <div>
+        <div class="chat">
+          <div class="who r">당신</div>
+          <div class="u">inbox 에 있는 것 중에 context 로 올릴 만한 걸 골라서 제안해 줘.</div>
+          <div class="who frag">에이전트</div>
+          <div class="ag frag">배포 실패 스레드를 추천합니다. 결론이 명확하고 재발할 질문에 답합니다. 올려 보겠습니다.</div>
+          <div class="tool frag">engram promote inbox/2026-08-17-배포-실패-스레드.md --type incident</div>
+          <div class="tout frag"><span class="err">Error: 승급 게이트를 넘지 못했습니다: 이어지는 위키링크가 0개로 min_wikilinks 2개에 못 미칩니다
+위키에 있는 문서를 가리키는 링크를 2개 더 추가하세요. 없는 슬러그와 inbox 문서는 세지 않습니다</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="lead"><strong>거절 사유는 이것 하나뿐입니다.</strong> 길이도 형식도 주제도 막지 않습니다.</p>
+        <p class="frag">왜 링크만 보냐면, 어디에도 안 이어진 문서는 반년 뒤에 찾아지지 않기 때문입니다. 잘 쓴 문서인지 도구는 모릅니다. 이어져 있는지는 압니다.</p>
+        <p class="frag">에이전트에게 링크를 채우게 하고 다시 올리게 하세요. <strong>이을 곳이 없으면 그것이 신호입니다.</strong> 아직 올릴 때가 아니거나, 먼저 올려야 할 다른 문서가 있습니다.</p>
+        <p class="frag small">위키가 작을 때는 게이트가 유예됩니다. "링크 대상 문서가 1개로 min_wikilinks 2개보다 적어 게이트를 유예했습니다"라는 경고와 함께 올라가고, 위키가 자라면 게이트가 다시 적용됩니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>게이트는 실재하는 대상을 가리키는 링크만 셉니다. 없는 슬러그와 inbox 문서는 세지 않습니다. inbox 문서를 빼는 이유는 그 문서가 승급될 때 날짜 접두사가 떨어져 링크가 깨지기 때문입니다. 에이전트도 이 규칙을 알고, 링크 후보를 고를 때 inbox 경로를 뺍니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>에이전트가 넷을 하고, 두 번 묻습니다</h2>
+    <svg class="fig" viewBox="0 0 1200 290" aria-label="검색, 정리와 첫 물음, 시험 실행, 승인과 실행의 네 단계" style="max-width:1200px;margin:0 auto">
+      <defs><marker id="par" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+      <g class="a"><rect class="box" x="20" y="85" width="255" height="100" rx="12"/><text class="lbl" x="147" y="115" text-anchor="middle" font-weight="700">1 이을 곳을 찾습니다</text><text class="lbl s" x="147" y="139" text-anchor="middle">search로 관련 문서 탐색</text><text class="lbl s" x="147" y="158" text-anchor="middle">묻지 않고 혼자 합니다</text></g>
+      <g class="a d1"><rect class="box warn" x="325" y="85" width="255" height="100" rx="12"/><text class="lbl" x="452" y="115" text-anchor="middle" font-weight="700">2 본문을 정리합니다</text><text class="lbl s" x="452" y="139" text-anchor="middle">남을 것만 남기고</text><text class="lbl s" x="452" y="158" text-anchor="middle">링크를 넣습니다</text></g>
+      <g class="a d3"><rect class="box" x="630" y="85" width="255" height="100" rx="12"/><text class="lbl" x="757" y="115" text-anchor="middle" font-weight="700">3 dry-run으로 검증</text><text class="lbl s" x="757" y="139" text-anchor="middle">게이트 통과를 짐작하지 않고</text><text class="lbl s" x="757" y="158" text-anchor="middle">통과할 때까지 혼자 돌립니다</text></g>
+      <g class="a d4"><rect class="box acc" x="935" y="85" width="255" height="100" rx="12"/><text class="lbl" x="1062" y="115" text-anchor="middle" font-weight="700">4 실행하고 보고</text><text class="lbl s" x="1062" y="139" text-anchor="middle">promote 실행 뒤</text><text class="lbl s" x="1062" y="158" text-anchor="middle">lint로 확인해 보고합니다</text></g>
+      <path class="ln draw d1" d="M275 135 L 323 135" marker-end="url(#par)"/>
+      <path class="ln draw d3" d="M580 135 L 628 135" marker-end="url(#par)"/>
+      <path class="ln draw d4" d="M885 135 L 933 135" marker-end="url(#par)"/>
+      <g class="a d2"><polygon points="452,32 494,58 452,84 410,58" fill="var(--rej2)" stroke="var(--rej)" stroke-width="1.5"/><text class="lbl s" x="452" y="63" text-anchor="middle" fill="var(--rej)">물음 1</text><text class="lbl s" x="452" y="216" text-anchor="middle" fill="var(--rej)">이 정리본으로 갈아 끼워도 되는가.</text><text class="lbl s" x="452" y="235" text-anchor="middle" fill="var(--rej)">원문을 증거로 남길 것인가.</text></g>
+      <g class="a d5"><polygon points="1062,32 1104,58 1062,84 1020,58" fill="var(--rej2)" stroke="var(--rej)" stroke-width="1.5"/><text class="lbl s" x="1062" y="63" text-anchor="middle" fill="var(--rej)">물음 2</text><text class="lbl s" x="1062" y="216" text-anchor="middle" fill="var(--rej)">올릴 값어치가 있는가.</text><text class="lbl s" x="1062" y="235" text-anchor="middle" fill="var(--rej)">inbox 원본이 사라진다는 사실 포함.</text></g>
+      <g class="a d6"><text class="lbl s" x="600" y="278" text-anchor="middle">커맨드는 전부 에이전트가 칩니다. 당신은 두 물음에 답합니다. 그것이 이 단계에서 사람이 하는 일 전부입니다.</text></g>
+    </svg>
+  </div>
+  <aside class="notes">
+    <p>물음 1이 먼저 오는 이유는 update가 본문을 통째로 바꿔서 원문이 사라지기 때문입니다. 되돌릴 수 없는 자리라 값어치 판단을 에이전트가 혼자 하지 않습니다. 슬랙 로그는 정리본만 남겨도 되지만, 회의 전사는 발언의 원문 자체가 증거라 sources로 보존하는 답이 나오기도 합니다. 그 갈림이 사람의 판단입니다.</p>
+    <p>dry-run은 아무것도 쓰지 않으므로 에이전트가 몇 번이든 돌립니다. 거절당하면 --related를 고쳐 다시 돌리고, 통과한 뒤에야 당신에게 옵니다. 그래서 당신 앞에 오는 제안은 이미 게이트를 통과할 수 있는 상태입니다. 판단할 것은 통과 여부가 아니라 값어치입니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>승인 전에 읽습니다. 여기가 요점입니다.</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">읽지 않고 "응"만 하면 게이트의 사람 확인은 형식만 남습니다.</p>
+        <table>
+          <tr><th>볼 것</th><th>아니면</th></tr>
+          <tr><td><strong>틀린 말이 들어갔는가</strong></td><td>에이전트가 대화 속 제안을 결정처럼 적기 쉽습니다</td></tr>
+          <tr><td><strong>버릴 것을 버렸는가</strong></td><td>원문 덩어리 중 무엇이 남았는지 봅니다</td></tr>
+          <tr><td><strong>링크가 맞는가</strong></td><td>억지로 이은 링크는 나중에 검색을 더럽힙니다</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card acc frag">
+          <h3>문장을 다시 쓰지 않습니다</h3>
+          <p>마음에 안 들면 에이전트에게 무엇이 틀렸는지 말하고 다시 시킵니다. <strong>그게 판단이고, 커맨드를 치는 것은 판단이 아닙니다.</strong></p>
+        </div>
+        <p class="frag" style="margin-top:.9em">승급이 끝나면 inbox에서 그 문서가 사라져 있습니다. inbox 문서는 승급하면 이동하고, 파일명의 날짜 접두사도 떨어집니다. context 문서는 날짜로 부르지 않기 때문입니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>"틀린 말이 들어갔는가"의 전형은 회의에서 나온 제안을 결정으로 적는 것입니다. 전사에는 "그렇게 할까요?"였는데 정리본에는 "그렇게 하기로 했다"가 되어 있는 경우입니다. 이것은 에이전트의 성능 문제가 아니라 요약이라는 작업의 성질이라, 사람이 읽는 것 말고 막을 방법이 없습니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 4. 꺼내 쓰기 ============ -->
+<section class="slide chap dark" data-ch="4">
+  <div class="in">
+    <div class="kicker">4장</div>
+    <h1>꺼내 쓰기: 질문하면 됩니다</h1>
+    <p class="lead">에이전트가 search로 찾고 recall로 꺼냅니다. 둘 다 요약하지 않습니다.</p>
+  </div>
+  <div class="num">4</div>
+  <aside class="notes"><p>이 장부터는 승인이 필요 없습니다. 읽기라 흔적을 남기지 않고, 에이전트가 마음껏 돌려도 위키가 상하지 않습니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>"지난달에 배포 롤백 얘기 뭐였지?" <span class="tag acc" style="vertical-align:middle">직접 해 보세요</span></h2>
+    <div class="cols">
+      <div>
+        <div class="chat">
+          <div class="who r">당신</div>
+          <div class="u">지난달에 배포 롤백 얘기 뭐였지? 근거 문서와 줄 번호도 같이 줘.</div>
+          <div class="who frag">에이전트</div>
+          <div class="tool frag">engram search "배포 롤백" --json --wiki ~/my-wiki</div>
+          <div class="tout frag">  1   6.84  context  배포-롤백-전사
+  2   4.68  inbox    2026-08-22-회고-2026-04
+  3   4.56  inbox    2026-08-22-슬랙-스레드</div>
+          <div class="tool frag">engram recall "배포 롤백" --json --wiki ~/my-wiki</div>
+          <div class="tout frag">1  6.00  [[배포-롤백-전사]]  context/배포-롤백-전사.md:16-85</div>
+          <div class="ag frag">4월 배포에서 설정 키 누락으로 롤백했고, 재발 방지로 배포 전 설정 diff 확인을 넣기로 했습니다. 근거는 [[배포-롤백-전사]] 16-85줄입니다.</div>
+        </div>
+      </div>
+      <div>
+        <p class="lead"><code>search</code>는 <strong>어디 있는지</strong>만 내고, <code>recall</code>이 <strong>본문 조각</strong>을 냅니다. 줄 번호까지 붙어서 어디서 왔는지 알 수 있습니다.</p>
+        <p class="frag">둘이 나뉜 이유가 있습니다. 검색은 짧고 싸야 하고, 회수는 인용할 만큼 길어야 합니다. 하나로 합치면 둘 다 어중간해집니다.</p>
+        <p class="frag">마지막의 요약 문장은 engram이 아니라 <strong>에이전트가</strong> 만든 것입니다. engram은 재료(조각과 출처)만 냅니다. 그래서 에이전트의 답이 의심스러우면 출처 줄 번호로 원문을 확인할 수 있습니다.</p>
+        <p class="frag small">낱말이 안 겹치면 의미로 찾습니다. <code>engram search "장애 대응" --semantic</code>. 임베딩 모델이 필요하고, 없으면 없다고 알려 줍니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>점수의 절대값에는 뜻이 없습니다. 만점이 없고 위키가 자라면 같은 문서의 같은 질의 점수도 변합니다. 같은 목록 안에서 어느 것이 위인지만 봅니다.</p>
+    <p>backlinks는 반대 방향입니다. "이 문서를 누가 가리키나"를 본문 링크와 관계 필드로 구분해 냅니다. 문서를 지우거나 크게 고치기 전에 에이전트에게 backlinks를 확인시키는 습관이 좋습니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 5. 다시 만나기 ============ -->
+<section class="slide chap dark" data-ch="5">
+  <div class="in">
+    <div class="kicker">5장</div>
+    <h1>다시 만나기</h1>
+    <p class="lead">지식관리의 진짜 문제는 넣는 것이 아니라 잊는 것입니다. 놓친 것을 도구가 먼저 꺼냅니다.</p>
+  </div>
+  <div class="num">5</div>
+  <aside class="notes"><p>이 장의 커맨드 셋은 위키가 커지고 시간이 지나야 결과가 나옵니다. 첫 주에는 빈 결과가 정상입니다. 그래서 습관으로 만드는 것이 중요하고, 에이전트에게 정기적으로 시키는 프롬프트가 마지막 장 치트시트에 있습니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="5">
+  <div class="in">
+    <h2>"최근에 놓친 자료 있어?" <span class="tag acc" style="vertical-align:middle">직접 해 보세요</span></h2>
+    <div class="cols">
+      <div>
+        <div class="chat">
+          <div class="who r">당신</div>
+          <div class="u">최근에 놓친 자료 있어? 다시 봐야 할 게 있으면 골라 줘.</div>
+          <div class="who frag">에이전트</div>
+          <div class="tool frag">engram resurface --json --wiki ~/my-wiki</div>
+          <div class="tout frag">다시 꺼낼 문서 5개 (stale_days 30일, 기준 2026-11-22)
+  - 배포-롤백-전사: 마지막 갱신 92일 전, 제시한 적 없음
+  - 디스크-소진-슬랙: 마지막 갱신 92일 전, 제시한 적 없음
+아무도 안 가리키는 문서 8개
+  - 로그-검색-사용법</div>
+          <div class="ag frag">배포-롤백-전사를 먼저 권합니다. 92일 전 결정인데 이번 주 배포 작업과 겹칩니다. 아직 유효한지 한번 봐 주세요.</div>
+        </div>
+      </div>
+      <div>
+        <table>
+          <tr><th>커맨드</th><th>무엇을 보나</th></tr>
+          <tr><td><code>resurface</code></td><td><strong>시간.</strong> 오래 안 본 것, 아무도 안 가리키는 것</td></tr>
+          <tr><td><code>bridge</code></td><td><strong>관계.</strong> 닮았는데 안 이어진 짝</td></tr>
+          <tr><td><code>digest</code></td><td><strong>기간.</strong> 그 사이에 무엇이 바뀌었나</td></tr>
+        </table>
+        <p class="frag" style="margin-top:.7em">도구가 내는 것은 재료입니다. 경과일과 링크 수 같은 수치일 뿐, "이 문서를 지금 봐야 하는 이유"라는 문장은 <strong>에이전트가</strong> 만듭니다.</p>
+        <p class="frag small">답은 셋 중 하나입니다. 아직 유효하다, 폐기한다(archive), 보강한다. 폐기와 보강은 다시 3장의 승인 자리로 돌아갑니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>MCP의 resurface는 제시 이력을 쓰지 않습니다. 커맨드로 돌리면 보여 준 것을 기록해 한동안 다시 안 꺼내지만, 도구 호출은 에이전트가 몇 번을 부르든 당신의 이력을 오염시키지 않습니다. 읽기는 흔적을 남기지 않는다는 원칙입니다. bridge의 기각도 도구로는 못 합니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="5">
+  <div class="in">
+    <h2>bridge: 낱말이 안 겹쳐도 같은 일을 찾습니다</h2>
+    <div class="cols">
+      <div>
+        <div class="cols" style="gap:1em">
+          <div class="card">
+            <p style="margin:0"><span class="tag">사용자의 말</span></p>
+            <p>"화면이 한참 멈춰서 두 번 눌렀다"</p>
+          </div>
+          <div class="card">
+            <p style="margin:0"><span class="tag">엔지니어의 말</span></p>
+            <p>"상위 백분위 응답이 320밀리초로 튀었다"</p>
+          </div>
+        </div>
+        <p class="frag" style="margin-top:.7em">같은 새벽의 같은 일입니다. 겹치는 낱말이 없어서 <strong>검색으로는 안 이어집니다.</strong> bridge가 이 짝을 유사도로 찾아 "묶을까요?"라고 묻습니다.</p>
+        <ul class="small">
+          <li class="frag">수락하면 에이전트가 양쪽에 링크를 넣습니다. context 문서를 고치는 일이면 그 편집도 3장의 승인을 거칩니다.</li>
+          <li class="frag">기각하면 영구 기록되어 같은 짝을 다시 묻지 않습니다. 기각은 커맨드로만 됩니다(<code>bridge --reject A B</code>). 사람의 판단이라 git으로 팀과 공유됩니다.</li>
+        </ul>
+      </div>
+      <div>
+        <pre class="code">$ engram bridge --limit 5
+유사도가 높은데 링크가 없는 문서 쌍 (단어 min 0.30, 의미 min 0.72)
+  1  0.76  단어+의미  scope-negotiation  success-criteria
+  2  0.75  단어+의미  priority-criteria  scope-negotiation
+  3  0.75  의미  batch-db-contention  read-replica-offload
+  4  0.68  단어  domain-vocabulary  priority-criteria
+  5  0.72  의미  deploy-rollback-incident  response-latency-incident</pre>
+        <p class="small frag">의미 축은 임베딩 모델(선택 설치)이 있어야 돕니다. 없으면 단어 축만으로 돕니다. 위키가 클수록, 그리고 같은 일을 다른 말로 적는 사람이 많을수록 가치가 커집니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>bridge가 이 도구의 특별한 자리입니다. 사람이 손으로는 절대 못 하는 일이기도 합니다. 에이전트에게 주간 점검으로 시키는 프롬프트가 치트시트에 있습니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 6. 경계와 실습 ============ -->
+<section class="slide chap dark" data-ch="6">
+  <div class="in">
+    <div class="kicker">6장</div>
+    <h1>에이전트가 못 하는 것</h1>
+    <p class="lead">도구 목록에서 promote를 찾아보세요. 없습니다. 일부러 뺐습니다.</p>
+  </div>
+  <div class="num">6</div>
+  <aside class="notes"><p>경계를 이해하면 에이전트를 마음 놓고 부릴 수 있습니다. 경계를 모르면 편한 대로 쓰다가 몇 달 뒤 위키를 못 믿게 됩니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="6">
+  <div class="in">
+    <h2>두 경로의 능력 차이</h2>
+    <div class="cols">
+      <div>
+        <table>
+          <tr><th>할 수 있는 일</th><th>스킬 (셸)</th><th>MCP</th></tr>
+          <tr><td>읽기 전부 (검색, 회수, 재발견, 현황)</td><td>예</td><td>예</td></tr>
+          <tr><td>inbox에 넣기</td><td>예</td><td>예 (<code>capture</code>)</td></tr>
+          <tr><td>승급 준비 (본문 정리, 링크 채우기)</td><td>예</td><td><span class="rej">아니오</span></td></tr>
+          <tr><td>승급 실행</td><td>승인 뒤에 예</td><td><span class="rej">아니오</span></td></tr>
+        </table>
+        <p class="small frag" style="margin-top:.6em">MCP 도구로 promote를 열면 사람이 보는 자리가 없어집니다. 도구 호출은 화면에 한 줄로 지나가고 사람은 결과만 봅니다. 그래서 MCP 경로의 최대치는 inbox에 넣어 두는 것까지입니다.</p>
+      </div>
+      <div>
+        <div class="card frag">
+          <h3>셸 경로는 어떻게 지키나</h3>
+          <p>셸을 쥔 에이전트가 <code>engram promote</code>를 직접 치는 것을 막을 방법은 없습니다. 그래서 <strong>스킬 문서가 하지 말라고 적어 두었습니다.</strong> 에이전트가 어기고 올리면 그 자리에서 되돌리게 하세요(<code>demote</code>).</p>
+        </div>
+        <div class="card acc frag" style="margin-top:.8em">
+          <h3>어겨도 lint가 잡습니다</h3>
+          <pre class="code" style="margin:.4em 0 0">$ engram status
+다음 행동
+  - engram lint
+    context 문서 1개가 링크 2개 기준에 못 미쳐 게이트에 걸렸습니다.
+    링크를 채우거나 engram demote로 내리세요</pre>
+          <p class="small" style="margin-top:.4em"><code>reject</code>는 context에 있으면 안 되는 문서가 이미 올라가 있다는 뜻입니다. warn은 괜찮습니다. error는 손으로 고친 자리가 있다는 뜻입니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>"MCP가 더 안전한 거네요"라고 정리하고 싶어질 수 있습니다. 반은 맞습니다. 다만 안전한 대신 할 수 있는 일이 적습니다. 셸 경로가 위험한 것이 아니라, 사람이 보는 자리가 그 안에 있는 것입니다. 승급 준비(본문 정리와 링크 채우기)는 셸 경로에서만 가능하고, 그 준비물을 사람이 읽고 승인하는 흐름 전체가 셸 경로의 가치입니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="6">
+  <div class="in">
+    <h2>실습: 자동 분류 <span class="tag acc" style="vertical-align:middle">직접 해 보세요</span></h2>
+    <div class="cols">
+      <div>
+        <p class="lead">뉴스레터 한 통을 주고 위키와 이어지는 항목만 골라 넣게 합니다. 실습 재료는 저장소의 <code>examples/materials/주간뉴스.txt</code>에 있고, 자기 메일함의 뉴스레터로 해도 됩니다.</p>
+        <div class="prompt frag">examples/materials/주간뉴스.txt 를 읽어 줘.
+내 위키에 있는 것과 이어지는 항목만 골라서 inbox 에 넣어 줘.
+
+고르기 전에 이렇게 해:
+- 항목마다 engram search 로 내 위키에 관련 문서가 있는지 봐
+- 있으면 recall 로 그 문서가 실제로 무슨 이야기를 하는지 확인해
+- 관련 없는 항목은 넣지 마. 왜 안 넣는지도 말해 줘
+
+넣을 때는 원문 그대로 넣어. 요약하지 마.</div>
+      </div>
+      <div>
+        <p class="lead frag">볼 것은 두 가지입니다.</p>
+        <ul>
+          <li class="frag"><strong>고르기 전에 검색을 했는가.</strong> 항목만 보고 판단하면 안 됩니다. 내 위키에 무엇이 있는지 알아야 "이어진다"를 판단할 수 있습니다. 검색 없이 고른 에이전트에게는 지시를 고쳐 다시 시킵니다.</li>
+          <li class="frag"><strong>안 넣는 이유를 말했는가.</strong> 넣지 않기로 한 것도 판단이고, 그것을 남겨야 다음에 같은 것을 또 검토하지 않습니다.</li>
+        </ul>
+        <p class="frag small">시간이 지나 위키가 커진 뒤 같은 지시로 다시 돌리면 결과가 달라집니다. 처음에는 안 이어지던 항목이 이어집니다. 위키가 커질수록 들어오는 것이 더 잘 걸립니다. 그게 쌓는 이유입니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>이 실습이 에이전트 활용의 핵심 형태입니다. 에이전트가 위키를 읽고(검색), 바깥 자료를 위키의 맥락으로 판단하고(이어지는가), 경계 안에서만 씁니다(inbox). 판단의 근거가 위키에 쌓일수록 판단이 좋아지는 순환이 여기서 시작됩니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="6">
+  <div class="in">
+    <h2>프롬프트 치트시트</h2>
+    <div class="cols" style="font-size:.95em">
+      <div>
+        <p class="small mute" style="margin:0 0 .2em">넣기</p>
+        <div class="prompt">회의-전사.txt 를 위키에 넣어 줘. 원문 그대로, 요약하지 말고.</div>
+        <p class="small mute" style="margin:.55em 0 .2em">음성 메모</p>
+        <div class="prompt">회의.m4a 를 전사해서 위키에 넣어 줘. 화자는 2명이고 나는 화자 1이야.</div>
+        <p class="small mute" style="margin:.55em 0 .2em">골라서 올리기 제안</p>
+        <div class="prompt">inbox 에 있는 것 중에 context 로 올릴 만한 걸 골라서 제안해 줘.</div>
+        <p class="small mute" style="margin:.55em 0 .2em">승급 준비 (두 번 물어 옵니다)</p>
+        <div class="prompt">inbox 의 배포 실패 스레드를 승급할 수 있게 준비해 줘. 본문을 갈아 끼우기 전과 승급 전에는 꼭 내 승인을 받아.</div>
+      </div>
+      <div>
+        <p class="small mute" style="margin:0 0 .2em">꺼내 쓰기</p>
+        <div class="prompt">지난달에 배포 롤백 얘기 뭐였지? 근거 문서와 줄 번호도 같이 줘.</div>
+        <p class="small mute" style="margin:.55em 0 .2em">주간 재발견</p>
+        <div class="prompt">최근에 놓친 자료가 있는지 resurface 와 bridge 로 봐 줘. 이번 주 다시 볼 것 셋만 골라서, recall 로 원문을 확인하고 왜 지금 이건지 근거를 말해 줘.</div>
+        <p class="small mute" style="margin:.55em 0 .2em">용어 사전</p>
+        <div class="prompt">전사에서 잘못 들은 용어를 찾아서 meta/terminology.md 에 넣어 줘.</div>
+        <p class="small mute" style="margin:.55em 0 .2em">위키 상태 점검</p>
+        <div class="prompt">engram status 와 lint 를 돌려서 지금 위키에서 손볼 것을 알려 줘. reject 가 있으면 제일 먼저.</div>
+      </div>
+    </div>
+    <p class="foot">복사 버튼으로 그대로 붙여 쓰면 됩니다. 경로와 파일명만 자기 것으로 바꾸세요.</p>
+  </div>
+  <aside class="notes">
+    <p>프롬프트에 커맨드 이름이 들어 있는 것과 아닌 것이 섞여 있습니다. 스킬이 설치되어 있으면 커맨드 이름 없이 말해도 에이전트가 알아서 고릅니다. 커맨드 이름을 넣는 쪽이 결과가 안정적이라, 정기적으로 쓰는 프롬프트에는 넣어 두는 것을 권합니다.</p>
+  </aside>
+</section>
+
+<section class="slide center" data-ch="6">
+  <div class="in">
+    <div class="kicker">정리</div>
+    <h1 style="font-size:2.2em">에이전트는 일꾼이고,<br>승인이 당신의 일입니다.</h1>
+    <div class="cols" style="text-align:left;margin-top:1.4em;font-size:.9em;max-width:62em;margin-left:auto;margin-right:auto">
+      <div class="card frag"><h3>에이전트가 하는 것</h3><p>capture로 inbox에 넣기, 음성 전사와 화자 이름 바꾸기, 검색과 회수, 백링크, 재발견 돌리기, 링크 후보 제안, 본문 정리, dry-run 검증, 승인 뒤 실행.</p></div>
+      <div class="card acc frag"><h3>당신이 하는 것</h3><p>정리본을 읽고 갈아 끼울지 결정. 올릴 값어치가 있는지 결정. 되돌리기와 폐기. bridge 기각. 용어 사전의 yes와 review. 규칙 바꾸기.</p></div>
+    </div>
+    <p class="frag" style="margin-top:1.4em">여기까지가 한 바퀴입니다. 이제 자기 자료로 돌리면 됩니다.</p>
+    <p class="foot">더 알고 싶으면: 규칙 전체는 <code>engram rules show</code>, 규칙을 내 것으로 바꾸려면 <code>engram eject</code>, 옆자리에 보여 주려면 <code>engram serve</code>(context만 보입니다), 커맨드를 손으로 쳐 보려면 <code>hands-on.md</code> 여덟 단계, 왜 이런 체계인지는 <code>index.html</code> 강의 덱.</p>
+  </div>
+  <aside class="notes">
+    <p>마지막으로 한 가지. 이 경계는 도구가 강제하는 것(MCP에 promote 없음, 게이트)과 문서가 부탁하는 것(셸 경로의 promote 자제)이 섞여 있습니다. 부탁이 지켜지는지 확인하는 수단이 lint와 status이고, 그래서 위키 상태 점검 프롬프트를 주기적으로 돌리는 습관이 이 체계의 마지막 조각입니다.</p>
+  </aside>
+</section>
+
+</div><!-- /deck -->
+
+
+<script>
+(function(){
+  const CH = ['표지','1 붙이기','2 넣기','3 올리기','4 꺼내 쓰기','5 다시 만나기','6 경계와 실습'];
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const deck = document.getElementById('deck');
+  const counter = document.getElementById('counter');
+  const prog = document.getElementById('prog');
+  const chapBar = document.getElementById('chapters');
+  const notepane = document.getElementById('notepane');
+  const notebody = document.getElementById('notebody');
+  const btnNotes = document.getElementById('btnNotes');
+  const btnMode = document.getElementById('btnMode');
+  let cur = 0, read = false;
+
+  // 장 버튼
+  CH.forEach((name, i) => {
+    const b = document.createElement('button');
+    b.textContent = name;
+    b.addEventListener('click', () => {
+      const idx = slides.findIndex(s => s.dataset.ch === String(i));
+      if (idx >= 0) go(idx, true);
+    });
+    chapBar.appendChild(b);
+  });
+
+  function frags(s){ return Array.from(s.querySelectorAll('.frag')); }
+
+  function show(i){
+    slides.forEach((s, k) => {
+      const on = k === i;
+      s.classList.toggle('active', on);
+      if (!on) { s.classList.remove('in-view'); }
+    });
+    const s = slides[i];
+    // 새로 진입하는 슬라이드는 프래그먼트를 접은 상태로
+    frags(s).forEach(f => f.classList.remove('on'));
+    counter.textContent = (i+1) + ' / ' + slides.length;
+    prog.style.width = ((i+1)/slides.length*100) + '%';
+    Array.from(chapBar.children).forEach((b, k) => b.classList.toggle('cur', String(k) === s.dataset.ch));
+    const n = s.querySelector('.notes');
+    notebody.innerHTML = n ? n.innerHTML : '<p class="mute">이 슬라이드에는 노트가 없다.</p>';
+    location.hash = '#/' + (i+1);
+    runTerm(s);
+  }
+
+  function go(i, reset){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    cur = i;
+    if (read) {
+      slides[i].scrollIntoView({behavior:'smooth', block:'start'});
+      counter.textContent = (i+1) + ' / ' + slides.length;
+      location.hash = '#/' + (i+1);
+      return;
+    }
+    show(i);
+  }
+
+  function next(){
+    if (read) { go(cur+1); return; }
+    const term = slides[cur].querySelector('.term');
+    if (term && termHasNext(term)) { termStep(term); return; }
+    const fs = frags(slides[cur]);
+    const off = fs.find(f => !f.classList.contains('on'));
+    if (off) { off.classList.add('on'); return; }
+    if (cur < slides.length-1) go(cur+1);
+  }
+  function prev(){
+    if (read) { go(cur-1); return; }
+    const fs = frags(slides[cur]).filter(f => f.classList.contains('on'));
+    if (fs.length) { fs[fs.length-1].classList.remove('on'); return; }
+    if (cur > 0) { go(cur-1); frags(slides[cur]).forEach(f => f.classList.add('on')); }
+  }
+
+  // 키보드
+  document.addEventListener('keydown', e => {
+    if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': case ' ': e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'PageUp': e.preventDefault(); prev(); break;
+      case 'Home': e.preventDefault(); go(0); break;
+      case 'End': e.preventDefault(); go(slides.length-1); break;
+      case 'r': case 'R': toggleRead(); break;
+      case 'n': case 'N': toggleNotes(); break;
+      case 'Escape': notepane.classList.remove('on'); btnNotes.classList.remove('on'); break;
+    }
+  });
+  // 클릭 진행 (슬라이드 모드, 터미널/링크/버튼 제외)
+  deck.addEventListener('click', e => {
+    if (read) return;
+    if (e.target.closest('a,button,.term,table,pre')) return;
+    const x = e.clientX / window.innerWidth;
+    if (x < 0.15) prev(); else next();
+  });
+
+  function toggleNotes(){
+    if (read) return;
+    notepane.classList.toggle('on');
+    btnNotes.classList.toggle('on', notepane.classList.contains('on'));
+  }
+  btnNotes.addEventListener('click', toggleNotes);
+
+  function toggleRead(){
+    read = !read;
+    document.body.classList.toggle('read', read);
+    btnMode.classList.toggle('on', read);
+    btnMode.textContent = read ? '슬라이드 모드' : '읽기 모드';
+    notepane.classList.remove('on'); btnNotes.classList.remove('on');
+    if (read) {
+      slides.forEach(s => { s.classList.remove('active'); });
+      // 읽기 모드에서는 화면에 들어온 슬라이드만 애니메이션과 터미널을 돌린다
+      slides.forEach(s => io.observe(s));
+      setTimeout(() => slides[cur].scrollIntoView({block:'start'}), 30);
+    } else {
+      slides.forEach(s => { io.unobserve(s); s.classList.remove('in-view'); });
+      window.scrollTo(0,0);
+      show(cur);
+    }
+  }
+  btnMode.addEventListener('click', toggleRead);
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      const s = en.target;
+      if (en.isIntersecting && en.intersectionRatio > 0.35) {
+        if (!s.classList.contains('in-view')) { s.classList.add('in-view'); runTerm(s); }
+        const i = slides.indexOf(s);
+        if (i >= 0) { cur = i; counter.textContent = (i+1) + ' / ' + slides.length; prog.style.width = ((i+1)/slides.length*100)+'%';
+          Array.from(chapBar.children).forEach((b, k) => b.classList.toggle('cur', String(k) === s.dataset.ch)); }
+      } else if (!en.isIntersecting) {
+        s.classList.remove('in-view');
+      }
+    });
+  }, {threshold:[0, .35, .6]});
+
+  // ---------- 터미널 재생 ----------
+  // 슬라이드 모드: Space나 오른쪽 화살표를 누를 때마다 커맨드 하나씩 진행한다 (강사가 속도를 쥔다).
+  // 읽기 모드: 화면에 들어오면 끝까지 자동 재생한다. 터미널 클릭은 현재 단계를 즉시 완료한다.
+  const esc = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const tstate = new WeakMap();
+  function termInit(term){
+    const script = JSON.parse(term.querySelector('.tscript').textContent);
+    // 단계 = 커맨드 하나 + 그 뒤에 이어지는 출력들
+    const steps = [];
+    script.forEach(line => { if (line[0] === 'cmd' || !steps.length) steps.push([line]); else steps[steps.length-1].push(line); });
+    const st = {steps, pos:0, html:'', busy:false, skip:false, ids:[], gen:0};
+    tstate.set(term, st);
+    term.querySelector('.body').innerHTML = '<span class="p">$ </span><span class="cur"></span>';
+    return st;
+  }
+  function termReset(term){ const st = tstate.get(term); if (st) { st.gen++; st.ids.forEach(clearTimeout); } termInit(term); }
+  function termHasNext(term){ const st = tstate.get(term) || termInit(term); return st.pos < st.steps.length; }
+  async function termStep(term){
+    const st = tstate.get(term) || termInit(term);
+    if (st.busy) { st.skip = true; return; }
+    if (st.pos >= st.steps.length) return;
+    const body = term.querySelector('.body');
+    const gen = st.gen; st.busy = true; st.skip = false;
+    const wait = ms => new Promise(r => { if (st.skip) { r(); return; } st.ids.push(setTimeout(r, ms)); });
+    const render = extra => { body.innerHTML = st.html + (extra||'') + '<span class="p">$ </span><span class="cur"></span>'; body.scrollTop = body.scrollHeight; };
+    const step = st.steps[st.pos++];
+    for (const [kind, text] of step) {
+      if (st.gen !== gen) return;
+      if (kind === 'cmd') {
+        if (st.html) st.html += '\n';
+        let typed = '';
+        for (const ch of text) { typed += ch; body.innerHTML = st.html + '<span class="p">$ </span><span class="cmd">' + esc(typed) + '</span><span class="cur"></span>'; body.scrollTop = body.scrollHeight; await wait(16 + Math.random()*20); if (st.gen !== gen) return; }
+        st.html += '<span class="p">$ </span><span class="cmd">' + esc(text) + '</span>\n';
+        body.innerHTML = st.html + '<span class="cur"></span>'; await wait(320);
+      } else {
+        st.html += '<span class="' + (kind === 'err' ? 'err' : 'out') + '">' + esc(text) + '</span>\n';
+        render(); await wait(200);
+      }
+    }
+    render();
+    st.busy = false;
+  }
+  async function termAuto(term){
+    termReset(term);
+    const st = tstate.get(term); const gen = st.gen;
+    await new Promise(r => setTimeout(r, 500));
+    while (st.gen === gen && st.pos < st.steps.length) { await termStep(term); await new Promise(r => setTimeout(r, 900)); }
+  }
+  function runTerm(slide){
+    const term = slide.querySelector('.term'); if (!term) return;
+    if (read) termAuto(term); else termReset(term);
+  }
+  document.querySelectorAll('.term').forEach(term => {
+    termInit(term);
+    term.querySelector('.re').addEventListener('click', e => { e.stopPropagation(); if (read) termAuto(term); else termReset(term); });
+    term.querySelector('.body').addEventListener('click', e => { e.stopPropagation(); const st = tstate.get(term); if (st && st.busy) st.skip = true; else if (!read) termStep(term); });
+  });
+
+  // 프롬프트 복사 버튼
+  document.querySelectorAll('.prompt, .chat .u').forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'cp'; b.type = 'button'; b.textContent = '복사';
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const t = p.textContent.replace(/^복사\n?/, '').replace(/복사$/, '').trim();
+      const done = () => { b.textContent = '복사됨'; setTimeout(() => b.textContent = '복사', 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(done).catch(() => fallback());
+      } else fallback();
+      function fallback(){
+        const ta = document.createElement('textarea');
+        ta.value = t; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (err) { b.textContent = '직접 선택'; }
+        document.body.removeChild(ta);
+      }
+    });
+    p.appendChild(b);
+  });
+
+  // 시작
+  const m = location.hash.match(/#\/(\d+)/);
+  const start = m ? Math.max(0, Math.min(slides.length-1, parseInt(m[1],10)-1)) : 0;
+  cur = start;
+  show(start);
+  window.addEventListener('hashchange', () => {
+    const mm = location.hash.match(/#\/(\d+)/);
+    if (!mm) return;
+    const i = parseInt(mm[1],10)-1;
+    if (i !== cur && i >= 0 && i < slides.length) { if (read) go(i); else { cur = i; show(i); } }
+  });
+})();
+</script>
+</body>
+</html>
