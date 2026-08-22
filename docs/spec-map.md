@@ -404,6 +404,34 @@ python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki --check   # 쓰지 �
 ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/parity/... -v
 ```
 
+### 규칙이 바뀌었을 때 무엇을 함께 고치나
+
+파일별 `갱신` 이 나오면 아래가 함께 움직인다. 하나를 빠뜨리면 판정이 어긋난 채 나간다.
+
+| 순서 | 무엇 | 확인 |
+|---|---|---|
+| 1 | `upstream-sync.py` 로 명세 사본과 lock 을 맞춘다 | `--check` 가 전부 `유지` 로 바뀐다 |
+| 2 | 무엇이 무엇으로 바뀌었는지 읽는다 | `git -C ~/Git/llm-wiki diff <이전lock>..HEAD -- meta/<파일>` |
+| 3 | lint 규칙과 임계값을 고친다 | `internal/lint/`, `internal/config/` |
+| 4 | 프리셋 기본값이 걸리는지 본다 | `engram.yaml` 의 임계값과 허용값 |
+| 5 | 골든 스냅샷을 다시 만든다 | `go test ./harness -run TestLintGolden -update`<br>`go test ./harness/examples -update` |
+| 6 | 전체 시험 | `go test ./...` |
+| 7 | 동등성 검증 | `ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/parity/ -v` |
+| 8 | 결과를 옮겨 적는다 | `docs/parity.md` |
+| 9 | 결정을 남긴다 | 새 ADR + `docs/decisions/README.md` 색인 |
+| 10 | 커밋 | 훅이 경계 검사와 ADR 검사를 돈다 |
+
+**5번의 골든 재생성이 위험한 자리다.** `-update` 는 기대값을 현재 출력으로 덮으므로 어떤 변경이든 초록으로 만들 수 있다. **재생성한 diff 를 반드시 읽는다.** 판정이 바뀐 것이 거기에 드러난다.
+
+버전 태그는 이 절차에 포함하지 않는다. 규칙 변화가 곧 릴리스는 아니며, 태그는 [0042](decisions/0042-release-artifacts-and-workflow.md)대로 사람이 따로 붙인다.
+
+### 이 절차를 누가 도나
+
+[0095](decisions/0095-hermes-is-the-harness-agent-and-the-pr-is-the-approval-point.md)가 Hermes 주간 잡을 harness 에이전트로 정했다. 1번만 필요한 경우(파일이 전부 `유지`)는 잡이 직접 커밋하고 푸시한다. 판단이 없기 때문이다. 3번 이후가 필요한 경우는 잡이 브랜치를 파고 PR 을 연다. **PR 머지가 사람의 승인 지점이다.**
+
+```
+```
+
 동등성 검증은 지금 lint 위반 목록과 resurface 선정 순위 두 축을 가진다. upstream 저장소가 비공개라 환경변수가 없으면 건너뛰고 **공개 저장소의 CI는 항상 건너뛴다.** 비교 축을 늘리는 작업이 남아 있다.
 
 한 가지 표기를 밝혀 둔다. **upstream은 자기 문서에서 이 파일들을 여전히 "계약 파일"이라고 부른다.** `upstream-sync.py`가 upstream `AGENTS.md`의 "계약 파일" 선언 문구를 그대로 파싱해 대상 목록을 얻으므로 저쪽 표기는 바뀌지 않는다. 이 저장소가 산문에서 "규칙 명세"로 부르기로 한 것과 충돌하지 않는다. 다음 사람이 표기가 어긋났다고 오해하고 고치려 들지 않도록 하는 주석이다.

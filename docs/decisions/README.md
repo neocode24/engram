@@ -109,6 +109,7 @@
 | [0092](0092-diarization-thresholds-are-measured-against-real-recordings.md) | 화자 분할 임계값을 실제 사람 녹음으로 재고 합성 음성 경로를 닫는다 | 2026-08-22 | accepted |
 | [0093](0093-ci-runs-a-real-transcription-on-every-runner.md) | CI가 러너마다 실제 전사를 한 번 돌린다 | 2026-08-22 | accepted |
 | [0094](0094-engram-watches-its-own-dependency-surface.md) | engram이 upstream 의존 표면을 스스로 감시하고 impact 표시에 기대지 않는다 | 2026-08-22 | accepted |
+| [0095](0095-hermes-is-the-harness-agent-and-the-pr-is-the-approval-point.md) | Hermes가 harness 에이전트이고 PR이 승인 지점이다 | 2026-08-22 | accepted |
 
 ## 공개 범위 밖
 
@@ -169,6 +170,7 @@
 | 0087 | 전사 경로는 CI 가 못 본다. 모델을 받아야 하기 때문이다 | [0093](0093-ci-runs-a-real-transcription-on-every-runner.md) small 모델 392MB 를 캐시해 러너 셋에서 한 번씩 전사한다 |
 | 0029 | delta 는 meta/CHANGELOG.md 에서 만들고 impact 가 따라갈 항목을 가린다 | [0094](0094-engram-watches-its-own-dependency-surface.md) 판정 근거를 engram 자신의 diff 로 옮긴다. CHANGELOG 는 맥락으로 남는다 |
 | 0029 | 용어 사전은 조직 어휘라 통째로 제외한다 | [0094](0094-engram-watches-its-own-dependency-surface.md) 내용은 그대로 제외하되 표 형식 지문은 뜬다. 파서가 그 형식에 기댄다 |
+| 0029 | 자동 반영하지 않는다. 사람이 판단해 시작하는 작업이다 | [0095](0095-hermes-is-the-harness-agent-and-the-pr-is-the-approval-point.md) 판단만 사람으로 좁힌다. 작업은 Hermes 가 하고 PR 머지가 승인 지점이다 |
 | 0070 | 링크 그래프 판정과 게이트는 지금대로 inbox 를 담는다 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) graph.orphan 은 inbox 를 판정하지 않는다. link.broken 과 게이트는 그대로다 |
 | 0070 | 요약은 inbox 문서를 건너뛰었다고 알린다 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) 건너뛴 것은 스키마 판정뿐이라 문구를 그렇게 고친다 |
 | 0012 | Homebrew 는 Formula 로 배포한다 | [0088](0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md) goreleaser 가 brews 를 접었고 Cask 의 binary 가 Linux 도 덮는다 |

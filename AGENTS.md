@@ -88,6 +88,7 @@
 - 기본 브랜치는 `main`. remote는 ssh-over-443(`ssh://git@ssh.github.com:443/neocode24/engram.git`), 개인 계정 `neocode24`.
 - 작업 전 `git pull --rebase --autostash`, 작업 후 커밋하고 `git push origin`. origin push는 기본 동기화 행위이므로 확인 없이 진행한다.
 - PR 생성, 외부 배포, 다른 remote push는 명시적 승인이 필요하다.
+- **예외 하나.** Hermes 주간 harness 잡은 upstream 규칙이 바뀌었을 때 브랜치를 파고 PR 을 연다. [0095](docs/decisions/0095-hermes-is-the-harness-agent-and-the-pr-is-the-approval-point.md)가 그 승인이다. 규칙이 안 바뀐 주에는 lock 만 맞춰 `main` 에 직접 커밋한다. **머지는 사람이 한다.**
 
 ### 공개 경계
 
