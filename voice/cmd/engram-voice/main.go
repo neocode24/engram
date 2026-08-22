@@ -45,6 +45,8 @@ func run(ctx context.Context, args []string) error {
 		return runModel(ctx, http.DefaultClient, args[1:], os.Stdout)
 	case "transcribe":
 		return runTranscribe(args[1:], os.Stdout)
+	case "mcp":
+		return runMCP(ctx, args[1:])
 	case "version", "--version":
 		fmt.Fprintln(os.Stdout, version)
 		return nil
@@ -67,6 +69,7 @@ engram capture 가 합니다.
   engram-voice transcribe <오디오> [--speakers N] [--wiki <위키>] [--json]
   engram-voice model pull [--model <크기>] [--from <경로>]
   engram-voice model status [--model <크기>] [--verify]
+  engram-voice mcp
   engram-voice version
 
 크기는 large-v3(기본), medium, small 입니다.
@@ -76,6 +79,9 @@ engram capture 가 합니다.
 
 --wiki 를 주면 그 위키의 meta/terminology.md 를 읽어 전사 뒤에 용어를
 교정합니다. 사전은 위키가 소유하고 사람이 채웁니다.
+
+에이전트로 쓰려면 mcp 로 띄웁니다. 도구가 둘이며 transcribe 가
+전사를, model_status 가 모델 준비 상태를 냅니다.
 
 전사 결과는 표준 출력으로 나가고 진행률은 표준 오류로 나갑니다.
 그대로 위키에 넣으려면 이렇게 씁니다.

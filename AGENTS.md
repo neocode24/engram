@@ -22,6 +22,7 @@
 | `docs/decisions/` | ADR. 번호순, 소급 수정 금지. `README.md`가 색인 |
 | `docs/spec-map.md` | upstream 규칙 명세와 구현의 대응. 무엇을 코드가 강제하고 무엇을 사람에게 남겼는지 |
 | `docs/design.md` | 커맨드 체계, 설정, 마일스톤 |
+| `docs/voice.md` | `engram-voice` 동작 구조. 모델 넷과 단계 다섯, upstream 과의 차이 |
 | `docs/journeys.md` | 사용자 여정과 마일스톤 매핑 |
 | `docs/curriculum.md` | 교육 커리큘럼 |
 | `docs/course/` | 강의 자료. 공개 자산이며 사내 사례를 담지 않는다 (placeholder) |

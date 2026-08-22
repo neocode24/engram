@@ -41,6 +41,12 @@ func sizeFlag(fs *flag.FlagSet) *string {
 
 // resolve는 크기와 그 디렉토리와 파일 목록을 한 번에 낸다.
 func resolve(raw string) (model.Size, string, []model.ModelFile, error) {
+	// 빈 값은 기본 크기로 친다. CLI 는 플래그 기본값이 채우지만 MCP 는
+	// 인자를 생략하면 빈 문자열이 온다. 진입점마다 다르게 처리하면
+	// 한쪽만 고쳐진다.
+	if raw == "" {
+		raw = string(model.Default)
+	}
 	size, err := model.ParseSize(raw)
 	if err != nil {
 		return "", "", nil, err

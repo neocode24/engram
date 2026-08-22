@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/neocode24/engram/voice/internal/audio"
 	"github.com/neocode24/engram/internal/glossary"
+	"github.com/neocode24/engram/voice/internal/audio"
 	"github.com/neocode24/engram/voice/internal/model"
 	"github.com/neocode24/engram/voice/internal/stt"
 )
@@ -94,7 +94,98 @@ func applyGlossary(wikiRoot string, lines []stt.Line) []correction {
 	return out
 }
 
-// runTranscribe는 오디오 하나를 전사한다.
+// transcribeInput은 전사 한 번의 입력이다. CLI 와 MCP 가 같은 것을
+// 넘긴다. 진입점이 둘이어도 하는 일은 하나여야 한다.
+type transcribeInput struct {
+	Source     string
+	Speakers   int
+	NoSpeakers bool
+	Wiki       string
+	RawModel   string
+	KeepWAV    string
+}
+
+// transcribeAudio는 오디오 하나를 전사한다. 진행률과 경고는 표준
+// 오류로 나가고 결과는 반환값이다.
+//
+// CLI 와 MCP 가 이 함수를 함께 쓴다. 전사 절차를 두 벌 두면 한쪽만
+// 고쳐지고 그 차이를 아무도 못 본다.
+func transcribeAudio(in transcribeInput) (transcribeResult, error) {
+	var zero transcribeResult
+
+	size, dir, files, err := resolve(in.RawModel)
+	if err != nil {
+		return zero, err
+	}
+	// 모델이 다 있는지 먼저 본다. 오디오를 변환한 뒤에 모델이 없다고
+	// 하면 그 변환 시간이 버려진다.
+	if err := requireModel(dir, files, size); err != nil {
+		return zero, err
+	}
+
+	wav, cleanup, err := prepareWAV(in.Source, in.KeepWAV)
+	if err != nil {
+		return zero, err
+	}
+	defer cleanup()
+
+	samples, rate, err := stt.ReadWAV(wav)
+	if err != nil {
+		return zero, fmt.Errorf("wav 를 읽을 수 없음: %w", err)
+	}
+	if rate != audio.SampleRate {
+		return zero, fmt.Errorf("%dHz 가 아닙니다: %d", audio.SampleRate, rate)
+	}
+	seconds := float64(len(samples)) / float64(rate)
+	fmt.Fprintf(os.Stderr, "오디오 %s, 모델 %s\n", humanDuration(seconds), size)
+
+	var speakers []stt.Speaker
+	if !in.NoSpeakers {
+		t0 := time.Now()
+		speakers, err = stt.Diarize(samples, rate, dir, stt.DiarizeOptions{Speakers: in.Speakers})
+		if err != nil {
+			return zero, fmt.Errorf("화자 분할 실패: %w", err)
+		}
+		n := stt.CountSpeakers(speakers)
+		fmt.Fprintf(os.Stderr, "화자 분할 %s, 화자 %d명\n", humanDuration(time.Since(t0).Seconds()), n)
+		if in.Speakers <= 0 {
+			// ADR 0082. 추정한 값이라는 사실을 반드시 알린다.
+			fmt.Fprintf(os.Stderr,
+				"경고: 화자 수를 추정했습니다. 이 값은 믿을 수 없습니다. 아는 값이 있으면 --speakers 로 주세요\n")
+		}
+	}
+
+	segs, err := stt.Segment(samples, rate, filepath.Join(dir, model.VadName))
+	if err != nil {
+		return zero, fmt.Errorf("구간 나누기 실패: %w", err)
+	}
+
+	tr, err := stt.Open(dir)
+	if err != nil {
+		return zero, err
+	}
+	defer tr.Close()
+
+	t1 := time.Now()
+	lines := tr.Transcribe(segs, speakers, transcribeProgress(os.Stderr))
+	lines = stt.MergeAdjacent(lines, maxLine)
+	fmt.Fprintf(os.Stderr, "전사 %s, 줄 %d개\n", humanDuration(time.Since(t1).Seconds()), len(lines))
+
+	res := transcribeResult{
+		Source: filepath.Base(in.Source), Model: string(size), AudioSeconds: seconds,
+		Speakers: stt.CountSpeakers(speakers), SpeakersGiven: in.Speakers > 0, Lines: lines,
+		Corrections: applyGlossary(in.Wiki, lines),
+	}
+	for _, l := range lines {
+		if l.Speaker == stt.Unknown {
+			res.Unknown++
+		}
+	}
+	return res, nil
+}
+
+// runTranscribe는 transcribe 커맨드다. 플래그를 읽어 transcribeAudio 를
+// 부르고 결과를 낸다.
 func runTranscribe(args []string, out io.Writer) error {
 	fs := flag.NewFlagSet("transcribe", flag.ContinueOnError)
 	raw := sizeFlag(fs)
@@ -111,77 +202,13 @@ func runTranscribe(args []string, out io.Writer) error {
 	if fs.NArg() != 1 {
 		return errors.New("오디오 파일 하나가 필요합니다")
 	}
-	src := fs.Arg(0)
 
-	size, dir, files, err := resolve(*raw)
+	res, err := transcribeAudio(transcribeInput{
+		Source: fs.Arg(0), Speakers: *nspk, NoSpeakers: *noDiar,
+		Wiki: *wiki, RawModel: *raw, KeepWAV: *keep,
+	})
 	if err != nil {
 		return err
-	}
-	// 모델이 다 있는지 먼저 본다. 오디오를 변환한 뒤에 모델이 없다고
-	// 하면 그 변환 시간이 버려진다.
-	if err := requireModel(dir, files, size); err != nil {
-		return err
-	}
-
-	wav, cleanup, err := prepareWAV(src, *keep)
-	if err != nil {
-		return err
-	}
-	defer cleanup()
-
-	samples, rate, err := stt.ReadWAV(wav)
-	if err != nil {
-		return fmt.Errorf("wav 를 읽을 수 없음: %w", err)
-	}
-	if rate != audio.SampleRate {
-		return fmt.Errorf("%dHz 가 아닙니다: %d", audio.SampleRate, rate)
-	}
-	seconds := float64(len(samples)) / float64(rate)
-	fmt.Fprintf(os.Stderr, "오디오 %s, 모델 %s\n", humanDuration(seconds), size)
-
-	var speakers []stt.Speaker
-	if !*noDiar {
-		t0 := time.Now()
-		speakers, err = stt.Diarize(samples, rate, dir, stt.DiarizeOptions{Speakers: *nspk})
-		if err != nil {
-			return fmt.Errorf("화자 분할 실패: %w", err)
-		}
-		n := stt.CountSpeakers(speakers)
-		fmt.Fprintf(os.Stderr, "화자 분할 %s, 화자 %d명\n", humanDuration(time.Since(t0).Seconds()), n)
-		if *nspk <= 0 {
-			// ADR 0082. 추정한 값이라는 사실을 반드시 알린다.
-			fmt.Fprintf(os.Stderr,
-				"경고: 화자 수를 추정했습니다. 이 값은 믿을 수 없습니다. 아는 값이 있으면 --speakers 로 주세요\n")
-		}
-	}
-
-	segs, err := stt.Segment(samples, rate, filepath.Join(dir, model.VadName))
-	if err != nil {
-		return fmt.Errorf("구간 나누기 실패: %w", err)
-	}
-
-	tr, err := stt.Open(dir)
-	if err != nil {
-		return err
-	}
-	defer tr.Close()
-
-	t1 := time.Now()
-	lines := tr.Transcribe(segs, speakers, transcribeProgress(os.Stderr))
-	lines = stt.MergeAdjacent(lines, maxLine)
-	fmt.Fprintf(os.Stderr, "전사 %s, 줄 %d개\n", humanDuration(time.Since(t1).Seconds()), len(lines))
-
-	corrections := applyGlossary(*wiki, lines)
-
-	res := transcribeResult{
-		Source: filepath.Base(src), Model: string(size), AudioSeconds: seconds,
-		Speakers: stt.CountSpeakers(speakers), SpeakersGiven: *nspk > 0, Lines: lines,
-		Corrections: corrections,
-	}
-	for _, l := range lines {
-		if l.Speaker == stt.Unknown {
-			res.Unknown++
-		}
 	}
 	if *asJSON {
 		enc := json.NewEncoder(out)
