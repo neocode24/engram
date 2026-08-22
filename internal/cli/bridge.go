@@ -188,6 +188,12 @@ func embedVectors(cmd *cobra.Command, root string, ix *index.Index, walked []wal
 	// 내지 않는다.
 	reported := false
 	progress := func(done, total int) {
+		// 첫 신호는 모델을 열기 전에 온다. 그 적재가 오래 걸린다는 것을
+		// 여기서 한 번 알린다. 진행률은 배치(8개)마다 갱신되므로 문서가
+		// 적으면 틱이 두어 번뿐이다(ADR 0091).
+		if !reported {
+			fmt.Fprintln(cmd.ErrOrStderr(), i18n.T("cli.bridge.embed_start", total))
+		}
 		reported = true
 		fmt.Fprintf(cmd.ErrOrStderr(), "\r%s", i18n.T("cli.bridge.embed_progress", done, total))
 	}

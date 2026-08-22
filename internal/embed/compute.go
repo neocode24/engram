@@ -100,6 +100,13 @@ func compute(cache map[string][]float32, docs []ComputeDoc, enc Encoder, progres
 	if len(missing) == 0 {
 		return out, nil
 	}
+	// 모델을 열기 전에 0 을 한 번 알린다. Open 이 2.2GB 를 적재하느라
+	// 1분 넘게 걸리는데 그동안 아무 신호가 없으면 사용자는 멈춘 줄
+	// 안다. 캐시가 다 차 있으면 위에서 이미 반환했으므로 할 일이 있을
+	// 때만 이 신호가 나간다(ADR 0091).
+	if progress != nil {
+		progress(0, len(missing))
+	}
 	own := false
 	if enc == nil {
 		var err error

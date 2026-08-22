@@ -109,7 +109,7 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 | 규칙 ID | 등급 | 판정 |
 |---|---|---|
 | `link.broken` | warn | 위키링크가 가리키는 문서가 위키에 없음 |
-| `graph.orphan` | warn | 들어오는 관계와 나가는 관계가 모두 없음 |
+| `graph.orphan` | warn | 들어오는 관계와 나가는 관계가 모두 없음. `inbox` 문서는 기본 범위에서 판정하지 않는다([0091](decisions/0091-metrics-count-only-what-the-user-can-act-on.md)) |
 | `graph.empty-provenance` | warn | `context` 문서의 `source_refs`가 빈 배열. 키가 없으면 `frontmatter.missing-field`가 잡는다([0073](decisions/0073-provenance-must-not-be-empty.md)) |
 
 고아 판정은 관계 필드(`derived_from`, `derived_context`, `source_refs`)를 위키링크와 같은 기준으로 센다. `promote`가 `sources/` 문서에서 파생을 만들 때 `derived_from`과 `derived_context`를 양방향으로 기록하므로([ADR 0022](decisions/0022-promote-moves-inbox-derives-sources.md)), 파이프라인의 산출물을 검사기가 못 보면 안 된다. `source_refs`도 같은 자리에서 채운다([0073](decisions/0073-provenance-must-not-be-empty.md)).
@@ -141,7 +141,7 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 **코드로 강제하는 것.** 문서 단위 규칙은 없다. 절차의 두 단계가 커맨드로 굳어 있다. `capture`가 검증 없이 `inbox/`에 받는 3단계이고, `source`가 원본 필드를 확정해 `sources/`에 두는 2단계다. 나머지 단계는 판단을 포함하므로 커맨드가 대신할 수 없다.
 
-**lint의 기본 판정 범위도 이 명세를 따른다.** `lint`는 기본으로 `inbox/` 문서의 스키마 판정을 하지 않고 `--include-inbox`로 연다([0070](decisions/0070-lint-skips-inbox-by-default.md)). 붙여 넣는 시점에 스키마를 요구하면 이 명세의 capture-first와 충돌하기 때문이다. 관문은 승급 시점의 한 번뿐이고 링크 그래프와 게이트의 링크 대상 집계는 어느 쪽이든 `inbox`를 담는다.
+**lint의 기본 판정 범위도 이 명세를 따른다.** `lint`는 기본으로 `inbox/` 문서의 스키마 판정을 하지 않고 `--include-inbox`로 연다([0070](decisions/0070-lint-skips-inbox-by-default.md)). 붙여 넣는 시점에 스키마를 요구하면 이 명세의 capture-first와 충돌하기 때문이다. 관문은 승급 시점의 한 번뿐이다. 고아 판정도 같은 이유로 `inbox` 문서를 기본 범위에서 뺀다([0091](decisions/0091-metrics-count-only-what-the-user-can-act-on.md)). 갓 받은 자료가 아무 데도 안 이어진 것은 정상이기 때문이다. `link.broken`은 어느 쪽이든 `inbox`를 본다.
 
 **설정으로 열어 둔 것.** `source_channel` 속성. `source`의 `--channel` 플래그가 이 값을 받는다. 문서 종류 집합(`types`)도 위키별로 넓힐 수 있다.
 

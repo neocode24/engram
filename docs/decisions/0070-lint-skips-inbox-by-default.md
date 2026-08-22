@@ -2,7 +2,7 @@
 number: 0070
 title: lint는 기본으로 inbox를 검사하지 않는다
 date: 2026-08-19
-status: accepted
+status: amended
 ---
 
 # lint는 기본으로 inbox를 검사하지 않는다

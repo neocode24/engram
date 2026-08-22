@@ -41,6 +41,14 @@ func inboxDoc(created string, links string) string {
 	return "---\n" + fm + "---\n\n" + links + "\n"
 }
 
+// bareContextDoc는 아무 관계도 없는 context 문서다. 고아 판정 대상이다.
+func bareContextDoc(created string) string {
+	return "---\ntype: concept\nartifact_stage: context\nstatus: promoted\n" +
+		"indexable: true\nsource_refs: []\nderived_from: []\nrelated: []\n" +
+		"source_channel: manual\nderived_context: []\ncreated: " + created + "\n" +
+		"---\n\n관계가 없는 문서\n"
+}
+
 // contextDoc는 필수 필드를 갖춘 context 문서를 만든다.
 func contextDoc(created, updated string) string {
 	fm := "type: concept\nartifact_stage: context\nstatus: promoted\n" +
@@ -79,8 +87,10 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("들어오고 나가는 링크가 모두 없는 문서는 고아다", func(t *testing.T) {
+		// inbox 문서는 링크가 없어도 고아로 세지 않는다(ADR 0091).
 		root := writeWiki(t, map[string]string{
 			"engram.yaml":           "preset: personal\n",
+			"context/alone.md":      bareContextDoc("2026-01-01"),
 			"inbox/2026-07-15-a.md": inboxDoc("2026-07-15", ""),
 		})
 		res, _ := Run(root, fixedNow)
@@ -104,6 +114,8 @@ func TestRun(t *testing.T) {
 			// 위키링크만 있다. 고아가 아니다.
 			"inbox/2026-07-15-linked.md": inboxDoc("2026-07-15", "[[hub]] 본문 링크"),
 			// 아무 관계도 없다. 고아다.
+			"context/alone.md": bareContextDoc("2026-01-01"),
+			// 아무 관계도 없지만 inbox 라 고아가 아니다(ADR 0091).
 			"inbox/2026-08-01-alone.md": inboxDoc("2026-08-01", ""),
 			// 프론트매터가 없다. lint 는 판정 대상에서 빼므로 고아 수에
 			// 들어가지 않는다.

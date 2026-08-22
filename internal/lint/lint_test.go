@@ -990,19 +990,40 @@ func TestRunDefaultScope(t *testing.T) {
 		}
 	})
 
-	t.Run("기본 범위에서도 링크 그래프는 inbox 를 담는다", func(t *testing.T) {
-		// inbox 고아 문서와 inbox 로 향하는 깨진 링크는 그대로 잡힌다.
-		res := runLintOpt(t, map[string]string{
+	t.Run("기본 범위는 inbox 고아를 판정하지 않고 깨진 링크는 본다", func(t *testing.T) {
+		// ADR 0091. 아무 데도 안 이어진 것은 갓 받은 자료의 정상 상태라
+		// 고아로 세지 않는다. 없는 슬러그를 가리킨 것은 사용자가 쓴 오타라
+		// 단계와 무관하게 본다.
+		files := map[string]string{
 			"engram.yaml":    "preset: personal\n",
 			"inbox/alone.md": inboxDocWith("false"),
-			"context/a.md":   cleanContextDoc("없는문서", "b"),
-			"context/b.md":   cleanContextDoc("a", "없는문서"),
-		}, Options{})
-		if got := findByRule(res, "graph.orphan"); len(got) != 1 || got[0].Path != "inbox/alone.md" {
-			t.Fatalf("inbox 고아 판정이 그대로 돌아야 한다: %+v", got)
+			"inbox/typo.md": "---\ntype: inbox-note\nartifact_stage: inbox\n" +
+				"status: inbox\nindexable: false\nsource_channel: manual\n" +
+				"created: 2026-01-01\n---\n\n[[없는슬러그]] 를 가리킨다\n",
+			"context/a.md": cleanContextDoc("없는문서", "b"),
+			"context/b.md": cleanContextDoc("a", "없는문서"),
 		}
-		if got := findByRule(res, "link.broken"); len(got) != 2 {
-			t.Fatalf("깨진 링크 판정이 그대로 돌아야 한다: %+v", got)
+		res := runLintOpt(t, files, Options{})
+		if got := findByRule(res, "graph.orphan"); len(got) != 0 {
+			t.Fatalf("기본 범위에서 inbox 고아가 잡혔다: %+v", got)
+		}
+		broken := findByRule(res, "link.broken")
+		if len(broken) != 3 {
+			t.Fatalf("깨진 링크 판정이 그대로 돌아야 한다: %+v", broken)
+		}
+		var sawInbox bool
+		for _, v := range broken {
+			if v.Path == "inbox/typo.md" {
+				sawInbox = true
+			}
+		}
+		if !sawInbox {
+			t.Errorf("inbox 문서의 깨진 링크를 놓쳤다: %+v", broken)
+		}
+		// 범위를 열면 고아 판정이 돌아온다.
+		full := runLintOpt(t, files, Options{IncludeInbox: true})
+		if got := findByRule(full, "graph.orphan"); len(got) != 1 || got[0].Path != "inbox/alone.md" {
+			t.Fatalf("--include-inbox 는 inbox 고아를 잡아야 한다: %+v", got)
 		}
 	})
 }

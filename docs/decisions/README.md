@@ -84,7 +84,7 @@
 | [0067](0067-stale-days-default-is-thirty.md) | 노후 기준일 기본값을 30일로 한다 | 2026-08-19 | accepted |
 | [0068](0068-model-command-manages-embeddings-only.md) | model 커맨드는 임베딩만 관리한다 | 2026-08-19 | amended |
 | [0069](0069-secrets-and-sensitivity-block-promotion-and-export.md) | 시크릿과 민감도가 승급과 반출을 막는다 | 2026-08-19 | accepted |
-| [0070](0070-lint-skips-inbox-by-default.md) | lint는 기본으로 inbox를 검사하지 않는다 | 2026-08-19 | accepted |
+| [0070](0070-lint-skips-inbox-by-default.md) | lint는 기본으로 inbox를 검사하지 않는다 | 2026-08-19 | amended |
 | [0071](0071-lint-checks-indexable-stage-and-deprecated-fields.md) | lint가 색인 자격과 폐기 필드를 검사한다 | 2026-08-19 | accepted |
 | [0072](0072-date-fields-are-written-only-where-they-are-read.md) | 날짜 필드는 그 값을 읽는 단계에만 쓴다 | 2026-08-19 | accepted |
 | [0073](0073-provenance-must-not-be-empty.md) | 증거 필드는 비어 있으면 안 된다 | 2026-08-19 | accepted |
@@ -105,6 +105,7 @@
 | [0088](0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md) | Homebrew 배포는 Formula가 아니라 Cask이고 tap 접근은 배포키로 한다 | 2026-08-21 | accepted |
 | [0089](0089-voice-is-driven-by-an-agent-and-its-pipeline-is-documented.md) | 음성은 에이전트가 도구로 부르고 그 동작 구조를 문서에 적는다 | 2026-08-22 | accepted |
 | [0090](0090-the-skill-document-is-the-source-and-mcp-delivers-it-as-instructions.md) | 스킬 문서가 진실원이고 MCP는 그것을 instructions로 보낸다 | 2026-08-22 | accepted |
+| [0091](0091-metrics-count-only-what-the-user-can-act-on.md) | 지표는 사용자가 손댈 수 있는 것만 세고 센 것은 다음 행동으로 잇는다 | 2026-08-22 | accepted |
 
 ## 공개 범위 밖
 
@@ -160,6 +161,8 @@
 | 0075 | 임베딩을 쓰는 곳은 bridge 뿐이다 | [0078](0078-semantic-search-is-an-explicit-flag-that-only-consumes-the-cache.md) search --semantic 과 serve 의 재발견 화면이 그 캐시를 읽는다. 계산 자리는 그대로 bridge 다 |
 | 0068 | STT 는 범위 밖이라고만 적고 어디로 가는지는 열어 둔다 | [0079](0079-voice-is-a-separate-binary-in-a-separate-repository.md) engram-voice 로 간다. 코어의 CGO 없음은 그대로 지킨다 |
 | 0079 | 사전을 whisper 의 initial_prompt 로 넣어 인식을 유도한다 | [0083](0083-the-glossary-corrects-after-the-fact-and-grows-against-one-model.md) sherpa-onnx 의 whisper 에 프롬프트 자리가 없다. 후처리 치환만 한다 |
+| 0070 | 링크 그래프 판정과 게이트는 지금대로 inbox 를 담는다 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) graph.orphan 은 inbox 를 판정하지 않는다. link.broken 과 게이트는 그대로다 |
+| 0070 | 요약은 inbox 문서를 건너뛰었다고 알린다 | [0091](0091-metrics-count-only-what-the-user-can-act-on.md) 건너뛴 것은 스키마 판정뿐이라 문구를 그렇게 고친다 |
 | 0012 | Homebrew 는 Formula 로 배포한다 | [0088](0088-homebrew-ships-a-cask-and-the-tap-is-reached-with-a-deploy-key.md) goreleaser 가 brews 를 접었고 Cask 의 binary 가 Linux 도 덮는다 |
 | 0086 | Windows 는 재는 중이라 릴리스에 넣지 않는다 | [0087](0087-windows-is-measured-green-and-packaging-runs-in-ci.md) 쟀고 통과했다. 릴리스 대상이 다섯이 된다 |
 | 0084 | 릴리스 대상은 넷이다 | [0087](0087-windows-is-measured-green-and-packaging-runs-in-ci.md) windows/amd64 를 더해 다섯 |

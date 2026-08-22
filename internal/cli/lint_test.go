@@ -244,8 +244,8 @@ func TestLintIncludeInboxFlag(t *testing.T) {
 		if err != nil {
 			t.Fatalf("기본 범위에서는 종료 코드 0이어야 함: %v\n%s", err, out)
 		}
-		if !strings.Contains(out, "inbox 문서 1개를 건너뛰었습니다") {
-			t.Errorf("건너뛰기 안내가 없음:\n%s", out)
+		if !strings.Contains(out, "inbox 문서 1개는 스키마 판정에서 뺐습니다") {
+			t.Errorf("범위 안내가 없음:\n%s", out)
 		}
 		if strings.Contains(out, "frontmatter.missing") {
 			t.Errorf("inbox 위반이 기본 범위에서 나오면 안 됨:\n%s", out)
@@ -260,8 +260,8 @@ func TestLintIncludeInboxFlag(t *testing.T) {
 		if !strings.Contains(out, "frontmatter.missing") {
 			t.Errorf("inbox 위반이 잡히지 않음:\n%s", out)
 		}
-		if strings.Contains(out, "건너뛰었습니다") {
-			t.Errorf("범위를 열었으면 건너뛰기 안내가 없어야 함:\n%s", out)
+		if strings.Contains(out, "스키마 판정에서 뺐습니다") {
+			t.Errorf("범위를 열었으면 범위 안내가 없어야 함:\n%s", out)
 		}
 	})
 
@@ -273,8 +273,8 @@ func TestLintIncludeInboxFlag(t *testing.T) {
 		if err != nil {
 			t.Fatalf("warn 은 종료 코드를 바꾸지 않는다: %v\n%s", err, out)
 		}
-		if strings.Contains(out, "건너뛰었습니다") {
-			t.Errorf("건너뛴 문서가 없으면 안내가 없어야 함:\n%s", out)
+		if strings.Contains(out, "스키마 판정에서 뺐습니다") {
+			t.Errorf("뺀 문서가 없으면 안내가 없어야 함:\n%s", out)
 		}
 	})
 }

@@ -222,6 +222,17 @@ func buildResult(docs []scannedDoc, walked []walk.Doc, cfg config.Config, lintRe
 // 제안 우선순위는 고정이라 같은 지표면 같은 제안이 나온다.
 func suggest(res Result, cfg config.Config) []Suggestion {
 	var out []Suggestion
+	// reject 가 가장 앞이다. 가장 심한 등급이고, context 에 있으면 안 될
+	// 문서가 이미 올라가 있다는 뜻이다. 게이트가 유예된 채 승급한 문서가
+	// 위키가 자란 뒤 이 상태가 된다. 여기서 안 내면 사용자가 lint 를
+	// 따로 돌려야만 알게 된다(ADR 0091).
+	if res.Lint.Reject > 0 {
+		out = append(out, Suggestion{
+			Action: "engram lint",
+			Detail: i18n.T("core.status.suggest_reject",
+				res.Lint.Reject, cfg.Thresholds.MinWikilinks),
+		})
+	}
 	if res.Backlog.Promotable > 0 {
 		out = append(out, Suggestion{
 			Action: "engram promote " + res.Backlog.PromotablePaths[0],

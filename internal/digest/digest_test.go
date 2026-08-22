@@ -71,7 +71,7 @@ func TestRunAggregates(t *testing.T) {
 		"context/old-context.md": docFM("2025-01-01", "2025-01-01", "[[new-context]]"),
 		// 창 안이고 링크가 없어 신규이면서 고아다.
 		"context/orphan.md": docFM("2026-07-20", "2026-07-20", "본문"),
-		// 창 밖이라 신규가 아니다. 링크가 없어 고아다. 고아는 단계를 가리지 않는다.
+		// 창 밖이라 신규가 아니다. 링크가 없지만 inbox 는 고아로 세지 않는다(ADR 0091).
 		"inbox/2026-07-15-inbox-new.md": docFM("2026-07-15", "", "본문"),
 	})
 	res, err := Run(root, loadCfg(t, root), now, 30)
@@ -84,7 +84,7 @@ func TestRunAggregates(t *testing.T) {
 	if want := []string{"old-context"}; !reflect.DeepEqual(res.Stale, want) {
 		t.Errorf("노후 = %v, want %v", res.Stale, want)
 	}
-	if want := []string{"2026-07-15-inbox-new", "orphan"}; !reflect.DeepEqual(res.Orphans, want) {
+	if want := []string{"orphan"}; !reflect.DeepEqual(res.Orphans, want) {
 		t.Errorf("고아 = %v, want %v", res.Orphans, want)
 	}
 	if res.Days != 30 || res.StaleDays != 30 {
@@ -150,7 +150,8 @@ func TestRunOrphansMatchLintCount(t *testing.T) {
 	if len(res.Orphans) != lint.OrphanCount(lintRes) {
 		t.Errorf("고아 %d개가 lint 판정 %d개와 다릅니다", len(res.Orphans), lint.OrphanCount(lintRes))
 	}
-	if want := []string{"2026-01-01-lonely3", "lonely1", "lonely2"}; !reflect.DeepEqual(res.Orphans, want) {
+	// inbox/2026-01-01-lonely3 은 링크가 없지만 고아가 아니다(ADR 0091).
+	if want := []string{"lonely1", "lonely2"}; !reflect.DeepEqual(res.Orphans, want) {
 		t.Errorf("고아 = %v, want %v (정렬 포함)", res.Orphans, want)
 	}
 }

@@ -266,7 +266,7 @@ func Run(wikiRoot string, cfg config.Config, opts ...Options) (Result, error) {
 			violations = append(violations, vs...)
 		}
 	}
-	violations = append(violations, graphRules(docs, walked, cfg)...)
+	violations = append(violations, graphRules(docs, walked, cfg, o.IncludeInbox)...)
 	sortViolations(violations)
 	findings := broadTopicFindings(docs, cfg)
 	res := Result{Violations: violations, WikiFindings: findings}
@@ -770,8 +770,8 @@ func ResolvedLinks(links, targets map[string]bool) int {
 
 // graphRules는 전체 문서를 모은 뒤에야 판정할 수 있는 규칙을 적용한다.
 // 깨진 링크, 고아 문서, 승급 게이트다. walked 는 순회 결과 전체로
-// 게이트 유예의 대상 수를 잰다.
-func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Violation {
+// 게이트 유예의 대상 수를 잰다. includeInbox 는 고아 판정에만 쓴다.
+func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config, includeInbox bool) []Violation {
 	var vs []Violation
 	add := func(sev Severity, r Rule, rel string, line int, msg, fix string) {
 		vs = append(vs, newViolation(sev, r, rel, line, msg, fix))
@@ -822,6 +822,18 @@ func graphRules(docs []scannedDoc, walked []walk.Doc, cfg config.Config) []Viola
 		// 것은 결함이 아니라 초기 상태라서 도구가 자기 산출물을 거절하는 꼴이 된다.
 		// 스키마, taxonomy, 프론트매터 형식 규칙은 색인에도 그대로 적용된다.
 		if isRootFile(s.rel, cfg) {
+			continue
+		}
+		// inbox 문서는 기본 범위에서 고아 판정을 하지 않는다. 아무도 안
+		// 가리키고 아무것도 안 가리키는 것이 갓 받은 자료의 정상 상태이며,
+		// 게이트가 "inbox 문서는 세지 않습니다" 라고 링크 대상에서도 빼기
+		// 때문에 승급 전까지 이 경고가 사라질 길이 없다. 데모 위키에 링크
+		// 없는 메모 열둘을 capture 로 넣으면 warn 33건 중 13건이 이것이고
+		// 그만큼 context 의 진짜 고아가 숫자에 묻힌다(ADR 0091).
+		//
+		// link.broken 은 그대로 inbox 를 본다. 없는 문서를 가리키는 것은
+		// 단계와 무관한 결함이다.
+		if !includeInbox && inInboxDir(s.rel, cfg) {
 			continue
 		}
 		// 고아의 정의는 어떤 관계도 없음이다. 관계는 related, 본문 위키링크,

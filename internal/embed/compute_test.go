@@ -76,7 +76,8 @@ func TestComputeSkipsOpenWhenCacheFull(t *testing.T) {
 }
 
 func TestComputeBatchesAndReportsProgress(t *testing.T) {
-	// 문서 10개는 배치 8과 2로 나뉜다. 진행률은 배치가 끝날 때마다 온다.
+	// 문서 10개는 배치 8과 2로 나뉜다. 첫 눈금은 모델을 열기 전에 0 으로
+	// 한 번 나가고(ADR 0091) 그다음은 배치가 끝날 때마다 온다.
 	enc := &fakeEncoder{}
 	var seen [][2]int
 	out, err := compute(map[string][]float32{}, mkDocs(10), enc, func(done, total int) {
@@ -91,9 +92,15 @@ func TestComputeBatchesAndReportsProgress(t *testing.T) {
 	if len(out) != 10 {
 		t.Errorf("문서 10개의 벡터: %d", len(out))
 	}
-	want := [][2]int{{8, 10}, {10, 10}}
-	if len(seen) != 2 || seen[0] != want[0] || seen[1] != want[1] {
-		t.Errorf("진행률 콜백: %+v, want %+v", seen, want)
+	want := [][2]int{{0, 10}, {8, 10}, {10, 10}}
+	if len(seen) != len(want) {
+		t.Fatalf("진행률 콜백: %+v, want %+v", seen, want)
+	}
+	for i := range want {
+		if seen[i] != want[i] {
+			t.Errorf("진행률 콜백: %+v, want %+v", seen, want)
+			break
+		}
 	}
 }
 
