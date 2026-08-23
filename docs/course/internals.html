@@ -191,6 +191,10 @@ body.read .slide.appx{background:var(--bg2)}
 .appxtag{display:inline-block;font-size:.68em;letter-spacing:.14em;font-weight:700;color:var(--warn);background:var(--warn2);padding:.2em .8em;border-radius:999px;margin-bottom:.6em}
 .slide h2 .tag{font-size:.42em;vertical-align:.35em;margin-left:.5em}
 
+/* draw는 stroke-dasharray를 선 길이로 덮어써서 선이 자라는 것처럼 보이게 한다.
+   그래서 점선(.ln.dash)에 draw를 걸면 자라는 동안은 물론 끝난 뒤에도 실선으로
+   남는다. 애니메이션이 끝나면 dashed 클래스가 붙고, 그때 점선 모양을 되돌린다. */
+.draw.dashed{stroke-dasharray:5 5!important;stroke-dashoffset:0!important}
 /* ---------- 노트 ---------- */
 .notes{display:none}
 #notepane{position:fixed;right:0;top:47px;bottom:0;width:min(420px,40vw);background:#fff;border-left:1px solid var(--line);padding:18px 20px;overflow:auto;font-size:14px;line-height:1.6;color:var(--ink2);z-index:40;transform:translateX(100%);transition:transform .25s}
@@ -1199,10 +1203,16 @@ updated: <span class="y">2026-11-30</span>
     el.addEventListener('animationend', e => {
       if (e.animationName !== 'draw') return;
       ps.forEach(p => { if (p.dataset.mk) p.setAttribute('marker-end', p.dataset.mk); });
+      // 점선은 draw가 dasharray를 덮어쓴 상태로 끝나므로 점선 모양을 되돌린다.
+      const dashes = el.matches('path') ? [el] : Array.from(el.querySelectorAll('path'));
+      dashes.forEach(p => { if (p.classList.contains('dash')) p.classList.add('dashed'); });
+      if (el.matches('.dash')) el.classList.add('dashed');
     });
   });
   function stripMarkers(scope){
     scope.querySelectorAll('path[data-mk]').forEach(p => p.removeAttribute('marker-end'));
+    // 되감으면 다시 자라야 하므로 점선 복원도 함께 되돌린다.
+    scope.querySelectorAll('.dashed').forEach(p => p.classList.remove('dashed'));
   }
   // 화면을 벗어나면 draw 애니메이션이 처음으로 되감기므로 화살촉도 함께 뗀다.
   // 떼지 않으면 다시 들어왔을 때 선은 자라는데 화살촉만 끝점에 먼저 떠 있다.
