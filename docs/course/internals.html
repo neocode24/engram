@@ -260,102 +260,104 @@ body.read #hint{display:none}
 <!-- ============ 0. 개요 ============ -->
 <section class="slide center cover" data-ch="0">
   <div class="in">
-    <div class="kicker">engram course / internals / technical deep dive</div>
+    <div class="kicker">engram course / internals</div>
     <h1>engram 내부 구조</h1>
-    <p class="lead" style="margin:0 auto;max-width:36em">upstream llm-wiki의 운영 구조에서 시작해, 그것이 어떻게 하나의 바이너리가 되고, 그 안에서 frontmatter와 토큰과 벡터가 어떻게 다뤄지는지를 구현 수준에서 따라갑니다. 수치는 전부 코드와 ADR의 실측값입니다.</p>
-    <div class="cards" style="text-align:left;margin-top:1.2em;font-size:.82em;max-width:60em;margin-left:auto;margin-right:auto">
-      <div class="card"><h3 style="font-size:1em">ADR</h3><p>Architecture Decision Record. 설계 결정 하나를 배경, 근거, 결정으로 기록한 번호 붙은 문서입니다. 이 저장소에 97건이 있고 소급 수정하지 않습니다. 이 자료의 "근거: ADR 0074"는 그 문서에 실측과 이유가 있다는 뜻입니다.</p></div>
-      <div class="card"><h3 style="font-size:1em">동등성 검증 (parity)</h3><p>같은 입력을 두 구현에 주고 출력이 같은지 대조하는 시험입니다. 여기서는 upstream의 스크립트와 engram이 같은 위키에 같은 판정을 내는지를 봅니다. 번역이 옳다는 가정을 측정으로 바꾸는 장치입니다.</p></div>
-      <div class="card"><h3 style="font-size:1em">vendoring</h3><p>남의 저장소에 있는 파일의 사본을 내 저장소에 커밋해 두는 방식입니다. 링크가 아니라 사본이라, 원본이 바뀌거나 사라져도 내 쪽 기준은 고정됩니다. 대신 원본과의 어긋남을 계속 재야 합니다.</p></div>
-      <div class="card"><h3 style="font-size:1em">harness</h3><p>그 대조를 자동으로 돌리는 시험 장치 전체입니다. 저장소의 <code>harness/</code> 디렉토리이고, 명세 사본과 고정 입력(픽스처)과 기대 출력(골든 스냅샷)을 갖습니다. CI가 커밋마다 돌립니다.</p></div>
-    </div>
+    <p class="lead" style="margin:0 auto;max-width:38em">위키의 운영 규칙이 어떻게 하나의 바이너리가 되었고, 그 안에서 문서와 토큰과 벡터가 어떻게 다뤄지는지를 구현 수준에서 따라갑니다.</p>
     <p class="foot">기본은 읽기 모드입니다. R를 누르면 슬라이드 모드가 되고, 도식의 애니메이션은 화면에 들어올 때 재생됩니다.</p>
   </div>
   <aside class="notes">
-    <p>docs/architecture.md는 동작 구조(무엇이 무엇을 부르나)를 다루고 이 문서는 그 아래 구현(패키지, 자료구조, 알고리즘, 파일 형식)을 다룹니다. 특정 시점 코드의 스냅샷이므로 규칙 수나 패키지 수는 이후 커밋에서 변할 수 있습니다.</p>
+    <p>이 문서는 특정 시점 코드의 스냅샷입니다. 구조와 판단의 이유는 오래 가지만 세부 값은 커밋과 함께 움직입니다. 인용한 수치의 진실원은 각 장의 덧붙임에 적어 두었습니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="0">
+  <div class="in">
+    <h2>이 문서를 읽는 법</h2>
+    <p class="quote">읽기 전에 세 가지를 맞춥니다. 누구를 위한 문서인지, 무엇을 이미 알고 있어야 하는지, 다 읽고 나면 무엇을 판단할 수 있게 되는지.</p>
+    <div class="cols">
+      <div>
+        <h3>대상과 선행</h3>
+        <p>engram을 <strong>써 본 사람</strong>을 위한 심화 자료입니다. 커맨드를 한 바퀴 돌려 본 적이 있고, 이제 그 안에서 무슨 일이 일어나는지 알고 싶은 자리를 겨냥합니다.</p>
+        <table style="margin-top:.5em">
+          <tr><th style="width:34%">먼저 볼 것</th><th>거기서 얻는 것</th></tr>
+          <tr><td><code>course/index.html</code></td><td>왜 이런 체계가 필요한가. 정규 과정 1세션</td></tr>
+          <tr><td><code>course/hands-on.md</code></td><td>커맨드를 직접 치며 익히는 실습 여덟 단계</td></tr>
+          <tr><td><strong>이 문서</strong></td><td>그 커맨드가 안에서 계산하는 것. 정규 과정 밖</td></tr>
+        </table>
+        <p class="small mute" style="margin-top:.5em">순서를 건너뛰어도 읽히지만, 실습을 거치지 않았다면 4장 이후의 판정 이야기가 추상적으로 들립니다.</p>
+      </div>
+      <div>
+        <h3>다 읽고 나면 판단할 수 있는 것</h3>
+        <ul>
+          <li>승급이 거절됐을 때 <strong>규칙이 틀린 것인지 내 문서가 미달인지</strong></li>
+          <li>검색 결과가 이상할 때 <strong>색인이 낡은 것인지 질의가 안 맞는 것인지</strong></li>
+          <li>재발견이 아무것도 못 찾을 때 <strong>벡터가 없는 것인지 하한에 걸린 것인지</strong></li>
+          <li>이 도구를 우리 팀 규칙에 맞게 <strong>고칠 수 있는 지점이 어디인지</strong></li>
+        </ul>
+        <h3 style="margin-top:.8em">본문과 덧붙임</h3>
+        <p>본문은 아래 세 원칙 중 하나를 증명하는 슬라이드입니다. <span class="appxtag" style="margin:0">덧붙임</span> 표시가 붙은 것은 사실을 전달할 뿐이라 건너뛰어도 줄기가 끊기지 않습니다.</p>
+      </div>
+    </div>
+    <div class="cols3" style="margin-top:1em">
+      <div class="card acc"><h3>결정론이 존재 조건</h3><p>같은 입력에 같은 출력. 이것이 깨지면 골든 비교도 동등성 검증도 게이트의 권위도 함께 무너집니다.</p></div>
+      <div class="card acc"><h3>판정은 한 벌</h3><p>같은 질문에 답하는 코드는 하나뿐입니다. 두 벌이 되는 자리에는 반드시 기계가 대조를 겁니다.</p></div>
+      <div class="card acc"><h3>비용은 자리를 옮긴다</h3><p>무거운 것을 지우는 대신 무는 자리를 옮깁니다. 어디서 물게 할지가 설계의 실질입니다.</p></div>
+    </div>
+    <p class="small mute" style="margin-top:.6em">마지막 장에서 이 셋을 다시 만납니다. 그때는 문서 전체가 그 근거가 되어 있을 것입니다.</p>
+  </div>
+  <aside class="notes">
+    <p>정규 커리큘럼은 여덟 세션이고 진실원은 docs/curriculum.md와 course/hands-on.md입니다. 이 문서는 그 밖의 심화 자료라 세션 번호가 없습니다. 쉬는 시간의 질문("안에서 어떻게 도나요")에 답하는 자리로 만들었습니다.</p>
+    <p>세 원칙을 첫머리에 두는 것은 읽는 사람이 각 장을 그 잣대로 채점하며 읽게 하려는 것입니다. 본문과 덧붙임을 가르는 기준도 같습니다(ADR 0097).</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="0">
   <div class="in">
     <h2>전체 지도</h2>
-    <p class="quote">공간이 셋입니다. upstream 위키(원형, 1개), engram 저장소(도구, 1개), 사용자 위키(N개). 양끝의 둘은 같은 종류의 마크다운 위키이고, engram은 upstream 위키에서 운영 장치 부분만 떼어 바이너리로 대체한 것입니다. 바이너리 하나를 위키 N개가 씁니다.</p>
-    <svg class="fig" viewBox="0 0 1300 620" aria-label="upstream 위키의 운영 장치가 engram 저장소의 바이너리로 대체되고, 그 바이너리 하나를 사용자 위키 여럿이 쓰며, eject하면 위키 안에 upstream의 모양이 돌아온다" style="max-width:1300px;margin:0 auto">
-      <defs><marker id="g0" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker><marker id="g0a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
-      <!-- 같은 종류 표시 -->
-      <g class="a d3">
-        <path class="ln dash thin" d="M200 58 C 420 34, 880 34, 1060 56" fill="none"/>
-        <text class="lbl s" x="640" y="16" text-anchor="middle" fill="var(--mute)">같은 종류의 것: 마크다운 + git 위키. 왼쪽은 원형이고 오른쪽은 engram이 만든다</text>
-      </g>
-      <!-- upstream 위키 -->
+    <p class="quote">공간이 셋입니다. 원형이 된 위키 하나, 도구의 저장소 하나, 그 도구를 쓰는 위키 여럿. 양끝의 둘은 같은 종류의 마크다운 위키이고, engram은 원형에서 운영 장치 부분만 떼어 바이너리로 대체한 것입니다.</p>
+    <svg class="fig" viewBox="0 0 1300 400" aria-label="upstream 위키의 운영 장치가 engram 저장소의 바이너리로 대체되고, 그 바이너리 하나를 사용자 위키 여럿이 쓴다" style="max-width:1240px;margin:0 auto">
+      <defs><marker id="g0a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
       <g class="a">
-        <rect x="20" y="65" width="340" height="430" rx="14" fill="var(--bg2)" stroke="var(--mute)" stroke-width="1.5" stroke-dasharray="6 4"/>
-        <text class="lbl" x="190" y="95" text-anchor="middle" font-weight="800">upstream llm-wiki (비공개, 1개)</text>
-        <text class="lbl s" x="190" y="115" text-anchor="middle">실운영 위키. 이 체계의 원형</text>
-        <rect class="box" x="40" y="130" width="300" height="60" rx="10"/><text class="lbl s" x="190" y="153" text-anchor="middle" font-weight="700">위키 문서 358+ (inbox, sources, context ...)</text><text class="lbl s" x="190" y="173" text-anchor="middle">실데이터. 공개되지 않고 그대로 남는다</text>
-        <rect class="box warn" x="40" y="205" width="300" height="240" rx="10"/>
-        <text class="lbl s" x="190" y="230" text-anchor="middle" font-weight="700">운영 장치</text>
-        <rect class="box" x="58" y="245" width="264" height="40" rx="8"/><text class="lbl s" x="190" y="270" text-anchor="middle">meta/ 규칙 명세 7종 + 용어 사전</text>
-        <rect class="box" x="58" y="293" width="264" height="40" rx="8"/><text class="lbl s" x="190" y="318" text-anchor="middle">scripts/ + .githooks/ (검사와 승급)</text>
-        <rect class="box" x="58" y="341" width="264" height="40" rx="8"/><text class="lbl s" x="190" y="366" text-anchor="middle">AGENTS.md (에이전트 계약)</text>
-        <rect class="box" x="58" y="389" width="264" height="40" rx="8"/><text class="lbl s" x="190" y="414" text-anchor="middle">bge-m3 사이드카 (임베딩 재발견)</text>
-        <text class="lbl s" x="190" y="474" text-anchor="middle" fill="var(--warn)" font-weight="700">engram이 대체한 것은 이 상자 하나다</text>
+        <rect x="20" y="40" width="340" height="300" rx="14" fill="var(--bg2)" stroke="var(--mute)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text class="lbl" x="190" y="72" text-anchor="middle" font-weight="800">원형 위키 (비공개, 1개)</text>
+        <rect class="box" x="45" y="95" width="290" height="70" rx="10"/><text class="lbl s" x="190" y="135" text-anchor="middle" font-weight="700">위키 문서 (실데이터)</text>
+        <rect class="box warn" x="45" y="185" width="290" height="120" rx="10"/>
+        <text class="lbl s" x="190" y="217" text-anchor="middle" font-weight="700">운영 장치</text>
+        <text class="lbl s" x="190" y="245" text-anchor="middle">명세, 스크립트, 훅, 계약, 사이드카</text>
+        <text class="lbl s" x="190" y="278" text-anchor="middle" fill="var(--warn)" font-weight="700">engram이 대체한 것은 이 상자다</text>
       </g>
-      <!-- engram 저장소 -->
       <g class="a d1">
-        <rect x="460" y="65" width="380" height="430" rx="14" fill="#fbfffe" stroke="var(--acc)" stroke-width="2"/>
-        <text class="lbl" x="650" y="95" text-anchor="middle" font-weight="800" fill="var(--acc)">engram 저장소 (공개, 1개)</text>
-        <text class="lbl s" x="650" y="115" text-anchor="middle">위키가 아니라 도구의 저장소</text>
-        <rect class="box warn" x="480" y="130" width="340" height="95" rx="10"/>
-        <text class="lbl s" x="650" y="153" text-anchor="middle" font-weight="700">harness/  추적과 대조 장치</text>
-        <text class="lbl s" x="650" y="174" text-anchor="middle">명세 사본, upstream.lock(SHA), 픽스처, 골든</text>
-        <text class="lbl s" x="650" y="195" text-anchor="middle" fill="var(--warn)">주 1회 Hermes가 upstream과의 어긋남을 잰다</text>
-        <rect class="box acc" x="480" y="240" width="340" height="115" rx="10"/>
-        <text class="lbl s" x="650" y="263" text-anchor="middle" font-weight="700">바이너리 (Go 모듈 둘)</text>
-        <text class="lbl s" x="650" y="284" text-anchor="middle">engram: 판정, 검색, 재발견, 노출</text>
-        <text class="lbl s" x="650" y="303" text-anchor="middle">engram-voice: 전사 (CGO 분리)</text>
-        <text class="lbl s" x="650" y="324" text-anchor="middle">규칙은 코드로, 위키마다 다른 값은 engram.yaml로</text>
-        <text class="lbl s" x="650" y="344" text-anchor="middle" fill="var(--acc)">CGO_ENABLED=0 정적 바이너리 하나</text>
-        <rect class="box" x="480" y="370" width="340" height="60" rx="10"/>
-        <text class="lbl s" x="650" y="393" text-anchor="middle" font-weight="700">docs/  설계 문서와 ADR 97건</text>
-        <text class="lbl s" x="650" y="413" text-anchor="middle">명세가 어디로 갔는지는 spec-map.md가 추적</text>
-        <text class="lbl s" x="650" y="474" text-anchor="middle" fill="var(--mute)">여기에는 위키 문서가 한 장도 없다</text>
+        <rect x="460" y="40" width="380" height="300" rx="14" fill="#fbfffe" stroke="var(--acc)" stroke-width="2"/>
+        <text class="lbl" x="650" y="72" text-anchor="middle" font-weight="800" fill="var(--acc)">engram 저장소 (공개, 1개)</text>
+        <rect class="box warn" x="485" y="95" width="330" height="70" rx="10"/>
+        <text class="lbl s" x="650" y="123" text-anchor="middle" font-weight="700">harness  추적과 대조 (1장)</text>
+        <text class="lbl s" x="650" y="147" text-anchor="middle">원형과의 어긋남을 잰다</text>
+        <rect class="box acc" x="485" y="185" width="330" height="120" rx="10"/>
+        <text class="lbl s" x="650" y="217" text-anchor="middle" font-weight="700">바이너리</text>
+        <text class="lbl s" x="650" y="245" text-anchor="middle">판정, 검색, 재발견, 노출 (2장부터 6장)</text>
+        <text class="lbl s" x="650" y="278" text-anchor="middle" fill="var(--acc)">여기에는 위키 문서가 한 장도 없다</text>
       </g>
-      <!-- 사용자 위키 N개 -->
       <g class="a d2">
-        <rect x="960" y="95" width="320" height="400" rx="14" fill="var(--bg2)" stroke="var(--ink2)" stroke-width="1.2"/>
-        <rect x="945" y="80" width="320" height="400" rx="14" fill="var(--bg2)" stroke="var(--ink2)" stroke-width="1.2"/>
-        <rect x="930" y="65" width="320" height="400" rx="14" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/>
-        <text class="lbl" x="1090" y="95" text-anchor="middle" font-weight="800">사용자 위키 (N개)</text>
-        <text class="lbl s" x="1090" y="115" text-anchor="middle">각자의 저장소. engram init이 만든다</text>
-        <rect class="box" x="950" y="130" width="280" height="60" rx="10"/><text class="lbl m" x="1090" y="153" text-anchor="middle">inbox/ sources/ context/ archive/</text><text class="lbl s" x="1090" y="174" text-anchor="middle">위키 문서 + engram.yaml. git이 지킨다</text>
-        <rect class="box" x="950" y="205" width="280" height="60" rx="10"/><text class="lbl s" x="1090" y="228" text-anchor="middle" font-weight="700">.engram/ 캐시, engram-state.yaml</text><text class="lbl s" x="1090" y="249" text-anchor="middle">캐시는 지워도 되고 판단 기록은 git으로 (4장)</text>
-        <rect class="box rej" x="950" y="280" width="280" height="115" rx="10"/>
-        <text class="lbl s" x="1090" y="303" text-anchor="middle" font-weight="700">eject 하면 위키 안에 생기는 것</text>
-        <text class="lbl m" x="1090" y="326" text-anchor="middle">meta/ 5종, scripts/ 린터, hook</text>
-        <text class="lbl s" x="1090" y="349" text-anchor="middle">upstream의 운영 장치 모양이 사용자</text>
-        <text class="lbl s" x="1090" y="368" text-anchor="middle">소유로 돌아온다. 연산은 바이너리에 남는다</text>
-        <text class="lbl s" x="1090" y="443" text-anchor="middle" fill="var(--mute)">마크다운 파일이 진실원이고</text>
-        <text class="lbl s" x="1090" y="461" text-anchor="middle" fill="var(--mute)">바이너리는 그것을 읽고 쓰는 도구다</text>
+        <rect x="960" y="70" width="320" height="270" rx="14" fill="var(--bg2)" stroke="var(--ink2)" stroke-width="1.2"/>
+        <rect x="945" y="55" width="320" height="270" rx="14" fill="var(--bg2)" stroke="var(--ink2)" stroke-width="1.2"/>
+        <rect x="930" y="40" width="320" height="270" rx="14" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/>
+        <text class="lbl" x="1090" y="72" text-anchor="middle" font-weight="800">사용자 위키 (N개)</text>
+        <rect class="box" x="955" y="95" width="270" height="70" rx="10"/><text class="lbl m" x="1090" y="135" text-anchor="middle">inbox  sources  context</text>
+        <rect class="box rej" x="955" y="185" width="270" height="120" rx="10"/>
+        <text class="lbl s" x="1090" y="217" text-anchor="middle" font-weight="700">eject 하면 생기는 것</text>
+        <text class="lbl s" x="1090" y="245" text-anchor="middle">규칙 명세와 린터와 훅이</text>
+        <text class="lbl s" x="1090" y="272" text-anchor="middle">사용자 소유로 돌아온다 (6장)</text>
       </g>
-      <!-- 관계 화살표 -->
-      <g class="a"><g class="draw"><path class="ln acc" style="stroke-width:2.6" d="M340 325 L 475 297" marker-end="url(#g0a)"/></g><text class="lbl s" x="408" y="288" text-anchor="middle" font-weight="700" fill="var(--acc)">대체</text><text class="lbl s" x="390" y="344" text-anchor="middle">규칙과 절차가 코드가 된다</text></g>
-      <g class="a"><g class="draw"><path class="ln" style="stroke-width:2.2" d="M340 225 L 475 168" marker-end="url(#g0)"/></g><text class="lbl s" x="386" y="180" text-anchor="middle">명세 사본을 떠 와 대조</text></g>
-      <g class="a d1"><g class="draw d1"><path class="ln acc" style="stroke-width:2.6" d="M840 297 L 925 297" marker-end="url(#g0a)"/></g><text class="lbl s" x="884" y="284" text-anchor="middle" font-weight="700" fill="var(--acc)">설치</text><text class="lbl s" x="884" y="316" text-anchor="middle">1 : N</text></g>
-      <!-- 장 번호 범례 -->
-      <g class="a d4">
-        <circle cx="800" cy="153" r="13" fill="var(--acc2)"/><text class="lbl s" x="800" y="158" text-anchor="middle" font-weight="700">1</text>
-        <circle cx="820" cy="263" r="13" fill="var(--acc2)"/><text class="lbl s" x="820" y="268" text-anchor="middle" font-weight="700">2</text>
-        <rect x="1178" y="76" width="66" height="24" rx="12" fill="var(--acc2)"/><text class="lbl s" x="1211" y="92" text-anchor="middle" font-weight="700">3 4 5 6</text>
-        <circle cx="1230" cy="303" r="13" fill="var(--acc2)"/><text class="lbl s" x="1230" y="308" text-anchor="middle" font-weight="700">7</text>
-        <text class="lbl s" x="650" y="560" text-anchor="middle" fill="var(--mute)">원 안의 숫자는 이 문서의 장 번호입니다. 1장이 upstream과 harness의 추적을, 2장이 바이너리를,</text>
-        <text class="lbl s" x="650" y="580" text-anchor="middle" fill="var(--mute)">3장부터 5장이 바이너리가 사용자 위키를 다루는 내부(frontmatter, 게이트, 검색, 임베딩)를, 6장이 eject를 다룹니다.</text>
-      </g>
-    </svg>
+      <g class="a"><g class="draw"><path class="ln acc" style="stroke-width:2.6" d="M360 230 L 455 220" marker-end="url(#g0a)"/></g><text class="lbl s" x="408" y="210" text-anchor="middle" font-weight="700" fill="var(--acc)">대체</text></g>
+      <g class="a d1"><g class="draw d1"><path class="ln acc" style="stroke-width:2.6" d="M840 220 L 925 220" marker-end="url(#g0a)"/></g><text class="lbl s" x="884" y="210" text-anchor="middle" font-weight="700" fill="var(--acc)">1 : N</text></g>
+      </svg>
+    <p class="small mute" style="margin-top:.4em">마크다운 파일이 진실원이고 바이너리는 그것을 읽고 쓰는 도구입니다. 양끝이 같은 종류의 위키인 것이 이 그림의 요점입니다.</p>
   </div>
   <aside class="notes">
-    <p>upstream과 engram 사이의 연결이 harness의 대조 하나뿐인 것이 요점입니다. 바이너리는 upstream을 모릅니다. upstream의 규칙이 코드가 되는 경로는 harness의 대조를 통과시키며 옮기는 길뿐이고, 그 절차가 1장의 harnessing 슬라이드입니다.</p>
-    <p>사용자 위키와 engram의 관계는 1:N입니다. 사용자 한 명이 위키 여럿을 둘 수도 있고 팀이 위키 하나를 같이 볼 수도 있으니 넓게는 M:N이지만, 구조를 정하는 쪽은 "바이너리 하나가 위키 여럿을 다룬다"는 방향입니다. 바이너리는 위키 밖(PATH)에 살고, 위키에는 도구가 아니라 값(engram.yaml)만 남습니다.</p>
+    <p>원형이 된 위키는 비공개로 운영 중인 실물입니다. 이 저장소는 그 체계를 특정 시점에 얼려 출판한 산물이고, 둘 사이의 연결은 harness의 대조 하나뿐입니다. 바이너리는 원형을 모릅니다.</p>
+    <p>원형의 운영 장치는 명세, 검사 스크립트, 커밋 훅, 에이전트 계약, 임베딩 사이드카 다섯이고 다음 장의 표가 각각의 행선지를 다룹니다. 사용자 위키는 마크다운과 설정으로 되어 있고 git이 지킵니다.</p>
+    <p>사용자 위키와 바이너리의 관계는 1:N입니다. 바이너리는 위키 밖(PATH)에 살고, 위키에는 도구가 아니라 값만 남습니다. 그래서 위키를 복제해도 도구가 따라가지 않고, 도구를 갱신해도 위키가 흔들리지 않습니다.</p>
+    <p>용어 넷을 여기서 정리합니다. <strong>ADR</strong>은 설계 결정 하나를 배경과 근거와 결정으로 기록한 번호 붙은 문서이고 소급 수정하지 않습니다. <strong>동등성 검증</strong>은 같은 입력을 두 구현에 주고 출력이 같은지 대조하는 시험입니다. <strong>vendoring</strong>은 남의 저장소 파일의 사본을 내 저장소에 커밋해 기준을 고정하는 방식입니다. <strong>harness</strong>는 그 대조를 자동으로 돌리는 시험 장치 전체이고 CI가 커밋마다 돌립니다.</p>
   </aside>
 </section>
 
@@ -363,206 +365,137 @@ body.read #hint{display:none}
 <section class="slide chap dark" data-ch="1">
   <div class="in">
     <div class="kicker">1장</div>
-    <h1>upstream: 운영의 구조와 추적</h1>
-    <p class="lead">위키가 실제로 어떻게 굴러가는지, 그 자산이 engram의 무엇이 되었는지, 그리고 지금도 어떻게 추적되는지.</p>
+    <h1>규칙이 코드가 되기까지</h1>
+    <p class="lead">대체 대상은 무엇이었고, 그것이 코드가 될 때 무엇이 달라졌으며, 원본이 움직이면 지금도 어떻게 따라가는가.</p>
   </div>
   <div class="num">1</div>
-  <aside class="notes"><p>upstream 저장소는 비공개라 이 장의 내용은 공개 저장소가 기록한 범위(spec-map.md, ADR 0001, 0002, 0005, 0029, 0094, 0095)입니다.</p></aside>
+  <aside class="notes"><p>원형 위키는 비공개라 이 장의 내용은 공개 저장소가 기록한 범위(spec-map.md와 ADR 0001, 0002, 0005, 0029, 0094, 0095)입니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="1">
   <div class="in">
-    <h2>upstream이 굴러가는 방식</h2>
-    <p class="quote">engram을 이해하려면 먼저 대체 대상을 알아야 합니다. upstream에서 명세는 사람이 읽는 문서이고 검사는 별개의 스크립트입니다. 하루의 순환을 따라가면 이 둘이 어긋나는 지점이 보이고, 그것이 engram의 출발점입니다.</p>
-    <svg class="fig" viewBox="0 0 1300 430" aria-label="사람과 에이전트가 문서를 쓰고, 명세를 읽어 지키고, 스크립트와 훅이 검사하고 커밋된다. 명세와 스크립트가 어긋나는 지점이 생긴다" style="max-width:1300px;margin:0 auto">
+    <h2>진실원이 둘이면 어긋난다 <span class="tag acc">판정은 한 벌</span></h2>
+    <p class="quote">대체 대상의 구조를 먼저 봅니다. 거기서는 규칙을 적은 문서와 규칙을 검사하는 스크립트가 서로 다른 곳에 살았습니다. 이 하나가 engram의 출발점입니다.</p>
+    <svg class="fig" viewBox="0 0 1300 300" aria-label="사람과 에이전트가 명세를 읽고 문서를 쓰지만 검사 스크립트는 명세를 읽지 않아 규칙의 진실원이 둘로 갈린다" style="max-width:1240px;margin:0 auto">
       <defs><marker id="g1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
-      <g class="a"><rect class="box" x="20" y="40" width="180" height="70" rx="10"/><text class="lbl s" x="110" y="68" text-anchor="middle" font-weight="700">사람</text><text class="lbl s" x="110" y="90" text-anchor="middle">회의록, 조사, 결론 작성</text></g>
-      <g class="a"><rect class="box" x="20" y="130" width="180" height="70" rx="10"/><text class="lbl s" x="110" y="158" text-anchor="middle" font-weight="700">에이전트</text><text class="lbl s" x="110" y="180" text-anchor="middle">AGENTS.md 계약을 읽고 작업</text></g>
-      <g class="a d1"><rect class="box" x="290" y="80" width="200" height="80" rx="10"/><text class="lbl s" x="390" y="106" text-anchor="middle" font-weight="700">위키 문서에 쓴다</text><text class="lbl m" x="390" y="128" text-anchor="middle">inbox, sources, context</text><text class="lbl s" x="390" y="148" text-anchor="middle">frontmatter를 손으로 채운다</text></g>
-      <path class="ln draw" d="M200 75 C 245 75, 250 100, 285 108" marker-end="url(#g1)"/>
-      <path class="ln draw" d="M200 165 C 245 165, 250 140, 285 132" marker-end="url(#g1)"/>
-      <g class="a d2"><rect class="box dim" x="290" y="210" width="200" height="90" rx="10"/><text class="lbl s" x="390" y="234" text-anchor="middle" font-weight="700">meta/ 명세 7종</text><text class="lbl s" x="390" y="255" text-anchor="middle">"승급 전에 링크를 걸어라"</text><text class="lbl s" x="390" y="274" text-anchor="middle">"sources는 고치지 마라"</text><text class="lbl s" x="390" y="293" text-anchor="middle">읽고 지키는 것은 사람의 의지</text></g>
-      <path class="ln dash draw d2" d="M340 205 L 320 165" marker-end="url(#g1)"/><text class="lbl s" x="288" y="192" text-anchor="middle" fill="var(--mute)">참조</text>
-      <g class="a d3"><rect class="box warn" x="580" y="80" width="220" height="90" rx="10"/><text class="lbl s" x="690" y="104" text-anchor="middle" font-weight="700">scripts/ 검사와 승급</text><text class="lbl s" x="690" y="125" text-anchor="middle">shell과 python</text><text class="lbl s" x="690" y="146" text-anchor="middle" fill="var(--warn)">허용값과 필수 필드가</text><text class="lbl s" x="690" y="163" text-anchor="middle" fill="var(--warn)">스크립트 본문에 하드코딩</text></g>
-      <path class="ln draw d2" d="M490 120 L 575 120" marker-end="url(#g1)"/>
-      <g class="a d4"><rect class="box" x="880" y="80" width="180" height="90" rx="10"/><text class="lbl s" x="970" y="106" text-anchor="middle" font-weight="700">.githooks/pre-commit</text><text class="lbl s" x="970" y="127" text-anchor="middle">검사 실패면 커밋 거절</text><text class="lbl s" x="970" y="148" text-anchor="middle">통과하면 git 이력에</text></g>
-      <path class="ln draw d3" d="M800 120 L 875 120" marker-end="url(#g1)"/>
-      <g class="a d5">
-        <path class="ln rej dash" d="M490 250 C 560 250, 600 200, 640 175"/>
-        <line x1="560" y1="205" x2="588" y2="233" stroke="var(--rej)" stroke-width="3"/><line x1="588" y1="205" x2="560" y2="233" stroke="var(--rej)" stroke-width="3"/>
-        <text class="lbl s" x="700" y="215" text-anchor="middle" fill="var(--rej)" font-weight="700">스크립트는 명세를 읽지 않는다</text>
-        <text class="lbl s" x="700" y="236" text-anchor="middle" fill="var(--rej)">규칙의 진실원이 둘이 되어 어긋난다.</text>
-        <text class="lbl s" x="700" y="255" text-anchor="middle" fill="var(--rej)">실측: 실운영 문서에 명세에 없는 값 열 건</text>
-        <text class="lbl s" x="700" y="274" text-anchor="middle" fill="var(--rej)">(status: draft 등)이 검사를 통과해 살고 있었다</text>
-      </g>
-      <g class="a d6">
-        <rect class="box acc" x="880" y="240" width="380" height="120" rx="10"/>
-        <text class="lbl s" x="1070" y="266" text-anchor="middle" font-weight="700">engram이 이 구조에서 가져간 설계 문제</text>
-        <text class="lbl s" x="1070" y="292" text-anchor="middle">1  규칙의 진실원을 하나로: 판정은 코드, 값은 engram.yaml</text>
-        <text class="lbl s" x="1070" y="313" text-anchor="middle">2  지키는 힘을 의지에서 도구로: 게이트와 lint</text>
-        <text class="lbl s" x="1070" y="334" text-anchor="middle">3  남에게 줄 수 있게: venv와 hook 설치가 없는 바이너리 하나</text>
-      </g>
-      <text class="lbl s" x="650" y="405" text-anchor="middle" fill="var(--mute)">이 방식 자체는 지금도 upstream에서 그대로 운영됩니다. 유연함(그날 스크립트를 고친다)이 혼자 쓰는 사람에게는 최선이기 때문입니다.</text>
-    </svg>
-  </div>
-  <aside class="notes">
-    <p>bge-m3 사이드카는 이 그림 밖의 주간 작업입니다. 문서당 벡터 하나를 만들어 유사한데 안 이어진 쌍을 찾는 재발견이고, engram의 bridge 임베딩 축이 이것의 이식입니다(5장).</p>
-    <p>근거: spec-map.md 2절(스크립트가 명세를 읽지 않는다는 실측), 6절(명세에서 흘러내린 값 열 건), ADR 0001의 문제의식(스크립트 묶음은 제품으로 인지되지 않는다).</p>
-  </aside>
-</section>
-
-<section class="slide" data-ch="1">
-  <div class="in">
-    <h2>upstream 자산이 engram의 무엇이 되었나</h2>
-    <p class="quote">앞 장의 운영 장치가 무엇으로 변했는지의 대응표입니다. 위키 문서는 upstream에 남고, 장치만 여섯 줄기로 건너왔습니다.</p>
-    <svg class="fig" viewBox="0 0 1300 440" aria-label="명세, 스크립트, 훅, AGENTS.md, 임베딩 운용, 용어 사전이 각각 engram의 어느 부분이 되었는지 대응" style="max-width:1300px;margin:0 auto">
-      <defs><marker id="g2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--acc)"/></marker></defs>
-      <text class="lbl" x="180" y="30" text-anchor="middle" font-weight="700">upstream 자산</text>
-      <text class="lbl" x="1010" y="30" text-anchor="middle" font-weight="700">engram에서의 모습</text>
-      <g class="lbl m">
-        <rect class="box dim" x="30" y="50" width="300" height="44" rx="8"/><text x="180" y="77" text-anchor="middle">meta/ 규칙 명세 7종</text>
-        <rect class="box dim" x="30" y="106" width="300" height="44" rx="8"/><text x="180" y="133" text-anchor="middle">scripts/ (lint, 승급)</text>
-        <rect class="box dim" x="30" y="162" width="300" height="44" rx="8"/><text x="180" y="189" text-anchor="middle">.githooks/pre-commit</text>
-        <rect class="box dim" x="30" y="218" width="300" height="44" rx="8"/><text x="180" y="245" text-anchor="middle">AGENTS.md (에이전트 계약)</text>
-        <rect class="box dim" x="30" y="274" width="300" height="44" rx="8"/><text x="180" y="301" text-anchor="middle">bge-m3 임베딩 운용</text>
-        <rect class="box dim" x="30" y="330" width="300" height="44" rx="8"/><text x="180" y="357" text-anchor="middle">meta/terminology.md 용어 사전</text>
-      </g>
-      <g class="lbl s">
-        <rect class="box acc" x="700" y="42" width="580" height="60" rx="8"/><text x="990" y="65" text-anchor="middle" font-weight="700">셋으로 갈라진다</text><text x="990" y="88" text-anchor="middle">판정 가능한 것은 lint 규칙(코드), 위키마다 다른 값은 engram.yaml, 판단은 사람에게</text>
-        <rect class="box" x="700" y="114" width="580" height="52" rx="8"/><text x="990" y="135" text-anchor="middle" font-weight="700">Go 패키지가 된다</text><text x="990" y="156" text-anchor="middle">규칙은 internal/lint로, 절차는 커맨드로. 명세를 읽는 대신 명세가 코드가 된다</text>
-        <rect class="box" x="700" y="178" width="580" height="52" rx="8"/><text x="990" y="199" text-anchor="middle" font-weight="700">바이너리 안에는 없다</text><text x="990" y="220" text-anchor="middle">커밋을 막는 자리는 도구 밖의 일. eject가 위키 소유의 hook으로 재생성한다(6장)</text>
-        <rect class="box" x="700" y="242" width="580" height="52" rx="8"/><text x="990" y="263" text-anchor="middle" font-weight="700">SKILL.md 한 장으로 압축</text><text x="990" y="284" text-anchor="middle">바이너리에 임베드, skills install로 설치, MCP 접속 시 지시로도 전달(ADR 0090)</text>
-        <rect class="box" x="700" y="306" width="580" height="52" rx="8"/><text x="990" y="327" text-anchor="middle" font-weight="700">internal/embed + bridge 임베딩 축</text><text x="990" y="348" text-anchor="middle">같은 모델, 같은 2000자, 같은 하한 0.72. 순수 Go로 다시 구현(5장)</text>
-        <rect class="box" x="700" y="370" width="580" height="52" rx="8"/><text x="990" y="391" text-anchor="middle" font-weight="700">internal/glossary가 형식만 안다</text><text x="990" y="412" text-anchor="middle">사전 내용은 조직 어휘라 가져오지 않는다. 표 형식의 스냅샷만 지켜본다(ADR 0094)</text>
-      </g>
-      <g class="draw"><path class="ln acc" d="M330 72 L 695 72" marker-end="url(#g2)"/></g>
-      <g class="draw d1"><path class="ln acc" d="M330 128 L 695 140" marker-end="url(#g2)"/></g>
-      <g class="draw d2"><path class="ln acc" d="M330 184 L 695 204" marker-end="url(#g2)"/></g>
-      <g class="draw d3"><path class="ln acc" d="M330 240 L 695 268" marker-end="url(#g2)"/></g>
-      <g class="draw d4"><path class="ln acc" d="M330 296 L 695 332" marker-end="url(#g2)"/></g>
-      <g class="draw d5"><path class="ln acc" d="M330 352 L 695 396" marker-end="url(#g2)"/></g>
-    </svg>
-    <p class="small mute" style="margin-top:.4em">이 대응의 전수 목록이 docs/spec-map.md입니다. 명세의 어느 줄이 어느 규칙 ID가 되었고 무엇이 사람에게 남았는지를 한 줄씩 추적합니다.</p>
-  </div>
-  <aside class="notes">
-    <p>위키 문서 자체(358+ 문서)는 아무것도 되지 않았습니다. 실데이터는 비공개로 남고, harness/realdata가 upstream 경로를 환경변수로 받아 로컬에서만 스모크 시험에 씁니다. 공개 CI는 그 시험을 건너뜁니다.</p>
-  </aside>
-</section>
-
-<section class="slide" data-ch="1">
-  <div class="in">
-    <h2>harnessing: 주 1회, Hermes가 감지하고 사람이 승인한다</h2>
-    <p class="quote">harnessing은 upstream과 engram 사이의 추적입니다. vendoring한 명세 사본이 원본과 어긋나지 않았는지를 기계가 주기적으로 재고, 어긋남의 성격(유형 0, A, B)에 따라 반영 경로가 갈리며, 판단이 필요한 경우에만 사람이 PR로 승인합니다.</p>
-    <svg class="fig" viewBox="0 0 1300 500" aria-label="주 1회 Hermes가 upstream 커밋을 감지해 파일별로 유지 갱신 신규를 판정하고, 유형 0이면 종료, A면 직접 커밋, B면 코드를 고쳐 PR을 열고 사람이 머지한다" style="max-width:1300px;margin:0 auto">
-      <defs><marker id="g3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
-      <g class="a"><rect class="box dim" x="20" y="30" width="230" height="80" rx="10"/><text class="lbl s" x="135" y="55" text-anchor="middle" font-weight="700">upstream에 커밋이 쌓인다</text><text class="lbl s" x="135" y="76" text-anchor="middle">대부분 문서 승급.</text><text class="lbl s" x="135" y="94" text-anchor="middle">명세 변경은 드물다</text></g>
-      <g class="a d1"><rect class="box warn" x="310" y="30" width="290" height="80" rx="10"/><text class="lbl s" x="455" y="53" text-anchor="middle" font-weight="700">주 1회 Hermes 크론 (ADR 0095)</text><text class="lbl m" x="455" y="75" text-anchor="middle">upstream-sync.py --check</text><text class="lbl s" x="455" y="95" text-anchor="middle">읽기만 한다. 아무것도 쓰지 않는다</text></g>
-      <path class="ln draw" d="M250 70 L 305 70" marker-end="url(#g3)"/>
-      <g class="a d2"><rect class="box" x="660" y="20" width="620" height="140" rx="10"/>
-        <text class="lbl s" x="970" y="44" text-anchor="middle" font-weight="700">감지: engram이 스스로 판정한다 (ADR 0094. upstream의 표시에 기대지 않는다)</text>
-        <text class="lbl s" x="700" y="72" font-weight="700" fill="var(--acc)">lock 대조</text><text class="lbl s" x="790" y="72">harness/upstream.lock의 SHA와 upstream HEAD가 같은가</text>
-        <text class="lbl s" x="700" y="98" font-weight="700" fill="var(--acc)">본문 대조</text><text class="lbl s" x="790" y="98">명세 사본 7종을 파일별로 비교해 유지 / 갱신 / 신규 판정</text>
-        <text class="lbl s" x="790" y="117" fill="var(--mute)">머리말의 출처 커밋 줄은 비교에서 뺀다. 안 그러면 매번 전부 갱신으로 나온다 (실측)</text>
-        <text class="lbl s" x="700" y="143" font-weight="700" fill="var(--acc)">형식 감시</text><text class="lbl s" x="790" y="143">용어 사전은 내용 대신 표 형식 스냅샷을 대조. 형식이 바뀌면 파서가 조용히 죽어서</text>
-      </g>
-      <path class="ln draw d1" d="M600 70 L 655 70" marker-end="url(#g3)"/>
-      <!-- 세 유형 -->
-      <g class="a d3"><rect class="box" x="60" y="220" width="360" height="105" rx="10"/><text class="lbl" x="240" y="248" text-anchor="middle" font-weight="700">유형 0  upstream 커밋 없음</text><text class="lbl s" x="240" y="274" text-anchor="middle">lock == HEAD. 아무 일도 하지 않는다</text><text class="lbl s" x="240" y="296" text-anchor="middle" fill="var(--mute)">보통 주는 여기서 끝난다</text></g>
-      <g class="a d4"><rect class="box acc" x="470" y="220" width="360" height="105" rx="10"/><text class="lbl" x="650" y="248" text-anchor="middle" font-weight="700">유형 A  커밋은 있으나 전부 유지</text><text class="lbl s" x="650" y="272" text-anchor="middle">명세 본문이 바이트 단위로 같다. 판단이 없다</text><text class="lbl s" x="650" y="293" text-anchor="middle">Hermes가 sync하고 main에 직접 커밋, 푸시</text><text class="lbl s" x="650" y="314" text-anchor="middle" fill="var(--mute)">볼 것 없는 PR을 매주 만들지 않는다. PR은 신호여야 한다</text></g>
-      <g class="a d5"><rect class="box rej" x="880" y="220" width="400" height="105" rx="10"/><text class="lbl" x="1080" y="248" text-anchor="middle" font-weight="700">유형 B  갱신이 하나라도 있음</text><text class="lbl s" x="1080" y="272" text-anchor="middle">판단이 필요하다. Hermes가 브랜치를 파고</text><text class="lbl s" x="1080" y="293" text-anchor="middle">lint 규칙, 기본값, 골든 스냅샷, 문서까지 고쳐 PR을 연다</text><text class="lbl s" x="1080" y="314" text-anchor="middle" fill="var(--rej)">자동 머지는 없다. 사람이 diff를 읽고 머지한다</text></g>
-      <path class="ln draw d2" d="M240 165 L 240 215" marker-end="url(#g3)"/><path class="ln draw d3" d="M650 165 L 650 215" marker-end="url(#g3)"/><path class="ln draw d4" d="M1080 165 L 1080 215" marker-end="url(#g3)"/>
-      <g class="a d6">
-        <rect class="box warn" x="470" y="360" width="810" height="90" rx="10"/>
-        <text class="lbl s" x="875" y="386" text-anchor="middle" font-weight="700">머지 전에 기계가 다시 확인한다 (구체적인 CI 구조는 다음 장)</text>
-        <text class="lbl s" x="875" y="410" text-anchor="middle">harness/parity: upstream 스크립트와 판정 대조 (lint 위반 목록, resurface 순위)  +  골든 스냅샷 diff가 판정 변화를 드러낸다</text>
-        <text class="lbl s" x="875" y="432" text-anchor="middle" fill="var(--warn)">골든 재생성(-update)은 무엇이든 초록으로 만들 수 있으므로, PR 본문에 바뀐 내용을 적고 사람이 그 diff를 읽는 것이 규칙이다</text>
-      </g>
-      <path class="ln draw d5" d="M1080 325 L 1080 355" marker-end="url(#g3)"/>
-      <g class="a d7"><text class="lbl s" x="240" y="400" text-anchor="middle" fill="var(--acc)" font-weight="700">승인 지점은 커맨드가 아니라 PR이다</text><text class="lbl s" x="240" y="422" text-anchor="middle">에이전트가 준비하고 사람은 내용을 보고</text><text class="lbl s" x="240" y="441" text-anchor="middle">승인한다. 위키의 승급 흐름과 같은 원칙이다</text></g>
-    </svg>
-  </div>
-  <aside class="notes">
-    <p>이 구조가 된 이유가 ADR 0094와 0095에 실측으로 적혀 있습니다. 이전에는 upstream의 CHANGELOG에 붙는 impact 표시를 믿었는데, 그러면 upstream이 engram을 알아야 하고 표시가 빠지면 아무것도 모릅니다. 그래서 판정을 engram 쪽으로 가져왔습니다. 또 머리말의 출처 커밋 줄 때문에 본문이 같아도 일곱 전부 갱신으로 나오던 결함을 고치면서, 18커밋이 밀렸는데 실제 판단은 0이었던 경험이 유형 A(직접 커밋)를 만들었습니다.</p>
-  </aside>
-</section>
-
-<section class="slide" data-ch="1">
-  <div class="in">
-    <h2>그 뒤의 기계: push와 PR마다 GitHub Actions가 다시 잰다</h2>
-    <p class="quote">Hermes의 커밋이든 사람의 커밋이든 같은 문으로 들어갑니다. push와 PR마다 ci.yml의 잡 다섯이 전부 돌고, harness의 대조도 그 안에서 돕니다. 릴리스는 별도 워크플로이고 v 태그 푸시가 유일한 계기입니다.</p>
-    <svg class="fig" viewBox="0 0 1300 520" aria-label="유형 A 커밋, 유형 B PR, 사람의 커밋이 모두 ci.yml의 다섯 잡을 거치고, 사람이 머지하며, 릴리스는 태그 푸시로만 돈다">
-      <defs><marker id="g4a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker><marker id="g4b" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
-      <g class="a">
-        <rect class="box acc" x="20" y="60" width="240" height="70" rx="10"/><text class="lbl s" x="140" y="86" text-anchor="middle" font-weight="700">유형 A: Hermes의 직접 커밋</text><text class="lbl s" x="140" y="108" text-anchor="middle">main에 푸시</text>
-        <rect class="box rej" x="20" y="150" width="240" height="70" rx="10"/><text class="lbl s" x="140" y="176" text-anchor="middle" font-weight="700">유형 B: Hermes의 PR</text><text class="lbl s" x="140" y="198" text-anchor="middle">브랜치 + 코드 수정</text>
-        <rect class="box" x="20" y="240" width="240" height="70" rx="10"/><text class="lbl s" x="140" y="266" text-anchor="middle" font-weight="700">사람의 개발</text><text class="lbl s" x="140" y="288" text-anchor="middle">평소의 push와 PR</text>
-      </g>
-      <g class="draw"><path class="ln" d="M260 95 L 305 130" marker-end="url(#g4a)"/><path class="ln" d="M260 185 L 305 185" marker-end="url(#g4a)"/><path class="ln" d="M260 275 L 305 240" marker-end="url(#g4a)"/></g>
-      <g class="a d1">
-        <rect x="315" y="40" width="640" height="420" rx="14" fill="#fff" stroke="var(--ink2)" stroke-width="1.6"/>
-        <text class="lbl" x="635" y="70" text-anchor="middle" font-weight="800">ci.yml  잡 다섯이 전부 돈다</text>
-        <rect class="box warn" x="335" y="90" width="195" height="150" rx="10"/>
-        <text class="lbl s" x="432" y="113" text-anchor="middle" font-weight="700">test</text>
-        <text class="lbl s" x="432" y="135" text-anchor="middle">go test, 러너 4</text>
-        <text class="lbl s" x="432" y="153" text-anchor="middle">(리눅스, 맥, 윈도, 윈도 ARM)</text>
-        <text class="lbl s" x="432" y="177" text-anchor="middle" fill="var(--warn)">harness의 parity, 골든,</text>
-        <text class="lbl s" x="432" y="195" text-anchor="middle" fill="var(--warn)">journey, eject 대조가</text>
-        <text class="lbl s" x="432" y="213" text-anchor="middle" fill="var(--warn)">이 잡 안에서 돈다</text>
-        <rect class="box" x="540" y="90" width="195" height="150" rx="10"/>
-        <text class="lbl s" x="637" y="113" text-anchor="middle" font-weight="700">cross-build</text>
-        <text class="lbl s" x="637" y="135" text-anchor="middle">러너 하나에서</text>
-        <text class="lbl s" x="637" y="153" text-anchor="middle">6조합 교차 빌드</text>
-        <text class="lbl s" x="637" y="175" text-anchor="middle">전부 CGO_ENABLED=0</text>
-        <text class="lbl s" x="637" y="197" text-anchor="middle" fill="var(--mute)">2장의 빌드 구조가</text>
-        <text class="lbl s" x="637" y="215" text-anchor="middle" fill="var(--mute)">여기서 매번 증명된다</text>
-        <rect class="box" x="745" y="90" width="195" height="150" rx="10"/>
-        <text class="lbl s" x="842" y="113" text-anchor="middle" font-weight="700">voice</text>
-        <text class="lbl s" x="842" y="135" text-anchor="middle">러너 3. CGO라 교차가</text>
-        <text class="lbl s" x="842" y="153" text-anchor="middle">안 되니 각자 빌드하고</text>
-        <text class="lbl s" x="842" y="175" text-anchor="middle">package.sh 포장까지 돌린다</text>
-        <text class="lbl s" x="842" y="197" text-anchor="middle" fill="var(--mute)">태그 때 처음 깨지는 일을</text>
-        <text class="lbl s" x="842" y="215" text-anchor="middle" fill="var(--mute)">막는다 (ADR 0087)</text>
-        <rect class="box" x="335" y="255" width="195" height="150" rx="10"/>
-        <text class="lbl s" x="432" y="278" text-anchor="middle" font-weight="700">voice-transcribe</text>
-        <text class="lbl s" x="432" y="300" text-anchor="middle">러너 3. 실제 녹음 하나를</text>
-        <text class="lbl s" x="432" y="318" text-anchor="middle">끝까지 전사해 화자 수 2를</text>
-        <text class="lbl s" x="432" y="336" text-anchor="middle">확인한다</text>
-        <text class="lbl s" x="432" y="360" text-anchor="middle" fill="var(--mute)">빌드 통과와 모델 적재는</text>
-        <text class="lbl s" x="432" y="378" text-anchor="middle" fill="var(--mute)">다른 문제라서 (ADR 0093)</text>
-        <rect class="box" x="540" y="255" width="195" height="150" rx="10"/>
-        <text class="lbl s" x="637" y="278" text-anchor="middle" font-weight="700">docs</text>
-        <text class="lbl s" x="637" y="300" text-anchor="middle">ADR 색인 정합 검사,</text>
-        <text class="lbl s" x="637" y="318" text-anchor="middle">mermaid 도식 렌더 검사</text>
-        <text class="lbl s" x="637" y="342" text-anchor="middle" fill="var(--mute)">문서도 깨지면</text>
-        <text class="lbl s" x="637" y="360" text-anchor="middle" fill="var(--mute)">빌드가 빨갛다</text>
-        <text class="lbl s" x="842" y="300" text-anchor="middle" fill="var(--mute)">커밋 전에 로컬 훅도 있다:</text>
-        <text class="lbl s" x="842" y="320" text-anchor="middle" fill="var(--mute)">check-boundary.py (사내 식별자)</text>
-        <text class="lbl s" x="842" y="340" text-anchor="middle" fill="var(--mute)">check-adr.py (색인 정합)</text>
-        <text class="lbl s" x="635" y="438" text-anchor="middle">잡 하나만 깨져도 머지가 막힌다. 릴리스와는 파일을 나눈다. 계기와 권한이 달라서다</text>
-      </g>
-      <g class="draw d2"><path class="ln acc" style="stroke-width:2.4" d="M955 150 L 1000 150" marker-end="url(#g4b)"/></g>
+      <g class="a"><rect class="box dim" x="30" y="40" width="290" height="90" rx="10"/><text class="lbl s" x="175" y="72" text-anchor="middle" font-weight="700">규칙 명세 (사람이 읽는 문서)</text><text class="lbl s" x="175" y="98" text-anchor="middle">승급 전에 링크를 걸어라</text><text class="lbl s" x="175" y="118" text-anchor="middle">원본은 고치지 마라</text></g>
+      <g class="a d1"><rect class="box" x="30" y="170" width="290" height="90" rx="10"/><text class="lbl s" x="175" y="202" text-anchor="middle" font-weight="700">사람과 에이전트</text><text class="lbl s" x="175" y="228" text-anchor="middle">명세를 읽고 지킨다</text><text class="lbl s" x="175" y="248" text-anchor="middle">지키는 힘은 의지</text></g>
+      <path class="ln dash draw d1" d="M175 170 L 175 135" marker-end="url(#g1)"/>
+      <g class="a d2"><rect class="box warn" x="450" y="105" width="300" height="90" rx="10"/><text class="lbl s" x="600" y="137" text-anchor="middle" font-weight="700">검사 스크립트</text><text class="lbl s" x="600" y="163" text-anchor="middle">허용값과 필수 필드가</text><text class="lbl s" x="600" y="183" text-anchor="middle">본문에 하드코딩되어 있다</text></g>
       <g class="a d3">
-        <rect class="box acc" x="1005" y="110" width="275" height="80" rx="10"/>
-        <text class="lbl s" x="1142" y="136" text-anchor="middle" font-weight="700">전부 초록이면: 사람이 머지</text>
-        <text class="lbl s" x="1142" y="158" text-anchor="middle">유형 B는 diff를 읽는 것까지가 절차.</text>
-        <text class="lbl s" x="1142" y="176" text-anchor="middle">main이 갱신된다</text>
+        <path class="ln rej dash" d="M330 95 C 390 105, 400 120, 445 135"/>
+        <line x1="368" y1="98" x2="392" y2="126" stroke="var(--rej)" stroke-width="3"/><line x1="392" y1="98" x2="368" y2="126" stroke="var(--rej)" stroke-width="3"/>
+        <text class="lbl s" x="380" y="160" text-anchor="middle" fill="var(--rej)" font-weight="700">읽지 않는다</text>
       </g>
       <g class="a d4">
-        <rect class="box" x="1005" y="230" width="275" height="180" rx="10"/>
-        <text class="lbl s" x="1142" y="256" text-anchor="middle" font-weight="700">release.yml  태그가 유일한 계기</text>
-        <text class="lbl m" x="1142" y="280" text-anchor="middle">git tag v1.0.0 + push</text>
-        <text class="lbl s" x="1142" y="304" text-anchor="middle">goreleaser가 6 플랫폼 아카이브와</text>
-        <text class="lbl s" x="1142" y="322" text-anchor="middle">checksums.txt를 릴리스에 올리고</text>
-        <text class="lbl s" x="1142" y="340" text-anchor="middle">Homebrew tap을 갱신한다 (2장)</text>
-        <text class="lbl s" x="1142" y="368" text-anchor="middle" fill="var(--mute)">수동 실행 버튼이 없다. 태그가 곧</text>
-        <text class="lbl s" x="1142" y="386" text-anchor="middle" fill="var(--mute)">버전이다 (ADR 0042)</text>
-        <path class="ln dash" d="M1142 190 L 1142 225" marker-end="url(#g4a)"/>
+        <rect class="box rej" x="820" y="40" width="450" height="100" rx="10"/>
+        <text class="lbl s" x="1045" y="72" text-anchor="middle" font-weight="700">그 결과</text>
+        <text class="lbl s" x="1045" y="98" text-anchor="middle">명세에 없는 값이 검사를 통과해 실운영 문서에 살아 있었다</text>
+        <text class="lbl s" x="1045" y="120" text-anchor="middle">문서는 규칙을 말하고 스크립트는 다른 규칙을 집행한다</text>
       </g>
+      <g class="a d5">
+        <rect class="box acc" x="820" y="165" width="450" height="105" rx="10"/>
+        <text class="lbl s" x="1045" y="194" text-anchor="middle" font-weight="700">engram이 가져간 설계 문제 셋</text>
+        <text class="lbl s" x="1045" y="220" text-anchor="middle">규칙의 진실원을 하나로. 판정은 코드, 값은 설정</text>
+        <text class="lbl s" x="1045" y="240" text-anchor="middle">지키는 힘을 의지에서 도구로. 게이트와 lint</text>
+        <text class="lbl s" x="1045" y="260" text-anchor="middle">남에게 줄 수 있게. 설치가 필요 없는 바이너리 하나</text>
+      </g>
+      <path class="ln draw d4" d="M755 130 L 815 100" marker-end="url(#g1)"/>
+      <path class="ln draw d5" d="M755 165 L 815 200" marker-end="url(#g1)"/>
     </svg>
+    <p class="small mute" style="margin-top:.5em">이 방식 자체는 지금도 원형 위키에서 그대로 운영됩니다. 그날 스크립트를 고치는 유연함이 혼자 쓰는 사람에게는 최선이기 때문입니다. 남에게 주는 순간 그 유연함이 부채가 됩니다.</p>
   </div>
   <aside class="notes">
-    <p>test 잡은 checkout 전에 git의 autocrlf를 끕니다. Windows 러너의 기본값이 켜져 있으면 harness의 CRLF 픽스처가 소리 없이 LF로 바뀌어 골든 비교가 거짓 실패하기 때문입니다. .gitattributes의 -text와 이중 안전망입니다.</p>
-    <p>release.yml은 CI 통과 여부를 스스로 판단하지 않습니다. 태그를 붙이기 전에 CI가 초록인지 확인하는 것은 사람의 일로 남겨 두었습니다. 또 tap 배포키 시크릿이 없으면 시작 전에 멈춥니다. 아카이브만 올라가고 tap이 낡은 "절반 성공 릴리스"를 만들지 않기 위해서입니다.</p>
+    <p>실측 근거는 spec-map.md 2절과 6절에 있습니다. 명세가 정의하지 않은 값이 실운영 문서에 열 건 살아 있었고, 검사를 통과하고 있었습니다. 스크립트가 명세를 읽지 않으니 당연한 결과입니다.</p>
+    <p>세 문제 가운데 셋째가 나머지 둘을 강제합니다. 남에게 주려면 파이썬 가상환경 설치와 훅 등록 같은 절차가 없어야 하고, 그러려면 규칙이 스크립트가 아니라 바이너리 안에 있어야 합니다(ADR 0001).</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>무엇이 무엇이 되었나 <span class="tag acc">판정은 한 벌</span></h2>
+    <p class="quote">운영 장치가 여섯 줄기로 건너왔습니다. 위키 문서 자체는 아무것도 되지 않고 원형에 남습니다. 건너온 것은 규칙과 절차뿐입니다.</p>
+    <table>
+      <tr><th style="width:26%">원형의 자산</th><th style="width:30%">engram에서의 모습</th><th>가장 중요한 차이</th></tr>
+      <tr><td>규칙 명세 문서</td><td>lint 규칙과 게이트(코드), 위키별 값(설정)</td><td>판정 가능한 것만 코드가 되고, 판단이 필요한 것은 사람에게 남겼다</td></tr>
+      <tr><td>검사와 승급 스크립트</td><td>Go 패키지와 커맨드</td><td>명세를 읽는 대신 명세가 코드가 되었다. 진실원이 하나다</td></tr>
+      <tr><td>커밋 훅</td><td><strong>바이너리 안에는 없다</strong></td><td>커밋을 막는 자리는 도구 밖의 일이다. eject가 위키 소유의 훅으로 재생성한다(6장)</td></tr>
+      <tr><td>에이전트 계약 문서</td><td>스킬 문서 한 장</td><td>바이너리에 임베드되어 설치와 MCP 접속 양쪽으로 전달된다</td></tr>
+      <tr><td>임베딩 사이드카</td><td>임베딩 패키지와 bridge의 의미 축</td><td>같은 모델과 같은 하한을 순수 Go로 다시 구현했다(5장)</td></tr>
+      <tr><td>용어 사전</td><td>형식만 아는 파서</td><td>사전 내용은 조직 어휘라 가져오지 않는다. 표 형식이 바뀌는지만 지켜본다</td></tr>
+      <tr style="background:var(--bg2)"><td>위키 문서 자체</td><td><strong>아무것도 되지 않았다</strong></td><td>실데이터는 비공개로 남는다. 이 저장소에는 위키 문서가 한 장도 없다</td></tr>
+    </table>
+    <p class="small mute" style="margin-top:.6em">이 대응의 전수 목록이 <code>docs/spec-map.md</code>입니다. 명세의 어느 줄이 어느 규칙이 되었고 무엇이 사람에게 남았는지를 한 줄씩 추적합니다.</p>
+  </div>
+  <aside class="notes">
+    <p>커밋 훅이 바이너리 밖에 남은 것이 이 표에서 가장 설계다운 결정입니다. 도구가 사용자의 git 훅을 소유하면 도구를 지울 때 위키가 깨집니다. 그래서 훅은 eject 시점에 사용자 소유의 파일로 생깁니다(ADR 0013).</p>
+    <p>용어 사전을 내용까지 가져오지 않는 것은 공개 경계 때문입니다. 조직 어휘가 그대로 공개 저장소에 들어가기 때문이고, 대신 파서가 깨지지 않게 표 형식만 감시합니다(ADR 0094).</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>원본이 움직이면 따라간다 <span class="tag acc">판정은 한 벌</span></h2>
+    <p class="quote">규칙을 옮겨 왔으니 원본이 바뀌면 어긋납니다. 그 어긋남을 기계가 주기적으로 재고, 판단이 필요할 때만 사람을 부릅니다.</p>
+    <svg class="fig" viewBox="0 0 1300 290" aria-label="주기적으로 원본과 사본을 대조해 세 유형으로 가르고, 판단이 필요한 유형만 사람의 승인을 받는다" style="max-width:1240px;margin:0 auto">
+      <defs><marker id="g3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+      <g class="a"><rect class="box warn" x="30" y="30" width="300" height="90" rx="10"/><text class="lbl s" x="180" y="60" text-anchor="middle" font-weight="700">주기 대조 (읽기만 한다)</text><text class="lbl s" x="180" y="86" text-anchor="middle">사본과 원본을 파일별로 비교해</text><text class="lbl s" x="180" y="106" text-anchor="middle">유지와 갱신을 가른다</text></g>
+      <g class="lbl s">
+        <g class="a d1"><rect class="box" x="420" y="20" width="280" height="70" rx="10"/><text x="560" y="48" text-anchor="middle" font-weight="700">유형 0  원본이 안 움직였다</text><text x="560" y="72" text-anchor="middle">아무 일도 하지 않는다. 보통 주는 여기서 끝</text></g>
+        <g class="a d2"><rect class="box acc" x="420" y="105" width="280" height="70" rx="10"/><text x="560" y="133" text-anchor="middle" font-weight="700">유형 A  움직였지만 규칙은 그대로</text><text x="560" y="157" text-anchor="middle">판단이 없으니 기계가 직접 커밋한다</text></g>
+        <g class="a d3"><rect class="box rej" x="420" y="190" width="280" height="80" rx="10"/><text x="560" y="218" text-anchor="middle" font-weight="700">유형 B  규칙 본문이 바뀌었다</text><text x="560" y="242" text-anchor="middle">기계가 코드와 문서를 고쳐</text><text x="560" y="262" text-anchor="middle">변경 제안을 올린다</text></g>
+      </g>
+      <path class="ln draw d1" d="M330 60 L 415 55" marker-end="url(#g3)"/>
+      <path class="ln draw d2" d="M330 78 L 415 140" marker-end="url(#g3)"/>
+      <path class="ln draw d3" d="M330 96 L 415 225" marker-end="url(#g3)"/>
+      <g class="a d4">
+        <rect class="box" x="790" y="105" width="480" height="70" rx="10"/>
+        <text class="lbl s" x="1030" y="133" text-anchor="middle" font-weight="700">기계가 다시 잰다</text>
+        <text class="lbl s" x="1030" y="157" text-anchor="middle">동등성 검증과 골든 비교가 판정 변화를 드러낸다 (다음 장)</text>
+      </g>
+      <g class="a d5">
+        <rect class="box acc" x="790" y="190" width="480" height="80" rx="10"/>
+        <text class="lbl s" x="1030" y="218" text-anchor="middle" font-weight="700">승인 지점은 커맨드가 아니라 변경 제안이다</text>
+        <text class="lbl s" x="1030" y="242" text-anchor="middle">에이전트가 준비하고 사람이 내용을 읽고 승인한다.</text>
+        <text class="lbl s" x="1030" y="262" text-anchor="middle">자동 반영은 없다. 위키의 승급 흐름과 같은 원칙이다</text>
+      </g>
+      <path class="ln draw d4" d="M700 140 L 785 140" marker-end="url(#g3)"/>
+      <path class="ln draw d5" d="M700 230 L 785 230" marker-end="url(#g3)"/>
+    </svg>
+    <p class="small mute" style="margin-top:.5em">유형 A와 B를 가르는 이유는 신호를 지키기 위해서입니다. 볼 것 없는 변경 제안을 매주 만들면 사람이 읽지 않게 되고, 정작 판단이 필요한 주에도 그냥 넘어갑니다.</p>
+  </div>
+  <aside class="notes">
+    <p>판정을 원본 쪽 표시에 기대지 않고 engram이 스스로 하는 구조입니다(ADR 0094). 원본이 engram을 알아야 하는 의존을 만들지 않기 위해서이고, 표시가 빠지면 아무것도 모르게 되는 위험도 없앱니다.</p>
+    <p>실측에서 배운 것 하나. 사본 머리말의 출처 커밋 줄을 비교에 넣으면 본문이 같아도 매번 전부 갱신으로 나옵니다. 그 줄을 빼고 나서야 유형 A와 B의 구분이 뜻을 갖게 되었고, 열여덟 커밋이 밀렸는데 실제 판단은 0이었던 경험이 유형 A를 만들었습니다(ADR 0095).</p>
+    <p>대조와 승인의 자세한 절차, 주기와 담당은 저장소의 AGENTS.md와 ADR 0095에 있습니다. 이 문서는 구조만 다룹니다.</p>
+  </aside>
+</section>
+
+<section class="slide appx" data-ch="1">
+  <div class="in">
+    <span class="appxtag">덧붙임</span>
+    <h2>커밋마다 도는 검사</h2>
+    <p class="quote">기계의 커밋이든 사람의 커밋이든 같은 문으로 들어갑니다. 잡 하나만 깨져도 반영이 막힙니다.</p>
+    <table>
+      <tr><th style="width:18%">잡</th><th style="width:22%">어디서</th><th>무엇을 재나</th></tr>
+      <tr><td><code>test</code></td><td>리눅스, 맥, 윈도우, 윈도우 ARM</td><td>시험 전체. 동등성 검증, 골든 비교, 여정 통합, eject 대조, 문서 정량 주장 대조가 이 안에서 돈다</td></tr>
+      <tr><td><code>cross-build</code></td><td>러너 하나</td><td>여섯 플랫폼 교차 빌드. 2장의 빌드 구조가 여기서 매번 증명된다</td></tr>
+      <tr><td><code>voice</code></td><td>플랫폼마다 자기 러너</td><td>전사기 빌드와 포장. C 라이브러리가 붙어 교차 빌드가 성립하지 않는다</td></tr>
+      <tr><td><code>voice-transcribe</code></td><td>플랫폼마다 자기 러너</td><td>실제 녹음 하나를 끝까지 전사. 빌드 통과와 모델 적재는 다른 문제라서다</td></tr>
+      <tr><td><code>docs</code></td><td>러너 하나</td><td>ADR 색인 정합과 도식 렌더 검사. 문서가 깨져도 빌드가 빨갛다</td></tr>
+    </table>
+    <div class="cols" style="margin-top:.7em">
+      <div>
+        <p class="small"><strong>커밋 전에 로컬 훅도 돕니다.</strong> 공개 경계 검사(사내 식별자가 섞이지 않았는지)와 ADR 색인 정합이 커밋 시점에 걸립니다. CI가 잡기 전에 손에서 먼저 막는 자리입니다.</p>
+      </div>
+      <div>
+        <p class="small"><strong>릴리스는 파일을 나눕니다.</strong> 계기와 권한이 다르기 때문입니다. 버전 태그를 붙여 밀면 그때만 도는 별도 워크플로가 아카이브와 체크섬을 만들고 배포 경로를 갱신합니다. 수동 실행 버튼이 없고, 태그가 곧 버전입니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>시험 잡은 checkout 전에 git의 줄바꿈 자동 변환을 끕니다. 윈도우 러너의 기본값이 켜져 있으면 harness의 CRLF 픽스처가 소리 없이 LF로 바뀌어 골든 비교가 거짓 실패합니다. .gitattributes와 이중 안전망입니다.</p>
+    <p>릴리스 워크플로는 CI가 초록인지 스스로 판단하지 않습니다. 태그를 붙이기 전에 확인하는 것은 사람의 일로 남겨 두었습니다. 또 배포 키가 없으면 시작 전에 멈춥니다. 아카이브만 올라가고 배포 경로가 낡은 절반 성공 릴리스를 만들지 않기 위해서입니다(ADR 0042).</p>
   </aside>
 </section>
 
