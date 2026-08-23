@@ -503,134 +503,105 @@ body.read #hint{display:none}
 <section class="slide chap dark" data-ch="2">
   <div class="in">
     <div class="kicker">2장</div>
-    <h1>바이너리: 모듈, 빌드, 계층</h1>
-    <p class="lead">무거운 것을 어디에 두고 어떻게 여섯 플랫폼을 내는가.</p>
+    <h1>바이너리의 모양</h1>
+    <p class="lead">무거운 것을 어디에 두는가. 이 결정 하나가 모듈 경계와 배포 방식과 임베딩 구현까지 전부 정합니다.</p>
   </div>
   <div class="num">2</div>
-  <aside class="notes"><p>근거: ADR 0007(플랫폼 매트릭스), 0042(릴리스), 0074(순수 Go 임베딩), 0080(voice 중첩 모듈), 0084(voice 플랫폼), 0087과 0088(CI 측정과 Homebrew).</p></aside>
+  <aside class="notes"><p>근거: ADR 0007(플랫폼 매트릭스), 0042(릴리스), 0074(순수 Go 임베딩), 0080(전사기 중첩 모듈), 0084(전사기 플랫폼), 0087과 0088(CI 측정과 배포 경로).</p></aside>
 </section>
 
 <section class="slide" data-ch="2">
   <div class="in">
-    <h2>모듈 둘: 무거운 것은 경계 밖에</h2>
-    <p class="quote">바이너리가 둘인 이유는 기능이 아니라 컴파일 조건입니다. C 라이브러리가 필요한 전사만 떼어 내면 코어는 어디서든 파일 하나로 끝납니다.</p>
-    <svg class="fig" viewBox="0 0 1300 470" aria-label="engram 모듈은 순수 Go로 위키를 다루고, engram-voice 모듈은 C 라이브러리로 전사만 하며, 둘은 파이프로만 만난다" style="max-width:1300px;margin:0 auto">
+    <h2>모듈 둘: 무거운 것은 경계 밖에 <span class="tag acc">비용은 자리를 옮긴다</span></h2>
+    <p class="quote">바이너리가 둘인 이유는 기능이 아니라 컴파일 조건입니다. C 라이브러리가 필요한 전사만 떼어 내면 나머지는 어디서든 파일 하나로 끝납니다.</p>
+    <svg class="fig" viewBox="0 0 1300 300" aria-label="위키 엔진 모듈은 순수 Go이고 전사기 모듈은 C 라이브러리를 쓰며 둘은 파이프로만 만난다" style="max-width:1240px;margin:0 auto">
       <defs><marker id="g4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
       <g class="a">
-        <rect x="30" y="30" width="560" height="340" rx="14" fill="#fbfffe" stroke="var(--acc)" stroke-width="2"/>
-        <text class="lbl" x="310" y="60" text-anchor="middle" font-weight="800" fill="var(--acc)">모듈 1  engram (위키 엔진)</text>
-        <text class="lbl m" x="310" y="82" text-anchor="middle">github.com/neocode24/engram</text>
-        <g class="lbl s">
-          <rect class="box" x="55" y="100" width="240" height="60" rx="8"/><text x="175" y="124" text-anchor="middle" font-weight="700">판정</text><text x="175" y="145" text-anchor="middle">게이트, lint, 스키마, 노출, 시크릿</text>
-          <rect class="box" x="325" y="100" width="240" height="60" rx="8"/><text x="445" y="124" text-anchor="middle" font-weight="700">검색과 재발견</text><text x="445" y="145" text-anchor="middle">bigram+BM25, 임베딩, bridge</text>
-          <rect class="box" x="55" y="172" width="240" height="60" rx="8"/><text x="175" y="196" text-anchor="middle" font-weight="700">쓰기</text><text x="175" y="217" text-anchor="middle">capture, promote, mv, migrate</text>
-          <rect class="box" x="325" y="172" width="240" height="60" rx="8"/><text x="445" y="196" text-anchor="middle" font-weight="700">내보내기</text><text x="445" y="217" text-anchor="middle">serve, export, mcp, eject, skills</text>
-        </g>
-        <rect class="box acc" x="55" y="250" width="510" height="100" rx="8"/>
-        <text class="lbl s" x="310" y="276" text-anchor="middle" font-weight="700">성립 조건: CGO_ENABLED=0</text>
-        <text class="lbl s" x="310" y="300" text-anchor="middle">C 코드 0, 네이티브 라이브러리 0. 그래서 리눅스 러너 하나에서</text>
-        <text class="lbl s" x="310" y="321" text-anchor="middle">여섯 플랫폼이 전부 교차 빌드되고, 산출물이 정적 바이너리 하나다.</text>
-        <text class="lbl s" x="310" y="342" text-anchor="middle">임베딩 추론까지 순수 Go(hugot)로 두어 이 조건을 지켰다</text>
+        <rect x="30" y="30" width="560" height="180" rx="14" fill="#fbfffe" stroke="var(--acc)" stroke-width="2"/>
+        <text class="lbl" x="310" y="62" text-anchor="middle" font-weight="800" fill="var(--acc)">모듈 1  위키 엔진</text>
+        <text class="lbl s" x="310" y="92" text-anchor="middle">판정, 검색과 재발견, 쓰기, 내보내기</text>
+        <rect class="box acc" x="60" y="110" width="500" height="80" rx="10"/>
+        <text class="lbl s" x="310" y="140" text-anchor="middle" font-weight="700">성립 조건: C 코드 0, 네이티브 라이브러리 0</text>
+        <text class="lbl s" x="310" y="166" text-anchor="middle">그래서 러너 하나에서 여섯 플랫폼이 교차 빌드되고 산출물이 정적 파일 하나다</text>
       </g>
       <g class="a d1">
-        <rect x="710" y="30" width="560" height="340" rx="14" fill="#fff" stroke="var(--warn)" stroke-width="2"/>
-        <text class="lbl" x="990" y="60" text-anchor="middle" font-weight="800" fill="var(--warn)">모듈 2  engram/voice (전사기)</text>
-        <text class="lbl m" x="990" y="82" text-anchor="middle">github.com/neocode24/engram/voice</text>
-        <g class="lbl s">
-          <rect class="box" x="735" y="100" width="240" height="60" rx="8"/><text x="855" y="124" text-anchor="middle" font-weight="700">오디오 처리</text><text x="855" y="145" text-anchor="middle">m4a 변환, 구간 나누기(VAD)</text>
-          <rect class="box" x="1005" y="100" width="240" height="60" rx="8"/><text x="1125" y="124" text-anchor="middle" font-weight="700">전사와 화자</text><text x="1125" y="145" text-anchor="middle">whisper large-v3, 화자 분할</text>
-        </g>
-        <rect class="box warn" x="735" y="250" width="510" height="100" rx="8"/>
-        <text class="lbl s" x="990" y="276" text-anchor="middle" font-weight="700">무거운 이유: sherpa-onnx C 라이브러리</text>
-        <text class="lbl s" x="990" y="300" text-anchor="middle">CGO가 켜지고 플랫폼별 미리 빌드된 lib/ 238MB가 딸려 온다.</text>
-        <text class="lbl s" x="990" y="321" text-anchor="middle">한 모듈이면 go install로 코어만 받는 사람도 이것을 받는다.</text>
-        <text class="lbl s" x="990" y="342" text-anchor="middle">그래서 중첩 모듈로 갈랐다. 설치 경로에 voice/가 들어가는 이유다</text>
-        <text class="lbl s" x="990" y="192" text-anchor="middle" fill="var(--warn)">위키를 모른다. 쓰기 도구가 없고 글을 표준 출력으로 낼 뿐이다</text>
-        <text class="lbl s" x="990" y="215" text-anchor="middle" fill="var(--warn)">위키 규약이 두 곳에 있으면 어긋나기 때문 (1장의 교훈)</text>
+        <rect x="710" y="30" width="560" height="180" rx="14" fill="#fff" stroke="var(--warn)" stroke-width="2"/>
+        <text class="lbl" x="990" y="62" text-anchor="middle" font-weight="800" fill="var(--warn)">모듈 2  전사기</text>
+        <text class="lbl s" x="990" y="92" text-anchor="middle">오디오 변환, 구간 나누기, 전사와 화자 분할</text>
+        <rect class="box warn" x="740" y="110" width="500" height="80" rx="10"/>
+        <text class="lbl s" x="990" y="140" text-anchor="middle" font-weight="700">무거운 이유: 음성 인식 C 라이브러리</text>
+        <text class="lbl s" x="990" y="166" text-anchor="middle">플랫폼별로 미리 빌드된 라이브러리가 수백 MB 딸려 온다</text>
       </g>
       <g class="a d2">
-        <rect class="box" x="380" y="400" width="540" height="50" rx="10"/>
-        <text class="lbl m" x="650" y="425" text-anchor="middle">engram-voice transcribe 회의.m4a | engram capture</text>
-        <text class="lbl s" x="650" y="443" text-anchor="middle">두 모듈이 만나는 유일한 자리는 파이프다. 진행률은 표준 오류로 나가 전사만 넘어간다</text>
+        <rect class="box" x="380" y="240" width="540" height="46" rx="10"/>
+        <text class="lbl m" x="650" y="268" text-anchor="middle">engram-voice transcribe 회의.m4a | engram capture</text>
       </g>
-      <path class="ln draw d1" d="M310 370 C 310 395, 360 415, 375 420" marker-end="url(#g4)"/>
-      <path class="ln draw d1" d="M990 370 C 990 395, 940 415, 925 420" marker-end="url(#g4)"/>
+      <path class="ln draw d1" d="M310 210 C 310 230, 360 250, 375 258" marker-end="url(#g4)"/>
+      <path class="ln draw d1" d="M990 210 C 990 230, 940 250, 925 258" marker-end="url(#g4)"/>
     </svg>
+    <div class="cols" style="margin-top:.7em">
+      <div>
+        <p class="small"><strong>한 모듈이면 소스로 설치하는 사람도 그 수백 MB를 받습니다.</strong> 그래서 중첩 모듈로 갈랐습니다. 전사기의 설치 경로에 하위 디렉토리가 들어가는 것이 이 분리의 흔적입니다.</p>
+      </div>
+      <div>
+        <p class="small"><strong>전사기는 위키를 모릅니다.</strong> 쓰기 도구가 없고 전사 결과를 표준 출력으로 낼 뿐입니다. 두 모듈이 만나는 자리는 파이프 하나이고, 진행률은 표준 오류로 나가 전사만 넘어갑니다. 위키 규약이 두 곳에 있으면 어긋난다는 1장의 교훈이 여기에도 적용됩니다.</p>
+      </div>
+    </div>
   </div>
   <aside class="notes">
-    <p>internal/ 디렉토리는 Go 언어가 외부 import를 컴파일 시점에 막는 자리라, 내부 구조에 남이 의존할 수 없습니다. voice/가 루트의 internal/(모델 내려받기, 용어 사전)을 쓰는 것은 허용됩니다. 규칙이 저장소가 아니라 디렉토리 위치를 보기 때문입니다.</p>
-    <p>모듈 1의 직접 의존은 다섯입니다. goccy/go-yaml(순서 보존 파싱), cobra(CLI), goldmark(serve 렌더), MCP 공식 SDK, hugot(임베딩 추론). MCP를 직접 구현하지 않은 기준은 "남의 규약은 소유해서 얻는 것이 없다"(ADR 0043)입니다.</p>
+    <p>내부 패키지 디렉토리는 Go 언어가 외부 import를 컴파일 시점에 막는 자리라 내부 구조에 남이 의존할 수 없습니다. 전사기가 루트의 내부 패키지(모델 내려받기, 용어 사전)를 쓰는 것은 허용됩니다. 규칙이 저장소가 아니라 디렉토리 위치를 보기 때문입니다.</p>
+    <p>위키 엔진의 직접 의존은 다섯입니다. 순서 보존 YAML 파서, CLI 프레임워크, 마크다운 렌더러, MCP 공식 SDK, 임베딩 추론 라이브러리. MCP를 직접 구현하지 않은 기준은 남의 규약은 소유해서 얻는 것이 없다는 것입니다(ADR 0043).</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="2">
   <div class="in">
-    <h2>빌드와 배포: 러너 하나 대 러너 넷</h2>
-    <p class="quote">같은 저장소의 두 모듈이 완전히 다른 방식으로 배포됩니다. 그 차이는 전부 CGO 하나에서 나옵니다.</p>
-    <svg class="fig" viewBox="0 0 1300 460" aria-label="코어는 리눅스 러너 하나에서 여섯 플랫폼을 교차 빌드하고, voice는 플랫폼마다 자기 러너에서 빌드한다" style="max-width:1300px;margin:0 auto">
-      <defs><marker id="g5" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
-      <g class="a"><rect class="box" x="20" y="30" width="230" height="70" rx="10"/><text class="lbl s" x="135" y="58" text-anchor="middle" font-weight="700">v* 태그 푸시</text><text class="lbl s" x="135" y="80" text-anchor="middle">태그가 곧 버전. 수동 실행 없음</text></g>
-      <g class="a d1"><rect class="box acc" x="310" y="30" width="330" height="130" rx="10"/><text class="lbl s" x="475" y="55" text-anchor="middle" font-weight="700">engram: goreleaser 잡 하나 (리눅스 러너)</text><text class="lbl s" x="475" y="79" text-anchor="middle">CGO_ENABLED=0 이라 교차 빌드가 성립</text><text class="lbl s" x="475" y="100" text-anchor="middle">-trimpath (개인 경로가 바이너리에 안 박히게)</text><text class="lbl s" x="475" y="121" text-anchor="middle">아카이브 6개 + checksums.txt(sha256)</text><text class="lbl s" x="475" y="142" text-anchor="middle">Homebrew tap 갱신 (배포 키)</text></g>
-      <path class="ln draw" d="M250 65 L 305 65" marker-end="url(#g5)"/>
-      <path class="ln draw d1" d="M640 95 L 695 95" marker-end="url(#g5)"/>
-      <g class="a d2">
-        <g class="lbl s">
-          <rect class="box acc" x="700" y="30" width="180" height="38" rx="8"/><text x="790" y="54" text-anchor="middle">windows / amd64  tier 1</text>
-          <rect class="box acc" x="890" y="30" width="180" height="38" rx="8"/><text x="980" y="54" text-anchor="middle">darwin / arm64  tier 1</text>
-          <rect class="box" x="1080" y="30" width="180" height="38" rx="8"/><text x="1170" y="54" text-anchor="middle">darwin / amd64</text>
-          <rect class="box" x="700" y="76" width="180" height="38" rx="8"/><text x="790" y="100" text-anchor="middle">linux / amd64</text>
-          <rect class="box" x="890" y="76" width="180" height="38" rx="8"/><text x="980" y="100" text-anchor="middle">linux / arm64</text>
-          <rect class="box" x="1080" y="76" width="180" height="38" rx="8"/><text x="1170" y="100" text-anchor="middle">windows / arm64</text>
-        </g>
-        <text class="lbl s" x="980" y="140" text-anchor="middle" fill="var(--mute)">tier 1 실패만 릴리스를 막는다. 나머지는 best effort (ADR 0007)</text>
-      </g>
-      <g class="a d3"><rect class="box warn" x="310" y="210" width="330" height="120" rx="10"/><text class="lbl s" x="475" y="235" text-anchor="middle" font-weight="700">voice: 플랫폼마다 자기 러너 (package.sh)</text><text class="lbl s" x="475" y="259" text-anchor="middle">CGO는 대상 플랫폼의 C 툴체인을 요구하고</text><text class="lbl s" x="475" y="280" text-anchor="middle">sherpa-onnx가 플랫폼별 모듈로 미리 빌드되어</text><text class="lbl s" x="475" y="301" text-anchor="middle">한 러너 교차 빌드가 성립하지 않는다</text><text class="lbl s" x="475" y="322" text-anchor="middle">바이너리 + lib/ 를 함께 싼다 (rpath 처리 포함)</text></g>
-      <path class="ln draw d2" d="M135 100 C 135 200, 220 260, 305 268" marker-end="url(#g5)"/>
-      <path class="ln draw d3" d="M640 270 L 695 270" marker-end="url(#g5)"/>
-      <g class="a d4">
-        <g class="lbl s">
-          <rect class="box" x="700" y="215" width="180" height="38" rx="8"/><text x="790" y="239" text-anchor="middle">darwin / arm64</text>
-          <rect class="box" x="890" y="215" width="180" height="38" rx="8"/><text x="980" y="239" text-anchor="middle">darwin / amd64</text>
-          <rect class="box" x="700" y="261" width="180" height="38" rx="8"/><text x="790" y="285" text-anchor="middle">linux / amd64</text>
-          <rect class="box" x="890" y="261" width="180" height="38" rx="8"/><text x="980" y="285" text-anchor="middle">linux / arm64</text>
-          <rect class="box dim" x="1080" y="215" width="180" height="84" rx="8"/><text x="1170" y="248" text-anchor="middle">windows 없음</text><text x="1170" y="270" text-anchor="middle" fill="var(--mute)">mingw 툴체인이 러너에</text><text x="1170" y="288" text-anchor="middle" fill="var(--mute)">있는지 재지 않았다</text>
-        </g>
-        <text class="lbl s" x="980" y="325" text-anchor="middle" fill="var(--mute)">대상을 하나 늘리는 비용이 코어는 빌드 한 번, voice는 러너 하나다 (ADR 0084)</text>
-      </g>
-      <g class="a d5">
-        <rect class="box" x="20" y="380" width="1240" height="60" rx="10"/>
-        <text class="lbl s" x="650" y="404" text-anchor="middle" font-weight="700">이 구조의 원인 하나로 전부 설명된다: CGO를 켜는 순간 "리눅스 러너 하나에서 전부"가 무너진다</text>
-        <text class="lbl s" x="650" y="426" text-anchor="middle">그래서 코어는 22배 느린 순수 Go 임베딩을 감수하고, 전사처럼 C가 불가피한 것은 모듈과 릴리스 경로를 통째로 분리했다</text>
-      </g>
-    </svg>
+    <h2>그 조건이 배포를 정한다 <span class="tag acc">비용은 자리를 옮긴다</span></h2>
+    <p class="quote">같은 저장소의 두 모듈이 완전히 다른 방식으로 배포됩니다. 그 차이는 전부 C 의존 하나에서 나옵니다.</p>
+    <table>
+      <tr><th style="width:20%"></th><th style="width:40%">위키 엔진</th><th>전사기</th></tr>
+      <tr><td><strong>빌드</strong></td><td>러너 하나에서 여섯 플랫폼 교차 빌드</td><td>플랫폼마다 자기 러너. C 툴체인과 미리 빌드된 라이브러리가 대상 플랫폼을 요구한다</td></tr>
+      <tr><td><strong>대상</strong></td><td>윈도우와 맥과 리눅스 각 두 아키텍처</td><td>맥과 리눅스만. 윈도우는 툴체인 가용성을 재지 않았다</td></tr>
+      <tr><td><strong>산출물</strong></td><td>정적 바이너리 하나. 아카이브와 체크섬</td><td>바이너리에 라이브러리 디렉토리를 함께 싼다</td></tr>
+      <tr><td><strong>대상 하나 늘리는 비용</strong></td><td>빌드 한 번</td><td>러너 하나</td></tr>
+    </table>
+    <div class="cols" style="margin-top:.8em">
+      <div>
+        <div class="card acc"><h3>이 구조의 원인 하나</h3><p>C 의존을 켜는 순간 러너 하나에서 전부라는 조건이 무너집니다. 그래서 엔진은 <strong>스무 배 넘게 느린 순수 Go 임베딩을 감수하고</strong>, 전사처럼 C가 불가피한 것은 모듈과 릴리스 경로를 통째로 분리했습니다.</p></div>
+      </div>
+      <div>
+        <p class="small"><strong>실패 등급을 나눕니다.</strong> 실사용 대상인 조합의 실패만 릴리스를 막고 나머지는 최선 노력입니다. 모든 플랫폼을 같은 무게로 다루면 쓰지 않는 조합 때문에 릴리스가 멈춥니다(ADR 0007).</p>
+        <p class="small" style="margin-top:.5em">아키텍처가 둘뿐인 이유는 실사용 대상이 그 둘이기 때문입니다. Go가 지원하는 다른 아키텍처는 소스 빌드로 열려 있습니다.</p>
+      </div>
+    </div>
   </div>
   <aside class="notes">
-    <p>CI는 별개 워크플로로 매 커밋마다 빌드, 정적 검사, 시험, 교차 빌드를 돌리고 Windows 러너에서 실제 전사까지 측정합니다(ADR 0086, 0093). 릴리스 워크플로는 v* 태그에만 반응하고 contents 쓰기 권한만 갖습니다.</p>
-    <p>goarch에 amd64와 arm64 둘만 있는 이유는 실사용 대상(사내 Windows, Apple Silicon, 리눅스 서버)이 그 둘이기 때문입니다. Go가 지원하는 다른 아키텍처는 소스 빌드로 열려 있습니다.</p>
+    <p>릴리스는 버전 태그를 밀 때만 돕니다. 빌드 시 개인 기계의 경로가 바이너리에 박히지 않게 하는 플래그를 넣고, 아카이브와 함께 체크섬 파일을 올리며, 배포 경로를 갱신합니다(ADR 0042).</p>
+    <p>임베딩을 순수 Go로 두는 대가는 5장에서 구체적인 값과 함께 다룹니다. 여기서는 그 선택이 이 표 전체를 성립시키는 조건이라는 것만 짚습니다.</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="2">
   <div class="in">
-    <h2>계층: 파일이 진실이고, 아래로 갈수록 도구다</h2>
-    <p class="quote">패키지 의존은 이 그림의 아래에서 위로만 향합니다. 위키 파일이 꼭대기의 진실원이고, cli는 그것을 다루는 가장 바깥 도구일 뿐입니다.</p>
-    <svg class="fig" viewBox="0 0 1300 380" aria-label="맨 위가 위키 파일 진실원, 그 아래 기반 패키지, 그 아래 기능 패키지, 맨 아래 cli. 호출은 아래에서 위로 올라간다" style="max-width:1300px;margin:0 auto">
+    <h2>계층: 파일이 진실이고 아래로 갈수록 도구다 <span class="tag acc">판정은 한 벌</span></h2>
+    <p class="quote">패키지 의존은 아래에서 위로만 향합니다. 위키 파일이 꼭대기의 진실원이고, 커맨드는 그것을 다루는 가장 바깥 도구일 뿐입니다.</p>
+    <svg class="fig" viewBox="0 0 1300 320" aria-label="맨 위가 위키 파일 진실원이고 그 아래 기반 계층과 기능 계층이 있으며 맨 아래 커맨드 계층이 위를 부른다" style="max-width:1240px;margin:0 auto">
       <defs><marker id="g6" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
-      <g class="a"><rect class="box acc" x="20" y="20" width="1260" height="55" rx="10"/><text class="lbl" x="650" y="43" text-anchor="middle" font-weight="800">위키 파일 (진실원)   *.md   engram.yaml   engram-state.yaml   |   .engram/ 캐시</text><text class="lbl s" x="650" y="65" text-anchor="middle">사용자와 다른 도구도 직접 고칠 수 있다. 도구가 파일 접근을 독점하지 않는다</text></g>
-      <g class="a d1"><rect class="box" x="20" y="100" width="1260" height="55" rx="10"/><text class="lbl" x="650" y="123" text-anchor="middle"><tspan font-weight="700">기반</tspan>   doc 파싱과 직렬화   walk 순회   graph 링크와 정규화   config 프리셋과 임계값   state   i18n</text><text class="lbl s" x="650" y="145" text-anchor="middle">파일을 읽고 쓰는 유일한 통로. 여기 위로는 파일을 직접 만지지 않는다</text></g>
+      <g class="a"><rect class="box acc" x="20" y="20" width="1260" height="58" rx="10"/><text class="lbl" x="650" y="46" text-anchor="middle" font-weight="800">위키 파일 (진실원)</text><text class="lbl s" x="650" y="68" text-anchor="middle">사용자와 다른 도구도 직접 고칠 수 있다. 도구가 파일 접근을 독점하지 않는다</text></g>
+      <g class="a d1"><rect class="box" x="20" y="98" width="1260" height="58" rx="10"/><text class="lbl" x="650" y="124" text-anchor="middle"><tspan font-weight="700">기반</tspan>  파싱과 직렬화, 순회, 링크 그래프, 설정, 상태</text><text class="lbl s" x="650" y="146" text-anchor="middle">파일을 읽고 쓰는 유일한 통로. 여기 위로는 파일을 직접 만지지 않는다</text></g>
       <g class="a d2"><g class="lbl s">
-        <rect class="box" x="20" y="180" width="238" height="70" rx="8"/><text x="139" y="205" text-anchor="middle" font-weight="700">판정</text><text x="139" y="226" text-anchor="middle">lint(규칙과 게이트)</text><text x="139" y="243" text-anchor="middle">doctor  expose  secret</text>
-        <rect class="box" x="276" y="180" width="238" height="70" rx="8"/><text x="395" y="205" text-anchor="middle" font-weight="700">쓰기</text><text x="395" y="226" text-anchor="middle">wiki(생성, 이동, 파생)</text><text x="395" y="243" text-anchor="middle">migrate  gitdate</text>
-        <rect class="box" x="532" y="180" width="238" height="70" rx="8"/><text x="651" y="205" text-anchor="middle" font-weight="700">검색</text><text x="651" y="226" text-anchor="middle">index(토큰, BM25)  chunk</text><text x="651" y="243" text-anchor="middle">embed  glossary</text>
-        <rect class="box" x="788" y="180" width="238" height="70" rx="8"/><text x="907" y="205" text-anchor="middle" font-weight="700">재발견</text><text x="907" y="226" text-anchor="middle">resurface  bridge</text><text x="907" y="243" text-anchor="middle">digest  status</text>
-        <rect class="box" x="1044" y="180" width="236" height="70" rx="8"/><text x="1162" y="205" text-anchor="middle" font-weight="700">내보내기</text><text x="1162" y="226" text-anchor="middle">serve  export  eject</text><text x="1162" y="243" text-anchor="middle">mcpserver  skills</text>
+        <rect class="box" x="20" y="176" width="245" height="56" rx="8"/><text x="142" y="200" text-anchor="middle" font-weight="700">판정</text><text x="142" y="221" text-anchor="middle">lint  게이트  노출  시크릿</text>
+        <rect class="box" x="279" y="176" width="245" height="56" rx="8"/><text x="401" y="200" text-anchor="middle" font-weight="700">쓰기</text><text x="401" y="221" text-anchor="middle">생성  이동  파생  마이그레이션</text>
+        <rect class="box" x="538" y="176" width="245" height="56" rx="8"/><text x="660" y="200" text-anchor="middle" font-weight="700">검색</text><text x="660" y="221" text-anchor="middle">토큰  색인  청크  임베딩</text>
+        <rect class="box" x="797" y="176" width="245" height="56" rx="8"/><text x="919" y="200" text-anchor="middle" font-weight="700">재발견</text><text x="919" y="221" text-anchor="middle">노후  연결  집계</text>
+        <rect class="box" x="1056" y="176" width="224" height="56" rx="8"/><text x="1168" y="200" text-anchor="middle" font-weight="700">내보내기</text><text x="1168" y="221" text-anchor="middle">웹  반출  MCP  eject</text>
       </g></g>
-      <g class="a d3"><rect class="box dim" x="20" y="275" width="1260" height="55" rx="10"/><text class="lbl" x="650" y="298" text-anchor="middle"><tspan font-weight="800">cli</tspan>   커맨드 29개. 인자를 파싱하고 출력을 다듬을 뿐, 판정은 전부 위를 부른다</text><text class="lbl s" x="650" y="320" text-anchor="middle">MCP 서버와 serve도 같은 자리에서 같은 위를 부른다. 진입점이 달라도 판정은 한 벌이다</text></g>
-      <path class="ln draw d3" d="M650 275 L 650 255" marker-end="url(#g6)"/><path class="ln draw d3" d="M650 178 L 650 160" marker-end="url(#g6)"/><path class="ln draw d3" d="M650 98 L 650 80" marker-end="url(#g6)"/>
-      <text class="lbl s a d4" x="650" y="360" text-anchor="middle" fill="var(--mute)">게이트, 고아, 노후, 노출 판정은 각각 함수 하나다. 두 벌이면 promote로 통과한 문서를 lint가 거절하거나 serve가 감춘 문서를 export가 내보내게 된다.</text>
+      <g class="a d3"><rect class="box dim" x="20" y="252" width="1260" height="58" rx="10"/><text class="lbl" x="650" y="278" text-anchor="middle"><tspan font-weight="800">커맨드</tspan>  인자를 파싱하고 출력을 다듬을 뿐, 판정은 전부 위를 부른다</text><text class="lbl s" x="650" y="300" text-anchor="middle">MCP 서버와 웹 뷰어도 같은 자리에서 같은 위를 부른다. 진입점이 달라도 판정은 한 벌이다</text></g>
+      <path class="ln draw d3" d="M650 252 L 650 234" marker-end="url(#g6)"/><path class="ln draw d3" d="M650 174 L 650 158" marker-end="url(#g6)"/><path class="ln draw d3" d="M650 96 L 650 80" marker-end="url(#g6)"/>
     </svg>
+    <p class="small mute" style="margin-top:.5em">게이트, 고아, 노후, 노출 판정은 각각 함수 하나입니다. 두 벌이면 promote로 통과한 문서를 lint가 거절하거나, 웹 뷰어가 감춘 문서를 반출이 내보내게 됩니다.</p>
   </div>
-  <aside class="notes"><p>화살표가 아래에서 위로만 향하는 것이 규칙입니다. 기능 패키지끼리는 서로 부르지 않고 기반을 공유합니다. 예외처럼 보이는 것(bridge가 index의 TF를 쓰는 것)도 index가 검색 계층의 기반 역할을 겸하는 것이지 역방향 의존이 아닙니다.</p></aside>
+  <aside class="notes"><p>화살표가 아래에서 위로만 향하는 것이 규칙입니다. 기능 계층끼리는 서로 부르지 않고 기반을 공유합니다. 예외처럼 보이는 것(재발견이 색인의 빈도 정보를 쓰는 것)도 색인이 검색 계층의 기반 역할을 겸하는 것이지 역방향 의존이 아닙니다.</p></aside>
 </section>
 
 <!-- ============ 3. frontmatter와 판정 ============ -->
@@ -862,149 +833,117 @@ updated: <span class="y">2026-11-30</span>
 <section class="slide chap dark" data-ch="4">
   <div class="in">
     <div class="kicker">4장</div>
-    <h1>검색: 토큰, BM25, 색인</h1>
-    <p class="lead">형태소 사전 없이 한국어를 검색하는 방법. 그 전에, 이 계산 결과들이 어디 저장되는지부터.</p>
+    <h1>검색: 사전 없이 한국어를</h1>
+    <p class="lead">형태소 사전 없이 조사 변화를 흡수하는 방법. 그리고 그 계산 결과가 어디 저장되고 낡으면 어떻게 되는가.</p>
   </div>
   <div class="num">4</div>
-  <aside class="notes"><p>근거: ADR 0010(bigram과 BM25 직접 구현), 0025(색인 저장), 0059(recall 후보 풀), 0061(필드 가중치). 외부 검색 라이브러리를 안 쓰는 이유는 랭킹을 소유해야 동등성 검증에 검색 순위를 넣을 수 있어서입니다. 재검토 조건은 문서 2000개 또는 색인이 원문의 5배로 못 박혀 있습니다.</p></aside>
+  <aside class="notes"><p>근거: ADR 0010(직접 구현), 0025(색인 저장), 0028(청킹), 0059(후보 풀), 0061(필드 가중치). 외부 검색 라이브러리를 쓰지 않는 이유는 순위를 소유해야 그것을 동등성 검증에 넣을 수 있기 때문입니다. 재검토 조건은 문서 수와 색인 크기로 못 박혀 있습니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="4">
   <div class="in">
-    <h2>저장소 세 층: 잃었을 때 무엇이 사라지는가</h2>
-    <p class="quote">검색으로 들어가기 전에 자리를 정합니다. 이 장과 다음 장이 다루는 색인과 벡터는 전부 가운데 층, 즉 버려도 되는 파생물입니다.</p>
-    <svg class="fig" viewBox="0 0 1300 470" aria-label="위키 파일이 진실원이고 .engram 캐시는 파생이며 engram-state.yaml만 사람의 판단이라 재생 불가">
-      <defs><marker id="gd" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
-      <g class="a">
-        <rect class="box acc" x="40" y="30" width="900" height="110" rx="12"/>
-        <text class="lbl" x="65" y="60" font-weight="700">위키 파일: 진실원</text>
-        <g class="lbl m"><text x="65" y="92">inbox/  sources/  context/  archive/  index.md  engram.yaml</text></g>
-        <text class="lbl s" x="65" y="120">전부 사람이 읽는 마크다운과 YAML. git이 지킨다. 이것을 잃으면 전부 잃는다</text>
-      </g>
-      <g class="draw d1"><path class="ln" d="M300 140 L 300 190" marker-end="url(#gd)"/><text class="lbl s" x="315" y="172">reindex, 0.1초</text></g>
-      <g class="draw d1"><path class="ln" d="M620 140 L 620 190" marker-end="url(#gd)"/><text class="lbl s" x="635" y="172">bridge, 문서당 12.6초</text></g>
-      <g class="a d2">
-        <rect class="box dim" x="40" y="195" width="900" height="140" rx="12"/>
-        <text class="lbl" x="65" y="225" font-weight="700">.engram/ 파생 캐시: 언제든 버려도 된다</text>
-        <rect class="box" x="65" y="245" width="260" height="70" rx="8"/><text class="lbl m" x="195" y="272" text-anchor="middle">index.json</text><text class="lbl s" x="195" y="295" text-anchor="middle">토큰 빈도와 문서 통계</text>
-        <rect class="box" x="345" y="245" width="260" height="70" rx="8"/><text class="lbl m" x="475" y="272" text-anchor="middle">vectors.json</text><text class="lbl s" x="475" y="295" text-anchor="middle">문서당 임베딩 벡터 하나</text>
-        <rect class="box" x="625" y="245" width="290" height="70" rx="8"/><text class="lbl m" x="770" y="272" text-anchor="middle">resurface.json</text><text class="lbl s" x="770" y="295" text-anchor="middle">다시 보여 준 기록</text>
-      </g>
-      <g class="a d3"><text class="lbl s" x="965" y="230" font-weight="700">파일에서 계산으로</text><text class="lbl s" x="965" y="250">파생되는 값이라</text><text class="lbl s" x="965" y="270">git이 추적하지 않는다.</text><text class="lbl s" x="965" y="290">지워지면 위 화살표가</text><text class="lbl s" x="965" y="310">다시 만든다</text></g>
-      <g class="a d4">
-        <rect class="box warn" x="40" y="365" width="900" height="85" rx="12"/>
-        <text class="lbl" x="65" y="395" font-weight="700">engram-state.yaml: 사람의 판단</text>
-        <text class="lbl s" x="65" y="420">bridge가 제안한 쌍을 사람이 기각한 기록. 어떤 계산도 이것을 다시 만들 수 없다.</text>
-        <text class="lbl s" x="65" y="438">그래서 캐시가 아니라 위키의 일부이고, git이 추적하며, 팀과 공유된다</text>
-      </g>
-      <g class="a d4"><text class="lbl s" x="965" y="400" fill="var(--rej)" font-weight="700">이 층만은 재생 불가</text><text class="lbl s" x="965" y="422">백업 우선순위가</text><text class="lbl s" x="965" y="442">여기서 갈린다</text></g>
-    </svg>
+    <h2>계산 결과는 어디 있나 <span class="tag acc">결정론</span></h2>
+    <p class="quote">검색으로 들어가기 전에 자리를 정합니다. 이 장과 다음 장이 만드는 색인과 벡터는 전부 가운데 층, 즉 버려도 되는 파생물입니다.</p>
+    <table>
+      <tr><th style="width:22%">층</th><th style="width:26%">무엇이 있나</th><th>잃으면</th></tr>
+      <tr style="background:var(--acc2)"><td><strong>위키 파일</strong><br><span class="small">진실원</span></td><td>마크다운 문서, 설정</td><td><strong>전부 잃는다.</strong> git이 지킨다</td></tr>
+      <tr><td><strong>파생 캐시</strong><br><span class="small">언제든 버려도 된다</span></td><td>검색 색인, 문서 벡터, 재노출 기록</td><td>다시 계산하면 된다. 색인은 즉시, 벡터는 문서당 십여 초. git이 추적하지 않는다</td></tr>
+      <tr style="background:var(--warn2)"><td><strong>판단 기록</strong><br><span class="small">재생 불가</span></td><td>연결 제안을 사람이 기각한 기록</td><td><strong>어떤 계산도 되살릴 수 없다.</strong> 그래서 캐시가 아니라 위키의 일부이고 git이 추적하며 팀과 공유된다</td></tr>
+    </table>
+    <p class="small mute" style="margin-top:.6em">두 층을 가르는 기준은 다시 계산할 수 있는가 하나입니다. 재노출 기록은 잃어도 같은 문서가 한 번 더 나올 뿐이라 캐시 쪽이고, 기각은 사람의 결정이라 판단 기록 쪽입니다. 백업 우선순위가 여기서 갈립니다.</p>
   </div>
-  <aside class="notes"><p>상태가 두 파일로 나뉘는 기준이 "다시 계산할 수 있는가"입니다. resurface의 노출 기록은 잃어도 같은 문서가 한 번 더 나올 뿐이라 캐시 쪽이고, 기각은 사람의 결정이라 상태 쪽입니다. 이 슬라이드가 4장에 있는 이유는 이제부터 나오는 색인과 벡터가 전부 가운데 층의 이야기이기 때문입니다.</p></aside>
+  <aside class="notes"><p>캐시 디렉토리는 gitignore 대상입니다. 지워도 다음 커맨드가 필요한 만큼 다시 만들고, 조회 커맨드는 색인이 없으면 메모리에 만들어 쓰고 저장하지 않습니다. 조회에 부작용이 없다는 것도 결정론의 일부입니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="4">
   <div class="in">
-    <h2>토크나이저: 문자 종류가 바뀌는 곳에서 가른다</h2>
-    <p class="quote">형태소 사전 없이 한국어를 검색하는 방법입니다. 문장 하나가 토큰이 되는 과정을 그대로 따라갑니다.</p>
-    <svg class="fig" viewBox="0 0 1300 480" aria-label="입력 문장이 구간으로 나뉘고 라틴 구간은 통짜와 조각, 한글 구간은 bigram 토큰이 되는 과정">
+    <h2>토크나이저: 문자 종류가 바뀌는 곳에서 가른다 <span class="tag acc">결정론</span></h2>
+    <p class="quote">사전이 없으니 사전 품질이 검색을 지배하지 않습니다. 문장 하나가 토큰이 되는 과정을 그대로 따라갑니다.</p>
+    <svg class="fig" viewBox="0 0 1300 285" aria-label="입력 문장이 문자 종류별 구간으로 나뉘고 라틴 구간은 통짜와 조각으로 한글 구간은 두 글자 토큰으로 바뀐다" style="max-width:1240px;margin:0 auto">
       <defs><marker id="ge" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
-      <text class="lbl m" x="650" y="40" text-anchor="middle" font-size="18">"min_wikilinks 게이트웨이를 조정"</text>
-      <text class="lbl s" x="650" y="64" text-anchor="middle" fill="var(--mute)">공백과 문장부호는 구분자일 뿐 토큰이 되지 않는다. 문자 종류가 바뀌는 경계에서 구간을 가른다</text>
-      <path class="ln draw" d="M420 75 L 260 105" marker-end="url(#ge)"/><path class="ln draw" d="M680 75 L 640 105" marker-end="url(#ge)"/><path class="ln draw" d="M800 75 L 990 105" marker-end="url(#ge)"/>
+      <text class="lbl m" x="650" y="34" text-anchor="middle" font-size="17">"min_wikilinks 게이트웨이를 조정"</text>
+      <text class="lbl s" x="650" y="58" text-anchor="middle" fill="var(--mute)">공백과 문장부호는 구분자일 뿐 토큰이 되지 않는다. 문자 종류가 바뀌는 경계에서 구간을 가른다</text>
+      <path class="ln draw" d="M480 70 L 290 100" marker-end="url(#ge)"/><path class="ln draw" d="M670 70 L 650 100" marker-end="url(#ge)"/><path class="ln draw" d="M800 70 L 1000 100" marker-end="url(#ge)"/>
       <g class="a d1">
-        <rect class="box" x="80" y="110" width="360" height="60" rx="10"/><text class="lbl m" x="260" y="137" text-anchor="middle">min_wikilinks</text><text class="lbl s" x="260" y="158" text-anchor="middle">라틴, 숫자, _- 구간</text>
-        <rect class="box" x="480" y="110" width="320" height="60" rx="10"/><text class="lbl m" x="640" y="137" text-anchor="middle">게이트웨이를</text><text class="lbl s" x="640" y="158" text-anchor="middle">한글 구간. 조사가 붙은 채로 온다</text>
-        <rect class="box" x="840" y="110" width="300" height="60" rx="10"/><text class="lbl m" x="990" y="137" text-anchor="middle">조정</text><text class="lbl s" x="990" y="158" text-anchor="middle">한글 구간</text>
+        <rect class="box" x="90" y="105" width="400" height="50" rx="10"/><text class="lbl m" x="290" y="127" text-anchor="middle">min_wikilinks</text><text class="lbl s" x="290" y="147" text-anchor="middle">라틴 구간</text>
+        <rect class="box" x="530" y="105" width="240" height="50" rx="10"/><text class="lbl m" x="650" y="127" text-anchor="middle">게이트웨이를</text><text class="lbl s" x="650" y="147" text-anchor="middle">한글 구간. 조사가 붙은 채로</text>
+        <rect class="box" x="810" y="105" width="400" height="50" rx="10"/><text class="lbl m" x="1010" y="127" text-anchor="middle">조정</text><text class="lbl s" x="1010" y="147" text-anchor="middle">한글 구간</text>
       </g>
-      <path class="ln draw d1" d="M260 170 L 260 205" marker-end="url(#ge)"/>
+      <path class="ln draw d1" d="M290 155 L 290 185" marker-end="url(#ge)"/>
+      <path class="ln draw d2" d="M650 155 L 650 185" marker-end="url(#ge)"/>
+      <path class="ln draw d3" d="M1010 155 L 1010 185" marker-end="url(#ge)"/>
       <g class="a d2">
-        <rect class="box acc" x="90" y="210" width="340" height="46" rx="8"/><text class="lbl m" x="260" y="238" text-anchor="middle">min_wikilinks</text>
-        <rect class="box" x="120" y="266" width="130" height="40" rx="8"/><text class="lbl m" x="185" y="291" text-anchor="middle">min</text>
-        <rect class="box" x="260" y="266" width="150" height="40" rx="8"/><text class="lbl m" x="335" y="291" text-anchor="middle">wikilinks</text>
-        <text class="lbl s" x="260" y="335" text-anchor="middle">소문자 통짜 토큰을 유지하고 _- 조각을 추가로 낸다.</text>
-        <text class="lbl s" x="260" y="354" text-anchor="middle" font-weight="700">식별자는 bigram으로 쪼개지 않는다</text>
-        <text class="lbl s" x="260" y="373" text-anchor="middle" fill="var(--mute)">쪼개지면 기술 문서 검색이 무너진다</text>
+        <rect class="box acc" x="130" y="190" width="320" height="40" rx="8"/><text class="lbl m" x="290" y="216" text-anchor="middle">min_wikilinks</text>
+        <rect class="box" x="150" y="238" width="130" height="36" rx="8"/><text class="lbl m" x="215" y="262" text-anchor="middle">min</text>
+        <rect class="box" x="292" y="238" width="150" height="36" rx="8"/><text class="lbl m" x="367" y="262" text-anchor="middle">wikilinks</text>
       </g>
-      <path class="ln draw d2" d="M640 170 L 640 205" marker-end="url(#ge)"/>
       <g class="a d3">
-        <rect class="box acc" x="490" y="210" width="66" height="40" rx="8"/><text class="lbl m" x="523" y="235" text-anchor="middle">게이</text>
-        <rect class="box acc" x="564" y="210" width="66" height="40" rx="8"/><text class="lbl m" x="597" y="235" text-anchor="middle">이트</text>
-        <rect class="box acc" x="638" y="210" width="66" height="40" rx="8"/><text class="lbl m" x="671" y="235" text-anchor="middle">트웨</text>
-        <rect class="box acc" x="712" y="210" width="66" height="40" rx="8"/><text class="lbl m" x="745" y="235" text-anchor="middle">웨이</text>
-        <rect class="box" x="490" y="258" width="66" height="40" rx="8"/><text class="lbl m" x="523" y="283" text-anchor="middle">이를</text>
-        <text class="lbl s" x="640" y="335" text-anchor="middle">한글은 문자 bigram. "게이트웨이"와 "게이트웨이를"이</text>
-        <text class="lbl s" x="640" y="354" text-anchor="middle" font-weight="700">게이, 이트, 트웨, 웨이 네 토큰을 공유해 조사 변화를 흡수한다</text>
-        <text class="lbl s" x="640" y="373" text-anchor="middle" fill="var(--mute)">사전이 없으니 사전 품질이 검색을 지배하지 않는다</text>
+        <rect class="box acc" x="500" y="190" width="70" height="40" rx="8"/><text class="lbl m" x="535" y="216" text-anchor="middle">게이</text>
+        <rect class="box acc" x="578" y="190" width="70" height="40" rx="8"/><text class="lbl m" x="613" y="216" text-anchor="middle">이트</text>
+        <rect class="box acc" x="656" y="190" width="70" height="40" rx="8"/><text class="lbl m" x="691" y="216" text-anchor="middle">트웨</text>
+        <rect class="box acc" x="734" y="190" width="70" height="40" rx="8"/><text class="lbl m" x="769" y="216" text-anchor="middle">웨이</text>
+        <rect class="box" x="500" y="238" width="70" height="36" rx="8"/><text class="lbl m" x="535" y="262" text-anchor="middle">이를</text>
       </g>
-      <path class="ln draw d3" d="M990 170 L 990 205" marker-end="url(#ge)"/>
       <g class="a d4">
-        <rect class="box acc" x="957" y="210" width="66" height="40" rx="8"/><text class="lbl m" x="990" y="235" text-anchor="middle">조정</text>
-        <text class="lbl s" x="990" y="278" text-anchor="middle">2글자 구간은 bigram 하나,</text>
-        <text class="lbl s" x="990" y="297" text-anchor="middle">1글자 구간은 그 글자 하나</text>
-      </g>
-      <g class="a d5">
-        <rect class="box" x="150" y="400" width="200" height="44" rx="8"/><text class="lbl s" x="250" y="427" text-anchor="middle" font-weight="700">search의 질의</text>
-        <rect class="box" x="370" y="400" width="200" height="44" rx="8"/><text class="lbl s" x="470" y="427" text-anchor="middle" font-weight="700">reindex의 색인</text>
-        <rect class="box" x="590" y="400" width="200" height="44" rx="8"/><text class="lbl s" x="690" y="427" text-anchor="middle" font-weight="700">bridge의 단어 축</text>
-        <path class="ln" d="M350 422 L 365 422" marker-end="url(#ge)"/><path class="ln" d="M570 422 L 585 422" marker-end="url(#ge)"/>
-        <rect class="box warn" x="830" y="400" width="330" height="44" rx="8"/><text class="lbl s" x="995" y="420" text-anchor="middle" font-weight="700">토크나이저는 한 벌이다</text><text class="lbl s" x="995" y="436" text-anchor="middle">어긋나면 어느 쪽 결과도 믿을 수 없게 된다</text>
-        <path class="ln" d="M790 422 L 825 422" marker-end="url(#ge)"/>
+        <rect class="box acc" x="975" y="190" width="70" height="40" rx="8"/><text class="lbl m" x="1010" y="216" text-anchor="middle">조정</text>
       </g>
     </svg>
+    <div class="cols" style="margin-top:.4em">
+      <div><p class="small"><strong>식별자는 두 글자로 쪼개지 않습니다.</strong> 통짜 토큰을 유지하고 결합 문자로 나뉜 조각을 더합니다. 쪼개면 기술 문서 검색이 무너집니다.</p></div>
+      <div><p class="small"><strong>한글은 문자 두 개씩 겹쳐 자릅니다.</strong> 조사가 붙어도 앞의 네 토큰을 공유하므로 변화를 흡수합니다.</p></div>
+    </div>
+    <p class="small mute" style="margin-top:.4em">질의와 색인과 재발견의 단어 축이 <strong>같은 토크나이저 한 벌</strong>을 씁니다. 어긋나면 어느 쪽 결과도 믿을 수 없게 됩니다.</p>
   </div>
-  <aside class="notes"><p>구현은 internal/index/tokenize.go의 100줄이 전부이고 정규식을 쓰지 않습니다. 유니코드 Hangul 블록 검사와 rune 단위 순회입니다. 결합 문자 _와 -는 라틴 구간 안에서만 살아남고 한글 사이에서는 구분자입니다.</p></aside>
+  <aside class="notes"><p>구현은 백 줄 남짓이고 정규식을 쓰지 않습니다. 유니코드 한글 블록 검사와 문자 단위 순회입니다. 두 글자 구간은 토큰 하나, 한 글자 구간은 그 글자 하나가 됩니다. 결합 문자는 라틴 구간 안에서만 살아남고 한글 사이에서는 구분자입니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="4">
   <div class="in">
-    <h2>BM25: 계산되는 식 그대로</h2>
-    <p class="quote">점수는 이 식 그대로 계산됩니다. 세 항이 각각 무엇을 묻는지 알면 검색 결과의 순서를 해석할 수 있습니다.</p>
+    <h2>점수를 읽는 법 <span class="tag acc">결정론</span></h2>
+    <p class="quote">순위 계산은 표준 공식 그대로입니다. 세 항이 각각 무엇을 묻는지 알면 검색 결과의 순서를 해석할 수 있고, 거기서 사용 규칙이 따라 나옵니다.</p>
     <div class="cols">
       <div>
-        <div class="formula">score(q, d) = 시그마[t in q]  idf(t) x tf(t,d) x (k1 + 1)
-                              / ( tf(t,d) + k1 x (1 - b + b x len(d)/avglen) )
+        <table>
+          <tr><th style="width:34%">항</th><th>묻는 것</th></tr>
+          <tr><td><strong>희소성</strong></td><td>그 낱말이 드문가. 모든 문서에 있는 낱말은 0에 가깝게 눌린다</td></tr>
+          <tr><td><strong>빈도, 포화</strong></td><td>많이 나오면 유리하되 포화한다. 백 번이 열 번의 열 배가 되지 않는다</td></tr>
+          <tr><td><strong>길이 보정</strong></td><td>긴 문서의 거품을 깎는다. 긴 문서는 아무 낱말이나 들어 있기 마련이라</td></tr>
+        </table>
+        <div class="formula" style="margin-top:.7em">필드 가중치     본문을 1로 둔 배수
+  제목    5        topics  3
+  tags    3        본문    1
 
-idf(t) = ln( 1 + (N - df(t) + 0.5) / (df(t) + 0.5) )
-
-k1 = 1.2, b = 0.75   표준값 고정. 튜닝 대상이 아니다
-N = 문서 수, df(t) = 토큰 t가 나오는 문서 수
-tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
-        <div class="formula">필드 가중치 (ADR 0061)      tf에 곱해져 들어간다
-  제목    5        본문   1
-  topics  3        tags   3
-  슬러그  색인 안 함. 제목에서 파생돼 중복이고, 문서마다
-          고유한 슬러그 토큰이 bridge 코사인을 무너뜨린다 (실측)</div>
+슬러그는 색인하지 않는다. 제목에서 파생되어
+중복이고, 문서마다 고유한 슬러그 토큰이
+재발견의 유사도를 무너뜨린다 (실측)</div>
       </div>
       <div>
-        <svg class="fig" viewBox="0 0 560 430" aria-label="BM25의 세 항이 각각 묻는 질문과 사용 규칙">
-          <g class="a"><rect class="box acc" x="20" y="20" width="520" height="70" rx="10"/><text class="lbl m" x="40" y="48">idf(t)</text><text class="lbl s" x="40" y="70" font-weight="700">그 낱말이 드문가.</text><text class="lbl s" x="200" y="70">모든 문서에 있는 낱말은 0에 가깝게 눌린다</text></g>
-          <g class="a d1"><rect class="box acc" x="20" y="105" width="520" height="70" rx="10"/><text class="lbl m" x="40" y="133">tf x (k1+1) / (tf + k1 x ...)</text><text class="lbl s" x="40" y="155" font-weight="700">많이 나오면 유리하되 포화한다.</text><text class="lbl s" x="270" y="155">100번이 10번의 10배가 되지 않는다</text></g>
-          <g class="a d2"><rect class="box acc" x="20" y="190" width="520" height="70" rx="10"/><text class="lbl m" x="40" y="218">1 - b + b x len(d)/avglen</text><text class="lbl s" x="40" y="240" font-weight="700">긴 문서의 거품을 깎는다.</text><text class="lbl s" x="250" y="240">긴 문서는 아무 낱말이나 들어 있기 마련이라</text></g>
-          <g class="a d3"><rect class="box warn" x="20" y="285" width="520" height="120" rx="10"/>
-            <text class="lbl s" x="40" y="313" font-weight="700">따름정리가 사용 규칙이 된다</text>
-            <text class="lbl s" x="40" y="337">점수의 절대값에는 뜻이 없다. 상한이 없고 위키가 자라면 같은 질의의</text>
-            <text class="lbl s" x="40" y="355">같은 문서 점수도 변한다. 같은 목록 안의 순서만 본다.</text>
-            <text class="lbl s" x="40" y="379">동점은 슬러그 오름차순. 같은 위키에 같은 질의면 언제나 같은 순서.</text>
-            <text class="lbl s" x="40" y="397">이 결정론 위에 골든 비교와 동등성 검증이 얹힌다</text>
-          </g>
-        </svg>
+        <div class="card warn"><h3>따름정리가 사용 규칙이 된다</h3>
+          <p><strong>점수의 절대값에는 뜻이 없습니다.</strong> 상한이 없고, 위키가 자라면 같은 질의의 같은 문서 점수도 변합니다. 같은 목록 안의 순서만 보십시오.</p>
+          <p style="margin-top:.5em"><strong>동점은 슬러그 오름차순.</strong> 같은 위키에 같은 질의면 언제나 같은 순서입니다. 이 결정론 위에 골든 비교와 동등성 검증이 얹힙니다.</p>
+        </div>
+        <div class="card" style="margin-top:.7em"><h3>search와 recall의 분리</h3>
+          <p><strong>search</strong>는 문서 순위입니다. 사람이 열어 볼 목록이죠.</p>
+          <p><strong>recall</strong>은 헤딩 단위 조각의 원문과 출처와 줄 범위입니다. 에이전트가 인용할 재료입니다.</p>
+          <p class="small mute" style="margin-top:.4em">청킹은 헤딩이 경계이고 헤딩 없는 문서는 통째로 한 조각입니다. recall의 후보 풀은 요청 개수와 독립이라 개수를 바꿔도 상위 결과가 흔들리지 않습니다.</p>
+        </div>
       </div>
     </div>
   </div>
   <aside class="notes">
-    <p>제목 낱말의 실효 가중치는 Title+Body입니다. 제목이 본문 첫 헤딩에서 오고 헤딩을 본문에서 걷어내지 않기 때문이며, 주석에 명시된 의도된 동작입니다.</p>
-    <p>search와 recall의 분리: search는 문서 순위(사람이 열 목록), recall은 헤딩 단위 청크의 원문과 슬러그, 줄 범위(에이전트가 인용할 재료)입니다. 청킹은 ## 이하 헤딩이 경계이고 헤딩 없는 문서는 통째로 한 청크입니다(ADR 0028). recall의 후보 풀은 limit와 독립이라 limit를 바꿔도 상위 결과가 흔들리지 않습니다(ADR 0059).</p>
+    <p>상수는 표준값으로 고정하고 튜닝 대상으로 두지 않습니다. 위키마다 다른 값이 되면 순위가 위키마다 달라져 동등성 검증의 비교 축이 사라집니다.</p>
+    <p>제목 낱말의 실효 가중치는 제목과 본문을 더한 값입니다. 제목이 본문 첫 헤딩에서 오고 헤딩을 본문에서 걷어내지 않기 때문이며, 주석에 명시된 의도된 동작입니다.</p>
   </aside>
 </section>
 
-<section class="slide" data-ch="4">
+<section class="slide appx" data-ch="4">
   <div class="in">
-    <h2>index.json: 실제 형식과 신선도 판정</h2>
+    <span class="appxtag">덧붙임</span>
+    <h2>색인 파일의 형식과 신선도 판정</h2>
     <p class="quote">색인은 사람이 열어 볼 수 있는 JSON 하나입니다. 낡았는지의 판정과 낡았을 때의 행동까지가 설계입니다.</p>
     <div class="cols">
       <div>
-<pre class="code">// .engram/index.json (사람이 열어 볼 수 있는 JSON)
+<pre class="code"><span class="c">// .engram/index.json</span>
 {
   "schemaVersion": 2,
   "docs": [
@@ -1012,39 +951,30 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
       "path": "context/게이트웨이-조사.md",
       "slug": "게이트웨이-조사",
       "title": "LLM 게이트웨이 조사",
-      "tf": { "게이": 6, "이트": 6, "gateway": 3, ... },
-      "length": 154,          // 가중 빈도 합
-      "size": 1284,           // 신선도 대조용
+      "tf": { "게이": 6, "gateway": 3, ... },
+      "length": 154,      <span class="c">// 가중 빈도 합</span>
+      "size": 1284,       <span class="c">// 신선도 대조용</span>
       "modTime": 1755847200000000000
     }, ...
   ],
   "avgLength": 121.4,
   "df": { "게이": 3, "gateway": 2, ... }
 }</pre>
-        <p class="small mute" style="margin-top:.4em">색인 대상은 제목, 본문, topics, tags뿐이다. 나머지 프론트매터는 검색어가 아니라 판정 대상이고, 무엇을 감출지는 색인이 아니라 expose가 정한다</p>
+        <p class="small mute" style="margin-top:.4em">색인 대상은 제목, 본문, topics, tags뿐입니다. 나머지 머리말은 검색어가 아니라 판정 대상이고, 무엇을 감출지는 색인이 아니라 노출 판정이 정합니다.</p>
       </div>
       <div>
-        <svg class="fig" viewBox="0 0 560 430" aria-label="디스크 상태와 색인 기록을 대조해 신선도를 판정하고 낡아도 검색을 계속하는 흐름">
-          <defs><marker id="gg" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
-          <g class="a"><rect class="box" x="20" y="20" width="240" height="64" rx="10"/><text class="lbl s" x="140" y="45" text-anchor="middle" font-weight="700">디스크의 지금</text><text class="lbl s" x="140" y="66" text-anchor="middle">경로 집합, 크기, 수정 시각</text></g>
-          <g class="a"><rect class="box" x="300" y="20" width="240" height="64" rx="10"/><text class="lbl s" x="420" y="45" text-anchor="middle" font-weight="700">index.json에 기록된 값</text><text class="lbl s" x="420" y="66" text-anchor="middle">같은 세 가지</text></g>
-          <g class="draw"><path class="ln" d="M140 84 L 250 130" marker-end="url(#gg)"/><path class="ln" d="M420 84 L 310 130" marker-end="url(#gg)"/></g>
-          <g class="a d1"><rect class="box dim" x="200" y="135" width="160" height="44" rx="10"/><text class="lbl s" x="280" y="162" text-anchor="middle" font-weight="700">전부 같은가</text></g>
-          <path class="ln draw d1" d="M240 179 L 140 215" marker-end="url(#gg)"/><g class="a d2"><rect class="box ok" x="20" y="220" width="240" height="56" rx="10"/><text class="lbl s" x="140" y="243" text-anchor="middle" font-weight="700">같다: 그대로 검색</text><text class="lbl s" x="140" y="263" text-anchor="middle">시계는 읽지 않는다. 결정론</text></g>
-          <path class="ln draw d2" d="M320 179 L 420 215" marker-end="url(#gg)"/><g class="a d3"><rect class="box warn" x="300" y="220" width="240" height="56" rx="10"/><text class="lbl s" x="420" y="243" text-anchor="middle" font-weight="700">다르다: 경고 후 계속</text><text class="lbl s" x="420" y="263" text-anchor="middle">낡은 색인이 검색 중단보다 낫다</text></g>
-          <g class="a d4">
-            <rect class="box acc" x="20" y="316" width="150" height="44" rx="8"/><text class="lbl s" x="95" y="343" text-anchor="middle" font-weight="700">reindex</text>
-            <path class="ln acc" d="M170 338 L 230 338" marker-end="url(#gg)"/><text class="lbl s" x="200" y="330" text-anchor="middle">쓴다</text>
-            <rect class="box" x="235" y="316" width="140" height="44" rx="8"/><text class="lbl m" x="305" y="343" text-anchor="middle">index.json</text>
-            <path class="ln dash" d="M440 338 L 380 338" marker-end="url(#gg)"/><text class="lbl s" x="412" y="330" text-anchor="middle">읽기만</text>
-            <rect class="box" x="445" y="316" width="95" height="44" rx="8"/><text class="lbl s" x="492" y="336" text-anchor="middle">search recall</text><text class="lbl s" x="492" y="352" text-anchor="middle">backlinks</text>
-          </g>
-          <g class="a d5"><text class="lbl s" x="280" y="400" text-anchor="middle">쓰는 커맨드는 reindex 하나. 색인이 없으면 조회 커맨드는</text><text class="lbl s" x="280" y="420" text-anchor="middle">메모리에 만들어 쓰고 저장하지 않는다. 조회는 부작용이 없다</text></g>
-        </svg>
+        <table>
+          <tr><th style="width:30%">상황</th><th>행동</th></tr>
+          <tr><td>디스크와 기록이 같다</td><td>그대로 검색한다. 시계를 읽지 않는다</td></tr>
+          <tr><td>경로, 크기, 수정 시각 중 하나라도 다르다</td><td><strong>경고하고 계속한다.</strong> 낡은 색인이 검색 중단보다 낫다</td></tr>
+          <tr><td>색인이 아예 없다</td><td>메모리에 만들어 쓰고 저장하지 않는다</td></tr>
+        </table>
+        <p class="small" style="margin-top:.7em"><strong>쓰는 커맨드는 하나뿐입니다.</strong> 색인을 만드는 커맨드만 파일을 쓰고, 검색과 회수와 백링크는 읽기만 합니다. 조회에 부작용이 없어야 같은 질의를 몇 번 돌려도 결과가 같습니다.</p>
+        <p class="small mute" style="margin-top:.5em">신선도 판정이 시계를 읽지 않는 것도 결정론의 일부입니다. 십 분 지났으면 낡음 같은 시각 비교는 실행 시점마다 답이 달라져 골든 비교를 깹니다.</p>
       </div>
     </div>
   </div>
-  <aside class="notes"><p>JSON인 이유는 규모입니다. 수백에서 2000 문서에서 이진 형식의 이득이 없고, 사람이 열어 디버깅할 수 있는 값이 더 큽니다. 신선도 판정이 시계를 읽지 않는 것도 결정론의 일부입니다. "10분 지났으면 낡음" 같은 시각 비교는 실행 시점마다 답이 달라져 골든 비교를 깹니다.</p></aside>
+  <aside class="notes"><p>JSON인 이유는 규모입니다. 수백에서 수천 문서 범위에서 이진 형식의 이득이 없고, 사람이 열어 디버깅할 수 있는 값이 더 큽니다. 스키마 버전은 가중치가 바뀌면 올립니다. 같은 문서의 빈도 값이 달라지므로 옛 색인을 그대로 쓰면 순위가 섞입니다.</p></aside>
 </section>
 
 <!-- ============ 5. 임베딩 ============ -->
