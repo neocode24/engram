@@ -59,9 +59,26 @@ go test ./harness -update
 | `fixtures/golden-wiki/` | 고정 입력 위키. 손으로 관리한다. 사례표는 안쪽 README |
 | `golden/` | lint 출력 스냅샷. `go test ./harness -update` 로 재생성 |
 | `lint_golden_test.go` | 골든 비교 러너 |
+| `docs/` | 문서의 정량 주장을 실행 결과와 대조한다(ADR 0096) |
 | `upstream/` | 사본으로 고정한 upstream 규칙 명세. **손으로 고치지 않는다** |
 | `upstream.lock` | vendoring 시점의 upstream 커밋 해시와 파일 목록 |
 | `parity/` | upstream 스크립트와의 출력 비교 러너 |
+
+## 문서 대조
+
+`docs/` 는 문서가 코드에 대해 말하는 수를 실행 결과와 맞춘다. 커맨드 수와
+목록은 `--help` 가, lint 규칙 수는 `rules show` 가, ADR 색인의 번호와
+날짜와 상태는 `docs/decisions/` 의 frontmatter 가 진실원이다.
+
+특정 시점의 기록이라 지금 코드와 어긋나도 되는 문서는 첫 줄에 표시를 단다.
+
+```
+<!-- engram:record as-of=2026-08-17 -->
+```
+
+살아 있는 문서가 완료 기록을 함께 품는 자리는 그 줄에 `당시`, `시절`,
+`무렵`, `그때` 를 적어 문장 단위로 면제한다. 두 장치 다 남용하면 검사가
+비므로, 값을 고칠 수 있으면 표시 대신 값을 고친다.
 
 ## upstream 명세 동기화
 

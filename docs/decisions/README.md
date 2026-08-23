@@ -23,11 +23,11 @@
 | [0006](0006-dual-mode-eject-seal.md) | easy/hard 듀얼 모드와 모드 전환 커맨드 | 2026-08-13 | amended |
 | [0007](0007-platform-and-distribution.md) | 플랫폼과 배포, 코어와 시맨틱 층 분리 | 2026-08-13 | amended |
 | [0008](0008-project-name-engram.md) | 프로젝트 이름을 engram으로 확정한다 | 2026-08-13 | accepted |
-| [0009](0009-schema-presets-and-thresholds.md) | 스키마 프리셋과 게이트 임계값 | 2026-08-14 | amended |
-| [0010](0010-storage-index-and-korean-search.md) | 저장, 인덱스, 한국어 검색 | 2026-08-14 | accepted |
-| [0011](0011-repo-layout-and-module-name.md) | 저장소 구성과 Go 모듈명 | 2026-08-14 | amended |
-| [0012](0012-distribution-via-personal-homebrew-tap.md) | 배포 경로를 개인 Homebrew tap으로 단일화한다 | 2026-08-14 | amended |
-| [0013](0013-eject-redefined-seal-removed.md) | eject를 규칙 소유권 이양으로 재정의하고 seal을 폐기한다 | 2026-08-14 | accepted |
+| [0009](0009-schema-presets-and-thresholds.md) | 스키마 프리셋과 게이트 임계값 | 2026-08-15 | amended |
+| [0010](0010-storage-index-and-korean-search.md) | 저장, 인덱스, 한국어 검색 | 2026-08-15 | accepted |
+| [0011](0011-repo-layout-and-module-name.md) | 저장소 구성과 Go 모듈명 | 2026-08-15 | amended |
+| [0012](0012-distribution-via-personal-homebrew-tap.md) | 배포 경로를 개인 Homebrew tap으로 단일화한다 | 2026-08-15 | amended |
+| [0013](0013-eject-redefined-seal-removed.md) | eject를 규칙 소유권 이양으로 재정의하고 seal을 폐기한다 | 2026-08-15 | accepted |
 | [0014](0014-llm-boundary-agent-drives-binary.md) | LLM 호출을 바이너리에 두지 않고 에이전트가 바이너리를 부른다 | 2026-08-15 | accepted |
 | [0015](0015-adr-status-vocabulary-and-amendment-index.md) | ADR 상태 어휘와 개정 관계를 색인으로 관리한다 | 2026-08-15 | accepted |
 | [0016](0016-cli-framework-and-global-flags.md) | CLI 프레임워크를 cobra로 하고 전역 플래그 계약을 고정한다 | 2026-08-15 | accepted |
@@ -110,6 +110,7 @@
 | [0093](0093-ci-runs-a-real-transcription-on-every-runner.md) | CI가 러너마다 실제 전사를 한 번 돌린다 | 2026-08-22 | accepted |
 | [0094](0094-engram-watches-its-own-dependency-surface.md) | engram이 upstream 의존 표면을 스스로 감시하고 impact 표시에 기대지 않는다 | 2026-08-22 | accepted |
 | [0095](0095-hermes-is-the-harness-agent-and-the-pr-is-the-approval-point.md) | Hermes가 harness 에이전트이고 PR이 승인 지점이다 | 2026-08-22 | accepted |
+| [0096](0096-docs-harness-checks-quantitative-claims.md) | 문서의 정량 주장을 하니스가 실행 결과와 대조한다 | 2026-08-23 | accepted |
 
 ## 공개 범위 밖
 

@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-**1.0의 커맨드 범위가 닫혔다.** 커맨드 스물여덟, ADR 49건, 동작 구조 도식 11종, 여정 24개가 문서로 있고, 코드는 패키지 스물넷이다. 남은 것은 저장소 공개 전환과 첫 릴리스이며 둘 다 코드 작업이 아니다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
+**1.0의 커맨드 범위가 닫혔다.** 커맨드 스물아홉, ADR 49건, 동작 구조 도식 11종, 여정 24개가 문서로 있고, 코드는 패키지 스물넷이다. 남은 것은 저장소 공개 전환과 첫 릴리스이며 둘 다 코드 작업이 아니다. upstream 동등성 검증을 lint 축에서 측정했고 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
 
 ## 끝난 것
 
@@ -22,7 +22,7 @@
 | `source` | `sources/`에 원본을 확정한다. `updated`를 쓰지 않는다 | [0009](decisions/0009-schema-presets-and-thresholds.md) |
 | `promote` | inbox는 이동, sources는 파생 | [0021](decisions/0021-gate-deferral-when-targets-are-scarce.md), [0022](decisions/0022-promote-moves-inbox-derives-sources.md), [0023](decisions/0023-gate-targets-exclude-inbox.md) |
 | `new` | 처음부터 검수된 지식으로 `context/`에 쓴다 | 상동 |
-| `lint` | 규칙 19종. 스키마, 링크 무결성, 위치와 단계의 일치, 색인 자격, 폐기 필드. 기본 범위는 inbox 밖 | [0019](decisions/0019-index-documents-outside-the-gate.md), [0070](decisions/0070-lint-skips-inbox-by-default.md), [0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md) |
+| `lint` | 규칙 20종. 스키마, 링크 무결성, 위치와 단계의 일치, 색인 자격, 폐기 필드. 기본 범위는 inbox 밖 | [0019](decisions/0019-index-documents-outside-the-gate.md), [0070](decisions/0070-lint-skips-inbox-by-default.md), [0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md) |
 | `status` | 현황과 밀린 것, 다음 행동 제안 | |
 | `doctor` | 환경과 위키 점검 12종. 항목마다 복구 조치 | |
 | `resurface` | 오래 안 본 문서를 제시 이력 기준으로 꺼낸다 | [0028](decisions/0028-rediscovery-state-and-boundaries.md) |
@@ -158,7 +158,7 @@ upstream 명세 동기화 과제와 coordinator/worker 실행 체제는 `private
 - ~~**`architecture.md`가 반출 경로를 담고 있지 않다.**~~ 11절을 더했다. `mcp`는 로컬이라 노출 판정을 거치지 않고 `serve`와 `export`만 거친다는 차이를 도식에 담았다.
 - **`curriculum.md` 재작성.** 여정 24개와 마일스톤이 확정되었으므로 강의 세션을 다시 매핑해야 한다. 현재 내용은 여정 5개 시절 기준이다.
 - ~~**`docs/parity.md`**~~ lint 축 측정을 마쳤다. 자동 생성이 아니라 로컬 실행 결과를 사람이 옮겨 적는다(ADR 0029).
-- ~~**README 재작성.**~~ 0.3 완료 시점으로 다시 썼다. 커맨드 스물을 다섯 갈래 표로 정리했고 실린 출력은 전부 실제 실행 결과다. 남은 축은 둘이다.
+- ~~**README 재작성.**~~ 0.3 완료 시점으로 다시 썼다. 당시 커맨드 스물 개를 다섯 갈래 표로 정리했고 실린 출력은 전부 실제 실행 결과다. 남은 축은 둘이다.
   - **언어.** 영어를 기본으로 두고 한국어를 `docs/ko-KR/README.md`로 분리한다. 오픈소스 공개 시 접근 범위가 달라진다.
   - **시각 자산.** 히어로 영역, 배지, 동작 캡처가 없다. CLI이므로 스크린샷 대신 터미널 녹화가 맞다.
 - **여정 2가 어느 마일스톤에도 없다.** journeys.md가 그 피드백 루프를 "숨은 무기"라 부르는데 0.1부터 1.0까지 매핑에서 빠져 있다. 1.1의 용어 정규화가 그 절반을 덮으므로 그때 다시 앉힌다.

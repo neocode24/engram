@@ -12,7 +12,7 @@
 
 - upstream 진실원은 별도 저장소인 `llm-wiki`이며 이 저장소는 그 체계를 특정 시점에 얼려 출판한 산물이다. upstream은 비공개다.
 - upstream을 건드릴 때는 반드시 그쪽 `AGENTS.md`의 계약을 먼저 읽는다.
-- 1.0 마일스톤까지의 커맨드가 동작한다. 스물여덟이며 `engram --help`가 목록의 진실원이다. 넣기(`capture`, `source`), 올리기(`promote`, `new`, `demote`, `archive`), 조회(`search`, `recall`, `backlinks`, `lint`, `status`, `doctor`), 재발견(`resurface`, `bridge`, `digest`), 관리(`init`, `mv`, `update`, `reindex`, `migrate`, `sync`, `rules show`, `eject`, `skills install`, `mcp`, `serve`, `export`, `version`)로 나뉜다.
+- 1.0 마일스톤까지의 커맨드가 동작한다. 스물아홉이며 `engram --help`가 목록의 진실원이다. 넣기(`capture`, `source`), 올리기(`promote`, `new`, `demote`, `archive`), 조회(`search`, `recall`, `backlinks`, `lint`, `status`, `doctor`), 재발견(`resurface`, `bridge`, `digest`), 관리(`init`, `mv`, `update`, `reindex`, `migrate`, `sync`, `rules show`, `model`, `eject`, `skills install`, `mcp`, `serve`, `export`, `version`)로 나뉜다. **이 목록은 `harness/docs`가 `--help`와 대조한다(ADR 0096). 커맨드를 더하면 여기도 함께 고친다.**
 
 ## 저장소 구조
 
@@ -36,7 +36,7 @@
 |---|---|
 | `cmd/engram/`, `internal/` | Go 구현. 저장소 루트가 모듈 루트 |
 | `voice/` | `engram-voice` 의 **중첩 모듈**. 루트의 `./...` 에 안 잡히므로 따로 빌드하고 시험한다([0080](docs/decisions/0080-voice-is-a-nested-module-in-this-repository.md)) |
-| `harness/` | 검증. `parity/`(upstream 대조), `eject/`(내보낸 린터 대조), `examples/`(데모 위키 재생성), `journey/`(여정 통합), `golden/`, `fixtures/`, `realdata/`, `upstream/`(vendored 명세 사본) |
+| `harness/` | 검증. `parity/`(upstream 대조), `eject/`(내보낸 린터 대조), `examples/`(데모 위키 재생성), `journey/`(여정 통합), `docs/`(문서의 정량 주장 대조), `golden/`, `fixtures/`, `realdata/`, `upstream/`(vendored 명세 사본) |
 | `examples/personal/` | 데모 위키. 커맨드 시퀀스의 생성물이므로 손으로 고치지 않는다. `go test ./harness/examples -update`로 재생성 |
 | `examples/materials/` | 실습 재료. 수강생이 위키에 집어넣을 원재료이며 위키가 아니다. 합성 자료다 |
 | `private/` | 공개 경계 밖 자료. **gitignore 대상이라 커밋되지 않는다** ([0024](docs/decisions/0024-public-boundary-and-private-directory.md)) |
@@ -101,7 +101,9 @@
 
 `go test ./...`가 정식 검증이다. 문서 검사는 `scripts/check-adr.py`와 `scripts/check-mermaid.py`이며 아직 ad-hoc 스크립트다. 그 둘의 결과를 보고할 때는 **정식 테스트가 아니라 ad-hoc 검증**임을 명시한다.
 
-`docs/course/hands-on.md`에 인용하는 커맨드 출력은 **전부 실측값**이다. 해당 단계의 위키 상태를 실제로 만들어 돌린 결과만 적는다. 손으로 지어낸 출력을 넣지 않는다.
+**문서가 코드에 대해 말하는 수는 `harness/docs`가 실행 결과와 대조한다**([0096](docs/decisions/0096-docs-harness-checks-quantitative-claims.md)). 커맨드 수와 목록은 `--help`가, lint 규칙 수는 `rules show`가, ADR 색인의 번호와 날짜와 상태는 frontmatter가 진실원이다. **문서에 수를 적기 전에 그 값을 실제로 내 본다.** 특정 시점의 기록이라 지금 코드와 어긋나도 되는 문서는 첫머리에 `<!-- engram:record as-of=YYYY-MM-DD -->`를 단다. 살아 있는 문서 안의 완료 기록은 그 줄에 `당시`나 `시절`을 적어 문장 단위로 면제한다. **값을 고칠 수 있으면 면제 대신 값을 고친다.**
+
+`docs/course/hands-on.md`에 인용하는 커맨드 출력은 **전부 실측값**이다. 해당 단계의 위키 상태를 실제로 만들어 돌린 결과만 적는다. 손으로 지어낸 출력을 넣지 않는다. 출력 본문은 아직 하니스가 대조하지 않으므로 이 항목은 사람이 지킨다.
 
 큰 절을 교체하면 앞뒤 절과 어긋나는지 확인한다. 앞 절에서 옮긴 문서를 뒤 절에서 다시 쓰는 모순이 실제로 났다.
 

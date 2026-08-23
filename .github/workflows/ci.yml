@@ -214,6 +214,8 @@ jobs:
           go-version-file: go.mod
       - name: ADR 검사
         run: python3 scripts/check-adr.py
+      # 문서의 정량 주장 대조는 go test ./... 안에서 harness/docs 가 돈다
+      # (ADR 0096). 여기 다시 두지 않는다.
       # check-mermaid.py 는 node 와 npx 로 mermaid-cli 를 내려받아 쓴다.
       # mermaid-cli 는 puppeteer 로 브라우저를 띄우는데, 러너에는 샌드박스가
       # 없고 크롬 경로도 다르다. 설정 파일을 만들어 PUPPETEER_CONFIG 로 넘긴다.

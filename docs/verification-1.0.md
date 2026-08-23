@@ -1,3 +1,5 @@
+<!-- engram:record as-of=2026-08-17 -->
+
 # 1.0 교차 검증 보고
 
 > 2026-08-17. 개발을 맡은 세션과 다른 세션, 다른 모델이 저장소 `bbe07bc` 시점의 코드를 처음부터 빌드하고 커맨드 스물여덟을 실제로 돌려 확인한 결과다. 정식 검증(`go test ./...`)과 별개로 사람이 손으로 여정을 돌리며 찾은 것을 적는다. [windows-verification.md](windows-verification.md)와 같은 성격의 문서다.
@@ -25,7 +27,7 @@
 - `demote`는 파생 문서를 내릴 때 원본의 `derived_context`가 어긋난다고 알린다. `archive`는 슬러그를 유지하고 들어오는 링크 수를 알린다. `mv --dry-run`이 바꿀 것을 미리 보여 준다.
 - lint 규칙 17종이 전부 유발되고 메시지마다 고치는 법이 붙는다. `location.stage-agreement`는 방향에 따라 error와 warn으로 갈린다(ADR 0035). `sources.updated`, `taxonomy.forms`(error), `taxonomy.topics`(warn), `body.max-lines`, `link.broken`, `frontmatter.*`, `schema.allowed-value` 확인.
 - `migrate`: 프리셋 상향은 기본값을 채우고, 하향은 값이 있는 필드를 `--force` 없이는 지우지 않으며 그동안 lint가 `schema.axis-off`로 알린다. `sync`는 git이 없으면 거절하고 있으면 dry-run이 기본이다.
-- `eject`: 파일 아홉을 만들고 이미 있으면 `--force` 없이 덮지 않는다. 내보낸 `scripts/lint-frontmatter.py`가 정상 위키에서 0, 깨진 프론트매터에서 1, 게이트 미달에서 reject를 낸다. `engram lint`와 같다.
+- `eject`: 파일 열을 만들고 이미 있으면 `--force` 없이 덮지 않는다. 내보낸 `scripts/lint-frontmatter.py`가 정상 위키에서 0, 깨진 프론트매터에서 1, 게이트 미달에서 reject를 낸다. `engram lint`와 같다.
 - MCP: 도구 열. 쓰기는 `capture` 하나이고 `inbox`에만 쓴다. `promote`를 부르면 `unknown tool`. 도구는 `wiki` 인자를 받지 않는다(`additional properties` 거절). `resurface`를 MCP로 불러도 제시 이력 파일이 바뀌지 않는다.
 - serve: `context/`와 `index.md`만 200이고 `inbox/`, `sources/`, `archive/`는 404다. `/doc/../engram.yaml`, `%2e%2e` 경로 탈출 404. POST 405. team 프리셋에서 `sensitivity: restricted` 문서는 404이고 시작 로그에 제외 수가 찍힌다. serve의 검색은 제외 문서를 내지 않는다.
 - export: 같은 노출 규칙을 쓰고, 치환 파일이 파일명과 본문에 함께 적용되며, 번들 밖을 가리키는 링크를 알린다.

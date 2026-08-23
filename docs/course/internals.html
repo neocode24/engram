@@ -687,7 +687,7 @@ body.read #hint{display:none}
         <rect class="box" x="788" y="180" width="238" height="70" rx="8"/><text x="907" y="205" text-anchor="middle" font-weight="700">재발견</text><text x="907" y="226" text-anchor="middle">resurface  bridge</text><text x="907" y="243" text-anchor="middle">digest  status</text>
         <rect class="box" x="1044" y="180" width="236" height="70" rx="8"/><text x="1162" y="205" text-anchor="middle" font-weight="700">내보내기</text><text x="1162" y="226" text-anchor="middle">serve  export  eject</text><text x="1162" y="243" text-anchor="middle">mcpserver  skills</text>
       </g></g>
-      <g class="a d3"><rect class="box dim" x="20" y="275" width="1260" height="55" rx="10"/><text class="lbl" x="650" y="298" text-anchor="middle"><tspan font-weight="800">cli</tspan>   커맨드 28개. 인자를 파싱하고 출력을 다듬을 뿐, 판정은 전부 위를 부른다</text><text class="lbl s" x="650" y="320" text-anchor="middle">MCP 서버와 serve도 같은 자리에서 같은 위를 부른다. 진입점이 달라도 판정은 한 벌이다</text></g>
+      <g class="a d3"><rect class="box dim" x="20" y="275" width="1260" height="55" rx="10"/><text class="lbl" x="650" y="298" text-anchor="middle"><tspan font-weight="800">cli</tspan>   커맨드 29개. 인자를 파싱하고 출력을 다듬을 뿐, 판정은 전부 위를 부른다</text><text class="lbl s" x="650" y="320" text-anchor="middle">MCP 서버와 serve도 같은 자리에서 같은 위를 부른다. 진입점이 달라도 판정은 한 벌이다</text></g>
       <path class="ln draw d3" d="M650 275 L 650 255" marker-end="url(#g6)"/><path class="ln draw d3" d="M650 178 L 650 160" marker-end="url(#g6)"/><path class="ln draw d3" d="M650 98 L 650 80" marker-end="url(#g6)"/>
       <text class="lbl s a d4" x="650" y="360" text-anchor="middle" fill="var(--mute)">게이트, 고아, 노후, 노출 판정은 각각 함수 하나다. 두 벌이면 promote로 통과한 문서를 lint가 거절하거나 serve가 감춘 문서를 export가 내보내게 된다.</text>
     </svg>
@@ -788,7 +788,7 @@ body.read #hint{display:none}
 <section class="slide" data-ch="3">
   <div class="in">
     <h2>검사: 필드마다 지켜보는 규칙이 붙어 있다</h2>
-    <p class="quote">규칙 19종 전부가 이 한 장에 있습니다. 각 규칙이 문서의 어느 필드를 보는지, 걸리면 어느 등급인지가 화살표 하나씩입니다.</p>
+    <p class="quote">규칙 20종 전부가 이 한 장에 있습니다. 각 규칙이 문서의 어느 필드를 보는지, 걸리면 어느 등급인지가 화살표 하나씩입니다.</p>
     <svg class="fig" viewBox="0 0 1300 480" aria-label="문서의 각 필드에 lint 규칙이 화살표로 붙는다" style="max-width:1300px;margin:0 auto">
       <defs><marker id="g8" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
       <rect class="box" x="440" y="30" width="420" height="420" rx="12"/>
@@ -822,7 +822,7 @@ body.read #hint{display:none}
         <g class="a d4"><rect class="box warn" x="940" y="280" width="330" height="56" rx="8"/><text x="1105" y="302" text-anchor="middle" font-weight="700">sources.updated</text><text x="1105" y="323" text-anchor="middle">sources 문서에 updated가 있음. warn</text><path class="ln draw d4" d="M935 308 L 865 328" marker-end="url(#g8)"/></g>
         <g class="a d5"><rect class="box warn" x="940" y="350" width="330" height="56" rx="8"/><text x="1105" y="372" text-anchor="middle" font-weight="700">body.max-lines / wiki.broad-topic / gate.deferred</text><text x="1105" y="393" text-anchor="middle">문서 길이, 주제 쏠림, 게이트 유예. warn</text><path class="ln draw d5" d="M935 378 L 865 400" marker-end="url(#g8)"/></g>
       </g>
-      <text class="lbl s a d6" x="650" y="472" text-anchor="middle" fill="var(--mute)">규칙 19종 전부가 이 한 장에 있습니다. 모든 메시지는 현재 값, 필요 값, 고치는 법을 함께 냅니다. 거절(reject)은 게이트 하나뿐입니다.</text>
+      <text class="lbl s a d6" x="650" y="472" text-anchor="middle" fill="var(--mute)">규칙 20종 전부가 이 한 장에 있습니다. 모든 메시지는 현재 값, 필요 값, 고치는 법을 함께 냅니다. 거절(reject)은 게이트 하나뿐입니다.</text>
     </svg>
   </div>
   <aside class="notes">
@@ -901,7 +901,7 @@ body.read #hint{display:none}
     <p class="lead">promote 한 번이 실제로 계산하는 다섯 단계, 그리고 게이트가 세는 것과 세지 않는 것.</p>
   </div>
   <div class="num">4</div>
-  <aside class="notes"><p>근거: ADR 0009(임계값), 0021(유예), 0022(이동과 파생), 0040(디렉토리 기준), 0054(실재 링크만 센다), 0069(secret), 0070(inbox 기본 제외). 규칙 19종의 목록과 등급은 3장의 검사 슬라이드에 있습니다. 이 장은 그 규칙이 승급이라는 사건 안에서 어떻게 발동하는지를 봅니다.</p></aside>
+  <aside class="notes"><p>근거: ADR 0009(임계값), 0021(유예), 0022(이동과 파생), 0040(디렉토리 기준), 0054(실재 링크만 센다), 0069(secret), 0070(inbox 기본 제외). 규칙 20종의 목록과 등급은 3장의 검사 슬라이드에 있습니다. 이 장은 그 규칙이 승급이라는 사건 안에서 어떻게 발동하는지를 봅니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="4">
@@ -1271,7 +1271,7 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
   <div class="in">
     <h2>소유권의 축: 넘어가는 것과 남는 것</h2>
     <p class="quote">eject는 규칙을 사용자 소유의 파일로 내보내는 단방향 커맨드입니다. 무엇이 파일이 될 수 있고 무엇이 엔진으로 남는지가 경계입니다.</p>
-    <svg class="fig" viewBox="0 0 1300 470" aria-label="eject가 규칙을 위키 루트의 파일 아홉으로 내보내고 연산은 바이너리에 남는 구조">
+    <svg class="fig" viewBox="0 0 1300 500" aria-label="eject가 규칙을 위키 루트의 파일 열로 내보내고 연산은 바이너리에 남는 구조">
       <defs><marker id="gj" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--acc)"/></marker></defs>
       <rect class="box" x="30" y="30" width="480" height="400" rx="12"/>
       <text class="lbl" x="270" y="62" text-anchor="middle" font-weight="700">engram 바이너리</text>
@@ -1293,24 +1293,25 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
       <text class="lbl s" x="270" y="418" text-anchor="middle" fill="var(--mute)">사용자는 제품을 떠난 적이 없으므로 돌아올 필요도 없다</text>
       <g class="a"><g class="draw"><path class="ln acc" d="M480 150 L 660 150" marker-end="url(#gj)"/></g><text class="lbl" x="570" y="135" text-anchor="middle" font-weight="700">engram eject</text><text class="lbl s" x="570" y="172" text-anchor="middle">단방향. 한 번만</text></g>
       <g class="a d1">
-        <rect class="box warn" x="670" y="30" width="600" height="310" rx="12"/>
-        <text class="lbl" x="970" y="62" text-anchor="middle" font-weight="700">위키 루트에 쓰이는 파일 아홉</text>
+        <rect class="box warn" x="670" y="30" width="600" height="340" rx="12"/>
+        <text class="lbl" x="970" y="62" text-anchor="middle" font-weight="700">위키 루트에 쓰이는 파일 열</text>
         <g class="lbl m" font-size="13">
           <text x="700" y="94">.gitattributes</text>
           <text x="700" y="120">.githooks/pre-commit</text><text x="990" y="120" class="lbl s">커밋마다 린터를 돌린다</text>
           <text x="700" y="146">AGENTS.md</text><text x="990" y="146" class="lbl s">에이전트 계약</text>
-          <text x="700" y="172">meta/frontmatter-schema.md</text><text x="990" y="172" class="lbl s">축과 필수 필드</text>
-          <text x="700" y="198">meta/lint-rules.md</text><text x="990" y="198" class="lbl s">규칙 19종의 판정</text>
-          <text x="700" y="224">meta/promotion-rules.md</text><text x="990" y="224" class="lbl s">게이트와 승급</text>
-          <text x="700" y="250">meta/value-sets.md</text><text x="990" y="250" class="lbl s">허용값 집합</text>
-          <text x="700" y="276">meta/wiki-layout.md</text><text x="990" y="276" class="lbl s">디렉토리 규칙</text>
-          <text x="700" y="302">scripts/lint-frontmatter.py</text><text x="990" y="302" class="lbl s">독립 실행 린터</text>
+          <text x="700" y="172">meta/agent-contract.md</text><text x="990" y="172" class="lbl s">위키 안에 남는 계약</text>
+          <text x="700" y="198">meta/frontmatter-schema.md</text><text x="990" y="198" class="lbl s">축과 필수 필드</text>
+          <text x="700" y="224">meta/lint-rules.md</text><text x="990" y="224" class="lbl s">규칙 20종의 판정</text>
+          <text x="700" y="250">meta/promotion-rules.md</text><text x="990" y="250" class="lbl s">게이트와 승급</text>
+          <text x="700" y="276">meta/value-sets.md</text><text x="990" y="276" class="lbl s">허용값 집합</text>
+          <text x="700" y="302">meta/wiki-layout.md</text><text x="990" y="302" class="lbl s">디렉토리 규칙</text>
+          <text x="700" y="328">scripts/lint-frontmatter.py</text><text x="990" y="328" class="lbl s">독립 실행 린터</text>
         </g>
-        <text class="lbl s" x="970" y="328" text-anchor="middle" fill="var(--mute)">1장 upstream의 세 층(문서, 명세, 스크립트와 hook)이 그대로 돌아온 모양</text>
+        <text class="lbl s" x="970" y="354" text-anchor="middle" fill="var(--mute)">1장 upstream의 세 층(문서, 명세, 스크립트와 hook)이 그대로 돌아온 모양</text>
       </g>
       <g class="a d3">
-        <rect class="box" x="670" y="360" width="290" height="70" rx="10"/><text class="lbl s" x="815" y="388" text-anchor="middle" font-weight="700">이미 있는 파일은 안 덮는다</text><text class="lbl s" x="815" y="410" text-anchor="middle">--force를 명시해야 덮는다</text>
-        <rect class="box" x="980" y="360" width="290" height="70" rx="10"/><text class="lbl s" x="1125" y="388" text-anchor="middle" font-weight="700">붙는 것은 커맨드가 아니다</text><text class="lbl s" x="1125" y="410" text-anchor="middle">.engram/이 있으면 붙는다. 강제가 없다</text>
+        <rect class="box" x="670" y="390" width="290" height="70" rx="10"/><text class="lbl s" x="815" y="418" text-anchor="middle" font-weight="700">이미 있는 파일은 안 덮는다</text><text class="lbl s" x="815" y="440" text-anchor="middle">--force를 명시해야 덮는다</text>
+        <rect class="box" x="980" y="390" width="290" height="70" rx="10"/><text class="lbl s" x="1125" y="418" text-anchor="middle" font-weight="700">붙는 것은 커맨드가 아니다</text><text class="lbl s" x="1125" y="440" text-anchor="middle">.engram/이 있으면 붙는다. 강제가 없다</text>
       </g>
     </svg>
   </div>

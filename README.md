@@ -235,7 +235,7 @@ For a 30-minute walkthrough where you drive an agent instead of typing commands,
 
 ## Commands
 
-Twenty-eight, in five groups: put in, move up, look up, meet again, manage.
+Twenty-nine, in five groups: put in, move up, look up, meet again, manage.
 
 ```mermaid
 flowchart LR
@@ -316,6 +316,7 @@ flowchart LR
 | `migrate` | Conform existing documents to the current config and rules. `--dry-run` by default |
 | `sync` | Correct date fields from git history, with filename prefixes as fallback. `--dry-run` by default |
 | `rules show` | Print every rule that applies to this wiki, read-only |
+| `model` | Download the embedding model and show its status |
 | `eject` | Hand over the rules as spec documents and a Python linter. One way |
 | `skills install` | Install the skill document into an agent. The whole of the LLM integration |
 | `mcp` | Expose the wiki as an MCP server. The only write tool is `capture` |
@@ -372,7 +373,7 @@ ENGRAM_LANG=en engram status
 
 ## Where it stands
 
-**0.1 through 1.0 are done.** All twenty-eight commands above work. The first release ships together with making the repository public.
+**0.1 through 1.0 are done.** All twenty-nine commands above work. The first release ships together with making the repository public.
 
 | Milestone | Scope | Status |
 |---|---|---|
