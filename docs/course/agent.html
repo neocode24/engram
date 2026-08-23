@@ -137,6 +137,10 @@ marker.acc path{fill:var(--acc)}
 @keyframes appear{to{opacity:1}}
 .active .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.2s ease forwards}
 .active .draw.d1{animation-delay:.6s}.active .draw.d2{animation-delay:1.2s}.active .draw.d3{animation-delay:1.8s}.active .draw.d4{animation-delay:2.4s}
+/* draw는 stroke-dasharray를 선 길이로 덮어써서 선이 자라는 것처럼 보이게 한다.
+   그래서 점선(.ln.dash)에 draw를 걸면 자라는 동안은 물론 끝난 뒤에도 실선으로
+   남는다. 애니메이션이 끝나면 dashed 클래스가 붙고, 그때 점선 모양을 되돌린다. */
+.draw.dashed{stroke-dasharray:5 5!important;stroke-dashoffset:0!important}
 @keyframes draw{to{stroke-dashoffset:0}}
 .active .pulse{animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -844,15 +848,46 @@ inbox에 넣었습니다: inbox/2026-08-22-알림-정리-회의.md</div>
 
   function frags(s){ return Array.from(s.querySelectorAll('.frag')); }
 
+  // draw 화살표의 화살촉은 선이 다 그어진 뒤에 붙인다.
+  // marker는 path와 함께 즉시 그려지므로, 그대로 두면 선이 자라기 전에
+  // 끝점에 삼각형만 먼저 떠 있게 된다.
+  document.querySelectorAll('.draw').forEach(el => {
+    const ps = el.matches('path') ? [el] : Array.from(el.querySelectorAll('path[marker-end]'));
+    ps.forEach(p => {
+      const m = p.getAttribute('marker-end');
+      if (m) { p.dataset.mk = m; p.removeAttribute('marker-end'); }
+    });
+    el.addEventListener('animationend', e => {
+      if (e.animationName !== 'draw') return;
+      ps.forEach(p => { if (p.dataset.mk) p.setAttribute('marker-end', p.dataset.mk); });
+      // 점선은 draw가 dasharray를 덮어쓴 상태로 끝나므로 점선 모양을 되돌린다.
+      const dashes = el.matches('path') ? [el] : Array.from(el.querySelectorAll('path'));
+      dashes.forEach(p => { if (p.classList.contains('dash')) p.classList.add('dashed'); });
+      if (el.matches('.dash')) el.classList.add('dashed');
+    });
+  });
+  function stripMarkers(scope){
+    scope.querySelectorAll('path[data-mk]').forEach(p => p.removeAttribute('marker-end'));
+    // 되감으면 다시 자라야 하므로 점선 복원도 함께 되돌린다.
+    scope.querySelectorAll('.dashed').forEach(p => p.classList.remove('dashed'));
+  }
+  // 화면을 벗어나면 draw 애니메이션이 처음으로 되감기므로 화살촉도 함께 뗀다.
+  // 떼지 않으면 다시 들어왔을 때 선은 자라는데 화살촉만 끝점에 먼저 떠 있다.
+  function leaveView(s){
+    s.classList.remove('in-view');
+    stripMarkers(s);
+  }
+
   function show(i){
     slides.forEach((s, k) => {
       const on = k === i;
       s.classList.toggle('active', on);
-      if (!on) { s.classList.remove('in-view'); }
+      if (!on) { leaveView(s); }
     });
     const s = slides[i];
-    // 새로 진입하는 슬라이드는 프래그먼트를 접은 상태로
+    // 새로 진입하는 슬라이드는 프래그먼트를 접은 상태로, 화살촉도 뗀 상태로
     frags(s).forEach(f => f.classList.remove('on'));
+    stripMarkers(s);
     counter.textContent = (i+1) + ' / ' + slides.length;
     prog.style.width = ((i+1)/slides.length*100) + '%';
     Array.from(chapBar.children).forEach((b, k) => b.classList.toggle('cur', String(k) === s.dataset.ch));
@@ -930,7 +965,7 @@ inbox에 넣었습니다: inbox/2026-08-22-알림-정리-회의.md</div>
       slides.forEach(s => io.observe(s));
       setTimeout(() => slides[cur].scrollIntoView({block:'start'}), 30);
     } else {
-      slides.forEach(s => { io.unobserve(s); s.classList.remove('in-view'); });
+      slides.forEach(s => { io.unobserve(s); leaveView(s); });
       window.scrollTo(0,0);
       show(cur);
     }
@@ -946,7 +981,7 @@ inbox에 넣었습니다: inbox/2026-08-22-알림-정리-회의.md</div>
         if (i >= 0) { cur = i; counter.textContent = (i+1) + ' / ' + slides.length; prog.style.width = ((i+1)/slides.length*100)+'%';
           Array.from(chapBar.children).forEach((b, k) => b.classList.toggle('cur', String(k) === s.dataset.ch)); }
       } else if (!en.isIntersecting) {
-        s.classList.remove('in-view');
+        leaveView(s);
       }
     });
   }, {threshold:[0, .35, .6]});
