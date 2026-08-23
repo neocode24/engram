@@ -136,10 +136,10 @@ marker.acc path{fill:var(--acc)}
 /* 애니메이션은 슬라이드가 활성일 때만 돈다 */
 .a{opacity:0}
 .active .a{animation:appear .7s ease forwards}
-.active .a.d1{animation-delay:1.5s}.active .a.d2{animation-delay:3s}.active .a.d3{animation-delay:4.5s}.active .a.d4{animation-delay:6s}.active .a.d5{animation-delay:7.5s}.active .a.d6{animation-delay:9s}.active .a.d7{animation-delay:10.5s}.active .a.d8{animation-delay:12s}
+.active .a.d1{animation-delay:0.8s}.active .a.d2{animation-delay:1.6s}.active .a.d3{animation-delay:2.4s}.active .a.d4{animation-delay:3.2s}.active .a.d5{animation-delay:4s}.active .a.d6{animation-delay:4.8s}.active .a.d7{animation-delay:5.6s}.active .a.d8{animation-delay:6.4s}
 @keyframes appear{to{opacity:1}}
-.active .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw .65s ease forwards;animation-delay:.8s}
-.active .draw.d1{animation-delay:2.3s}.active .draw.d2{animation-delay:3.8s}.active .draw.d3{animation-delay:5.3s}.active .draw.d4{animation-delay:6.8s}.active .draw.d5{animation-delay:8.3s}.active .draw.d6{animation-delay:9.8s}.active .draw.d7{animation-delay:11.3s}.active .draw.d8{animation-delay:12.8s}
+.active .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw .6s ease forwards;animation-delay:.45s}
+.active .draw.d1{animation-delay:1.25s}.active .draw.d2{animation-delay:2.05s}.active .draw.d3{animation-delay:2.85s}.active .draw.d4{animation-delay:3.65s}.active .draw.d5{animation-delay:4.45s}.active .draw.d6{animation-delay:5.25s}.active .draw.d7{animation-delay:6.05s}.active .draw.d8{animation-delay:6.85s}
 @keyframes draw{to{stroke-dashoffset:0}}
 .active .pulse{animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -215,9 +215,9 @@ body.read .dark .notes{background:#1f232a;border-color:#333a45;color:#c9ced5}
 body.read .dark .notes code,.dark code{background:#2b303a;color:#e6e6e0}
 body.read #notepane{display:none}
 body.read .slide.in-view .a{animation:appear .7s ease forwards}
-body.read .slide.in-view .a.d1{animation-delay:1.5s}body.read .slide.in-view .a.d2{animation-delay:3s}body.read .slide.in-view .a.d3{animation-delay:4.5s}body.read .slide.in-view .a.d4{animation-delay:6s}body.read .slide.in-view .a.d5{animation-delay:7.5s}body.read .slide.in-view .a.d6{animation-delay:9s}body.read .slide.in-view .a.d7{animation-delay:10.5s}body.read .slide.in-view .a.d8{animation-delay:12s}
-body.read .slide.in-view .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw .65s ease forwards;animation-delay:.8s}
-body.read .slide.in-view .draw.d1{animation-delay:2.3s}body.read .slide.in-view .draw.d2{animation-delay:3.8s}body.read .slide.in-view .draw.d3{animation-delay:5.3s}body.read .slide.in-view .draw.d4{animation-delay:6.8s}body.read .slide.in-view .draw.d5{animation-delay:8.3s}body.read .slide.in-view .draw.d6{animation-delay:9.8s}body.read .slide.in-view .draw.d7{animation-delay:11.3s}body.read .slide.in-view .draw.d8{animation-delay:12.8s}
+body.read .slide.in-view .a.d1{animation-delay:0.8s}body.read .slide.in-view .a.d2{animation-delay:1.6s}body.read .slide.in-view .a.d3{animation-delay:2.4s}body.read .slide.in-view .a.d4{animation-delay:3.2s}body.read .slide.in-view .a.d5{animation-delay:4s}body.read .slide.in-view .a.d6{animation-delay:4.8s}body.read .slide.in-view .a.d7{animation-delay:5.6s}body.read .slide.in-view .a.d8{animation-delay:6.4s}
+body.read .slide.in-view .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw .6s ease forwards;animation-delay:.45s}
+body.read .slide.in-view .draw.d1{animation-delay:1.25s}body.read .slide.in-view .draw.d2{animation-delay:2.05s}body.read .slide.in-view .draw.d3{animation-delay:2.85s}body.read .slide.in-view .draw.d4{animation-delay:3.65s}body.read .slide.in-view .draw.d5{animation-delay:4.45s}body.read .slide.in-view .draw.d6{animation-delay:5.25s}body.read .slide.in-view .draw.d7{animation-delay:6.05s}body.read .slide.in-view .draw.d8{animation-delay:6.85s}
 body.read .slide.in-view .pulse{animation:pulse 1.6s ease-in-out infinite}
 body.read .slide.in-view .tok{animation-play-state:running}
 body.read .slide .tok{animation-play-state:paused}
@@ -749,7 +749,7 @@ updated: <span class="y">2026-11-30</span>
         <rect class="box acc" x="440" y="175" width="420" height="56" rx="10"/>
         <text class="lbl m" x="650" y="200" text-anchor="middle">lint.EvaluateGate</text>
         <text class="lbl s" x="650" y="221" text-anchor="middle">promote, new, lint이 이 함수 하나를 부른다</text>
-        <path class="ln acc dash" d="M560 175 C 480 150, 420 130, 392 120" marker-end="url(#gba)"/>
+        <path class="ln acc dash draw d5" d="M560 175 C 480 150, 420 130, 392 120" marker-end="url(#gba)"/>
       </g>
     </svg>
     <div class="cols" style="margin-top:.6em">
@@ -817,10 +817,10 @@ updated: <span class="y">2026-11-30</span>
         <g class="a d2"><rect class="box acc" x="630" y="60" width="280" height="120" rx="10"/><text x="770" y="88" text-anchor="middle" font-weight="700">Field 배열</text><text x="770" y="112" text-anchor="middle">값 종류 다섯: 빈 값, 문자열, 목록, 불, 날짜</text><text x="770" y="132" text-anchor="middle">키가 있고 값이 빈 것과 키가 없는 것은</text><text x="770" y="152" text-anchor="middle">스키마 판정에서 서로 다른 상태다</text></g>
         <g class="a d3"><rect class="box" x="980" y="60" width="220" height="120" rx="10"/><text x="1090" y="88" text-anchor="middle" font-weight="700">Render (역연산)</text><text x="1090" y="112" text-anchor="middle">필드 순서 그대로 출력</text><text x="1090" y="132" text-anchor="middle">새 문서만 표준 키 순서</text><text x="1090" y="152" text-anchor="middle">LF, 끝 개행 하나 보장</text></g>
       </g>
-      <path class="ln" d="M240 120 L 305 120" marker-end="url(#ga)"/>
-      <path class="ln" d="M560 120 L 625 120" marker-end="url(#ga)"/>
-      <path class="ln" d="M910 120 L 975 120" marker-end="url(#ga)"/>
-      <path class="ln acc dash" d="M1090 180 C 1090 245, 300 245, 135 185" marker-end="url(#ga)"/>
+      <path class="ln draw" d="M240 120 L 305 120" marker-end="url(#ga)"/>
+      <path class="ln draw d1" d="M560 120 L 625 120" marker-end="url(#ga)"/>
+      <path class="ln draw d2" d="M910 120 L 975 120" marker-end="url(#ga)"/>
+      <path class="ln acc dash draw d3" d="M1090 180 C 1090 245, 300 245, 135 185" marker-end="url(#ga)"/>
       <text class="lbl s" x="650" y="275" text-anchor="middle">고치지 않은 필드는 왕복 후에도 바이트가 같다. 프론트매터 정규화 출력이 동등성 검증의 비교 축이라서다</text>
       <text class="lbl s" x="650" y="295" text-anchor="middle">파서가 순서를 흔들면 모든 diff가 노이즈로 차서 비교가 성립하지 않는다</text>
     </svg>
@@ -1204,12 +1204,18 @@ updated: <span class="y">2026-11-30</span>
   function stripMarkers(scope){
     scope.querySelectorAll('path[data-mk]').forEach(p => p.removeAttribute('marker-end'));
   }
+  // 화면을 벗어나면 draw 애니메이션이 처음으로 되감기므로 화살촉도 함께 뗀다.
+  // 떼지 않으면 다시 들어왔을 때 선은 자라는데 화살촉만 끝점에 먼저 떠 있다.
+  function leaveView(s){
+    s.classList.remove('in-view');
+    stripMarkers(s);
+  }
 
   function show(i){
     slides.forEach((s, k) => {
       const on = k === i;
       s.classList.toggle('active', on);
-      if (!on) { s.classList.remove('in-view'); }
+      if (!on) { leaveView(s); }
     });
     const s = slides[i];
     // 새로 진입하는 슬라이드는 프래그먼트를 접은 상태로, 화살촉도 뗀 상태로
@@ -1292,7 +1298,7 @@ updated: <span class="y">2026-11-30</span>
       slides.forEach(s => io.observe(s));
       setTimeout(() => slides[cur].scrollIntoView({block:'start'}), 30);
     } else {
-      slides.forEach(s => { io.unobserve(s); s.classList.remove('in-view'); });
+      slides.forEach(s => { io.unobserve(s); leaveView(s); });
       window.scrollTo(0,0);
       show(cur);
     }
@@ -1308,7 +1314,7 @@ updated: <span class="y">2026-11-30</span>
         if (i >= 0) { cur = i; counter.textContent = (i+1) + ' / ' + slides.length; prog.style.width = ((i+1)/slides.length*100)+'%';
           Array.from(chapBar.children).forEach((b, k) => b.classList.toggle('cur', String(k) === s.dataset.ch)); }
       } else if (!en.isIntersecting) {
-        s.classList.remove('in-view');
+        leaveView(s);
       }
     });
   }, {threshold:[0, .35, .6]});
