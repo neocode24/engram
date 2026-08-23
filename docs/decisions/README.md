@@ -111,6 +111,7 @@
 | [0094](0094-engram-watches-its-own-dependency-surface.md) | engram이 upstream 의존 표면을 스스로 감시하고 impact 표시에 기대지 않는다 | 2026-08-22 | accepted |
 | [0095](0095-hermes-is-the-harness-agent-and-the-pr-is-the-approval-point.md) | Hermes가 harness 에이전트이고 PR이 승인 지점이다 | 2026-08-22 | accepted |
 | [0096](0096-docs-harness-checks-quantitative-claims.md) | 문서의 정량 주장을 하니스가 실행 결과와 대조한다 | 2026-08-23 | accepted |
+| [0097](0097-internals-deck-identity-and-scoring-contract.md) | 내부 구조 덱의 정체를 읽기 문서로 확정하고 채점 계약을 둔다 | 2026-08-23 | accepted |
 
 ## 공개 범위 밖
 

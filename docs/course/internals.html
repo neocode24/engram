@@ -259,7 +259,7 @@ body.read #hint{display:none}
     <h1>engram 내부 구조</h1>
     <p class="lead" style="margin:0 auto;max-width:36em">upstream llm-wiki의 운영 구조에서 시작해, 그것이 어떻게 하나의 바이너리가 되고, 그 안에서 frontmatter와 토큰과 벡터가 어떻게 다뤄지는지를 구현 수준에서 따라갑니다. 수치는 전부 코드와 ADR의 실측값입니다.</p>
     <div class="cards" style="text-align:left;margin-top:1.2em;font-size:.82em;max-width:60em;margin-left:auto;margin-right:auto">
-      <div class="card"><h3 style="font-size:1em">ADR</h3><p>Architecture Decision Record. 설계 결정 하나를 배경, 근거, 결정으로 기록한 번호 붙은 문서입니다. 이 저장소에 96건이 있고 소급 수정하지 않습니다. 이 자료의 "근거: ADR 0074"는 그 문서에 실측과 이유가 있다는 뜻입니다.</p></div>
+      <div class="card"><h3 style="font-size:1em">ADR</h3><p>Architecture Decision Record. 설계 결정 하나를 배경, 근거, 결정으로 기록한 번호 붙은 문서입니다. 이 저장소에 97건이 있고 소급 수정하지 않습니다. 이 자료의 "근거: ADR 0074"는 그 문서에 실측과 이유가 있다는 뜻입니다.</p></div>
       <div class="card"><h3 style="font-size:1em">동등성 검증 (parity)</h3><p>같은 입력을 두 구현에 주고 출력이 같은지 대조하는 시험입니다. 여기서는 upstream의 스크립트와 engram이 같은 위키에 같은 판정을 내는지를 봅니다. 번역이 옳다는 가정을 측정으로 바꾸는 장치입니다.</p></div>
       <div class="card"><h3 style="font-size:1em">vendoring</h3><p>남의 저장소에 있는 파일의 사본을 내 저장소에 커밋해 두는 방식입니다. 링크가 아니라 사본이라, 원본이 바뀌거나 사라져도 내 쪽 기준은 고정됩니다. 대신 원본과의 어긋남을 계속 재야 합니다.</p></div>
       <div class="card"><h3 style="font-size:1em">harness</h3><p>그 대조를 자동으로 돌리는 시험 장치 전체입니다. 저장소의 <code>harness/</code> 디렉토리이고, 명세 사본과 고정 입력(픽스처)과 기대 출력(골든 스냅샷)을 갖습니다. CI가 커밋마다 돌립니다.</p></div>
@@ -312,7 +312,7 @@ body.read #hint{display:none}
         <text class="lbl s" x="650" y="324" text-anchor="middle">규칙은 코드로, 위키마다 다른 값은 engram.yaml로</text>
         <text class="lbl s" x="650" y="344" text-anchor="middle" fill="var(--acc)">CGO_ENABLED=0 정적 바이너리 하나</text>
         <rect class="box" x="480" y="370" width="340" height="60" rx="10"/>
-        <text class="lbl s" x="650" y="393" text-anchor="middle" font-weight="700">docs/  설계 문서와 ADR 96건</text>
+        <text class="lbl s" x="650" y="393" text-anchor="middle" font-weight="700">docs/  설계 문서와 ADR 97건</text>
         <text class="lbl s" x="650" y="413" text-anchor="middle">명세가 어디로 갔는지는 spec-map.md가 추적</text>
         <text class="lbl s" x="650" y="474" text-anchor="middle" fill="var(--mute)">여기에는 위키 문서가 한 장도 없다</text>
       </g>
@@ -1362,7 +1362,7 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
       <div class="card frag"><h3>판정은 한 벌</h3><p>게이트, 노출, 토크나이저가 각각 함수 하나이고 CLI, MCP, serve, export가 그것을 공유합니다. 두 벌이 되는 곳(내보낸 린터, upstream 명세)에는 CI 대조가 붙습니다.</p></div>
       <div class="card frag"><h3>비용은 자리를 옮긴다</h3><p>무거운 것을 지우는 대신 무는 자리를 옮깁니다. CGO는 voice 모듈로, 임베딩 계산은 bridge 시점으로, 모델은 전역 캐시로. 코어의 "바이너리 하나"는 그렇게 지켜집니다.</p></div>
     </div>
-    <p class="foot">더 깊이: 동작 구조는 <code>docs/architecture.md</code>, 규칙과 구현의 대응은 <code>docs/spec-map.md</code>, 결정의 원문은 <code>docs/decisions/</code>의 ADR 96건. 이 문서가 인용한 수치는 각 ADR의 실측 절에 있습니다.</p>
+    <p class="foot">더 깊이: 동작 구조는 <code>docs/architecture.md</code>, 규칙과 구현의 대응은 <code>docs/spec-map.md</code>, 결정의 원문은 <code>docs/decisions/</code>의 ADR 97건. 이 문서가 인용한 수치는 각 ADR의 실측 절에 있습니다.</p>
   </div>
   <aside class="notes"><p>이 문서는 커리큘럼의 정규 세션은 아니고, 기술 청중을 위한 심화 자료입니다. 세션 사이 쉬는 시간의 질문("안에서 어떻게 도나요")에 답하는 용도로 만들었습니다.</p></aside>
 </section>
