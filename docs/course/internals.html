@@ -186,6 +186,11 @@ pre.code{font-size:.72em}
 .prompt{position:relative;background:var(--term);color:var(--termfg);font-family:var(--mono);font-size:.72em;line-height:1.6;padding:.75em 2.6em .75em 1em;border-radius:10px;white-space:pre-wrap;margin:.45em 0}
 .prompt .cp{position:absolute;top:7px;right:7px;border:1px solid #333a45;background:transparent;color:#aab0b8;border-radius:6px;padding:2px 9px;cursor:pointer;font:inherit;font-size:.85em}
 .prompt .cp:hover{color:#fff;border-color:#667}
+.slide.appx{background:var(--bg2)}
+body.read .slide.appx{background:var(--bg2)}
+.appxtag{display:inline-block;font-size:.68em;letter-spacing:.14em;font-weight:700;color:var(--warn);background:var(--warn2);padding:.2em .8em;border-radius:999px;margin-bottom:.6em}
+.slide h2 .tag{font-size:.42em;vertical-align:.35em;margin-left:.5em}
+
 /* ---------- 노트 ---------- */
 .notes{display:none}
 #notepane{position:fixed;right:0;top:47px;bottom:0;width:min(420px,40vw);background:#fff;border-left:1px solid var(--line);padding:18px 20px;overflow:auto;font-size:14px;line-height:1.6;color:var(--ink2);z-index:40;transform:translateX(100%);transition:transform .25s}
@@ -324,7 +329,7 @@ body.read #hint{display:none}
         <text class="lbl" x="1090" y="95" text-anchor="middle" font-weight="800">사용자 위키 (N개)</text>
         <text class="lbl s" x="1090" y="115" text-anchor="middle">각자의 저장소. engram init이 만든다</text>
         <rect class="box" x="950" y="130" width="280" height="60" rx="10"/><text class="lbl m" x="1090" y="153" text-anchor="middle">inbox/ sources/ context/ archive/</text><text class="lbl s" x="1090" y="174" text-anchor="middle">위키 문서 + engram.yaml. git이 지킨다</text>
-        <rect class="box" x="950" y="205" width="280" height="60" rx="10"/><text class="lbl s" x="1090" y="228" text-anchor="middle" font-weight="700">.engram/ 캐시, engram-state.yaml</text><text class="lbl s" x="1090" y="249" text-anchor="middle">캐시는 지워도 되고 판단 기록은 git으로 (5장)</text>
+        <rect class="box" x="950" y="205" width="280" height="60" rx="10"/><text class="lbl s" x="1090" y="228" text-anchor="middle" font-weight="700">.engram/ 캐시, engram-state.yaml</text><text class="lbl s" x="1090" y="249" text-anchor="middle">캐시는 지워도 되고 판단 기록은 git으로 (4장)</text>
         <rect class="box rej" x="950" y="280" width="280" height="115" rx="10"/>
         <text class="lbl s" x="1090" y="303" text-anchor="middle" font-weight="700">eject 하면 위키 안에 생기는 것</text>
         <text class="lbl m" x="1090" y="326" text-anchor="middle">meta/ 5종, scripts/ 린터, hook</text>
@@ -344,7 +349,7 @@ body.read #hint{display:none}
         <rect x="1178" y="76" width="66" height="24" rx="12" fill="var(--acc2)"/><text class="lbl s" x="1211" y="92" text-anchor="middle" font-weight="700">3 4 5 6</text>
         <circle cx="1230" cy="303" r="13" fill="var(--acc2)"/><text class="lbl s" x="1230" y="308" text-anchor="middle" font-weight="700">7</text>
         <text class="lbl s" x="650" y="560" text-anchor="middle" fill="var(--mute)">원 안의 숫자는 이 문서의 장 번호입니다. 1장이 upstream과 harness의 추적을, 2장이 바이너리를,</text>
-        <text class="lbl s" x="650" y="580" text-anchor="middle" fill="var(--mute)">3장부터 6장이 바이너리가 사용자 위키를 다루는 내부(frontmatter, 게이트, 검색, 임베딩)를, 7장이 eject를 다룹니다.</text>
+        <text class="lbl s" x="650" y="580" text-anchor="middle" fill="var(--mute)">3장부터 5장이 바이너리가 사용자 위키를 다루는 내부(frontmatter, 게이트, 검색, 임베딩)를, 6장이 eject를 다룹니다.</text>
       </g>
     </svg>
   </div>
@@ -401,7 +406,7 @@ body.read #hint{display:none}
     </svg>
   </div>
   <aside class="notes">
-    <p>bge-m3 사이드카는 이 그림 밖의 주간 작업입니다. 문서당 벡터 하나를 만들어 유사한데 안 이어진 쌍을 찾는 재발견이고, engram의 bridge 임베딩 축이 이것의 이식입니다(6장).</p>
+    <p>bge-m3 사이드카는 이 그림 밖의 주간 작업입니다. 문서당 벡터 하나를 만들어 유사한데 안 이어진 쌍을 찾는 재발견이고, engram의 bridge 임베딩 축이 이것의 이식입니다(5장).</p>
     <p>근거: spec-map.md 2절(스크립트가 명세를 읽지 않는다는 실측), 6절(명세에서 흘러내린 값 열 건), ADR 0001의 문제의식(스크립트 묶음은 제품으로 인지되지 않는다).</p>
   </aside>
 </section>
@@ -423,11 +428,11 @@ body.read #hint{display:none}
         <rect class="box dim" x="30" y="330" width="300" height="44" rx="8"/><text x="180" y="357" text-anchor="middle">meta/terminology.md 용어 사전</text>
       </g>
       <g class="lbl s">
-        <rect class="box acc" x="700" y="42" width="580" height="60" rx="8"/><text x="990" y="65" text-anchor="middle" font-weight="700">셋으로 갈라진다</text><text x="990" y="88" text-anchor="middle">판정 가능한 것은 lint 19종과 게이트(코드), 위키마다 다른 값은 engram.yaml, 판단은 사람에게</text>
+        <rect class="box acc" x="700" y="42" width="580" height="60" rx="8"/><text x="990" y="65" text-anchor="middle" font-weight="700">셋으로 갈라진다</text><text x="990" y="88" text-anchor="middle">판정 가능한 것은 lint 규칙(코드), 위키마다 다른 값은 engram.yaml, 판단은 사람에게</text>
         <rect class="box" x="700" y="114" width="580" height="52" rx="8"/><text x="990" y="135" text-anchor="middle" font-weight="700">Go 패키지가 된다</text><text x="990" y="156" text-anchor="middle">규칙은 internal/lint로, 절차는 커맨드로. 명세를 읽는 대신 명세가 코드가 된다</text>
-        <rect class="box" x="700" y="178" width="580" height="52" rx="8"/><text x="990" y="199" text-anchor="middle" font-weight="700">바이너리 안에는 없다</text><text x="990" y="220" text-anchor="middle">커밋을 막는 자리는 도구 밖의 일. eject가 위키 소유의 hook으로 재생성한다(7장)</text>
+        <rect class="box" x="700" y="178" width="580" height="52" rx="8"/><text x="990" y="199" text-anchor="middle" font-weight="700">바이너리 안에는 없다</text><text x="990" y="220" text-anchor="middle">커밋을 막는 자리는 도구 밖의 일. eject가 위키 소유의 hook으로 재생성한다(6장)</text>
         <rect class="box" x="700" y="242" width="580" height="52" rx="8"/><text x="990" y="263" text-anchor="middle" font-weight="700">SKILL.md 한 장으로 압축</text><text x="990" y="284" text-anchor="middle">바이너리에 임베드, skills install로 설치, MCP 접속 시 지시로도 전달(ADR 0090)</text>
-        <rect class="box" x="700" y="306" width="580" height="52" rx="8"/><text x="990" y="327" text-anchor="middle" font-weight="700">internal/embed + bridge 임베딩 축</text><text x="990" y="348" text-anchor="middle">같은 모델, 같은 2000자, 같은 하한 0.72. 순수 Go로 다시 구현(6장)</text>
+        <rect class="box" x="700" y="306" width="580" height="52" rx="8"/><text x="990" y="327" text-anchor="middle" font-weight="700">internal/embed + bridge 임베딩 축</text><text x="990" y="348" text-anchor="middle">같은 모델, 같은 2000자, 같은 하한 0.72. 순수 Go로 다시 구현(5장)</text>
         <rect class="box" x="700" y="370" width="580" height="52" rx="8"/><text x="990" y="391" text-anchor="middle" font-weight="700">internal/glossary가 형식만 안다</text><text x="990" y="412" text-anchor="middle">사전 내용은 조직 어휘라 가져오지 않는다. 표 형식의 스냅샷만 지켜본다(ADR 0094)</text>
       </g>
       <g class="draw"><path class="ln acc" d="M330 72 L 695 72" marker-end="url(#g2)"/></g>
@@ -681,7 +686,7 @@ body.read #hint{display:none}
       <g class="a"><rect class="box acc" x="20" y="20" width="1260" height="55" rx="10"/><text class="lbl" x="650" y="43" text-anchor="middle" font-weight="800">위키 파일 (진실원)   *.md   engram.yaml   engram-state.yaml   |   .engram/ 캐시</text><text class="lbl s" x="650" y="65" text-anchor="middle">사용자와 다른 도구도 직접 고칠 수 있다. 도구가 파일 접근을 독점하지 않는다</text></g>
       <g class="a d1"><rect class="box" x="20" y="100" width="1260" height="55" rx="10"/><text class="lbl" x="650" y="123" text-anchor="middle"><tspan font-weight="700">기반</tspan>   doc 파싱과 직렬화   walk 순회   graph 링크와 정규화   config 프리셋과 임계값   state   i18n</text><text class="lbl s" x="650" y="145" text-anchor="middle">파일을 읽고 쓰는 유일한 통로. 여기 위로는 파일을 직접 만지지 않는다</text></g>
       <g class="a d2"><g class="lbl s">
-        <rect class="box" x="20" y="180" width="238" height="70" rx="8"/><text x="139" y="205" text-anchor="middle" font-weight="700">판정</text><text x="139" y="226" text-anchor="middle">lint(규칙 19+게이트)</text><text x="139" y="243" text-anchor="middle">doctor  expose  secret</text>
+        <rect class="box" x="20" y="180" width="238" height="70" rx="8"/><text x="139" y="205" text-anchor="middle" font-weight="700">판정</text><text x="139" y="226" text-anchor="middle">lint(규칙과 게이트)</text><text x="139" y="243" text-anchor="middle">doctor  expose  secret</text>
         <rect class="box" x="276" y="180" width="238" height="70" rx="8"/><text x="395" y="205" text-anchor="middle" font-weight="700">쓰기</text><text x="395" y="226" text-anchor="middle">wiki(생성, 이동, 파생)</text><text x="395" y="243" text-anchor="middle">migrate  gitdate</text>
         <rect class="box" x="532" y="180" width="238" height="70" rx="8"/><text x="651" y="205" text-anchor="middle" font-weight="700">검색</text><text x="651" y="226" text-anchor="middle">index(토큰, BM25)  chunk</text><text x="651" y="243" text-anchor="middle">embed  glossary</text>
         <rect class="box" x="788" y="180" width="238" height="70" rx="8"/><text x="907" y="205" text-anchor="middle" font-weight="700">재발견</text><text x="907" y="226" text-anchor="middle">resurface  bridge</text><text x="907" y="243" text-anchor="middle">digest  status</text>
@@ -695,301 +700,243 @@ body.read #hint{display:none}
   <aside class="notes"><p>화살표가 아래에서 위로만 향하는 것이 규칙입니다. 기능 패키지끼리는 서로 부르지 않고 기반을 공유합니다. 예외처럼 보이는 것(bridge가 index의 TF를 쓰는 것)도 index가 검색 계층의 기반 역할을 겸하는 것이지 역방향 의존이 아닙니다.</p></aside>
 </section>
 
-<!-- ============ 3. frontmatter의 일생 ============ -->
+<!-- ============ 3. frontmatter와 판정 ============ -->
 <section class="slide chap dark" data-ch="3">
   <div class="in">
     <div class="kicker">3장</div>
-    <h1>frontmatter의 일생</h1>
-    <p class="lead">문서 머리의 YAML은 장식이 아니라 제어면입니다. 누가 부여하고, 누가 바꾸고, 누가 검사하고, 누가 읽는지를 따라갑니다.</p>
+    <h1>frontmatter와 판정</h1>
+    <p class="lead">문서 머리의 YAML은 장식이 아니라 제어면입니다. 누가 부여하고, 무엇이 검사하고, 승급이라는 사건에서 그것이 어떻게 판정으로 바뀌는지를 따라갑니다.</p>
   </div>
   <div class="num">3</div>
-  <aside class="notes"><p>근거: ADR 0009(프리셋과 축), 0017(YAML), 0018(taxonomy 필드명), 0022(파생 기록), 0032와 0037과 0072(날짜), 0064(sources 보호).</p></aside>
+  <aside class="notes"><p>근거: ADR 0009(프리셋과 축), 0017(YAML), 0018(taxonomy 필드명), 0022(이동과 파생), 0032와 0037과 0072(날짜와 필드의 소비자), 0040(디렉토리 기준), 0054(실재 링크만 센다), 0064(sources 보호), 0069(secret), 0070(inbox 기본 제외).</p></aside>
 </section>
 
 <section class="slide" data-ch="3">
   <div class="in">
-    <h2>부여와 변형: 커맨드가 지나갈 때마다 머리말이 바뀐다</h2>
-    <p class="quote">같은 문서 하나를 세 시점에서 찍은 것입니다. frontmatter는 사람이 채우는 양식이 아니라 커맨드가 부여하고 고쳐 가는 제어면입니다.</p>
-    <svg class="fig" viewBox="0 0 1300 520" aria-label="capture가 초기값을 부여하고 promote가 단계 필드를 바꾸며 update와 sync가 날짜를 관리하는 과정을 문서 스냅샷 셋으로 보여준다" style="max-width:1300px;margin:0 auto">
-      <defs><marker id="g7" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--acc)"/></marker></defs>
-      <!-- 스냅샷 1: capture 직후 -->
-      <g class="a">
-        <text class="lbl" x="210" y="30" text-anchor="middle" font-weight="700">1  capture가 부여한다</text>
-        <rect class="box" x="40" y="45" width="340" height="300" rx="10"/>
-        <text class="lbl m" x="60" y="72" fill="var(--mute)">inbox/2026-08-22-회의-전사.md</text>
-        <g class="lbl m"><text x="60" y="100">---</text>
-          <text x="60" y="124">type: <tspan fill="var(--acc)" font-weight="700">inbox-note</tspan></text>
-          <text x="60" y="148">artifact_stage: <tspan fill="var(--acc)" font-weight="700">inbox</tspan></text>
-          <text x="60" y="172">status: <tspan fill="var(--acc)" font-weight="700">inbox</tspan></text>
-          <text x="60" y="196">source_channel:</text>
-          <text x="60" y="220">indexable: <tspan fill="var(--acc)" font-weight="700">false</tspan></text>
-          <text x="60" y="244">created: <tspan fill="var(--acc)" font-weight="700">2026-08-22</tspan></text>
-          <text x="60" y="268">---</text>
-        </g>
-        <text class="lbl s" x="210" y="300" text-anchor="middle">사람은 아무 필드도 안 채웠다.</text>
-        <text class="lbl s" x="210" y="320" text-anchor="middle">단계별 초기값 표가 internal/wiki에 있고</text>
-        <text class="lbl s" x="210" y="338" text-anchor="middle">프리셋이 켠 축만 만들어진다</text>
-      </g>
-      <!-- 스냅샷 2: promote 직후 -->
-      <g class="a d2">
-        <text class="lbl" x="650" y="30" text-anchor="middle" font-weight="700">2  promote가 다시 쓴다</text>
-        <rect class="box acc" x="480" y="45" width="340" height="300" rx="10"/>
-        <text class="lbl m" x="500" y="72" fill="var(--mute)">context/회의-전사.md  (접두사가 떨어졌다)</text>
-        <g class="lbl m"><text x="500" y="100">---</text>
-          <text x="500" y="124">type: <tspan fill="var(--rej)" font-weight="700">meeting-summary</tspan></text>
-          <text x="500" y="148">artifact_stage: <tspan fill="var(--rej)" font-weight="700">context</tspan></text>
-          <text x="500" y="172">status: <tspan fill="var(--rej)" font-weight="700">promoted</tspan></text>
-          <text x="500" y="196">related: <tspan fill="var(--rej)" font-weight="700">[[index]] [[배포-정책]]</tspan></text>
-          <text x="500" y="220">indexable: <tspan fill="var(--rej)" font-weight="700">true</tspan></text>
-          <text x="500" y="244">created: 2026-08-22</text>
-          <text x="500" y="268">---</text>
-        </g>
-        <text class="lbl s" x="650" y="300" text-anchor="middle">게이트를 지나야만 이 상태가 된다.</text>
-        <text class="lbl s" x="650" y="320" text-anchor="middle">sources에서 올랐다면 이동 대신 파생이고</text>
-        <text class="lbl s" x="650" y="338" text-anchor="middle">derived_from과 원본의 derived_context가 붙는다</text>
-      </g>
-      <!-- 스냅샷 3: 시간이 흐른 뒤 -->
-      <g class="a d4">
-        <text class="lbl" x="1090" y="30" text-anchor="middle" font-weight="700">3  update와 sync가 날짜를 관리한다</text>
-        <rect class="box" x="920" y="45" width="340" height="300" rx="10"/>
-        <text class="lbl m" x="940" y="72" fill="var(--mute)">context/회의-전사.md  (석 달 뒤)</text>
-        <g class="lbl m"><text x="940" y="100">---</text>
-          <text x="940" y="124">...</text>
-          <text x="940" y="148">created: 2026-08-22</text>
-          <text x="940" y="172">sourced_at: <tspan fill="var(--warn)" font-weight="700">2026-08-22</tspan></text>
-          <text x="940" y="196">updated: <tspan fill="var(--warn)" font-weight="700">2026-11-30</tspan></text>
-          <text x="940" y="220">---</text>
-        </g>
-        <text class="lbl s" x="1090" y="252" text-anchor="middle">updated는 update 커맨드가 쓰고,</text>
-        <text class="lbl s" x="1090" y="272" text-anchor="middle">에디터로 고친 파일은 sync가 git 이력에서 정정한다</text>
-        <text class="lbl s" x="1090" y="296" text-anchor="middle" fill="var(--warn)">sources/ 문서에는 updated가 영영 없다.</text>
-        <text class="lbl s" x="1090" y="316" text-anchor="middle" fill="var(--warn)">오타 수정이 신선도로 오해되면 재발견이 오염된다.</text>
-        <text class="lbl s" x="1090" y="336" text-anchor="middle" fill="var(--warn)">update는 sources 본문 변경 자체를 거절한다</text>
-      </g>
-      <g class="draw d1"><path class="ln acc" d="M380 190 L 475 190" marker-end="url(#g7)"/><text class="lbl s" x="428" y="178" text-anchor="middle">promote (게이트)</text></g>
-      <g class="draw d3"><path class="ln acc" d="M820 190 L 915 190" marker-end="url(#g7)"/><text class="lbl s" x="868" y="178" text-anchor="middle">시간과 편집</text></g>
-      <g class="a d5">
-        <rect class="box dim" x="40" y="390" width="1220" height="105" rx="10"/>
-        <text class="lbl s" x="650" y="416" text-anchor="middle" font-weight="700">쓰는 손은 넷뿐이고, 각자 만질 수 있는 필드가 정해져 있다</text>
-        <g class="lbl s">
-          <text x="120" y="448" font-weight="700" fill="var(--acc)">capture / source / new</text><text x="120" y="470">단계별 초기값 부여</text>
-          <text x="450" y="448" font-weight="700" fill="var(--acc)">promote / demote / archive</text><text x="450" y="470">단계 필드와 관계 필드만</text>
-          <text x="790" y="448" font-weight="700" fill="var(--acc)">update</text><text x="790" y="470">본문과 일반 필드. 단계는 못 바꾼다</text>
-          <text x="1080" y="448" font-weight="700" fill="var(--acc)">sync</text><text x="1080" y="470">날짜만. git 이력이 근거</text>
-        </g>
-      </g>
-    </svg>
+    <h2>부여와 변형 <span class="tag acc">판정은 한 벌</span></h2>
+    <p class="quote">같은 문서 하나를 세 시점에서 찍은 것입니다. frontmatter는 사람이 채우는 양식이 아니라 커맨드가 부여하고 고쳐 가는 제어면입니다. 그래서 어느 커맨드가 어느 필드를 만질 수 있는지가 정해져 있습니다.</p>
+    <div class="cols3">
+      <div>
+        <h3>1  capture가 부여한다</h3>
+<pre class="code"><span class="c">inbox/2026-08-22-회의-전사.md</span>
+---
+type: <span class="y">inbox-note</span>
+artifact_stage: <span class="y">inbox</span>
+status: <span class="y">inbox</span>
+source_channel:
+indexable: <span class="y">false</span>
+created: <span class="y">2026-08-22</span>
+---</pre>
+        <p class="small">사람은 아무 필드도 채우지 않았습니다. 단계별 초기값이 코드에 있고, 프리셋이 켠 축만 만들어집니다.</p>
+      </div>
+      <div>
+        <h3>2  promote가 다시 쓴다</h3>
+<pre class="code"><span class="c">context/회의-전사.md</span>
+---
+type: <span class="y">meeting-summary</span>
+artifact_stage: <span class="y">context</span>
+status: <span class="y">promoted</span>
+related: <span class="y">["[[배포-정책]]"]</span>
+indexable: <span class="y">true</span>
+created: 2026-08-22
+---</pre>
+        <p class="small">게이트를 지나야 이 상태가 됩니다. 날짜 접두사가 떨어지고, sources에서 올랐다면 이동 대신 파생입니다.</p>
+      </div>
+      <div>
+        <h3>3  시간이 지난 뒤</h3>
+<pre class="code"><span class="c">context/회의-전사.md  (석 달 뒤)</span>
+---
+type: meeting-summary
+artifact_stage: context
+created: 2026-08-22
+sourced_at: <span class="y">2026-08-22</span>
+updated: <span class="y">2026-11-30</span>
+---</pre>
+        <p class="small">updated는 update가 쓰고, 에디터로 고친 파일은 sync가 git 이력에서 정정합니다.</p>
+      </div>
+    </div>
+    <table style="margin-top:1em">
+      <tr><th style="width:22%">쓰는 손</th><th style="width:34%">만질 수 있는 것</th><th>막혀 있는 것</th></tr>
+      <tr><td><code>capture</code> <code>source</code> <code>new</code></td><td>단계별 초기값 부여</td><td>이미 있는 문서의 단계를 바꾸지 않는다</td></tr>
+      <tr><td><code>promote</code> <code>demote</code> <code>archive</code></td><td>단계 필드와 관계 필드</td><td>본문을 건드리지 않는다</td></tr>
+      <tr><td><code>update</code></td><td>본문과 일반 필드</td><td>artifact_stage를 거절한다. 단계 이동은 파일 이동과 한 몸이라서다</td></tr>
+      <tr><td><code>sync</code></td><td>날짜 필드만. git 이력이 근거</td><td>그 밖의 필드를 읽지도 쓰지도 않는다</td></tr>
+      <tr><td>사람의 에디터</td><td>전부</td><td>막지 않는다. 도구는 파일 접근을 독점하지 않고, 결과는 다음 lint가 검사한다</td></tr>
+    </table>
+    <p class="small mute" style="margin-top:.5em">sources 문서에는 updated가 영영 없습니다. 오타 수정이 신선도로 오해되면 재발견이 오염되기 때문이고, update는 sources 본문 변경 자체를 거절합니다.</p>
   </div>
   <aside class="notes">
-    <p>사람이 에디터로 직접 고치는 것도 항상 열려 있습니다. 도구는 파일 접근을 독점하지 않고, 직접 고친 결과는 다음 lint가 검사합니다. update가 artifact_stage 변경을 거절하는 이유는 단계 이동이 파일 이동과 한 몸이기 때문입니다. 선언만 바꾸면 위치와 어긋나고, 그것은 다음 슬라이드의 location.stage-agreement가 잡습니다.</p>
+    <p>단계별 초기값 표는 internal/wiki에 있습니다. 세 스냅샷에서 노란 값이 그 시점에 커맨드가 쓴 필드이고, 나머지는 앞 시점에서 그대로 온 것입니다.</p>
+    <p>sources에서 올릴 때는 원본이 남고 새 문서가 생깁니다. 새 문서에 derived_from, 원본에 derived_context가 붙습니다(ADR 0022).</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="3">
   <div class="in">
-    <h2>검사: 필드마다 지켜보는 규칙이 붙어 있다</h2>
-    <p class="quote">규칙 20종 전부가 이 한 장에 있습니다. 각 규칙이 문서의 어느 필드를 보는지, 걸리면 어느 등급인지가 화살표 하나씩입니다.</p>
-    <svg class="fig" viewBox="0 0 1300 480" aria-label="문서의 각 필드에 lint 규칙이 화살표로 붙는다" style="max-width:1300px;margin:0 auto">
-      <defs><marker id="g8" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
-      <rect class="box" x="440" y="30" width="420" height="420" rx="12"/>
-      <text class="lbl m" x="460" y="58" fill="var(--mute)">context/회의-전사.md</text>
-      <g class="lbl m">
-        <text x="460" y="90">---</text>
-        <text x="460" y="120">type: meeting-summary</text>
-        <text x="460" y="150">artifact_stage: context</text>
-        <text x="460" y="180">form: note</text>
-        <text x="460" y="210">topics: [배포, 회고]</text>
-        <text x="460" y="240">sensitivity: internal</text>
-        <text x="460" y="270">related: ["[[배포-정책]]"]</text>
-        <text x="460" y="300">indexable: true</text>
-        <text x="460" y="330">updated: 2026-11-30</text>
-        <text x="460" y="360">---</text>
-        <text x="460" y="395">본문 ... [[없는문서]] ...</text>
-      </g>
-      <!-- 왼쪽 규칙들 -->
-      <g class="lbl s">
-        <g class="a"><rect class="box rej" x="30" y="70" width="330" height="56" rx="8"/><text x="195" y="92" text-anchor="middle" font-weight="700">frontmatter.missing / unclosed / yaml</text><text x="195" y="113" text-anchor="middle">머리말 자체가 없거나 안 닫혔거나 문법 오류. error</text><path class="ln draw" d="M360 98 L 435 92" marker-end="url(#g8)"/></g>
-        <g class="a d1"><rect class="box rej" x="30" y="140" width="330" height="56" rx="8"/><text x="195" y="162" text-anchor="middle" font-weight="700">schema.allowed-value + missing-field</text><text x="195" y="183" text-anchor="middle">허용 집합 밖의 값, 단계별 필수 필드 누락. error</text><path class="ln draw d1" d="M360 168 L 435 145" marker-end="url(#g8)"/><path class="ln draw d1" d="M360 168 L 435 116" marker-end="url(#g8)"/></g>
-        <g class="a d2"><rect class="box rej" x="30" y="210" width="330" height="56" rx="8"/><text x="195" y="232" text-anchor="middle" font-weight="700">location.stage-agreement</text><text x="195" y="253" text-anchor="middle">선언과 디렉토리 불일치. 상향 사칭은 error, 하향은 warn</text><path class="ln draw d2" d="M360 238 L 435 148" marker-end="url(#g8)"/></g>
-        <g class="a d3"><rect class="box warn" x="30" y="280" width="330" height="56" rx="8"/><text x="195" y="302" text-anchor="middle" font-weight="700">taxonomy.forms (error) / topics (warn)</text><text x="195" y="323" text-anchor="middle">폐쇄 집합은 막고 개방 집합은 알린다</text><path class="ln draw d3" d="M360 308 L 435 178" marker-end="url(#g8)"/><path class="ln draw d3" d="M360 308 L 435 206" marker-end="url(#g8)"/></g>
-        <g class="a d4"><rect class="box warn" x="30" y="350" width="330" height="56" rx="8"/><text x="195" y="372" text-anchor="middle" font-weight="700">schema.axis-off / deprecated-field</text><text x="195" y="393" text-anchor="middle">꺼진 축의 필드, 폐기된 필드가 남아 있음</text><path class="ln draw d4" d="M360 378 L 435 238" marker-end="url(#g8)"/></g>
-      </g>
-      <!-- 오른쪽 규칙들 -->
-      <g class="lbl s">
-        <g class="a d1"><rect class="box rej" x="940" y="70" width="330" height="56" rx="8"/><text x="1105" y="92" text-anchor="middle" font-weight="700">gate.min-wikilinks (reject)</text><text x="1105" y="113" text-anchor="middle">context 문서의 실재 링크 수가 기준 미달. 유일한 거절</text><path class="ln draw d1" d="M935 98 L 865 268" marker-end="url(#g8)"/></g>
-        <g class="a d2"><rect class="box warn" x="940" y="140" width="330" height="56" rx="8"/><text x="1105" y="162" text-anchor="middle" font-weight="700">link.broken / graph.orphan / empty-provenance</text><text x="1105" y="183" text-anchor="middle">깨진 링크, 고립 노드, 비어 있는 출처. warn</text><path class="ln draw d2" d="M935 168 L 865 393" marker-end="url(#g8)"/></g>
-        <g class="a d3"><rect class="box warn" x="940" y="210" width="330" height="56" rx="8"/><text x="1105" y="232" text-anchor="middle" font-weight="700">schema.indexable-stage</text><text x="1105" y="253" text-anchor="middle">단계 기본과 어긋난 indexable 값. warn</text><path class="ln draw d3" d="M935 238 L 865 298" marker-end="url(#g8)"/></g>
-        <g class="a d4"><rect class="box warn" x="940" y="280" width="330" height="56" rx="8"/><text x="1105" y="302" text-anchor="middle" font-weight="700">sources.updated</text><text x="1105" y="323" text-anchor="middle">sources 문서에 updated가 있음. warn</text><path class="ln draw d4" d="M935 308 L 865 328" marker-end="url(#g8)"/></g>
-        <g class="a d5"><rect class="box warn" x="940" y="350" width="330" height="56" rx="8"/><text x="1105" y="372" text-anchor="middle" font-weight="700">body.max-lines / wiki.broad-topic / gate.deferred</text><text x="1105" y="393" text-anchor="middle">문서 길이, 주제 쏠림, 게이트 유예. warn</text><path class="ln draw d5" d="M935 378 L 865 400" marker-end="url(#g8)"/></g>
-      </g>
-      <text class="lbl s a d6" x="650" y="472" text-anchor="middle" fill="var(--mute)">규칙 20종 전부가 이 한 장에 있습니다. 모든 메시지는 현재 값, 필요 값, 고치는 법을 함께 냅니다. 거절(reject)은 게이트 하나뿐입니다.</text>
-    </svg>
+    <h2>검사: 규칙 20종 <span class="tag acc">판정은 한 벌</span></h2>
+    <p class="quote">규칙은 코드 한 곳에 정의되고 <code>engram rules show</code>가 그것을 그대로 냅니다. 아래는 그 출력이며, 등급이 곧 그 규칙이 무엇을 할 수 있는지입니다. 승급을 거절하는 것은 맨 위 하나뿐입니다.</p>
+    <div class="cards" style="grid-auto-rows:auto;margin-bottom:.8em;font-size:.86em">
+      <div class="card rej"><h3 style="font-size:1em">등급이 뜻하는 것</h3><p><span class="tag rej">reject</span> 승급을 막는다. 관문이라 하나뿐입니다.<br><span class="tag warn">error</span> 기계가 읽을 수 없거나 스키마 선언이 거짓이 된 상태. lint를 종료 코드 1로 끝냅니다.<br><span class="tag">warn</span> 사람의 판단이 필요한 것. 알리고 통과시킵니다.</p></div>
+      <div class="card"><h3 style="font-size:1em">검사 범위</h3><p>lint는 inbox 문서를 스키마 판정에서 기본으로 뺍니다(<code>--include-inbox</code>로 켬, ADR 0070). 러프 캡처를 검사하면 캡처가 위축되기 때문입니다. 링크는 inbox에서도 봅니다.<br>모든 메시지는 현재 값, 필요 값, 고치는 법을 함께 냅니다.</p></div>
+    </div>
+    <table>
+      <tr><th style="width:24%">규칙</th><th style="width:13%">등급</th><th>무엇을 보나</th></tr>
+      <tr style="background:var(--rej2)"><td><code>gate.min-wikilinks</code></td><td><strong>reject</strong></td><td>context 아래 문서의 실재 위키링크 수가 min_wikilinks 미달. 게이트의 유일한 거절 사유</td></tr>
+      <tr><td><code>frontmatter.missing</code></td><td>error</td><td>프론트매터 블록이 아예 없는 문서</td></tr>
+      <tr><td><code>frontmatter.unclosed</code></td><td>error</td><td>닫는 구분자 없이 끝난 프론트매터</td></tr>
+      <tr><td><code>frontmatter.yaml</code></td><td>error</td><td>프론트매터 YAML 문법 오류</td></tr>
+      <tr><td><code>frontmatter.missing-field</code></td><td>error</td><td>단계별 필수 필드 누락</td></tr>
+      <tr><td><code>schema.allowed-value</code></td><td>error</td><td>허용 집합 밖의 필드 값</td></tr>
+      <tr><td><code>schema.axis-off</code></td><td>error</td><td>설정이 끈 속성이 문서에 남아 있음</td></tr>
+      <tr><td><code>schema.indexable-stage</code></td><td>error 또는 warn</td><td>단계와 indexable의 정합. inbox에서 false가 아니면 error, 그 밖은 warn</td></tr>
+      <tr><td><code>schema.deprecated-field</code></td><td>error</td><td>폐기 선언된 필드가 프론트매터에 있음</td></tr>
+      <tr><td><code>security.secret</code></td><td>error</td><td>시크릿으로 보이는 문자열 여섯 패턴. 개인키, 클라우드 키, 토큰, 인증 헤더, 홈 경로</td></tr>
+      <tr><td><code>location.stage-agreement</code></td><td>error 또는 warn</td><td>디렉토리와 artifact_stage의 불일치. 상향 사칭은 error, 그 밖은 warn</td></tr>
+      <tr><td><code>taxonomy.forms</code></td><td>error</td><td>폐쇄 집합에 없는 form 값</td></tr>
+      <tr><td><code>sources.updated</code></td><td>error</td><td>sources 문서의 원본 보존에 어긋나는 updated 필드</td></tr>
+      <tr><td><code>taxonomy.topics</code></td><td>warn</td><td>정의되지 않은 topics 값. 개방 집합이라 경고에 그친다</td></tr>
+      <tr><td><code>body.max-lines</code></td><td>warn</td><td>문서 줄 수가 max_lines 초과</td></tr>
+      <tr><td><code>link.broken</code></td><td>warn</td><td>위키링크가 가리키는 문서가 위키에 없음</td></tr>
+      <tr><td><code>graph.orphan</code></td><td>warn</td><td>들어오는 관계와 나가는 관계가 모두 없는 문서</td></tr>
+      <tr><td><code>graph.empty-provenance</code></td><td>warn</td><td>context 문서의 source_refs가 빈 배열</td></tr>
+      <tr><td><code>gate.deferred</code></td><td>warn</td><td>링크 가능한 대상 문서가 부족해 게이트를 유예했음</td></tr>
+      <tr><td><code>wiki.broad-topic</code></td><td>warn</td><td>한 주제가 전체 문서의 broad_topic_pct를 넘게 붙음</td></tr>
+    </table>
   </div>
   <aside class="notes">
-    <p>lint는 inbox 문서를 기본으로 스키마 판정에서 뺍니다(--include-inbox로 켬, ADR 0070). 러프 캡처를 검사하면 캡처가 위축되기 때문이고, 링크는 봅니다. 등급의 원리: reject는 관문 하나, error는 기계가 읽을 수 없거나 스키마가 거짓이 되는 상태, warn은 판단이 필요한 것.</p>
+    <p>이 표의 진실원은 <code>engram rules show</code>입니다. 규칙을 더하거나 등급을 바꾸면 그 출력이 먼저 바뀌고 이 표가 따라옵니다. 표에 적힌 임계값 이름(min_wikilinks, max_lines, broad_topic_pct)은 engram.yaml에서 위키마다 다를 수 있고, 같은 커맨드가 위키의 실제 값을 함께 냅니다.</p>
+    <p>등급의 원리는 셋입니다. reject는 관문 하나, error는 기계가 읽을 수 없거나 스키마가 거짓이 되는 상태, warn은 사람이 판단할 것. 이 구분이 있어야 lint의 종료 코드가 뜻을 갖습니다.</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="3">
   <div class="in">
-    <h2>사용: 같은 머리말을 여섯 소비자가 나눠 읽는다</h2>
+    <h2>사용: 여섯 소비자가 나눠 읽는다 <span class="tag acc">판정은 한 벌</span></h2>
     <p class="quote">검사를 통과한 머리말은 그대로 데이터가 됩니다. 여섯 기능이 각자 다른 필드를 읽고, 아무도 같은 필드를 다르게 해석하지 않습니다.</p>
-    <svg class="fig" viewBox="0 0 1300 430" aria-label="frontmatter의 필드들을 색인, 그래프, 재발견, 집계, 노출, 게이트가 각각 골라 읽는다" style="max-width:1300px;margin:0 auto">
-      <defs><marker id="g9" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--acc)"/></marker></defs>
-      <rect class="box" x="20" y="60" width="330" height="330" rx="12"/>
-      <text class="lbl" x="185" y="45" text-anchor="middle" font-weight="700">frontmatter</text>
-      <g class="lbl m">
-        <text x="45" y="95">title(첫 헤딩), 본문</text>
-        <text x="45" y="130">topics, tags</text>
-        <text x="45" y="165">related, derived_from,</text>
-        <text x="45" y="188">derived_context, source_refs</text>
-        <text x="45" y="223">updated</text>
-        <text x="45" y="258">created, sourced_at</text>
-        <text x="45" y="293">artifact_stage, sensitivity,</text>
-        <text x="45" y="316">indexable, status</text>
-        <text x="45" y="351">form, scope, 그 밖의 축</text>
-      </g>
-      <g class="lbl s">
-        <g class="a"><rect class="box acc" x="560" y="55" width="330" height="52" rx="8"/><text x="725" y="76" text-anchor="middle" font-weight="700">index  검색 색인</text><text x="725" y="97" text-anchor="middle">제목 5배, topics와 tags 3배, 본문 1배로 가중</text><path class="ln draw" d="M350 90 L 555 78" marker-end="url(#g9)"/><path class="ln draw" d="M350 125 L 555 90" marker-end="url(#g9)"/></g>
-        <g class="a d1"><rect class="box acc" x="560" y="119" width="330" height="52" rx="8"/><text x="725" y="140" text-anchor="middle" font-weight="700">graph  링크 그래프</text><text x="725" y="161" text-anchor="middle">관계 필드 넷 + 본문 위키링크가 엣지</text><path class="ln draw d1" d="M350 178 L 555 145" marker-end="url(#g9)"/></g>
-        <g class="a d2"><rect class="box acc" x="560" y="183" width="330" height="52" rx="8"/><text x="725" y="204" text-anchor="middle" font-weight="700">resurface  노후 판정</text><text x="725" y="225" text-anchor="middle">updated 기준 stale_days 경과 + 들어오는 링크 수</text><path class="ln draw d2" d="M350 220 L 555 209" marker-end="url(#g9)"/></g>
-        <g class="a d3"><rect class="box acc" x="560" y="247" width="330" height="52" rx="8"/><text x="725" y="268" text-anchor="middle" font-weight="700">digest  기간 집계</text><text x="725" y="289" text-anchor="middle">created와 sourced_at으로 신규, 노후, 고아를 센다</text><path class="ln draw d3" d="M350 255 L 555 273" marker-end="url(#g9)"/></g>
-        <g class="a d4"><rect class="box acc" x="560" y="311" width="330" height="52" rx="8"/><text x="725" y="332" text-anchor="middle" font-weight="700">expose  노출 판정</text><text x="725" y="353" text-anchor="middle">serve, export, mcp가 공유. 민감도는 뒤집는 플래그가 없다</text><path class="ln draw d4" d="M350 300 L 555 337" marker-end="url(#g9)"/></g>
-      </g>
-      <g class="a d5">
-        <rect class="box rej" x="960" y="119" width="320" height="116" rx="8"/>
-        <text class="lbl s" x="1120" y="145" text-anchor="middle" font-weight="700">gate  승급 게이트</text>
-        <text class="lbl s" x="1120" y="170" text-anchor="middle">related와 본문 링크 중 실재하는 것만 센다</text>
-        <text class="lbl s" x="1120" y="191" text-anchor="middle">없는 슬러그, 자기 자신, inbox 문서는 제외</text>
-        <text class="lbl s" x="1120" y="212" text-anchor="middle">min_wikilinks 미달이면 승급 거절</text>
-        <path class="ln draw d5" d="M890 145 L 955 160" marker-end="url(#g9)"/>
-      </g>
-      <text class="lbl s a d6" x="650" y="418" text-anchor="middle" fill="var(--mute)">읽는 곳이 없는 필드는 만들지 않는다는 것이 규칙입니다(ADR 0072). 필드마다 쓰는 손과 읽는 눈이 하나 이상 정해져 있어야 스키마가 장식이 되지 않습니다.</text>
-    </svg>
+    <table>
+      <tr><th style="width:14%">소비자</th><th style="width:36%">읽는 필드</th><th>무엇에 쓰나</th></tr>
+      <tr><td><strong>index</strong></td><td>제목(첫 헤딩), 본문, topics, tags</td><td>검색 색인. 제목 5배, topics와 tags 3배, 본문 1배로 가중한다</td></tr>
+      <tr><td><strong>graph</strong></td><td>related, derived_from, derived_context, source_refs, 본문 위키링크</td><td>링크 그래프의 엣지. 관계 필드 넷과 본문 링크가 같은 자격이다</td></tr>
+      <tr><td><strong>resurface</strong></td><td>updated, 들어오는 링크 수</td><td>노후 판정. updated 기준으로 stale_days가 지난 문서를 고른다</td></tr>
+      <tr><td><strong>digest</strong></td><td>created, sourced_at</td><td>기간 집계. 신규, 노후, 고아를 센다</td></tr>
+      <tr><td><strong>expose</strong></td><td>sensitivity, indexable, artifact_stage</td><td>노출 판정. serve, export, mcp가 같은 함수를 공유하고 뒤집는 플래그가 없다</td></tr>
+      <tr style="background:var(--rej2)"><td><strong>gate</strong></td><td>related, 본문 위키링크</td><td>승급 거절 판정. 실재하는 것만 센다(다음 두 장)</td></tr>
+    </table>
+    <p class="small mute" style="margin-top:.6em">읽는 곳이 없는 필드는 만들지 않는다는 것이 규칙입니다(ADR 0072). 필드마다 쓰는 손과 읽는 눈이 하나 이상 정해져 있어야 스키마가 장식이 되지 않습니다.</p>
   </div>
-  <aside class="notes"><p>form, scope 같은 나머지 축의 소비자는 lint(허용값 검사)와 사람(검토와 필터)입니다. sensitivity는 expose가 읽어 private-local-only와 restricted를 네트워크 밖으로 내보내지 않으며, promote와 export 시점에는 secret 패턴 탐지(API 키 등)도 함께 돕니다(ADR 0069).</p></aside>
+  <aside class="notes"><p>form과 scope 같은 나머지 축의 소비자는 lint의 허용값 검사와 사람의 필터입니다. sensitivity는 expose가 읽어 private-local-only와 restricted를 네트워크 밖으로 내보내지 않으며, promote와 export 시점에는 시크릿 패턴 탐지도 함께 돕니다(ADR 0069).</p></aside>
 </section>
 
 <section class="slide" data-ch="3">
   <div class="in">
+    <h2>promote 한 번의 다섯 단계 <span class="tag acc">판정은 한 벌</span></h2>
+    <p class="quote">앞 장의 규칙들이 실제로 발동하는 사건이 승급입니다. promote 하나가 다섯 단계를 순서대로 지나가고, 거절할 수 있는 것은 그중 한 단계뿐입니다.</p>
+    <svg class="fig" viewBox="0 0 1300 250" aria-label="스키마, 게이트, 반출 안전, 이동 또는 파생, 관계 기록의 다섯 단계를 지나며 게이트 판정 함수는 세 커맨드가 공유한다" style="max-width:1300px;margin:0 auto">
+      <defs><marker id="gb" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker><marker id="gba" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--acc)"/></marker></defs>
+      <g class="lbl s">
+        <g class="a"><rect class="box" x="15" y="30" width="230" height="86" rx="10"/><text x="130" y="62" text-anchor="middle" font-weight="700">1  스키마</text><text x="130" y="90" text-anchor="middle">단계별 필수 필드와 허용값</text></g>
+        <g class="a d1"><rect class="box rej" x="275" y="30" width="230" height="86" rx="10"/><text x="390" y="62" text-anchor="middle" font-weight="700">2  게이트</text><text x="390" y="90" text-anchor="middle">거절할 수 있는 유일한 단계</text></g>
+        <g class="a d2"><rect class="box warn" x="535" y="30" width="230" height="86" rx="10"/><text x="650" y="62" text-anchor="middle" font-weight="700">3  반출 안전</text><text x="650" y="90" text-anchor="middle">민감도 제한 값과 시크릿 패턴</text></g>
+        <g class="a d3"><rect class="box acc" x="795" y="30" width="230" height="86" rx="10"/><text x="910" y="62" text-anchor="middle" font-weight="700">4  이동 또는 파생</text><text x="910" y="90" text-anchor="middle">inbox는 옮기고 sources는 파생</text></g>
+        <g class="a d4"><rect class="box" x="1055" y="30" width="230" height="86" rx="10"/><text x="1170" y="62" text-anchor="middle" font-weight="700">5  관계 기록</text><text x="1170" y="90" text-anchor="middle">파생의 양쪽에 출처를 남긴다</text></g>
+      </g>
+      <path class="ln draw" d="M245 73 L 270 73" marker-end="url(#gb)"/><path class="ln draw d1" d="M505 73 L 530 73" marker-end="url(#gb)"/><path class="ln draw d2" d="M765 73 L 790 73" marker-end="url(#gb)"/><path class="ln draw d3" d="M1025 73 L 1050 73" marker-end="url(#gb)"/>
+      <g class="a d5">
+        <rect class="box acc" x="440" y="175" width="420" height="56" rx="10"/>
+        <text class="lbl m" x="650" y="200" text-anchor="middle">lint.EvaluateGate</text>
+        <text class="lbl s" x="650" y="221" text-anchor="middle">promote, new, lint이 이 함수 하나를 부른다</text>
+        <path class="ln acc dash" d="M560 175 C 480 150, 420 130, 392 120" marker-end="url(#gba)"/>
+      </g>
+    </svg>
+    <div class="cols" style="margin-top:.6em">
+      <div>
+        <p class="small"><strong>게이트가 보는 것은 선언이 아니라 디렉토리입니다.</strong> context 아래에 있으면 artifact_stage를 뭐라고 적었든 게이트 대상입니다(ADR 0040). 선언만 바꿔 관문을 피할 수 없다는 뜻이고, 어긋난 선언은 location.stage-agreement가 따로 잡습니다.</p>
+      </div>
+      <div>
+        <p class="small">다섯 단계 전부 <code>--dry-run</code>으로 미리 돌 수 있고, 그때는 아무것도 쓰지 않습니다. 판정 함수가 한 벌이므로 통과시킨 문서를 나중에 lint가 거절하는 일이 없습니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>거절이 하나뿐인 이유는 성능이 아니라 존재 조건입니다. upstream 승급 기준 열네 줄 가운데 기계가 판정 가능한 것이 링크 수 하나였고, 판단을 코드에 넣으면 같은 문서에 두 번 물어 다른 답이 나오는 순간 거절의 권위가 사라집니다.</p>
+    <p>3단계의 시크릿 탐지는 값 패턴 기반입니다. 켜진 sensitivity 축의 제한 값은 이후 serve와 export에서도 같은 expose 판정으로 걸러지며, 노출을 강제로 여는 플래그는 없습니다(ADR 0069).</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>게이트가 실제로 세는 것 <span class="tag acc">결정론</span></h2>
+    <p class="quote">거절 사유가 하나뿐이므로 그 하나는 정확해야 합니다. 링크 다섯 개가 어떻게 두 개로 세어지는지, 그리고 왜 같은 문서에 언제 물어도 같은 답이 나오는지를 따라갑니다(ADR 0054).</p>
+    <svg class="fig" viewBox="0 0 1300 380" aria-label="문서의 위키링크 다섯 개 중 실재하는 두 개만 세어져 기준을 통과하는 과정">
+      <defs><marker id="gc" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--acc)"/></marker><marker id="gcx" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--rej)"/></marker></defs>
+      <rect class="box" x="30" y="40" width="330" height="230" rx="12"/>
+      <text class="lbl m" x="50" y="70" font-weight="700">inbox/2026-08-22-draft.md</text>
+      <g class="lbl m">
+        <text x="60" y="110">[[api-gateway]]</text>
+        <text x="60" y="145">[[llm-호출-비용]]</text>
+        <text x="60" y="180">[[2026-08-22-draft]]</text>
+        <text x="60" y="215">[[아직-없는-문서]]</text>
+        <text x="60" y="250">[[inbox의-다른-메모]]</text>
+      </g>
+      <path class="ln acc draw" d="M360 105 L 640 80" marker-end="url(#gc)"/><g class="a d1"><rect class="box ok" x="650" y="58" width="330" height="40" rx="8"/><text class="lbl s" x="815" y="83" text-anchor="middle"><tspan font-weight="700">context/api-gateway.md 실재</tspan>  센다 (1)</text></g>
+      <path class="ln acc draw d1" d="M360 140 L 640 133" marker-end="url(#gc)"/><g class="a d2"><rect class="box ok" x="650" y="111" width="330" height="40" rx="8"/><text class="lbl s" x="815" y="136" text-anchor="middle"><tspan font-weight="700">sources/llm-호출-비용.md 실재</tspan>  센다 (2)</text></g>
+      <path class="ln rej dash draw d2" d="M360 175 L 640 186" marker-end="url(#gcx)"/><g class="a d3"><rect class="box rej" x="650" y="164" width="330" height="40" rx="8"/><text class="lbl s" x="815" y="189" text-anchor="middle"><tspan font-weight="700">자기 자신</tspan>  제외. 자기 링크는 관계가 아니다</text></g>
+      <path class="ln rej dash draw d3" d="M360 210 L 640 239" marker-end="url(#gcx)"/><g class="a d4"><rect class="box rej" x="650" y="217" width="330" height="40" rx="8"/><text class="lbl s" x="815" y="242" text-anchor="middle"><tspan font-weight="700">해석되는 대상 없음</tspan>  제외. 소망은 세지 않는다</text></g>
+      <path class="ln rej dash draw d4" d="M360 245 L 640 292" marker-end="url(#gcx)"/><g class="a d5"><rect class="box rej" x="650" y="270" width="330" height="40" rx="8"/><text class="lbl s" x="815" y="295" text-anchor="middle"><tspan font-weight="700">대상이 inbox 문서</tspan>  제외. 검증 안 된 것에 기댈 수 없다</text></g>
+      <path class="ln acc draw d5" d="M980 78 L 1050 150" marker-end="url(#gc)"/><path class="ln acc draw d5" d="M980 131 L 1050 160" marker-end="url(#gc)"/>
+      <g class="a d6">
+        <rect class="box acc" x="1055" y="140" width="215" height="70" rx="10"/><text class="lbl m" x="1162" y="170" text-anchor="middle">실재 링크 2 &gt;= 기준 2</text><text class="lbl s" x="1162" y="192" text-anchor="middle" font-weight="700">통과. context로 이동</text>
+      </g>
+    </svg>
+    <div class="cols" style="margin-top:.6em">
+      <div>
+        <p class="small"><strong>세는 단위는 고유 슬러그입니다.</strong> 같은 문서를 다섯 번 링크해도 하나입니다. 위키 상태가 같으면 답도 같고, 그래서 게이트 판정이 골든 비교와 동등성 검증의 대상이 됩니다.</p>
+      </div>
+      <div>
+        <p class="small"><strong>유예</strong>(gate.deferred). 위키 전체에서 링크를 걸 수 있는 대상 문서 수 자체가 기준보다 적으면 게이트를 유예하고 경고만 냅니다. 갓 만든 위키의 고립은 결함이 아니라 시작입니다. 위키가 자라면 같은 문서가 lint에서 reject로 나타나고 status가 첫 줄로 안내합니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><p>inbox 문서를 대상 집계에서 빼는 것까지가 ADR 0054이고, 그 전에는 존재하지 않는 링크도 세어져 게이트가 헐거웠습니다. 교차 검증에서 이 차이가 발견되어 닫혔습니다. 거절 메시지는 언제나 현재 값, 필요 값, 고치는 법 셋을 함께 냅니다. 거절 경험이 곧 교육이라는 원칙의 구현입니다.</p></aside>
+</section>
+
+<section class="slide appx" data-ch="3">
+  <div class="in">
+    <span class="appxtag">덧붙임</span>
     <h2>엔진: 파싱과 직렬화가 왕복해도 바이트가 흔들리지 않는다</h2>
     <p class="quote">이 모든 것의 바닥에 파서가 있습니다. 요구 조건은 하나, 고치지 않은 부분은 왕복 후에도 바이트가 같아야 한다는 것입니다.</p>
     <svg class="fig" viewBox="0 0 1300 300" aria-label="파일 바이트가 분리, 순서 보존 파싱, 필드 배열을 거쳐 다시 같은 바이트로 직렬화된다" style="max-width:1300px;margin:0 auto">
       <defs><marker id="ga" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
       <g class="lbl s">
-        <g class="a"><rect class="box" x="20" y="60" width="220" height="120" rx="10"/><text x="130" y="88" text-anchor="middle" font-weight="700">파일 바이트</text><text x="130" y="112" text-anchor="middle">BOM 허용</text><text x="130" y="132" text-anchor="middle">CRLF는 줄 수 안 바뀌게 LF로</text><text x="130" y="152" text-anchor="middle">--- 구분자로 머리말과 본문 분리</text></g>
-        <g class="a d1"><rect class="box" x="310" y="60" width="250" height="120" rx="10"/><text x="435" y="88" text-anchor="middle" font-weight="700">goccy MapSlice 파싱</text><text x="435" y="112" text-anchor="middle">맵이 아니라 순서 있는 쌍 목록</text><text x="435" y="132" text-anchor="middle">문법 에러는 토큰 위치를</text><text x="435" y="152" text-anchor="middle">원본 파일 줄 번호로 환산</text></g>
-        <g class="a d2"><rect class="box acc" x="630" y="60" width="280" height="120" rx="10"/><text x="770" y="88" text-anchor="middle" font-weight="700">Field 배열 (순서 보존)</text><text x="770" y="112" text-anchor="middle">값 종류 다섯: 빈 값, 문자열, 목록, 불, 날짜</text><text x="770" y="132" text-anchor="middle">"키가 있고 값이 빔"과 "키가 없음"은</text><text x="770" y="152" text-anchor="middle">스키마 판정에서 서로 다른 상태다</text></g>
+        <g class="a"><rect class="box" x="20" y="60" width="220" height="120" rx="10"/><text x="130" y="88" text-anchor="middle" font-weight="700">파일 바이트</text><text x="130" y="112" text-anchor="middle">BOM 허용</text><text x="130" y="132" text-anchor="middle">CRLF는 줄 수 안 바뀌게 LF로</text><text x="130" y="152" text-anchor="middle">구분자로 머리말과 본문 분리</text></g>
+        <g class="a d1"><rect class="box" x="310" y="60" width="250" height="120" rx="10"/><text x="435" y="88" text-anchor="middle" font-weight="700">순서 보존 파싱</text><text x="435" y="112" text-anchor="middle">맵이 아니라 순서 있는 쌍 목록</text><text x="435" y="132" text-anchor="middle">문법 에러는 토큰 위치를</text><text x="435" y="152" text-anchor="middle">원본 파일 줄 번호로 환산</text></g>
+        <g class="a d2"><rect class="box acc" x="630" y="60" width="280" height="120" rx="10"/><text x="770" y="88" text-anchor="middle" font-weight="700">Field 배열</text><text x="770" y="112" text-anchor="middle">값 종류 다섯: 빈 값, 문자열, 목록, 불, 날짜</text><text x="770" y="132" text-anchor="middle">키가 있고 값이 빈 것과 키가 없는 것은</text><text x="770" y="152" text-anchor="middle">스키마 판정에서 서로 다른 상태다</text></g>
         <g class="a d3"><rect class="box" x="980" y="60" width="220" height="120" rx="10"/><text x="1090" y="88" text-anchor="middle" font-weight="700">Render (역연산)</text><text x="1090" y="112" text-anchor="middle">필드 순서 그대로 출력</text><text x="1090" y="132" text-anchor="middle">새 문서만 표준 키 순서</text><text x="1090" y="152" text-anchor="middle">LF, 끝 개행 하나 보장</text></g>
       </g>
-      <path class="ln draw" d="M240 120 L 305 120" marker-end="url(#ga)"/>
-      <path class="ln draw d1" d="M560 120 L 625 120" marker-end="url(#ga)"/>
-      <path class="ln draw d2" d="M910 120 L 975 120" marker-end="url(#ga)"/>
-      <g class="draw d3"><path class="ln acc dash" d="M1090 180 C 1090 245, 300 245, 135 185" marker-end="url(#ga)"/></g>
-      <g class="a d4"><text class="lbl s" x="650" y="270" text-anchor="middle">고치지 않은 필드는 왕복 후에도 바이트가 같다. 이 안정성이 필요한 이유는 프론트매터 정규화 출력이 동등성 검증의 비교 축이라서다.</text><text class="lbl s" x="650" y="290" text-anchor="middle">파서가 순서를 흔들면 모든 diff가 노이즈로 차서 비교가 성립하지 않는다.</text></g>
+      <path class="ln" d="M240 120 L 305 120" marker-end="url(#ga)"/>
+      <path class="ln" d="M560 120 L 625 120" marker-end="url(#ga)"/>
+      <path class="ln" d="M910 120 L 975 120" marker-end="url(#ga)"/>
+      <path class="ln acc dash" d="M1090 180 C 1090 245, 300 245, 135 185" marker-end="url(#ga)"/>
+      <text class="lbl s" x="650" y="275" text-anchor="middle">고치지 않은 필드는 왕복 후에도 바이트가 같다. 프론트매터 정규화 출력이 동등성 검증의 비교 축이라서다</text>
+      <text class="lbl s" x="650" y="295" text-anchor="middle">파서가 순서를 흔들면 모든 diff가 노이즈로 차서 비교가 성립하지 않는다</text>
     </svg>
-    <p class="small mute" style="margin-top:.3em">파서는 관대하게 받고(숫자도 문자열로) 옳고 그름은 lint가 판정합니다. 파싱과 검증의 책임 분리입니다.</p>
+    <p class="small mute" style="margin-top:.3em">파서는 관대하게 받고(숫자도 문자열로) 옳고 그름은 lint가 판정합니다. 파싱과 검증의 책임 분리입니다. 위키링크 추출도 같은 계층의 일이고, 코드 펜스와 인라인 코드 안은 건너뜁니다. 링크 문법을 설명한 문서가 링크로 오인되면 안 되기 때문이고, mv의 본문 치환도 같은 규칙으로 코드 구간을 보호합니다.</p>
   </div>
-  <aside class="notes"><p>위키링크 추출도 doc 패키지의 일입니다. 코드 펜스와 인라인 코드(백틱 홀수 구간) 안은 건너뜁니다. 링크 문법을 설명한 문서가 링크로 오인되면 안 되기 때문이고, mv의 본문 치환도 같은 규칙으로 코드 구간을 보호합니다.</p></aside>
+  <aside class="notes"><p>YAML 파서는 순서 보존 표현을 쓰는 라이브러리 하나만 둡니다(ADR 0017). 프론트매터의 키 순서가 사람이 정한 정보이고, 맵으로 받으면 그 정보가 사라져 왕복이 성립하지 않기 때문입니다.</p></aside>
 </section>
 
-<!-- ============ 4. 게이트 ============ -->
+<!-- ============ 4. 검색 ============ -->
 <section class="slide chap dark" data-ch="4">
   <div class="in">
     <div class="kicker">4장</div>
-    <h1>판정: 게이트와 lint</h1>
-    <p class="lead">promote 한 번이 실제로 계산하는 다섯 단계, 그리고 게이트가 세는 것과 세지 않는 것.</p>
-  </div>
-  <div class="num">4</div>
-  <aside class="notes"><p>근거: ADR 0009(임계값), 0021(유예), 0022(이동과 파생), 0040(디렉토리 기준), 0054(실재 링크만 센다), 0069(secret), 0070(inbox 기본 제외). 규칙 20종의 목록과 등급은 3장의 검사 슬라이드에 있습니다. 이 장은 그 규칙이 승급이라는 사건 안에서 어떻게 발동하는지를 봅니다.</p></aside>
-</section>
-
-<section class="slide" data-ch="4">
-  <div class="in">
-    <h2>promote 한 번의 다섯 단계</h2>
-    <p class="quote">3장의 규칙들이 실제로 발동하는 사건이 승급입니다. promote 하나가 다섯 단계를 순서대로 지나가고, 거절할 수 있는 것은 그중 한 단계뿐입니다.</p>
-    <svg class="fig" viewBox="0 0 1300 420" aria-label="스키마 검증, 게이트 계산, 반출 안전, 이동 또는 파생, 관계 기록의 순서와 세 커맨드가 공유하는 판정 함수">
-      <defs><marker id="gb" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker><marker id="gba" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--acc)"/></marker></defs>
-      <g class="lbl s">
-        <g class="a"><rect class="box" x="20" y="40" width="230" height="115" rx="10"/><text x="135" y="66" text-anchor="middle" font-weight="700">1 스키마</text><text x="135" y="88" text-anchor="middle">단계별 필수 필드 채움.</text><text x="135" y="106" text-anchor="middle">forms 위반은 여기서 멈춘다.</text><text x="135" y="124" text-anchor="middle">topics 신규 값은 경고만</text></g>
-        <g class="a d1"><rect class="box rej" x="280" y="40" width="230" height="115" rx="10"/><text x="395" y="66" text-anchor="middle" font-weight="700">2 게이트</text><text x="395" y="88" text-anchor="middle">거절 사유는 이것 하나.</text><text x="395" y="106" text-anchor="middle">실재하는 고유 위키링크 수가</text><text x="395" y="124" text-anchor="middle">min_wikilinks 미만이면 거절</text></g>
-        <g class="a d2"><rect class="box warn" x="540" y="40" width="230" height="115" rx="10"/><text x="655" y="66" text-anchor="middle" font-weight="700">3 반출 안전</text><text x="655" y="88" text-anchor="middle">sensitivity 제한 값 검사.</text><text x="655" y="106" text-anchor="middle">secret 패턴(API 키 등)이</text><text x="655" y="124" text-anchor="middle">보이면 차단</text></g>
-        <g class="a d3"><rect class="box acc" x="800" y="40" width="230" height="115" rx="10"/><text x="915" y="66" text-anchor="middle" font-weight="700">4 이동 또는 파생</text><text x="915" y="88" text-anchor="middle">inbox 문서는 파일 이동,</text><text x="915" y="106" text-anchor="middle">접두사 제거. sources 문서는</text><text x="915" y="124" text-anchor="middle">원본 보존, 새 문서 생성</text></g>
-        <g class="a d4"><rect class="box" x="1060" y="40" width="220" height="115" rx="10"/><text x="1170" y="66" text-anchor="middle" font-weight="700">5 관계 기록</text><text x="1170" y="88" text-anchor="middle">새 문서에 derived_from,</text><text x="1170" y="106" text-anchor="middle">원본에 derived_context.</text><text x="1170" y="124" text-anchor="middle">본문은 건드리지 않는다</text></g>
-      </g>
-      <path class="ln draw" d="M250 97 L 275 97" marker-end="url(#gb)"/><path class="ln draw d1" d="M510 97 L 535 97" marker-end="url(#gb)"/><path class="ln draw d2" d="M770 97 L 795 97" marker-end="url(#gb)"/><path class="ln draw d3" d="M1030 97 L 1055 97" marker-end="url(#gb)"/>
-      <g class="a d2"><rect class="box dim" x="20" y="185" width="490" height="40" rx="8"/><text class="lbl s" x="265" y="210" text-anchor="middle">다섯 단계 전부 --dry-run으로 미리 돌 수 있다. 그때는 아무것도 쓰지 않는다</text></g>
-      <g class="a d3"><text class="lbl s" x="395" y="250" text-anchor="middle" fill="var(--acc)" font-weight="700">게이트가 보는 것은 선언이 아니라 디렉토리다</text><text class="lbl s" x="395" y="270" text-anchor="middle">context/에 있으면 artifact_stage를 뭐라고 적었든 게이트 대상 (ADR 0040)</text></g>
-      <g class="a d5">
-        <rect class="box" x="620" y="280" width="120" height="42" rx="8"/><text class="lbl s" x="680" y="306" text-anchor="middle" font-weight="700">promote</text>
-        <rect class="box" x="760" y="280" width="120" height="42" rx="8"/><text class="lbl s" x="820" y="306" text-anchor="middle" font-weight="700">new</text>
-        <rect class="box" x="900" y="280" width="120" height="42" rx="8"/><text class="lbl s" x="960" y="306" text-anchor="middle" font-weight="700">lint</text>
-        <path class="ln" d="M680 322 L 790 358" marker-end="url(#gb)"/><path class="ln" d="M820 322 L 820 353" marker-end="url(#gb)"/><path class="ln" d="M960 322 L 850 358" marker-end="url(#gb)"/>
-      </g>
-      <g class="a d6">
-        <rect class="box acc" x="650" y="360" width="340" height="44" rx="10"/><text class="lbl m" x="820" y="387" text-anchor="middle">게이트 판정 함수는 lint.EvaluateGate 하나</text>
-        <path class="ln acc dash" d="M780 360 C 710 260, 610 180, 522 132" marker-end="url(#gba)"/>
-        <text class="lbl s" x="1030" y="380">세 커맨드가 같은 함수를 부른다.</text><text class="lbl s" x="1030" y="398">통과시킨 문서를 lint가 거절하는 일이 없다</text>
-      </g>
-    </svg>
-  </div>
-  <aside class="notes">
-    <p>거절이 하나뿐인 이유는 성능이 아니라 존재 조건입니다. upstream 승급 기준 14줄 중 기계가 판정 가능한 것이 링크 수 하나였고, 판단을 코드에 넣으면 같은 문서에 두 번 물어 다른 답이 나오는 순간 거절의 권위가 사라집니다.</p>
-    <p>3단계의 secret 탐지는 값 패턴 기반입니다. 켜진 sensitivity 축의 제한 값(private-local-only, restricted)은 이후 serve와 export에서도 같은 expose 판정으로 걸러지며, 노출을 강제로 여는 플래그는 없습니다.</p>
-  </aside>
-</section>
-
-<section class="slide" data-ch="4">
-  <div class="in">
-    <h2>게이트가 실제로 세는 것</h2>
-    <p class="quote">거절 사유가 하나뿐이므로 그 하나는 정확해야 합니다. 링크 다섯 개가 어떻게 두 개로 세어지는지를 따라갑니다 (ADR 0054).</p>
-    <svg class="fig" viewBox="0 0 1300 470" aria-label="문서의 위키링크 다섯 개 중 실재하는 두 개만 세어져 통과하는 과정">
-      <defs><marker id="gc" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--acc)"/></marker><marker id="gcx" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--rej)"/></marker></defs>
-      <rect class="box" x="30" y="40" width="330" height="250" rx="12"/>
-      <text class="lbl m" x="50" y="70" font-weight="700">inbox/2026-08-22-draft.md</text>
-      <text class="lbl s" x="50" y="94">본문에 위키링크 다섯:</text>
-      <g class="lbl m">
-        <text x="60" y="124">[[api-gateway]]</text>
-        <text x="60" y="154">[[llm-호출-비용]]</text>
-        <text x="60" y="184">[[2026-08-22-draft]]</text>
-        <text x="60" y="214">[[아직-없는-문서]]</text>
-        <text x="60" y="244">[[inbox의-다른-메모]]</text>
-      </g>
-      <text class="lbl s" x="50" y="276" fill="var(--mute)">promote 하면 게이트는 이 다섯을 하나씩 판정한다</text>
-      <path class="ln acc draw" d="M360 118 L 640 88" marker-end="url(#gc)"/><g class="a d1"><rect class="box ok" x="650" y="66" width="300" height="44" rx="8"/><text class="lbl s" x="800" y="87" text-anchor="middle" font-weight="700">context/api-gateway.md 실재</text><text class="lbl s" x="800" y="103" text-anchor="middle">센다 (1)</text></g>
-      <path class="ln acc draw d1" d="M360 148 L 640 148" marker-end="url(#gc)"/><g class="a d2"><rect class="box ok" x="650" y="126" width="300" height="44" rx="8"/><text class="lbl s" x="800" y="147" text-anchor="middle" font-weight="700">sources/llm-호출-비용.md 실재</text><text class="lbl s" x="800" y="163" text-anchor="middle">센다 (2). inbox 밖이면 단계 무관</text></g>
-      <path class="ln rej dash draw d2" d="M360 178 L 640 208" marker-end="url(#gcx)"/><g class="a d3"><rect class="box rej" x="650" y="186" width="300" height="44" rx="8"/><text class="lbl s" x="800" y="207" text-anchor="middle" font-weight="700">자기 자신</text><text class="lbl s" x="800" y="223" text-anchor="middle">제외. 자기 링크는 관계가 아니다</text></g>
-      <path class="ln rej dash draw d3" d="M360 208 L 640 268" marker-end="url(#gcx)"/><g class="a d4"><rect class="box rej" x="650" y="246" width="300" height="44" rx="8"/><text class="lbl s" x="800" y="267" text-anchor="middle" font-weight="700">해석되는 대상이 없다</text><text class="lbl s" x="800" y="283" text-anchor="middle">제외. 적어 둔 소망은 세지 않는다</text></g>
-      <path class="ln rej dash draw d4" d="M360 238 L 640 328" marker-end="url(#gcx)"/><g class="a d5"><rect class="box rej" x="650" y="306" width="300" height="44" rx="8"/><text class="lbl s" x="800" y="327" text-anchor="middle" font-weight="700">대상이 inbox 문서</text><text class="lbl s" x="800" y="343" text-anchor="middle">제외. 검증 안 된 것에 기댈 수 없다</text></g>
-      <path class="ln acc draw d5" d="M950 88 L 1030 180" marker-end="url(#gc)"/><path class="ln acc draw d5" d="M950 148 L 1030 195" marker-end="url(#gc)"/>
-      <g class="a d6">
-        <rect class="box acc" x="1040" y="160" width="230" height="70" rx="10"/><text class="lbl m" x="1155" y="190" text-anchor="middle">실재 링크 2 &gt;= 기준 2</text><text class="lbl s" x="1155" y="212" text-anchor="middle" font-weight="700">통과. context로 이동</text>
-      </g>
-      <g class="a d7">
-        <rect class="box warn" x="30" y="330" width="560" height="110" rx="10"/>
-        <text class="lbl s" x="50" y="358" font-weight="700">유예 (gate.deferred)</text>
-        <text class="lbl s" x="50" y="382">위키 전체에서 링크를 걸 수 있는 대상 문서 수 자체가 기준보다 적으면</text>
-        <text class="lbl s" x="50" y="400">게이트를 유예하고 경고만 낸다. 갓 만든 위키의 고립은 결함이 아니라 시작이다.</text>
-        <text class="lbl s" x="50" y="418">위키가 자라면 같은 문서가 lint에서 reject로 나타나고 status가 첫 줄로 안내한다</text>
-      </g>
-      <g class="a d7"><text class="lbl s" x="660" y="380">거절 메시지는 언제나 세 가지를 함께 낸다:</text><text class="lbl m" x="660" y="404">현재 값, 필요 값, 고치는 법</text><text class="lbl s" x="660" y="428" fill="var(--mute)">거절 경험이 곧 교육이라는 원칙의 구현</text></g>
-    </svg>
-  </div>
-  <aside class="notes"><p>세는 단위는 고유 슬러그입니다. 같은 문서를 다섯 번 링크해도 하나입니다. inbox 문서를 제외하는 것까지가 ADR 0054이고, 그 전에는 존재하지 않는 링크도 세어져 게이트가 헐거웠습니다. 교차 검증에서 이 차이가 발견되어 닫혔습니다.</p></aside>
-</section>
-
-<!-- ============ 5. 검색 ============ -->
-<section class="slide chap dark" data-ch="5">
-  <div class="in">
-    <div class="kicker">5장</div>
     <h1>검색: 토큰, BM25, 색인</h1>
     <p class="lead">형태소 사전 없이 한국어를 검색하는 방법. 그 전에, 이 계산 결과들이 어디 저장되는지부터.</p>
   </div>
-  <div class="num">5</div>
+  <div class="num">4</div>
   <aside class="notes"><p>근거: ADR 0010(bigram과 BM25 직접 구현), 0025(색인 저장), 0059(recall 후보 풀), 0061(필드 가중치). 외부 검색 라이브러리를 안 쓰는 이유는 랭킹을 소유해야 동등성 검증에 검색 순위를 넣을 수 있어서입니다. 재검토 조건은 문서 2000개 또는 색인이 원문의 5배로 못 박혀 있습니다.</p></aside>
 </section>
 
-<section class="slide" data-ch="5">
+<section class="slide" data-ch="4">
   <div class="in">
     <h2>저장소 세 층: 잃었을 때 무엇이 사라지는가</h2>
     <p class="quote">검색으로 들어가기 전에 자리를 정합니다. 이 장과 다음 장이 다루는 색인과 벡터는 전부 가운데 층, 즉 버려도 되는 파생물입니다.</p>
@@ -1020,10 +967,10 @@ body.read #hint{display:none}
       <g class="a d4"><text class="lbl s" x="965" y="400" fill="var(--rej)" font-weight="700">이 층만은 재생 불가</text><text class="lbl s" x="965" y="422">백업 우선순위가</text><text class="lbl s" x="965" y="442">여기서 갈린다</text></g>
     </svg>
   </div>
-  <aside class="notes"><p>상태가 두 파일로 나뉘는 기준이 "다시 계산할 수 있는가"입니다. resurface의 노출 기록은 잃어도 같은 문서가 한 번 더 나올 뿐이라 캐시 쪽이고, 기각은 사람의 결정이라 상태 쪽입니다. 이 슬라이드가 5장에 있는 이유는 이제부터 나오는 색인과 벡터가 전부 가운데 층의 이야기이기 때문입니다.</p></aside>
+  <aside class="notes"><p>상태가 두 파일로 나뉘는 기준이 "다시 계산할 수 있는가"입니다. resurface의 노출 기록은 잃어도 같은 문서가 한 번 더 나올 뿐이라 캐시 쪽이고, 기각은 사람의 결정이라 상태 쪽입니다. 이 슬라이드가 4장에 있는 이유는 이제부터 나오는 색인과 벡터가 전부 가운데 층의 이야기이기 때문입니다.</p></aside>
 </section>
 
-<section class="slide" data-ch="5">
+<section class="slide" data-ch="4">
   <div class="in">
     <h2>토크나이저: 문자 종류가 바뀌는 곳에서 가른다</h2>
     <p class="quote">형태소 사전 없이 한국어를 검색하는 방법입니다. 문장 하나가 토큰이 되는 과정을 그대로 따라갑니다.</p>
@@ -1076,7 +1023,7 @@ body.read #hint{display:none}
   <aside class="notes"><p>구현은 internal/index/tokenize.go의 100줄이 전부이고 정규식을 쓰지 않습니다. 유니코드 Hangul 블록 검사와 rune 단위 순회입니다. 결합 문자 _와 -는 라틴 구간 안에서만 살아남고 한글 사이에서는 구분자입니다.</p></aside>
 </section>
 
-<section class="slide" data-ch="5">
+<section class="slide" data-ch="4">
   <div class="in">
     <h2>BM25: 계산되는 식 그대로</h2>
     <p class="quote">점수는 이 식 그대로 계산됩니다. 세 항이 각각 무엇을 묻는지 알면 검색 결과의 순서를 해석할 수 있습니다.</p>
@@ -1118,7 +1065,7 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
   </aside>
 </section>
 
-<section class="slide" data-ch="5">
+<section class="slide" data-ch="4">
   <div class="in">
     <h2>index.json: 실제 형식과 신선도 판정</h2>
     <p class="quote">색인은 사람이 열어 볼 수 있는 JSON 하나입니다. 낡았는지의 판정과 낡았을 때의 행동까지가 설계입니다.</p>
@@ -1167,18 +1114,18 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
   <aside class="notes"><p>JSON인 이유는 규모입니다. 수백에서 2000 문서에서 이진 형식의 이득이 없고, 사람이 열어 디버깅할 수 있는 값이 더 큽니다. 신선도 판정이 시계를 읽지 않는 것도 결정론의 일부입니다. "10분 지났으면 낡음" 같은 시각 비교는 실행 시점마다 답이 달라져 골든 비교를 깹니다.</p></aside>
 </section>
 
-<!-- ============ 6. 임베딩 ============ -->
-<section class="slide chap dark" data-ch="6">
+<!-- ============ 5. 임베딩 ============ -->
+<section class="slide chap dark" data-ch="5">
   <div class="in">
-    <div class="kicker">6장</div>
+    <div class="kicker">5장</div>
     <h1>임베딩: 의미 축의 비용과 캐시</h1>
     <p class="lead">낱말이 안 겹치는 유사함을 재는 축. 문서당 12.6초라는 비용을 어디서 물게 할 것인가가 설계의 중심이다.</p>
   </div>
-  <div class="num">6</div>
+  <div class="num">5</div>
   <aside class="notes"><p>근거: ADR 0074(순수 Go, bge-m3 fp32), 0075(문서당 벡터 하나, 축별 하한), 0078(--semantic은 캐시만 소비), 0068(model 커맨드 범위). 모델 파일은 위키마다 2.3GB 사본을 만들지 않도록 사용자 전역 캐시에 한 번만 받고, 파일별 sha256을 verify로 대조합니다.</p></aside>
 </section>
 
-<section class="slide" data-ch="6">
+<section class="slide" data-ch="5">
   <div class="in">
     <h2>벡터 하나가 만들어지는 길</h2>
     <p class="quote">문서 하나가 1024차원 벡터가 되기까지의 전 과정입니다. 문서당 12.6초라는 비용 때문에 캐시 키와 계산 시점이 이 장의 중심이 됩니다.</p>
@@ -1217,7 +1164,7 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
   <aside class="notes"><p>vectors.json의 schemaVersion 2는 평균 풀링 시절(1)과 구분하는 번호입니다. 다르면 통째로 폐기하고 다시 계산합니다. 벡터는 L2 정규화되어 저장되므로 코사인 유사도가 내적과 같고, 비교 루프에서 제곱근을 다시 계산하지 않습니다. 내용이 같은 문서 여럿은 한 번만 인코딩하고 결과를 나눠 받습니다.</p></aside>
 </section>
 
-<section class="slide" data-ch="6">
+<section class="slide" data-ch="5">
   <div class="in">
     <h2>bridge: 두 축, 두 하한, 합집합, 순위 정렬</h2>
     <p class="quote">단어가 겹치는 유사함과 뜻이 겹치는 유사함은 다른 신호입니다. bridge는 둘을 따로 재서 합치고, 정렬에서도 두 축을 같은 지위로 다룹니다.</p>
@@ -1256,18 +1203,18 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
   <aside class="notes"><p>"유사문서 관리"의 의미가 여기서 완성됩니다. 사용자의 "화면이 멈췄다"와 엔지니어의 "상위 백분위 응답이 튀었다"를 잇는 것은 임베딩 축이고, 식별자가 겹치는 기술 문서 쌍을 잡는 것은 단어 축입니다. 기각은 두 축 모두에 같은 기준으로 걸리고 git으로 공유됩니다. 대표 점수가 출력에서 단조롭지 않게 나열될 수 있는데, 그것이 두 축을 같은 지위로 다루는 값이라고 주석에 적혀 있습니다.</p></aside>
 </section>
 
-<!-- ============ 7. eject ============ -->
-<section class="slide chap dark" data-ch="7">
+<!-- ============ 6. eject ============ -->
+<section class="slide chap dark" data-ch="6">
   <div class="in">
-    <div class="kicker">7장</div>
+    <div class="kicker">6장</div>
     <h1>eject: 규칙이 파일로 되돌아간다</h1>
     <p class="lead">upstream에서 시작한 순환의 끝. 규칙은 사용자의 파일이 되고, 연산은 바이너리에 남는다.</p>
   </div>
-  <div class="num">7</div>
+  <div class="num">6</div>
   <aside class="notes"><p>근거: ADR 0013(eject 재정의, seal 폐기), 0039(명세와 Python 린터), 0006(당시 설계와 기각된 seal). seal을 정직하게 구현하면 "당신의 수정을 지웁니다"가 된다는 것이 폐기 사유였습니다. eject 후 규칙 파일을 고치지 않을 것이라면 eject할 이유가 없었고, 고쳤다면 seal은 그 작업을 버려야 하기 때문입니다.</p></aside>
 </section>
 
-<section class="slide" data-ch="7">
+<section class="slide" data-ch="6">
   <div class="in">
     <h2>소유권의 축: 넘어가는 것과 남는 것</h2>
     <p class="quote">eject는 규칙을 사용자 소유의 파일로 내보내는 단방향 커맨드입니다. 무엇이 파일이 될 수 있고 무엇이 엔진으로 남는지가 경계입니다.</p>
@@ -1318,7 +1265,7 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
   <aside class="notes"><p>upstream에서 명세와 스크립트가 따로 자라 어긋났던 문제는, 여기서는 두 산출물이 같은 코드에서 같은 값으로 생성되므로 생성 시점에는 닫힙니다. 생성 이후의 어긋남은 다음 슬라이드의 CI 대조가 지킵니다. eject 없이 규칙만 보려면 rules show가 같은 내용을 읽기 전용으로 냅니다.</p></aside>
 </section>
 
-<section class="slide" data-ch="7">
+<section class="slide" data-ch="6">
   <div class="in">
     <h2>두 구현의 판정 일치: harness/eject</h2>
     <p class="quote">내보낸 린터는 Go 코드의 번역이 아니라 독립 구현입니다. 그래서 두 구현의 일치는 가정이 아니라 CI가 매번 재는 측정값입니다.</p>
@@ -1353,7 +1300,7 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
   <aside class="notes"><p>줄바꿈을 LF로 고정하고 소스를 읽을 때 인코딩을 명시하는 등, Windows의 비 UTF-8 콘솔에서도 두 구현이 같은 판정을 내도록 다듬은 이력이 커밋 로그에 남아 있습니다.</p></aside>
 </section>
 
-<section class="slide center" data-ch="7">
+<section class="slide center" data-ch="6">
   <div class="in">
     <div class="kicker">정리</div>
     <h1 style="font-size:2.1em">구조를 관통하는 세 원칙</h1>
@@ -1372,7 +1319,7 @@ tf(t,d) = 가중 빈도, len(d) = 가중 빈도 합, avglen = 평균</div>
 
 <script>
 (function(){
-  const CH = ['개요','1 upstream','2 바이너리','3 frontmatter','4 게이트','5 검색','6 임베딩','7 eject'];
+  const CH = ['개요','1 upstream','2 바이너리','3 frontmatter와 판정','4 검색','5 임베딩','6 eject'];
   const slides = Array.from(document.querySelectorAll('.slide'));
   const deck = document.getElementById('deck');
   const counter = document.getElementById('counter');
