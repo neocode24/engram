@@ -29,6 +29,7 @@
 
 | 세션 | 주제 | 커맨드 | 여정 | 실습 산출물 | 자료 |
 |---|---|---|---|---|---|
+| 0 (선택) | 기초. 메모가 지식이 되는 개념 셋을 회의록 한 건으로 따라간다. 오리엔테이션이 어렵게 느껴질 사람의 예습용 | 없음 | 없음 | 없음 | [course/intro.html](course/intro.html) |
 | 1 | 오리엔테이션. LLM wiki 원론, 이 체계의 특별한 점, 해결 방향, engram의 역할, 개인에서 조직으로 | 시연만 | 전체 조망 | 없음 | [course/index.html](course/index.html) |
 | 2 | 설치와 첫 위키. 프리셋 셋, `engram.yaml`, 디렉토리가 성숙 단계인 이유 | `init`, `doctor`, `status`, `rules show` | 0 | 자기 위키와 `index.md` | [course/hands-on.md](course/hands-on.md) 2단계 |
 | 3 | 넣기. 회의 중 캡처, 링크 드롭, 원본 보존. 날짜 세 필드 | `capture`, `source`, `lint` | 1, 3, 5 | inbox 문서 여럿, sources 문서 둘 | [course/hands-on.md](course/hands-on.md) 3단계 |

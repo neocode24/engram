@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>engram 기초: 메모가 지식이 되는 개념 셋</title>
+<meta name="description" content="메모가 지식이 되는 데 필요한 개념 셋을 회의록 한 건의 여정으로 따라가는 30분 기초 자료. 슬라이드 모드와 읽기 모드를 한 파일에 담았다.">
+<style>
+/* ---------- 토큰 ---------- */
+:root{
+  --bg:#faf8f4; --bg2:#f1ede5; --ink:#1d1d1b; --ink2:#4b4a45; --mute:#8b877e;
+  --line:#dcd7cc; --acc:#0f766e; --acc2:#d9f0ec; --warn:#b7791f; --warn2:#fbefd6;
+  --rej:#b3261e; --rej2:#f9e0dd; --ok:#2f7d4a; --ok2:#e0f2e6;
+  --term:#171a1f; --termfg:#e6e6e0; --termdim:#8a9099; --termgreen:#7bd88f; --termred:#ff7b72; --termyellow:#e3b341; --termcyan:#79c0ff;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding","Nanum Gothic Coding",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic","Segoe UI",Roboto,sans-serif;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{overflow:hidden}
+a{color:var(--acc)}
+code,kbd,pre{font-family:var(--mono)}
+code{background:var(--bg2);padding:.08em .35em;border-radius:5px;font-size:.92em}
+kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 .35em;font-size:.85em;background:#fff}
+h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-.01em}
+p{margin:.35em 0}
+ul,ol{margin:.3em 0 .3em 1.2em;padding:0}
+li{margin:.25em 0}
+strong{font-weight:700;color:var(--ink)}
+.small{font-size:.8em;color:var(--ink2)}
+.mute{color:var(--mute)}
+.acc{color:var(--acc)} .rej{color:var(--rej)} .warn{color:var(--warn)} .ok{color:var(--ok)}
+hr{border:0;border-top:1px solid var(--line);margin:1em 0}
+
+/* ---------- 상단 바 ---------- */
+#bar{position:fixed;top:0;left:0;right:0;height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;background:rgba(250,248,244,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:50;font-size:13px}
+#bar .brand{font-weight:700;letter-spacing:.02em;margin-right:6px}
+#bar .brand span{color:var(--acc)}
+#chapters{display:flex;gap:2px;flex:1;overflow:hidden}
+#chapters button{border:0;background:transparent;color:var(--mute);padding:6px 9px;border-radius:8px;cursor:pointer;font:inherit;white-space:nowrap}
+#chapters button.cur{color:var(--ink);background:var(--bg2);font-weight:600}
+#chapters button:hover{color:var(--ink)}
+#bar .ctl{display:flex;gap:6px;align-items:center}
+#bar .ctl button{border:1px solid var(--line);background:#fff;color:var(--ink2);border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit}
+#bar .ctl button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+#counter{color:var(--mute);min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
+#prog{position:fixed;top:44px;left:0;height:3px;background:var(--acc);width:0;z-index:51;transition:width .25s}
+
+/* ---------- 슬라이드 모드 ---------- */
+#deck{position:absolute;inset:47px 0 0 0;overflow:hidden}
+.slide{position:absolute;inset:0;display:none;padding:4vh 6vw 6vh;font-size:clamp(15px,1.55vw,23px);line-height:1.55}
+.slide.active{display:flex;flex-direction:column;overflow-y:auto;animation:fadein .35s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.slide .in{max-width:1180px;width:100%;margin:auto}
+.slide h1{font-size:2.6em;font-weight:800;margin-bottom:.35em}
+.slide h2{font-size:1.9em;font-weight:800;margin-bottom:.55em}
+.slide h3{font-size:1.15em;font-weight:700;margin:.4em 0 .2em}
+.slide .lead{font-size:1.15em;color:var(--ink2);max-width:34em}
+.slide .kicker{font-size:.72em;text-transform:uppercase;letter-spacing:.14em;color:var(--acc);font-weight:700;margin-bottom:.8em}
+.slide .big{font-size:1.5em;font-weight:700;line-height:1.35;max-width:24em}
+.slide .foot{margin-top:1.4em;font-size:.72em;color:var(--mute)}
+.slide.center{text-align:center}
+.slide.center .in > *{margin-left:auto;margin-right:auto}
+.slide.dark{background:var(--term);color:var(--termfg)}
+.slide.dark h1,.slide.dark h2,.slide.dark strong{color:#fff}
+.slide.dark .lead,.slide.dark .mute{color:#aab0b8}
+.slide.chap .kicker{font-size:.9em}
+.slide.chap h1{font-size:3em}
+.slide.chap .num{font-size:9em;font-weight:900;color:var(--acc2);line-height:1;position:absolute;right:6vw;bottom:4vh;user-select:none}
+.slide.dark.chap .num{color:#252a33}
+
+/* 프래그먼트 */
+.frag{opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s}
+.frag.on{opacity:1;transform:none}
+body.read .frag{opacity:1;transform:none}
+
+/* 격자, 카드, 표 */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2.2em;align-items:start}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.4em;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:.9em 1.1em}
+.card h3{margin-top:0}
+.card.acc{border-color:var(--acc);background:#fbfffe}
+.card.rej{border-color:var(--rej);background:#fffafa}
+.card.warn{border-color:var(--warn);background:#fffdf7}
+.card.ok{border-color:var(--ok);background:#f7fdf9}
+.tag{display:inline-block;white-space:nowrap;font-size:.7em;font-weight:700;letter-spacing:.06em;padding:.15em .55em;border-radius:999px;background:var(--bg2);color:var(--ink2);vertical-align:middle}
+.tag.acc{background:var(--acc2);color:var(--acc)} .tag.rej{background:var(--rej2);color:var(--rej)} .tag.warn{background:var(--warn2);color:var(--warn)} .tag.ok{background:var(--ok2);color:var(--ok)}
+table{border-collapse:collapse;width:100%;font-size:.88em}
+th,td{text-align:left;padding:.45em .7em;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;color:var(--ink2);font-size:.85em;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}
+.dark table th,.dark table td{border-color:#2b303a}
+pre.code{background:var(--term);color:var(--termfg);border-radius:var(--r);padding:.9em 1.1em;font-size:.78em;line-height:1.5;overflow:auto;margin:.5em 0}
+pre.code .k{color:var(--termcyan)} pre.code .s{color:var(--termgreen)} pre.code .c{color:var(--termdim)} pre.code .y{color:var(--termyellow)}
+blockquote{margin:.6em 0;padding:.5em 1em;border-left:4px solid var(--acc);background:#fff;border-radius:0 8px 8px 0;color:var(--ink2)}
+blockquote cite{display:block;font-size:.75em;color:var(--mute);margin-top:.3em;font-style:normal}
+
+/* 터미널 */
+.term{background:var(--term);color:var(--termfg);border-radius:var(--r);font-family:var(--mono);font-size:.7em;line-height:1.55;padding:0;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.18);position:relative}
+.term .tb{display:flex;align-items:center;gap:6px;padding:8px 12px;background:#0f1216;border-bottom:1px solid #262b33;font-size:.85em;color:var(--termdim)}
+.term .tb i{width:11px;height:11px;border-radius:50%;background:#3a4049;display:inline-block}
+.term .tb i:nth-child(1){background:#ff5f57}.term .tb i:nth-child(2){background:#febc2e}.term .tb i:nth-child(3){background:#28c840}
+.term .tb .t{margin-left:8px}
+.term .tb .re{margin-left:auto;cursor:pointer;border:1px solid #333a45;border-radius:6px;padding:1px 8px;color:#aab0b8;background:transparent;font:inherit}
+.term .tb .re:hover{color:#fff;border-color:#666}
+.term .body{padding:12px 16px 14px;min-height:8em;max-height:62vh;overflow:auto;white-space:pre-wrap;word-break:break-word}
+body.read .term .body{max-height:none}
+.term .p{color:var(--termgreen)} .term .cmd{color:#fff} .term .out{color:var(--termfg)} .term .err{color:var(--termred)} .term .dim{color:var(--termdim)} .term .hl{color:var(--termyellow)} .term .cy{color:var(--termcyan)}
+.term .cur{display:inline-block;width:.55em;height:1.1em;background:#cfd3d8;vertical-align:-.15em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- SVG 도식 공통 ---------- */
+svg.fig{width:100%;height:auto;display:block;overflow:visible}
+svg .lbl{font-family:var(--sans);font-size:15px;fill:var(--ink)}
+svg .lbl.s{font-size:12.5px;fill:var(--ink2)}
+svg .lbl.m{font-family:var(--mono);font-size:13px}
+svg.sm .lbl.s{font-size:12px}
+svg .lbl.w{fill:#fff}
+svg .box{fill:#fff;stroke:var(--line);stroke-width:1.5}
+svg .box.acc{fill:var(--acc2);stroke:var(--acc)}
+svg .box.rej{fill:var(--rej2);stroke:var(--rej)}
+svg .box.warn{fill:var(--warn2);stroke:var(--warn)}
+svg .box.ok{fill:var(--ok2);stroke:var(--ok)}
+svg .box.dim{fill:var(--bg2);stroke:var(--line)}
+svg .ln{stroke:var(--ink2);stroke-width:1.6;fill:none}
+svg .ln.acc{stroke:var(--acc)} svg .ln.rej{stroke:var(--rej)} svg .ln.dash{stroke-dasharray:5 5} svg .ln.thin{stroke-width:1.1;stroke:var(--mute)}
+svg .node{fill:#fff;stroke:var(--acc);stroke-width:2}
+svg .node.old{fill:var(--bg2);stroke:var(--mute)}
+svg .node.orph{fill:var(--rej2);stroke:var(--rej)}
+marker path{fill:var(--ink2)}
+marker.acc path{fill:var(--acc)}
+/* 애니메이션은 슬라이드가 활성일 때만 돈다 */
+.a{opacity:0}
+.active .a{animation:appear .5s ease forwards}
+.active .a.d1{animation-delay:.6s}.active .a.d2{animation-delay:1.2s}.active .a.d3{animation-delay:1.8s}.active .a.d4{animation-delay:2.4s}.active .a.d5{animation-delay:3s}.active .a.d6{animation-delay:3.6s}.active .a.d7{animation-delay:4.2s}.active .a.d8{animation-delay:4.8s}
+@keyframes appear{to{opacity:1}}
+.active .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.2s ease forwards}
+.active .draw.d1{animation-delay:.6s}.active .draw.d2{animation-delay:1.2s}.active .draw.d3{animation-delay:1.8s}.active .draw.d4{animation-delay:2.4s}
+/* draw는 stroke-dasharray를 선 길이로 덮어써서 선이 자라는 것처럼 보이게 한다.
+   그래서 점선(.ln.dash)에 draw를 걸면 자라는 동안은 물론 끝난 뒤에도 실선으로
+   남는다. 애니메이션이 끝나면 dashed 클래스가 붙고, 그때 점선 모양을 되돌린다. */
+.draw.dashed{stroke-dasharray:5 5!important;stroke-dashoffset:0!important}
+@keyframes draw{to{stroke-dashoffset:0}}
+.active .pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* 이미지 슬라이드 */
+.slide.cover .in{background:rgba(250,248,244,.9);backdrop-filter:blur(2px);border-radius:18px;padding:2em 2.4em;max-width:700px;margin:auto auto auto 0;text-align:left}
+.slide.cover h1{font-size:2.3em}
+.slide.cover.center .in > *{margin-left:0;margin-right:0}
+.slide.cover .lead{max-width:none}
+body.read .slide.cover .in{margin-left:0}
+body.read .slide.cover{background-size:cover}
+.sysfig{width:auto;max-width:100%;max-height:66vh;margin:0 auto;border-radius:var(--r);box-shadow:0 12px 40px rgba(0,0,0,.14);display:block}
+.slide.chap.dark .cols{align-items:center}
+/* ---------- 노트 ---------- */
+.notes{display:none}
+#notepane{position:fixed;right:0;top:47px;bottom:0;width:min(420px,40vw);background:#fff;border-left:1px solid var(--line);padding:18px 20px;overflow:auto;font-size:14px;line-height:1.6;color:var(--ink2);z-index:40;transform:translateX(100%);transition:transform .25s}
+#notepane.on{transform:none}
+#notepane h4{margin:0 0 .6em;color:var(--ink);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+#notepane p{margin:.5em 0}
+
+/* ---------- 읽기 모드 ---------- */
+body.read{overflow:auto}
+body.read #deck{position:static;inset:auto;overflow:visible;padding-top:60px}
+body.read .slide{position:relative;display:block;inset:auto;min-height:0;padding:3.2em 6vw 1.4em;font-size:clamp(15px,1.15vw,18px);animation:none;border-bottom:1px solid var(--line)}
+/* 해시 이동과 모드 전환의 scrollIntoView가 고정 바(44px)와 진행 바(3px) 아래에 착지하게 한다 */
+body.read .slide{scroll-margin-top:55px}
+body.read .slide.center{text-align:left}
+body.read .slide.center .in > *{margin-left:0}
+body.read .slide.chap{padding:4em 6vw 2em;background:var(--bg2)}
+body.read .slide.chap .num{font-size:5em;bottom:.2em}
+body.read .slide.dark.chap{background:var(--term)}
+body.read .slide h1{font-size:2.1em}
+body.read .slide h2{font-size:1.6em}
+body.read .notes{display:block;max-width:1180px;margin:1.6em auto 0;padding:1em 1.2em;background:#fff;border:1px dashed var(--line);border-radius:var(--r);font-size:.9em;color:var(--ink2);line-height:1.7}
+body.read .notes::before{content:"강사 노트";display:block;font-size:.72em;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--acc);margin-bottom:.4em}
+body.read .dark .notes{background:#1f232a;border-color:#333a45;color:#c9ced5}
+body.read .dark .notes code,.dark code{background:#2b303a;color:#e6e6e0}
+body.read #notepane{display:none}
+body.read .slide.in-view .a{animation:appear .5s ease forwards}
+body.read .slide.in-view .a.d1{animation-delay:.6s}body.read .slide.in-view .a.d2{animation-delay:1.2s}body.read .slide.in-view .a.d3{animation-delay:1.8s}body.read .slide.in-view .a.d4{animation-delay:2.4s}body.read .slide.in-view .a.d5{animation-delay:3s}body.read .slide.in-view .a.d6{animation-delay:3.6s}body.read .slide.in-view .a.d7{animation-delay:4.2s}body.read .slide.in-view .a.d8{animation-delay:4.8s}
+body.read .slide.in-view .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.2s ease forwards}
+body.read .slide.in-view .draw.d1{animation-delay:.6s}body.read .slide.in-view .draw.d2{animation-delay:1.2s}body.read .slide.in-view .draw.d3{animation-delay:1.8s}body.read .slide.in-view .draw.d4{animation-delay:2.4s}
+body.read .slide.in-view .pulse{animation:pulse 1.6s ease-in-out infinite}
+body.read .slide.in-view .tok{animation-play-state:running}
+body.read .slide .tok{animation-play-state:paused}
+body.read #hint{display:none}
+
+/* 안내 */
+#hint{position:fixed;left:12px;bottom:10px;font-size:12px;color:var(--mute);z-index:40}
+#hint kbd{font-size:11px}
+@media (max-width:820px){
+  .cols,.cols3{grid-template-columns:1fr}
+  #chapters{display:none}
+  .slide{padding:3vh 5vw 5vh}
+  #notepane{width:88vw}
+}
+@media print{
+  #bar,#prog,#hint,#notepane{display:none!important}
+  body{overflow:visible}
+  #deck{position:static}
+  .slide{position:relative;display:block!important;page-break-inside:avoid;padding:2em 1em}
+  .frag{opacity:1;transform:none}
+  .notes{display:block}
+}
+</style>
+</head>
+<body>
+<div id="bar">
+  <div class="brand">engram <span>기초</span></div>
+  <div id="chapters"></div>
+  <div class="ctl">
+    <button id="btnNotes" title="강사 노트 (N)">노트</button>
+    <button id="btnMode" title="읽기 모드 전환 (R)">읽기 모드</button>
+    <span id="counter">1 / 1</span>
+  </div>
+</div>
+<div id="prog"></div>
+<div id="notepane"><h4>강사 노트</h4><div id="notebody"></div></div>
+<div id="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> 이동 &nbsp; <kbd>Space</kbd> 다음 &nbsp; <kbd>R</kbd> 읽기 모드 &nbsp; <kbd>N</kbd> 노트 &nbsp; <kbd>Home</kbd> <kbd>End</kbd> 처음과 끝</div>
+
+<div id="deck">
+<!-- ============ 0. 표지 ============ -->
+<section class="slide center" data-ch="0">
+  <div class="in">
+    <div class="kicker">engram course / 기초 / 30분</div>
+    <h1>메모는 쌓이는데<br>지식은 안 쌓입니다</h1>
+    <p class="lead" style="margin:0 auto;max-width:36em">메모를 지식으로 바꾸는 데 필요한 개념은 셋입니다. 파일로 남기고, 단계를 거치게 하고, 구조로 찾습니다. 이 셋을 회의록 한 건이 지식이 되는 이야기로 따라갑니다.</p>
+    <p class="foot">도구 사용법과 커맨드는 나오지 않습니다. 개념이 잡힌 뒤 볼 자료를 마지막에 안내합니다. 상단의 <strong>읽기 모드</strong>를 누르면 노트가 함께 펼쳐집니다.</p>
+  </div>
+  <aside class="notes">
+    <p>이 덱은 오리엔테이션(index.html)이 어렵다는 피드백에서 나온 기초판입니다. 순서는 이 덱을 먼저, 오리엔테이션을 나중에 봅니다. 오리엔테이션은 같은 이야기를 설계 근거와 실제 도구 출력까지 넓혀 다룹니다.</p>
+    <p>이 덱에서 새로 붙이는 이름은 승급 하나뿐입니다. 나머지는 일상어로만 말합니다. 끝났을 때 수강생이 개념 셋을 자기 말로 설명할 수 있으면 성공입니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="0">
+  <div class="in">
+    <h2>오늘 가져갈 것은 개념 셋입니다</h2>
+    <ol style="font-size:1.15em;line-height:1.8">
+      <li class="frag"><strong>파일로 남깁니다.</strong> 대화와 기억은 흘러가지만 파일은 남습니다.</li>
+      <li class="frag"><strong>단계를 거치게 합니다.</strong> 메모가 판단을 거쳐 지식이 됩니다.</li>
+      <li class="frag"><strong>구조로 찾습니다.</strong> 규칙이 지켜진 구조는 그 자체가 찾는 수단이 됩니다.</li>
+    </ol>
+    <p class="frag" style="margin-top:1em">이 셋을 <strong>회의록 한 건</strong>으로 따라갑니다. 3월 4일 회의에서 정한 캐시 정책이 지식이 되기까지의 이야기입니다.</p>
+    <p class="foot frag">진행: 1장 문제 (5분), 2장 파일 (5분), 3장 단계 (10분), 4장 구조 (7분), 5장 사람과 도구 (3분)</p>
+  </div>
+  <aside class="notes">
+    <p>셋을 지금 외우게 하지 않습니다. 장이 끝날 때마다 이 목록으로 돌아와 하나씩 확인합니다. 마지막에 셋이 남아 있으면 됩니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 1. 문제 ============ -->
+<section class="slide chap dark" data-ch="1">
+  <div class="in">
+    <div class="kicker">1장</div>
+    <h1>왜 메모가 지식이 되지 않나</h1>
+    <p class="lead">익숙한 장면 하나에서 시작합니다.</p>
+  </div>
+  <div class="num">1</div>
+  <aside class="notes"><p>5분. 이 장의 목적은 설명이 아니라 공감입니다. 이 장면이 공감되지 않는 수강생에게는 이 체계가 아직 필요하지 않습니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>3월에 정했는데, 6월에 처음부터 다시 논의합니다</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">3월 4일 회의에서 이렇게 정했습니다. 회의록은 노트 앱 어딘가에 있습니다.</p>
+        <div class="card">
+          <p>"캐시 무효화는 API 버전 단위로 한다. 롤백에 대비해 두 버전을 유지한다."</p>
+          <p class="small mute">3월 4일 회의록에서</p>
+        </div>
+      </div>
+      <div>
+        <p class="lead" style="margin-bottom:.6em">석 달 뒤 같은 주제가 다시 올라오면 이런 일이 벌어집니다.</p>
+        <ul>
+          <li class="frag">그 회의록을 <strong>못 찾아서</strong> 같은 논의를 처음부터 다시 합니다.</li>
+          <li class="frag">겨우 찾아도 그 결론이 <strong>지금도 유효한지 알 수 없어서</strong> 결국 다시 논의합니다.</li>
+          <li class="frag">비슷한 메모가 여기저기 흩어져 있어서 <strong>어느 것이 최신인지 모릅니다.</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>이 회의록이 덱 전체의 주인공입니다. 여기서 "이 회의록 한 건으로 끝까지 갑니다"라고 말해 둡니다.</p>
+    <p>세 가지 곤란은 뒤에서 하나씩 풀립니다. 못 믿는 것과 흩어지는 것은 3장의 단계와 링크가, 못 찾는 것은 4장의 구조가 풉니다. 지금은 대응을 말하지 않고 곤란만 쌓아 둡니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="1">
+  <div class="in">
+    <h2>넣기는 잘 되는데, 그다음이 없습니다</h2>
+    <div class="cols">
+      <div>
+        <div class="card">
+          <h3>노트 앱이 해 주는 것</h3>
+          <p>빠른 캡처, 폴더, 태그, 검색창. 넣는 순간까지는 편합니다.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card warn">
+          <h3>아무도 안 해 주는 것</h3>
+          <p>이 메모가 <strong>아직 정리 중인지, 확정된 결론인지</strong> 표시하는 일.<br>이 결론이 <strong>무엇을 근거로 나왔는지</strong> 남기는 일.<br>오래된 결론을 <strong>다시 보게</strong> 하는 일.</p>
+        </div>
+      </div>
+    </div>
+    <p class="frag big" style="margin-top:1em">문제는 저장이 아니라 <span class="acc">저장 다음의 관리</span>입니다.</p>
+  </div>
+  <aside class="notes">
+    <p>오른쪽 카드의 세 가지가 이 덱의 남은 내용 전부입니다. 상태 표시와 근거 남기기는 3장의 단계와 여정이, 다시 보게 하기는 4장의 구조와 연결이 맡습니다. 여기서는 용어 없이 문제로만 둡니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 2. 개념 1 ============ -->
+<section class="slide chap dark" data-ch="2">
+  <div class="in">
+    <div class="kicker">2장 / 개념 하나</div>
+    <h1>지식을 파일로 남깁니다</h1>
+    <p class="lead">대화창도, 모델의 기억도 아니고 내가 소유한 파일에 남깁니다.</p>
+  </div>
+  <div class="num">2</div>
+  <aside class="notes"><p>5분. LLM을 쓰는 사람일수록 이 장이 중요합니다. AI가 정리해 준 결론도 대화 기록에 두면 회의록과 똑같이 사라진다는 것을 심습니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>대화는 흘러가고, 파일은 남습니다</h2>
+    <div class="cols">
+      <div>
+        <ul style="font-size:1.05em;line-height:1.8">
+          <li class="frag">AI와 나눈 대화는 세션이 끝나면 흘러갑니다. "그때 AI가 정리해 준 결론"은 대화 기록 어딘가에 묻히고, 회의록과 똑같이 못 찾게 됩니다.</li>
+          <li class="frag">모델은 다음에 만난 나를 기억하지 못합니다.</li>
+          <li class="frag">그래서 AI를 쓰든 안 쓰든, 남겨야 할 것은 그 바깥에 있는 <strong>내 소유의 저장 공간</strong>으로 옮겨 적어야 합니다.</li>
+        </ul>
+      </div>
+      <div>
+        <svg class="fig" viewBox="0 0 440 260" aria-label="대화와 모델 기억은 흘러가고 파일만 남는다">
+          <defs><marker id="ia1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+          <g class="lbl s">
+            <rect class="box dim" x="10" y="20" width="190" height="60" rx="10"/>
+            <text x="105" y="45" text-anchor="middle">AI와 나눈 대화</text>
+            <text x="105" y="65" text-anchor="middle" fill="var(--mute)">세션이 끝나면 흘러갑니다</text>
+            <rect class="box dim" x="10" y="100" width="190" height="60" rx="10"/>
+            <text x="105" y="125" text-anchor="middle">모델의 기억</text>
+            <text x="105" y="145" text-anchor="middle" fill="var(--mute)">다음 세션은 나를 모릅니다</text>
+            <rect class="box dim" x="10" y="180" width="190" height="60" rx="10"/>
+            <text x="105" y="205" text-anchor="middle">노트 앱 여기저기</text>
+            <text x="105" y="225" text-anchor="middle" fill="var(--mute)">흩어져서 못 찾습니다</text>
+          </g>
+          <path class="ln acc draw" d="M200 50 C 250 50, 250 130, 288 130" marker-end="url(#ia1)"/>
+          <path class="ln acc draw d1" d="M200 130 L 288 130" marker-end="url(#ia1)"/>
+          <path class="ln acc draw d2" d="M200 210 C 250 210, 250 130, 288 130" marker-end="url(#ia1)"/>
+          <g class="a d2">
+            <rect class="box acc" x="290" y="75" width="140" height="110" rx="12"/>
+            <text class="lbl" x="360" y="110" text-anchor="middle" font-weight="700">내 파일</text>
+            <text class="lbl s" x="360" y="134" text-anchor="middle">마크다운 + git</text>
+            <text class="lbl s" x="360" y="154" text-anchor="middle">내가 소유합니다</text>
+          </g>
+          <g class="a d3"><text class="lbl s" x="360" y="215" text-anchor="middle" fill="var(--acc)">남길 것을 여기로 옮겨 적습니다</text></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>"남길 곳"의 조건을 물어보면 좋습니다. 어떤 도구로도 열리는가, 내가 소유했는가. 두 조건의 최소 조합이 마크다운 파일과 git입니다. 다음 슬라이드에서 확인합니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="2">
+  <div class="in">
+    <h2>마크다운 파일과 git이면 충분합니다</h2>
+    <div class="cols">
+      <div>
+        <div class="card ok">
+          <h3>파일이 주는 것</h3>
+          <ul>
+            <li>어떤 도구로도 열립니다. 앱이 없어져도 파일은 남습니다.</li>
+            <li>git이 "언제 무엇이 바뀌었나"를 이력으로 남깁니다.</li>
+            <li>AI 에이전트가 읽고 쓸 수 있는 형식입니다.</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h3>그럼 LLM은 무엇을 하나</h3>
+          <p>기억은 파일이 맡습니다. LLM은 그 파일을 <strong>읽고, 정리하고, 제안합니다.</strong> 파일이 남아 있으면 도구와 모델은 언제든 갈아 끼울 수 있습니다.</p>
+        </div>
+      </div>
+    </div>
+    <p class="frag" style="margin-top:1em"><strong>개념 하나를 확인했습니다.</strong> 지식은 내가 소유한 파일로 남깁니다. 3월 4일 회의록도 이제 파일 한 건입니다. 그럼 그 파일을 <strong>어디에 두어야 할까요.</strong> 다음 장입니다.</p>
+  </div>
+  <aside class="notes">
+    <p>개념 목록 슬라이드로 잠깐 돌아가 첫째에 확인 표시를 하는 동작을 하면 리듬이 생깁니다.</p>
+    <p>"어디에 두는가"라는 질문이 3장으로 넘어가는 다리입니다. 폴더 이야기로 자연스럽게 이어집니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 3. 개념 2 ============ -->
+<section class="slide chap dark" data-ch="3">
+  <div class="in">
+    <div class="kicker">3장 / 개념 둘</div>
+    <h1>메모가 단계를 거쳐<br>지식이 됩니다</h1>
+    <p class="lead">폴더가 주제가 아니라 문서의 상태를 말하게 합니다.</p>
+  </div>
+  <div class="num">3</div>
+  <aside class="notes"><p>10분. 이 덱의 핵심 장입니다. 폴더가 분류함이 아니라 상태 표시라는 관점 하나만 가져가도 절반은 성공입니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>폴더를 주제로 나누면 두 가지가 막힙니다</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">보통은 폴더를 주제로 나눕니다. 회의록, 개발, 아이디어. 이렇게 나누면 두 가지 문제가 생깁니다.</p>
+        <ul>
+          <li class="frag"><strong>넣을 때마다 고민하게 됩니다.</strong> 캐시 회의록은 회의록 폴더인가, 개발 폴더인가. 그 고민이 캡처 자체를 미루게 합니다.</li>
+          <li class="frag"><strong>폴더가 문서의 상태를 말해 주지 않습니다.</strong> 회의록 폴더 안에는 정리 안 된 메모와 확정된 결론이 섞여 있고, 열어 보기 전에는 구분되지 않습니다.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card acc frag">
+          <h3>그래서 폴더를 상태로 나눕니다</h3>
+          <p>주제가 아니라 <strong>이 문서를 얼마나 믿을 수 있는가</strong>로 나눕니다. 아직 판단 전이면 임시, 원문 그대로면 증거, 검토를 마친 결론이면 지식입니다.</p>
+          <p class="small">주제는 문서 머리의 표시 하나로 남기면 됩니다. 폴더가 맡을 일이 아닙니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>"주제 폴더에서 못 찾는다"는 공감을 먼저 받습니다. 폴더 열 개짜리 노트 앱은 대부분 갖고 있습니다.</p>
+    <p>오리엔테이션의 "디렉토리는 분류함이 아니라 성숙 단계다"를 일상어로 푼 슬라이드입니다. 성숙이라는 낱말도 여기서는 쓰지 않고 "얼마나 믿을 수 있는가"로만 말합니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>폴더는 넷이면 됩니다</h2>
+    <div class="cols">
+      <div>
+        <table>
+          <tr><th>폴더</th><th>상태</th><th>우리 회의록이라면</th></tr>
+          <tr><td><code>inbox/</code></td><td>임시. 아직 판단 전</td><td>방금 받아 둔 회의록</td></tr>
+          <tr><td><code>sources/</code></td><td>증거. 원문 그대로</td><td>회의록 원문</td></tr>
+          <tr><td><code>context/</code></td><td>지식. 검토를 마친 결론</td><td>정리된 캐시 정책</td></tr>
+          <tr><td><code>archive/</code></td><td>폐기. 이력만 남음</td><td>더는 안 쓰는 옛 정책</td></tr>
+        </table>
+        <p class="small frag" style="margin-top:.7em">폴더 이름보다 <strong>임시, 증거, 지식, 폐기</strong>라는 네 상태가 먼저입니다. 이름은 도구를 쓸 때 자연히 익습니다.</p>
+      </div>
+      <div>
+        <svg class="fig" viewBox="0 0 460 300" aria-label="임시에서 증거와 지식으로 가고 지식은 폐기로 물러난다">
+          <defs><marker id="ia2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+          <rect class="box warn" x="20" y="110" width="120" height="64" rx="10"/>
+          <text class="lbl" x="80" y="137" text-anchor="middle" font-weight="700">임시</text>
+          <text class="lbl s" x="80" y="158" text-anchor="middle">inbox/</text>
+          <g class="a d1">
+            <rect class="box" x="200" y="24" width="120" height="64" rx="10"/>
+            <text class="lbl" x="260" y="51" text-anchor="middle" font-weight="700">증거</text>
+            <text class="lbl s" x="260" y="72" text-anchor="middle">sources/</text>
+            <path class="ln draw d1" d="M140 122 C 170 105, 170 80, 196 66" marker-end="url(#ia2)"/>
+            <text class="lbl s" x="128" y="82">원문은 그대로</text>
+          </g>
+          <g class="a d2">
+            <rect class="box acc" x="200" y="204" width="120" height="64" rx="10"/>
+            <text class="lbl" x="260" y="231" text-anchor="middle" font-weight="700">지식</text>
+            <text class="lbl s" x="260" y="252" text-anchor="middle">context/</text>
+            <path class="ln acc draw d2" d="M140 162 C 170 180, 170 205, 196 220" marker-end="url(#ia2)"/>
+            <text class="lbl s" x="120" y="215">결론만 뽑아서</text>
+          </g>
+          <g class="a d3">
+            <path class="ln acc dash draw d3" d="M260 88 L 260 200" marker-end="url(#ia2)"/>
+            <text class="lbl s" x="272" y="150">근거 링크</text>
+          </g>
+          <g class="a d4">
+            <rect class="box dim" x="340" y="110" width="110" height="64" rx="10"/>
+            <text class="lbl" x="395" y="137" text-anchor="middle" font-weight="700">폐기</text>
+            <text class="lbl s" x="395" y="158" text-anchor="middle">archive/</text>
+            <path class="ln draw d4" d="M320 220 C 360 210, 380 195, 392 178" marker-end="url(#ia2)"/>
+            <text class="lbl s" x="352" y="220">수명이 다하면</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>도식의 화살표 셋이 무슨 뜻인지는 여기서 길게 설명하지 않습니다. 다음 슬라이드에서 회의록 한 건으로 그대로 따라갑니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>회의록 한 건의 여정입니다</h2>
+    <div class="cols">
+      <div>
+        <div class="card warn frag">
+          <h3>1. 회의 직후, 임시로</h3>
+          <p><code>inbox/2026-03-04-캐시-정책-회의.md</code></p>
+          <p class="small">급하게 받아 둔 원문입니다. 결론과 논의와 미결이 섞여 있어도 됩니다. 넣는 순간에는 아무것도 묻지 않습니다.</p>
+        </div>
+        <div class="card frag" style="margin-top:.7em">
+          <h3>2. 원문은 증거로</h3>
+          <p><code>sources/2026-03-04-캐시-정책-회의.md</code></p>
+          <p class="small">본문을 고치지 않고 옮깁니다. 나중에 "그때 정말 그렇게 정했나"를 확인하러 돌아올 근거이기 때문입니다.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card acc frag">
+          <h3>3. 결론은 지식으로</h3>
+          <p><code>context/캐시-무효화-정책.md</code></p>
+          <p class="small">결론만 뽑아 새 문서로 씁니다. 회의를 몰라도 읽히는 글이 되고, 원문을 가리키는 링크를 답니다. 이렇게 검토를 거쳐 지식 폴더로 올리는 이동을 <strong>승급</strong>이라고 부릅니다. 이 덱에서 새로 붙이는 이름은 이것 하나입니다.</p>
+        </div>
+        <div class="card frag" style="margin-top:.7em">
+          <h3>4. 6월에 정책이 바뀌면</h3>
+          <p class="small">지식 문서를 고치고, git이 언제 바뀌었는지를 이력으로 남깁니다. 결론이 통째로 무효가 되면 폐기 폴더로 물러나고, 이력은 지워지지 않습니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>이 슬라이드가 덱의 심장입니다. 네 카드를 순서대로 하나씩 띄우며 읽습니다. 3번 카드의 "회의를 몰라도 읽히는 글"을 천천히 말합니다. 메모가 지식이 되는 순간의 정의입니다.</p>
+    <p>같은 회의록이 증거와 지식 두 벌이 되는 것이 이상하게 들릴 수 있습니다. 원문과 결론은 수명이 다르다고 답합니다. 결론은 바뀌지만 "그때 그렇게 정했다"는 사실은 바뀌지 않습니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="3">
+  <div class="in">
+    <h2>단계가 있으면, 열어 본 파일을 믿을 수 있습니다</h2>
+    <div class="cols">
+      <div>
+        <ul style="line-height:1.9">
+          <li class="frag">지식 폴더에 있으면 <strong>검토를 마친 결론</strong>입니다. 그대로 써도 됩니다.</li>
+          <li class="frag">의심스러우면 근거 링크를 타고 <strong>증거 폴더의 원문</strong>으로 돌아갑니다.</li>
+          <li class="frag">폐기 폴더에 있으면 <strong>더는 유효하지 않은 결론</strong>입니다. 왜 물러났는지 이력이 남아 있습니다.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card ok frag">
+          <h3>6월의 곤란 셋 중 둘이 풀렸습니다</h3>
+          <p>믿을 수 있는가는 폴더와 근거 링크가 답합니다. 어느 것이 최신인가는 지식 문서 한 건과 git 이력이 답합니다.</p>
+          <p class="small">남은 하나는 "못 찾는다"입니다. 다음 장이 그 답입니다.</p>
+        </div>
+      </div>
+    </div>
+    <p class="frag" style="margin-top:.8em"><strong>개념 둘을 확인했습니다.</strong> 메모는 단계를 거쳐 지식이 됩니다.</p>
+  </div>
+  <aside class="notes">
+    <p>단계는 분류를 위한 것이 아니라 신뢰를 위한 것이라는 문장으로 장을 닫습니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 4. 개념 3 ============ -->
+<section class="slide chap dark" data-ch="4">
+  <div class="in">
+    <div class="kicker">4장 / 개념 셋</div>
+    <h1>구조가 곧 찾는 수단입니다</h1>
+    <p class="lead">규칙이 지켜진 폴더는 검색 시스템 없이도 찾아집니다.</p>
+  </div>
+  <div class="num">4</div>
+  <aside class="notes"><p>7분. 핵심은 "규칙적인 구조는 그 자체가 색인"이라는 한 문장입니다. 검색 엔진과 벡터 이야기는 꺼내지 않습니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>규칙이 지켜진 목록에서는 그냥 찾아집니다</h2>
+    <p class="lead">규칙이 지켜진 폴더의 목록을 봅니다. 여기서 3월 4일 회의의 원문을 직접 찾아 보세요.</p>
+    <div class="cols">
+      <div>
+<pre class="code">sources/
+  2026-02-18-캐시-무효화-설계-방법.md
+  2026-03-04-캐시-정책-회의.md
+  2026-03-11-배포-롤백-점검.md
+  2026-04-02-api-버전-정리.md
+
+context/
+  캐시-무효화-정책.md
+  api-버전-정책.md</pre>
+      </div>
+      <div>
+        <ul>
+          <li class="frag">날짜로 시기를 좁히고 제목으로 확인합니다. <strong>목록을 훑는 것만으로 찾았습니다.</strong></li>
+          <li class="frag">결론이 필요하면 지식 폴더, 원문이 필요하면 증거 폴더. 폴더가 이미 절반을 걸러 줍니다.</li>
+          <li class="frag">문서 머리에도 같은 규칙의 정보(frontmatter)가 붙습니다. 단계와 날짜와 연결이 늘 같은 자리에 있습니다.</li>
+        </ul>
+        <p class="frag" style="margin-top:.6em">성립 조건이 하나 있습니다. <strong>이름과 위치와 머리 정보가 늘 규칙대로여야 합니다.</strong> 규칙이 무너지면 이 찾기도 같이 무너집니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>실제로 찾게 해 봅니다. "어떻게 찾았나"를 물으면 날짜와 제목을 봤다는 답이 나옵니다. 그것이 규칙의 존재 이유 증명입니다.</p>
+    <p>사람만이 아니라 AI 에이전트도 같은 방식으로 목록을 훑습니다. 구조가 규칙적이면 검색 시스템을 따로 세우지 않아도 에이전트가 바로 일할 수 있다는 것이 이 체계의 바탕입니다. frontmatter의 상세는 오리엔테이션에서 다룹니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="4">
+  <div class="in">
+    <h2>같은 이야기를 다른 낱말로 쓰면 못 찾습니다</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">목록 훑기에는 한계가 하나 있습니다. 낱말이 겹치지 않는 문서는 훑어도 나오지 않습니다.</p>
+        <div class="card frag">
+          <h3>예를 들면</h3>
+          <p>"배치가 데이터베이스를 잡는다"라고 쓴 문서와 "조회를 복제본으로 돌린다"라고 쓴 문서는 같은 문제를 다룹니다. 겹치는 낱말이 거의 없어서 목록과 낱말 검색으로는 이 둘이 만나지 않습니다.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card acc frag">
+          <h3>그 자리에만 모델을 씁니다</h3>
+          <p>뜻이 비슷한데 연결이 없는 문서 쌍을 찾아 "이 둘을 이을까요"라고 제안하는 일입니다. 제안을 받아들일지는 사람이 정합니다.</p>
+        </div>
+        <p class="frag" style="margin-top:.8em">찾기의 기본은 구조가 하고, 구조가 못 잡는 자리만 모델이 돕습니다. 모델이 전부를 찾아 주는 체계가 아닙니다.</p>
+      </div>
+    </div>
+    <p class="frag" style="margin-top:.6em"><strong>개념 셋을 모두 확인했습니다.</strong> 파일로 남기고, 단계를 거치게 하고, 구조로 찾습니다.</p>
+  </div>
+  <aside class="notes">
+    <p>"AI가 다 찾아 주면 안 되나"라는 질문이 나올 수 있습니다. 모델이 전부를 찾는 체계는 검색 시스템을 따로 세워 운영하는 쪽으로 돌아가는 것이고, 이 체계는 운영할 것이 없는 규칙을 바탕으로 삼는다고 답합니다. 바탕이 규칙이므로 모델은 언제든 갈아 끼울 수 있습니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 5. 사람과 도구 ============ -->
+<section class="slide chap dark" data-ch="5">
+  <div class="in">
+    <div class="kicker">5장</div>
+    <h1>남은 문제는 하나,<br>규칙은 사람이 못 지킵니다</h1>
+    <p class="lead">개념이 도구를 만나는 지점입니다.</p>
+  </div>
+  <div class="num">5</div>
+  <aside class="notes"><p>3분. engram 소개가 아니라 도구가 왜 필요한가의 논리만 둡니다. 커맨드 이름은 이 덱에 나오지 않습니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="5">
+  <div class="in">
+    <h2>검사는 기계가 하고, 판단은 사람이 합니다</h2>
+    <div class="cols">
+      <div>
+        <p class="lead">규칙이 무너지는 이유는 사람이 게을러서가 아닙니다. 바쁠 때 가장 먼저 건너뛰게 되는 일이 검사이기 때문입니다.</p>
+        <ul>
+          <li class="frag">회의 직후에 파일명 규칙을 지켜 쓰는 사람은 드뭅니다.</li>
+          <li class="frag">"일단 넣고 나중에 정리"의 나중은 잘 오지 않습니다.</li>
+          <li class="frag">규칙을 문서로 적어 두어도 매번 읽는 사람은 만든 사람뿐입니다.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card acc frag">
+          <h3>그래서 이렇게 나눕니다</h3>
+          <p><strong>셀 수 있는 것은 기계가 검사합니다.</strong> 파일이 제자리에 있는지, 머리 정보가 채워졌는지, 다른 문서와 이어져 있는지.</p>
+          <p><strong>판단은 사람이 합니다.</strong> 이 결론을 남길 것인지, 무엇과 이을 것인지, 아직 유효한지.</p>
+        </div>
+        <p class="frag" style="margin-top:.8em">예를 들어 연결이 하나도 없는 문서를 지식 폴더로 올리려 하면 도구가 거절합니다. 혼자 떨어진 문서는 나중에 다시 찾아지지 않기 때문입니다. 무엇과 이을지는 도구가 정하지 않습니다.</p>
+        <p class="frag small">이 나눔을 코드로 만든 도구가 <strong>engram</strong>입니다. 사용법은 다음 자료가 다룹니다.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>커맨드 이름과 실제 거절 메시지는 여기서 꺼내지 않습니다. 실제 출력은 오리엔테이션 4장의 시연에 있습니다. 이 덱은 나눔의 논리까지만 갑니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 6. 정리 ============ -->
+<section class="slide center" data-ch="6">
+  <div class="in">
+    <div class="kicker">정리</div>
+    <h1 style="font-size:2em">회의록 한 건이 지식이 되는 데<br>필요한 것은 셋이었습니다</h1>
+    <div class="cols3" style="text-align:left;margin-top:1.4em;font-size:.9em">
+      <div class="card frag"><h3>파일로 남깁니다</h3><p>대화와 기억은 흘러갑니다. 내가 소유한 파일에 남긴 것만 지식의 재료가 됩니다.</p></div>
+      <div class="card frag"><h3>단계를 거치게 합니다</h3><p>임시, 증거, 지식, 폐기. 폴더가 문서의 상태를 말하면 열어 본 파일을 믿을 수 있습니다. 지식으로 올리는 이동이 승급입니다.</p></div>
+      <div class="card frag"><h3>구조로 찾습니다</h3><p>규칙이 지켜진 구조는 목록만 훑어도 찾아집니다. 규칙은 기계가 검사하고 판단은 사람이 합니다.</p></div>
+    </div>
+    <p class="frag" style="margin-top:1.4em">6월의 곤란으로 돌아가 봅니다. 못 찾던 결론은 지식 폴더에 한 건으로 있고, 믿어도 되는지는 근거 링크와 이력이 말해 주고, 흩어진 메모는 연결로 모입니다.</p>
+    <p class="foot">다음 자료: 같은 이야기를 설계 이유, 실제 도구 출력, 조직 관점까지 넓혀 다루는 오리엔테이션 <code>index.html</code> (60분). 손으로 해 보는 실습은 <code>hands-on.md</code>가 안내합니다.</p>
+  </div>
+  <aside class="notes">
+    <p>마지막 확인 질문을 하나 던집니다. "승급이 무엇인지 자기 말로 말해 보세요." 메모가 검토를 거쳐 재사용할 지식이 되는 이동이라는 답이 나오면 이 덱은 성공입니다.</p>
+  </aside>
+</section>
+
+</div><!-- /deck -->
+
+<script>
+(function(){
+  const CH = ['표지','1 문제','2 파일','3 단계','4 구조','5 사람과 도구','정리'];
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const deck = document.getElementById('deck');
+  const counter = document.getElementById('counter');
+  const prog = document.getElementById('prog');
+  const chapBar = document.getElementById('chapters');
+  const notepane = document.getElementById('notepane');
+  const notebody = document.getElementById('notebody');
+  const btnNotes = document.getElementById('btnNotes');
+  const btnMode = document.getElementById('btnMode');
+  let cur = 0, read = false;
+
+  // 장 버튼
+  CH.forEach((name, i) => {
+    const b = document.createElement('button');
+    b.textContent = name;
+    b.addEventListener('click', () => {
+      const idx = slides.findIndex(s => s.dataset.ch === String(i));
+      if (idx >= 0) go(idx, true);
+    });
+    chapBar.appendChild(b);
+  });
+
+  function frags(s){ return Array.from(s.querySelectorAll('.frag')); }
+
+  // draw 화살표의 화살촉은 선이 다 그어진 뒤에 붙인다.
+  // marker는 path와 함께 즉시 그려지므로, 그대로 두면 선이 자라기 전에
+  // 끝점에 삼각형만 먼저 떠 있게 된다.
+  document.querySelectorAll('.draw').forEach(el => {
+    const ps = el.matches('path') ? [el] : Array.from(el.querySelectorAll('path[marker-end]'));
+    ps.forEach(p => {
+      const m = p.getAttribute('marker-end');
+      if (m) { p.dataset.mk = m; p.removeAttribute('marker-end'); }
+    });
+    el.addEventListener('animationend', e => {
+      if (e.animationName !== 'draw') return;
+      ps.forEach(p => { if (p.dataset.mk) p.setAttribute('marker-end', p.dataset.mk); });
+      // 점선은 draw가 dasharray를 덮어쓴 상태로 끝나므로 점선 모양을 되돌린다.
+      const dashes = el.matches('path') ? [el] : Array.from(el.querySelectorAll('path'));
+      dashes.forEach(p => { if (p.classList.contains('dash')) p.classList.add('dashed'); });
+      if (el.matches('.dash')) el.classList.add('dashed');
+    });
+  });
+  function stripMarkers(scope){
+    scope.querySelectorAll('path[data-mk]').forEach(p => p.removeAttribute('marker-end'));
+    // 되감으면 다시 자라야 하므로 점선 복원도 함께 되돌린다.
+    scope.querySelectorAll('.dashed').forEach(p => p.classList.remove('dashed'));
+  }
+  // 화면을 벗어나면 draw 애니메이션이 처음으로 되감기므로 화살촉도 함께 뗀다.
+  // 떼지 않으면 다시 들어왔을 때 선은 자라는데 화살촉만 끝점에 먼저 떠 있다.
+  function leaveView(s){
+    s.classList.remove('in-view');
+    stripMarkers(s);
+  }
+
+  function show(i){
+    slides.forEach((s, k) => {
+      const on = k === i;
+      s.classList.toggle('active', on);
+      if (!on) { leaveView(s); }
+    });
+    const s = slides[i];
+    // 새로 진입하는 슬라이드는 프래그먼트를 접은 상태로, 화살촉도 뗀 상태로
+    frags(s).forEach(f => f.classList.remove('on'));
+    stripMarkers(s);
+    counter.textContent = (i+1) + ' / ' + slides.length;
+    prog.style.width = ((i+1)/slides.length*100) + '%';
+    Array.from(chapBar.children).forEach((b, k) => b.classList.toggle('cur', String(k) === s.dataset.ch));
+    const n = s.querySelector('.notes');
+    notebody.innerHTML = n ? n.innerHTML : '<p class="mute">이 슬라이드에는 노트가 없다.</p>';
+    location.hash = '#/' + (i+1);
+    runTerm(s);
+  }
+
+  function go(i, reset){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    cur = i;
+    if (read) {
+      slides[i].scrollIntoView({behavior:'smooth', block:'start'});
+      counter.textContent = (i+1) + ' / ' + slides.length;
+      location.hash = '#/' + (i+1);
+      return;
+    }
+    show(i);
+  }
+
+  function next(){
+    if (read) { go(cur+1); return; }
+    const term = slides[cur].querySelector('.term');
+    if (term && termHasNext(term)) { termStep(term); return; }
+    const fs = frags(slides[cur]);
+    const off = fs.find(f => !f.classList.contains('on'));
+    if (off) { off.classList.add('on'); return; }
+    if (cur < slides.length-1) go(cur+1);
+  }
+  function prev(){
+    if (read) { go(cur-1); return; }
+    const fs = frags(slides[cur]).filter(f => f.classList.contains('on'));
+    if (fs.length) { fs[fs.length-1].classList.remove('on'); return; }
+    if (cur > 0) { go(cur-1); frags(slides[cur]).forEach(f => f.classList.add('on')); }
+  }
+
+  // 키보드
+  document.addEventListener('keydown', e => {
+    if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': case ' ': e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'PageUp': e.preventDefault(); prev(); break;
+      case 'Home': e.preventDefault(); go(0); break;
+      case 'End': e.preventDefault(); go(slides.length-1); break;
+      case 'r': case 'R': toggleRead(); break;
+      case 'n': case 'N': toggleNotes(); break;
+      case 'Escape': notepane.classList.remove('on'); btnNotes.classList.remove('on'); break;
+    }
+  });
+  // 클릭 진행 (슬라이드 모드, 터미널/링크/버튼 제외)
+  deck.addEventListener('click', e => {
+    if (read) return;
+    if (e.target.closest('a,button,.term,table,pre')) return;
+    const x = e.clientX / window.innerWidth;
+    if (x < 0.15) prev(); else next();
+  });
+
+  function toggleNotes(){
+    if (read) return;
+    notepane.classList.toggle('on');
+    btnNotes.classList.toggle('on', notepane.classList.contains('on'));
+  }
+  btnNotes.addEventListener('click', toggleNotes);
+
+  function toggleRead(){
+    read = !read;
+    document.body.classList.toggle('read', read);
+    btnMode.classList.toggle('on', read);
+    btnMode.textContent = read ? '슬라이드 모드' : '읽기 모드';
+    notepane.classList.remove('on'); btnNotes.classList.remove('on');
+    if (read) {
+      slides.forEach(s => { s.classList.remove('active'); });
+      // 읽기 모드에서는 화면에 들어온 슬라이드만 애니메이션과 터미널을 돌린다
+      slides.forEach(s => io.observe(s));
+      setTimeout(() => slides[cur].scrollIntoView({block:'start'}), 30);
+    } else {
+      slides.forEach(s => { io.unobserve(s); leaveView(s); });
+      window.scrollTo(0,0);
+      show(cur);
+    }
+  }
+  btnMode.addEventListener('click', toggleRead);
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      const s = en.target;
+      if (en.isIntersecting && en.intersectionRatio > 0.35) {
+        if (!s.classList.contains('in-view')) { s.classList.add('in-view'); runTerm(s); }
+        const i = slides.indexOf(s);
+        if (i >= 0) { cur = i; counter.textContent = (i+1) + ' / ' + slides.length; prog.style.width = ((i+1)/slides.length*100)+'%';
+          Array.from(chapBar.children).forEach((b, k) => b.classList.toggle('cur', String(k) === s.dataset.ch)); }
+      } else if (!en.isIntersecting) {
+        leaveView(s);
+      }
+    });
+  }, {threshold:[0, .35, .6]});
+
+  // ---------- 터미널 재생 ----------
+  // 슬라이드 모드: Space나 오른쪽 화살표를 누를 때마다 커맨드 하나씩 진행한다 (강사가 속도를 쥔다).
+  // 읽기 모드: 화면에 들어오면 끝까지 자동 재생한다. 터미널 클릭은 현재 단계를 즉시 완료한다.
+  const esc = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const tstate = new WeakMap();
+  function termInit(term){
+    const script = JSON.parse(term.querySelector('.tscript').textContent);
+    // 단계 = 커맨드 하나 + 그 뒤에 이어지는 출력들
+    const steps = [];
+    script.forEach(line => { if (line[0] === 'cmd' || !steps.length) steps.push([line]); else steps[steps.length-1].push(line); });
+    const st = {steps, pos:0, html:'', busy:false, skip:false, ids:[], gen:0};
+    tstate.set(term, st);
+    term.querySelector('.body').innerHTML = '<span class="p">$ </span><span class="cur"></span>';
+    return st;
+  }
+  function termReset(term){ const st = tstate.get(term); if (st) { st.gen++; st.ids.forEach(clearTimeout); } termInit(term); }
+  function termHasNext(term){ const st = tstate.get(term) || termInit(term); return st.pos < st.steps.length; }
+  async function termStep(term){
+    const st = tstate.get(term) || termInit(term);
+    if (st.busy) { st.skip = true; return; }
+    if (st.pos >= st.steps.length) return;
+    const body = term.querySelector('.body');
+    const gen = st.gen; st.busy = true; st.skip = false;
+    const wait = ms => new Promise(r => { if (st.skip) { r(); return; } st.ids.push(setTimeout(r, ms)); });
+    const render = extra => { body.innerHTML = st.html + (extra||'') + '<span class="p">$ </span><span class="cur"></span>'; body.scrollTop = body.scrollHeight; };
+    const step = st.steps[st.pos++];
+    for (const [kind, text] of step) {
+      if (st.gen !== gen) return;
+      if (kind === 'cmd') {
+        if (st.html) st.html += '\n';
+        let typed = '';
+        for (const ch of text) { typed += ch; body.innerHTML = st.html + '<span class="p">$ </span><span class="cmd">' + esc(typed) + '</span><span class="cur"></span>'; body.scrollTop = body.scrollHeight; await wait(16 + Math.random()*20); if (st.gen !== gen) return; }
+        st.html += '<span class="p">$ </span><span class="cmd">' + esc(text) + '</span>\n';
+        body.innerHTML = st.html + '<span class="cur"></span>'; await wait(320);
+      } else {
+        st.html += '<span class="' + (kind === 'err' ? 'err' : 'out') + '">' + esc(text) + '</span>\n';
+        render(); await wait(200);
+      }
+    }
+    render();
+    st.busy = false;
+  }
+  async function termAuto(term){
+    termReset(term);
+    const st = tstate.get(term); const gen = st.gen;
+    await new Promise(r => setTimeout(r, 500));
+    while (st.gen === gen && st.pos < st.steps.length) { await termStep(term); await new Promise(r => setTimeout(r, 900)); }
+  }
+  function runTerm(slide){
+    const term = slide.querySelector('.term'); if (!term) return;
+    if (read) termAuto(term); else termReset(term);
+  }
+  document.querySelectorAll('.term').forEach(term => {
+    termInit(term);
+    term.querySelector('.re').addEventListener('click', e => { e.stopPropagation(); if (read) termAuto(term); else termReset(term); });
+    term.querySelector('.body').addEventListener('click', e => { e.stopPropagation(); const st = tstate.get(term); if (st && st.busy) st.skip = true; else if (!read) termStep(term); });
+  });
+
+  // 시작
+  const m = location.hash.match(/#\/(\d+)/);
+  const start = m ? Math.max(0, Math.min(slides.length-1, parseInt(m[1],10)-1)) : 0;
+  cur = start;
+  show(start);
+  window.addEventListener('hashchange', () => {
+    const mm = location.hash.match(/#\/(\d+)/);
+    if (!mm) return;
+    const i = parseInt(mm[1],10)-1;
+    if (i !== cur && i >= 0 && i < slides.length) { if (read) go(i); else { cur = i; show(i); } }
+  });
+})();
+</script>
+</body>
+</html>
