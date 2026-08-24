@@ -96,13 +96,18 @@ body.read .frag{opacity:1;transform:none}
 /* 여정 레인. 카드 넷 위를 곡선이 가로지른다 */
 .journey{position:relative;padding-top:58px}
 .journey .jarc{position:absolute;top:0;left:0;width:100%;height:58px;pointer-events:none}
-.jrow{display:grid;grid-template-columns:repeat(4,1fr);gap:1em;align-items:stretch}
+.jrow{display:grid;grid-template-columns:repeat(4,1fr);gap:.8em;align-items:stretch}
 .jcell{display:flex;flex-direction:column;min-width:0}
 .jtag{font-family:var(--mono);font-size:.72em;font-weight:700;color:var(--acc);margin-bottom:.35em;letter-spacing:.01em}
-.jcell>.card{flex:1;margin:0}
-.jnum{display:inline-block;width:1.6em;height:1.6em;line-height:1.6em;text-align:center;border-radius:50%;background:var(--acc);color:#fff;font-weight:700;font-size:.8em;margin-right:.4em}
+.jcell>.card{flex:1;margin:0;padding:.8em .9em}
+/* 카드 제목은 번호와 함께 한 줄에 둔다. 좁아지면 글자만 줄여 어절 개행을 막는다 */
+.jcell>.card h3{display:flex;align-items:center;gap:.1em;white-space:nowrap;font-size:clamp(.86em,1.02vw,1.08em)}
+.jcell>.card p{font-size:.82em;line-height:1.5}
+.jnum{flex:none;display:inline-block;width:1.6em;height:1.6em;line-height:1.6em;text-align:center;border-radius:50%;background:var(--acc);color:#fff;font-weight:700;font-size:.8em;margin-right:.4em}
 .jcell.dimc>.card{background:var(--bg2)}
 .jcell.dimc .jtag{color:var(--mute)}
+/* 여정 슬라이드는 화면을 더 넓게 쓴다 */
+.slide.wide .in{max-width:1500px}
 .tag{display:inline-block;white-space:nowrap;font-size:.7em;font-weight:700;letter-spacing:.06em;padding:.15em .55em;border-radius:999px;background:var(--bg2);color:var(--ink2);vertical-align:middle}
 .tag.acc{background:var(--acc2);color:var(--acc)} .tag.rej{background:var(--rej2);color:var(--rej)} .tag.warn{background:var(--warn2);color:var(--warn)} .tag.ok{background:var(--ok2);color:var(--ok)}
 table{border-collapse:collapse;width:100%;font-size:.88em}
@@ -446,7 +451,7 @@ body.read #hint{display:none}
       <g class="a">
         <rect class="box" x="330" y="20" width="340" height="72" rx="12" stroke-dasharray="6 4"/>
         <text class="lbl" x="500" y="48" text-anchor="middle" font-weight="700">LLM (에이전트)</text>
-        <text class="lbl s" x="500" y="72" text-anchor="middle" fill="var(--mute)">갈아 끼울 수 있는 층. 오늘의 모델, 내년의 모델</text>
+        <text class="lbl s" x="500" y="72" text-anchor="middle" fill="var(--mute)">언제든 바꿀 수 있습니다. 오늘의 모델, 내년의 모델</text>
       </g>
 
       <!-- 세 가지 일 -->
@@ -473,7 +478,7 @@ body.read #hint{display:none}
       <g class="a d4">
         <rect class="box acc" x="90" y="228" width="820" height="66" rx="12"/>
         <text class="lbl" x="500" y="256" text-anchor="middle" font-weight="700">내 파일 (마크다운 + git)</text>
-        <text class="lbl s" x="500" y="280" text-anchor="middle">기억은 여기에 있습니다. 도구가 바뀌어도 이 층은 그대로입니다</text>
+        <text class="lbl s" x="500" y="280" text-anchor="middle">기억은 여기에 있습니다. 도구가 바뀌어도 이 파일은 그대로입니다</text>
       </g>
       <path class="ln acc draw d4" d="M200 186 L 200 224" marker-end="url(#ib2)"/>
       <path class="ln acc draw d4" d="M500 186 L 500 224" marker-end="url(#ib2)"/>
@@ -511,16 +516,16 @@ body.read #hint{display:none}
 
       <!-- 왼쪽: 어디 넣지 -->
       <g class="a">
-        <rect class="box" x="200" y="52" width="110" height="40" rx="8"/>
-        <text class="lbl s" x="255" y="77" text-anchor="middle">캐시 회의록</text>
+        <rect class="box" x="178" y="52" width="154" height="40" rx="8"/>
+        <text class="lbl s" x="255" y="77" text-anchor="middle">캐시 오류 대응 회의록</text>
       </g>
       <g class="a d1">
         <rect class="box dim" x="55" y="170" width="120" height="44" rx="8"/><text class="lbl s" x="115" y="197" text-anchor="middle">회의록/</text>
         <rect class="box dim" x="195" y="170" width="120" height="44" rx="8"/><text class="lbl s" x="255" y="197" text-anchor="middle">개발/</text>
         <rect class="box dim" x="335" y="170" width="120" height="44" rx="8"/><text class="lbl s" x="395" y="197" text-anchor="middle">아이디어/</text>
-        <path class="ln rej dash" d="M235 94 L 130 166" marker-end="url(#ib3)"/>
+        <path class="ln rej dash" d="M225 94 L 130 166" marker-end="url(#ib3)"/>
         <path class="ln rej dash" d="M255 94 L 255 166" marker-end="url(#ib3)"/>
-        <path class="ln rej dash" d="M275 94 L 380 166" marker-end="url(#ib3)"/>
+        <path class="ln rej dash" d="M285 94 L 380 166" marker-end="url(#ib3)"/>
       </g>
       <g class="a d2">
         <text class="lbl" x="255" y="128" text-anchor="middle" font-size="22" fill="var(--rej)">?</text>
@@ -605,7 +610,7 @@ body.read #hint{display:none}
   </aside>
 </section>
 
-<section class="slide" data-ch="3">
+<section class="slide wide" data-ch="3">
   <div class="in">
     <h2>회의록 한 건의 여정입니다</h2>
     <div class="journey">
@@ -625,29 +630,29 @@ body.read #hint{display:none}
         <div class="jcell frag">
           <div class="jtag">inbox/</div>
           <div class="card warn">
-            <h3><span class="jnum">1</span>원문 그대로 받습니다</h3>
-            <p class="small">회의 직후에는 아무것도 묻지 않습니다. 결론과 논의와 미결이 섞여 있어도 그대로 받습니다. 넣는 자리에 마찰이 있으면 넣지 않게 되기 때문입니다.</p>
+            <h3><span class="jnum">1</span>그대로 받습니다</h3>
+            <p class="small">회의 직후에는 아무것도 묻지 않습니다. 결론과 논의와 미결이 섞여 있어도 그대로 받습니다. 넣는 자리에 마찰이 있으면 아예 넣지 않게 되기 때문입니다.</p>
           </div>
         </div>
         <div class="jcell frag">
           <div class="jtag">sources/</div>
           <div class="card">
-            <h3><span class="jnum">2</span>증거로 확정합니다</h3>
-            <p class="small">본문은 한 글자도 고치지 않고, 문서 머리에 <strong>출처와 날짜와 참석자</strong>만 붙여 옮깁니다. 나중에 "정말 그렇게 정했나"를 확인하러 돌아올 자리라 원문 그대로여야 합니다.</p>
+            <h3><span class="jnum">2</span>증거로 남깁니다</h3>
+            <p class="small">본문은 한 글자도 고치지 않습니다. 대신 문서 머리에 <strong>출처와 날짜와 참석자</strong>를 붙여 옮깁니다. 나중에 "정말 그렇게 정했나"를 확인하러 돌아올 자리입니다.</p>
           </div>
         </div>
         <div class="jcell frag">
           <div class="jtag">context/</div>
           <div class="card acc">
-            <h3><span class="jnum">3</span>결론만 뽑아 씁니다</h3>
-            <p class="small">회의를 몰라도 읽히는 글로 새로 씁니다. 2번을 가리키는 <strong>근거 링크</strong>와 관련 문서 링크를 답니다. 이 이동이 <strong>승급</strong>이고, 이 덱에서 새로 붙이는 이름은 이것 하나입니다.</p>
+            <h3><span class="jnum">3</span>결론을 새로 씁니다</h3>
+            <p class="small">회의를 몰라도 읽히는 글로 씁니다. 2번을 가리키는 <strong>근거 링크</strong>와 관련 문서 링크를 답니다. 이 이동이 <strong>승급</strong>이고, 이 덱에서 새로 붙이는 이름은 이것 하나입니다.</p>
           </div>
         </div>
         <div class="jcell dimc frag">
           <div class="jtag">archive/</div>
           <div class="card">
-            <h3><span class="jnum">4</span>수명이 다하면 물립니다</h3>
-            <p class="small">정책이 바뀌면 3번을 고치고 git이 이력을 남깁니다. 통째로 무효가 되면 여기로 물러납니다. <strong>지우지 않습니다.</strong> 가리키던 링크가 깨지지 않고 왜 물러났는지가 남습니다.</p>
+            <h3><span class="jnum">4</span>뒤로 물러납니다</h3>
+            <p class="small">정책이 바뀌면 3번을 고치고 git이 이력을 남깁니다. 통째로 무효가 되면 이 자리로 옮깁니다. <strong>지우지 않습니다.</strong> 가리키던 링크가 살아 있고 왜 물러났는지가 남습니다.</p>
           </div>
         </div>
       </div>
@@ -728,40 +733,43 @@ body.read #hint{display:none}
 
       <!-- 두 문서 -->
       <g class="a">
-        <rect class="box" x="60" y="60" width="290" height="90" rx="10"/>
-        <text class="lbl s" x="205" y="88" text-anchor="middle" font-weight="700">문서 A</text>
-        <text class="lbl s" x="205" y="112" text-anchor="middle">"배치가 데이터베이스를 잡는다"</text>
-        <text class="lbl s" x="205" y="134" text-anchor="middle" fill="var(--mute)">낱말: 배치, 데이터베이스</text>
+        <rect class="box" x="55" y="58" width="300" height="96" rx="10"/>
+        <text class="lbl s" x="205" y="84" text-anchor="middle" font-weight="700">문서 A</text>
+        <text class="lbl s" x="205" y="108" text-anchor="middle">"결제 실패 시 재시도 기준"</text>
+        <text class="lbl s" x="205" y="134" text-anchor="middle" fill="var(--mute)">낱말: 결제, 실패, 재시도</text>
       </g>
       <g class="a d1">
-        <rect class="box" x="650" y="60" width="290" height="90" rx="10"/>
-        <text class="lbl s" x="795" y="88" text-anchor="middle" font-weight="700">문서 B</text>
-        <text class="lbl s" x="795" y="112" text-anchor="middle">"조회를 복제본으로 돌린다"</text>
-        <text class="lbl s" x="795" y="134" text-anchor="middle" fill="var(--mute)">낱말: 조회, 복제본</text>
+        <rect class="box" x="645" y="58" width="300" height="96" rx="10"/>
+        <text class="lbl s" x="795" y="84" text-anchor="middle" font-weight="700">문서 B</text>
+        <text class="lbl s" x="795" y="108" text-anchor="middle">"주문이 중복 생성된 사고 기록"</text>
+        <text class="lbl s" x="795" y="134" text-anchor="middle" fill="var(--mute)">낱말: 주문, 중복, 사고</text>
       </g>
 
       <!-- 낱말로는 안 만남 -->
       <g class="a d2">
-        <path class="ln dash" d="M355 105 L 645 105" stroke="var(--mute)"/>
-        <line x1="486" y1="88" x2="514" y2="122" stroke="var(--rej)" stroke-width="3"/>
-        <line x1="514" y1="88" x2="486" y2="122" stroke="var(--rej)" stroke-width="3"/>
-        <text class="lbl s" x="500" y="172" text-anchor="middle" fill="var(--rej)">겹치는 낱말이 없어 목록과 낱말 검색으로는 만나지 않습니다</text>
+        <path class="ln dash" d="M360 106 L 640 106" stroke="var(--mute)"/>
+        <line x1="486" y1="90" x2="514" y2="122" stroke="var(--rej)" stroke-width="3"/>
+        <line x1="514" y1="90" x2="486" y2="122" stroke="var(--rej)" stroke-width="3"/>
+        <text class="lbl s" x="500" y="176" text-anchor="middle" fill="var(--rej)">같은 낱말이 하나도 없어 낱말 검색으로는 만나지 않습니다</text>
       </g>
 
       <!-- 뜻으로 이어짐 -->
       <g class="a d3">
-        <path class="ln acc draw d3" d="M205 150 C 205 220, 795 220, 795 152" marker-end="url(#ib4)"/>
-        <rect class="box acc" x="350" y="196" width="300" height="46" rx="10"/>
-        <text class="lbl s" x="500" y="224" text-anchor="middle" font-weight="700">뜻이 비슷합니다. 이을까요?</text>
+        <path class="ln acc draw d3" d="M205 154 C 205 224, 795 224, 795 156" marker-end="url(#ib4)"/>
+        <rect class="box acc" x="300" y="198" width="400" height="50" rx="10"/>
+        <text class="lbl s" x="500" y="220" text-anchor="middle" font-weight="700">재시도가 중복 주문을 만든 것 아닌가요?</text>
+        <text class="lbl s" x="500" y="240" text-anchor="middle" fill="var(--mute)">두 문서를 이을까요?</text>
       </g>
       <g class="a d5">
-        <text class="lbl s" x="500" y="272" text-anchor="middle">사람이 보면 같은 문제입니다. 이 자리에만 모델을 쓰고, 이을지는 사람이 정합니다</text>
+        <text class="lbl s" x="500" y="278" text-anchor="middle">사람이 나란히 놓고 보면 한 사안입니다. 이 자리에만 모델을 쓰고, 이을지는 사람이 정합니다</text>
       </g>
     </svg>
     <p class="frag" style="margin-top:.4em">찾기의 기본은 구조가 하고, 구조가 못 잡는 자리만 모델이 돕습니다. <strong>개념 셋을 모두 확인했습니다.</strong></p>
   </div>
   <aside class="notes">
-    <p>"AI가 다 찾아 주면 안 되나"라는 질문이 나올 수 있습니다. 모델이 전부를 찾는 체계는 검색 시스템을 따로 세워 운영하는 쪽으로 돌아가는 것이고, 이 체계는 운영할 것이 없는 규칙을 바탕으로 삼는다고 답합니다.</p>
+    <p>예시를 나란히 읽어 줍니다. "결제 실패 시 재시도 기준"과 "주문이 중복 생성된 사고 기록"은 같은 낱말이 하나도 없습니다. 그런데 재시도가 중복 주문의 원인일 수 있어 사람이 보면 한 사안입니다.</p>
+    <p>"이 정도를 모델이 정말 잡나"라는 질문이 나오면 정직하게 답합니다. 늘 잡지는 못합니다. 그래서 이 기능은 <em>후보를 제안</em>할 뿐이고 채택은 사람이 합니다. 틀린 제안을 기각하면 다시 묻지 않습니다.</p>
+    <p>"AI가 다 찾아 주면 안 되나"라는 질문에는, 모델이 전부를 찾는 체계는 검색 시스템을 따로 세워 운영하는 쪽으로 돌아가는 것이고 이 체계는 운영할 것이 없는 규칙을 바탕으로 삼는다고 답합니다.</p>
     <p>이 연결 제안이 5장의 세 번째 활용 장면입니다. 바로 이어집니다.</p>
   </aside>
 </section>
@@ -830,152 +838,358 @@ body.read #hint{display:none}
   </aside>
 </section>
 
-<section class="slide" data-ch="5">
+<section class="slide wide" data-ch="5">
   <div class="in">
-    <h2>장면 1. 물으면 근거를 대며 답합니다</h2>
-    <div class="cols eq">
-      <div>
-        <svg class="fig" viewBox="0 0 460 330" aria-label="사용자 질문에 에이전트가 위키를 읽고 근거와 함께 답한다">
-          <defs><marker id="ib6" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
-          <g class="a">
-            <rect class="box" x="20" y="14" width="420" height="44" rx="10"/>
-            <text class="lbl s" x="38" y="42">"캐시 무효화 어떻게 하기로 했더라?"</text>
-          </g>
-          <g class="a d1">
-            <rect class="box dim" x="150" y="80" width="160" height="40" rx="8"/>
-            <text class="lbl s" x="230" y="105" text-anchor="middle">에이전트가 위키를 훑는다</text>
-            <path class="ln acc draw d1" d="M230 58 L 230 76" marker-end="url(#ib6)"/>
-          </g>
-          <g class="a d2">
-            <rect class="box acc" x="20" y="140" width="420" height="112" rx="10"/>
-            <text class="lbl s" x="38" y="166" font-weight="700">API 버전 단위로 무효화합니다.</text>
-            <text class="lbl s" x="38" y="188">롤백에 대비해 두 버전을 유지합니다.</text>
-            <text class="lbl s" x="38" y="216" fill="var(--mute)">근거: 캐시-무효화-정책 (지식)</text>
-            <text class="lbl s" x="38" y="238" fill="var(--mute)">원문: 캐시-정책-회의 (증거)</text>
-            <path class="ln acc draw d2" d="M230 120 L 230 136" marker-end="url(#ib6)"/>
-          </g>
-          <g class="a d4">
-            <text class="lbl s" x="230" y="284" text-anchor="middle" fill="var(--acc)">지식 폴더에서 답을 찾고</text>
-            <text class="lbl s" x="230" y="306" text-anchor="middle" fill="var(--acc)">근거 링크로 원문까지 함께 답합니다</text>
-          </g>
-        </svg>
-      </div>
-      <div>
-        <div class="cstack">
-          <div class="card frag">
-            <h3>이게 되는 이유</h3>
-            <p class="small"><strong>단계 표시</strong>가 있어서 검증된 결론만 골라 답합니다. 초안과 폐기된 옛 정책은 답에 섞이지 않습니다.</p>
-            <p class="small"><strong>근거 링크</strong>가 있어서 "믿어도 되나"에 문서로 답합니다. 사람도 에이전트도 같은 경로로 확인합니다.</p>
-          </div>
-          <div class="card acc frag">
-            <h3>1장의 곤란과 견주면</h3>
-            <p class="small">못 찾던 것을 <strong>물어서 찾고</strong>, 못 믿던 것을 <strong>근거로 믿고</strong>, 최신을 모르던 것을 <strong>지식 폴더 한 건</strong>으로 압니다.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <aside class="notes">
-    <p>이 장면이 활용의 기본형입니다. 노트 앱 검색과 다른 점은 답이 아니라 근거가 함께 온다는 것입니다.</p>
-    <p>기억할 것은 이 답의 품질이 3장에서 한 일의 품질이라는 점입니다. 증거를 분리하지 않았으면 원문 줄이 없고, 링크를 안 걸었으면 근거 줄이 없습니다.</p>
-  </aside>
-</section>
+    <h2>먼저, 회의록이 어떻게 기록되는지 봅니다</h2>
+    <p class="lead" style="max-width:none;margin-bottom:.5em">원문에서 무엇을 뽑아 어디에 적는지가 5장 나머지의 전제입니다. 회의록 한 건에서 두 번 뽑아냅니다.</p>
+    <svg class="fig" viewBox="0 0 1420 470" aria-label="회의록 원문에서 사실은 증거로, 결론은 지식으로 두 차례 기록된다" style="max-width:1420px;margin:0 auto">
+      <defs>
+        <marker id="rc1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker>
+        <marker id="rc2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--ink2)"/></marker>
+        <clipPath id="lens1"><circle cx="243" cy="150" r="52"/></clipPath>
+        <clipPath id="lens2"><circle cx="243" cy="300" r="52"/></clipPath>
+      </defs>
 
-<section class="slide" data-ch="5">
-  <div class="in">
-    <h2>장면 2. 새로 쓸 때 기존 결론이 재료가 됩니다</h2>
-    <div class="cols eq">
-      <div class="card">
-        <h3>없을 때</h3>
-        <p class="small">새 설계 문서를 쓸 때마다 <strong>빈 화면에서 시작합니다.</strong> 지난 결정은 기억나는 만큼만 반영되고, 기억 못 한 것은 없던 일이 됩니다.</p>
-        <p class="small mute">그래서 반년 전과 모순되는 결정이 조용히 들어갑니다.</p>
-      </div>
-      <div class="card acc">
-        <h3>있을 때</h3>
-        <p class="small">"캐시 관련해서 우리가 정해 둔 것 모아 줘"라고 하면 <strong>지식 폴더의 결론들이 재료로 깔립니다.</strong> 새 문서는 그 위에서 시작합니다.</p>
-        <p class="small">모순되는 결정을 하려 하면 기존 결론이 먼저 보입니다. 다르게 가려면 <strong>왜 바꾸는지를 적게 됩니다.</strong></p>
-      </div>
-    </div>
-    <svg class="fig" viewBox="0 0 1000 150" aria-label="흩어진 결론들이 새 문서의 재료로 모인다" style="max-width:1000px;margin:.6em auto 0">
-      <defs><marker id="ib7" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
+      <!-- 원문 -->
+      <text class="lbl s" x="200" y="26" text-anchor="middle" font-weight="700">회의록 원문 (받아 둔 그대로)</text>
+      <rect class="box dim" x="40" y="40" width="320" height="392" rx="10"/>
+      <g class="lbl s" font-size="11.5" fill="var(--ink2)">
+        <text x="60" y="66">[캐시 오류 대응 회의]</text>
+        <text x="60" y="88" fill="var(--mute)">2월 셋째 주 / 서버팀 4명</text>
+        <text x="60" y="118">- 어제 새벽 장애 다시 정리</text>
+        <text x="60" y="140">- 캐시가 만료 전에 지워짐</text>
+        <text x="60" y="162">- 원인은 배포 때 키 규칙이</text>
+        <text x="60" y="180">  바뀐 것으로 보임</text>
+        <text x="60" y="208">- (논쟁) 전체 비우기 vs</text>
+        <text x="60" y="226">  버전 단위로 나누기</text>
+        <text x="60" y="248">- 성능 얘기는 다음에</text>
+        <text x="60" y="276">- 결론: 버전 단위로 무효화</text>
+        <text x="60" y="294">- 롤백 대비 두 벌 유지</text>
+        <text x="60" y="322" fill="var(--mute)">- 다음 회의 때 지표 공유</text>
+        <text x="60" y="350" fill="var(--mute)">- 커피 사다 주신 분 감사</text>
+        <text x="60" y="378" fill="var(--mute)">- (미결) 캐시 크기 상한</text>
+        <text x="60" y="406" fill="var(--mute)">- 회의 20분 늦게 시작함</text>
+      </g>
+
+      <!-- 돋보기 1: 사실 -->
       <g class="a d1">
-        <rect class="box acc" x="40" y="16" width="180" height="34" rx="7"/><text class="lbl s" x="130" y="38" text-anchor="middle">캐시 무효화 정책</text>
-        <rect class="box acc" x="40" y="58" width="180" height="34" rx="7"/><text class="lbl s" x="130" y="80" text-anchor="middle">API 버전 정책</text>
-        <rect class="box acc" x="40" y="100" width="180" height="34" rx="7"/><text class="lbl s" x="130" y="122" text-anchor="middle">배포 롤백 기준</text>
+        <rect x="52" y="100" width="296" height="132" rx="6" fill="var(--warn2)" fill-opacity=".55"/>
+        <circle cx="243" cy="150" r="52" fill="none" stroke="var(--ink2)" stroke-width="3"/>
+        <g clip-path="url(#lens1)">
+          <rect x="191" y="98" width="104" height="104" fill="#fff"/>
+          <text class="lbl s" x="243" y="138" text-anchor="middle" font-size="11" font-weight="700">만료 전 삭제</text>
+          <text class="lbl s" x="243" y="158" text-anchor="middle" font-size="11" font-weight="700">배포 때 키</text>
+          <text class="lbl s" x="243" y="176" text-anchor="middle" font-size="11" font-weight="700">규칙 변경</text>
+        </g>
+        <line x1="279" y1="186" x2="304" y2="211" stroke="var(--ink2)" stroke-width="5" stroke-linecap="round"/>
+        <text class="lbl s" x="380" y="106" text-anchor="start" font-weight="700" fill="var(--warn)">1회차. 무슨 일이 있었나</text>
       </g>
-      <g class="a d2">
-        <path class="ln acc draw d2" d="M224 33 C 330 33, 360 60, 430 70" marker-end="url(#ib7)"/>
-        <path class="ln acc draw d2" d="M224 75 L 430 75" marker-end="url(#ib7)"/>
-        <path class="ln acc draw d2" d="M224 117 C 330 117, 360 90, 430 80" marker-end="url(#ib7)"/>
-      </g>
+
+      <!-- 돋보기 2: 결론 -->
       <g class="a d3">
-        <rect class="box" x="440" y="40" width="230" height="70" rx="10"/>
-        <text class="lbl s" x="555" y="68" text-anchor="middle" font-weight="700">새 설계 문서</text>
-        <text class="lbl s" x="555" y="90" text-anchor="middle" fill="var(--mute)">이미 정한 것 위에서 시작</text>
+        <rect x="52" y="258" width="296" height="52" rx="6" fill="var(--acc2)" fill-opacity=".7"/>
+        <circle cx="243" cy="300" r="52" fill="none" stroke="var(--acc)" stroke-width="3"/>
+        <g clip-path="url(#lens2)">
+          <rect x="191" y="248" width="104" height="104" fill="#fff"/>
+          <text class="lbl s" x="243" y="288" text-anchor="middle" font-size="11" font-weight="700" fill="var(--acc)">버전 단위</text>
+          <text class="lbl s" x="243" y="306" text-anchor="middle" font-size="11" font-weight="700" fill="var(--acc)">무효화</text>
+          <text class="lbl s" x="243" y="324" text-anchor="middle" font-size="11" font-weight="700" fill="var(--acc)">두 벌 유지</text>
+        </g>
+        <line x1="279" y1="336" x2="304" y2="361" stroke="var(--acc)" stroke-width="5" stroke-linecap="round"/>
+        <text class="lbl s" x="380" y="360" text-anchor="start" font-weight="700" fill="var(--acc)">2회차. 무엇을 정했나</text>
       </g>
+
+      <!-- 화살표 -->
+      <path class="ln draw d2" d="M368 150 C 450 150, 470 128, 528 128" marker-end="url(#rc2)"/>
+      <path class="ln acc draw d4" d="M368 300 C 450 300, 470 322, 528 322" marker-end="url(#rc1)"/>
+
+      <!-- sources 산출물 -->
+      <g class="a d2">
+        <text class="lbl m" x="540" y="26" font-size="12.5" fill="var(--mute)">sources/</text>
+        <rect class="box" x="532" y="40" width="410" height="176" rx="10"/>
+        <text class="lbl s" x="552" y="66" font-weight="700">캐시-오류-대응-회의</text>
+        <rect x="546" y="80" width="382" height="60" rx="5" fill="var(--bg2)"/>
+        <text class="lbl m" x="558" y="98" font-size="11" fill="var(--acc)">출처: 서버팀 회의</text>
+        <text class="lbl m" x="558" y="114" font-size="11" fill="var(--acc)">날짜: 2월 셋째 주</text>
+        <text class="lbl m" x="558" y="130" font-size="11" fill="var(--acc)">참석: 서버팀 4명</text>
+        <text class="lbl s" x="552" y="160" font-size="11.5" fill="var(--ink2)">본문은 원문 그대로. 한 글자도</text>
+        <text class="lbl s" x="552" y="178" font-size="11.5" fill="var(--ink2)">고치지 않습니다</text>
+        <text class="lbl s" x="552" y="200" font-size="11.5" fill="var(--mute)">잡담과 미결도 지우지 않습니다</text>
+      </g>
+      <g class="a d2"><text class="lbl s" x="737" y="238" text-anchor="middle" fill="var(--warn)">증거. 나중에 되돌아올 자리</text></g>
+
+      <!-- context 산출물 -->
       <g class="a d4">
-        <text class="lbl s" x="830" y="60" text-anchor="middle" fill="var(--acc)">쌓일수록</text>
-        <text class="lbl s" x="830" y="82" text-anchor="middle" fill="var(--acc)">시작점이 높아집니다</text>
+        <text class="lbl m" x="540" y="262" font-size="12.5" fill="var(--mute)">context/</text>
+        <rect class="box acc" x="532" y="276" width="410" height="156" rx="10"/>
+        <text class="lbl s" x="552" y="302" font-weight="700">캐시-무효화-정책</text>
+        <text class="lbl s" x="552" y="326" font-size="11.5">캐시는 API 버전 단위로 무효화한다.</text>
+        <text class="lbl s" x="552" y="344" font-size="11.5">롤백에 대비해 두 벌을 유지한다.</text>
+        <rect x="546" y="358" width="382" height="60" rx="5" fill="#fff"/>
+        <text class="lbl m" x="558" y="376" font-size="11" fill="var(--acc)">근거: 캐시-오류-대응-회의</text>
+        <text class="lbl m" x="558" y="394" font-size="11" fill="var(--acc)">관련: 배포-롤백-기준</text>
+        <text class="lbl m" x="558" y="410" font-size="11" fill="var(--mute)">주제: 캐시, 배포</text>
+      </g>
+      <g class="a d5"><text class="lbl s" x="737" y="452" text-anchor="middle" fill="var(--acc)">지식. 회의를 몰라도 읽힙니다</text></g>
+
+      <!-- 오른쪽: 무엇이 남았나 -->
+      <g class="a d5">
+        <rect class="box" x="972" y="40" width="408" height="176" rx="10"/>
+        <text class="lbl s" x="992" y="66" font-weight="700">남긴 것 하나. 되돌아갈 길</text>
+        <text class="lbl s" x="992" y="92" font-size="11.5">결론이 의심스러우면 근거를 타고</text>
+        <text class="lbl s" x="992" y="110" font-size="11.5">원문으로 갑니다. 논쟁과 미결까지</text>
+        <text class="lbl s" x="992" y="128" font-size="11.5">그대로 있습니다.</text>
+        <text class="lbl s" x="992" y="158" font-size="11.5" fill="var(--mute)">"전체 비우기와 버전 단위 중에</text>
+        <text class="lbl s" x="992" y="176" font-size="11.5" fill="var(--mute)">왜 후자였나"에 답할 수 있습니다.</text>
+        <text class="lbl s" x="992" y="200" font-size="11.5" fill="var(--mute)">결론만 남겼다면 사라졌을 맥락입니다.</text>
+      </g>
+      <g class="a d6">
+        <rect class="box acc" x="972" y="276" width="408" height="156" rx="10"/>
+        <text class="lbl s" x="992" y="302" font-weight="700">남긴 것 둘. 찾아낼 손잡이</text>
+        <text class="lbl s" x="992" y="328" font-size="11.5">문서 머리의 <tspan font-weight="700">날짜, 주제, 근거, 관련</tspan>이</text>
+        <text class="lbl s" x="992" y="346" font-size="11.5">나중에 이 문서를 찾아내는 손잡이가</text>
+        <text class="lbl s" x="992" y="364" font-size="11.5">됩니다.</text>
+        <text class="lbl s" x="992" y="394" font-size="11.5" fill="var(--acc)">이 손잡이를 어떻게 쓰는지가</text>
+        <text class="lbl s" x="992" y="412" font-size="11.5" fill="var(--acc)">다음 세 장면입니다.</text>
       </g>
     </svg>
   </div>
   <aside class="notes">
-    <p>이것이 노트 앱과 갈라지는 지점입니다. 노트 앱은 과거를 보관하고, 이 체계는 과거를 다음 작업의 재료로 씁니다.</p>
-    <p>"모순되는 결정을 하려 하면 기존 결론이 먼저 보인다"를 강조합니다. 조직에서 같은 논쟁이 반복되는 비용을 아는 사람에게 가장 크게 와닿는 문장입니다.</p>
+    <p>이 슬라이드가 5장 나머지의 전제입니다. 활용 장면을 보여 주기 전에 "무엇이 어떤 모양으로 적혀 있는지"를 먼저 눈에 넣어야 뒤가 구체적으로 들립니다.</p>
+    <p>돋보기 두 번을 강조합니다. 같은 원문을 두 번 읽되 뽑는 것이 다릅니다. 1회차는 사실(무슨 일이 있었나), 2회차는 결론(무엇을 정했나)입니다. 사실은 증거로 가고 결론은 지식으로 갑니다.</p>
+    <p>왼쪽 원문의 흐린 줄들(커피, 20분 늦게 시작)을 손으로 짚습니다. 이것들은 결론에 안 들어가지만 증거에서는 지우지 않습니다. 지우기 시작하면 무엇을 지울지 매번 판단해야 하고, 그 판단이 넣는 자리의 마찰이 됩니다.</p>
+    <p>오른쪽 두 카드가 이 수고의 대가입니다. 되돌아갈 길과 찾아낼 손잡이. 이 두 낱말을 다음 세 슬라이드에서 그대로 다시 씁니다.</p>
   </aside>
 </section>
 
-<section class="slide" data-ch="5">
+<section class="slide wide" data-ch="5">
+  <div class="in">
+    <h2>장면 1. 물으면 근거를 대며 답합니다</h2>
+    <svg class="fig" viewBox="0 0 1420 430" aria-label="질문을 받은 에이전트가 손잡이를 써서 문서를 좁혀 찾고 근거와 함께 답한다" style="max-width:1420px;margin:0 auto">
+      <defs>
+        <marker id="s1a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker>
+      </defs>
+
+      <!-- 질문 -->
+      <rect class="box" x="40" y="24" width="380" height="52" rx="10"/>
+      <text class="lbl s" x="60" y="55">"캐시 무효화 어떻게 하기로 했더라?"</text>
+
+      <!-- 훑는 과정 3단 -->
+      <text class="lbl s" x="230" y="112" text-anchor="middle" font-weight="700" fill="var(--acc)">넣을 때 만든 손잡이로 좁혀 갑니다</text>
+
+      <g class="a d1">
+        <rect class="box acc" x="40" y="128" width="380" height="70" rx="10"/>
+        <text class="lbl s" x="60" y="152" font-weight="700">1. 폴더로 좁힙니다</text>
+        <text class="lbl s" x="60" y="174" font-size="11.5">결론을 물었으니 <tspan class="lbl m" font-size="11">context/</tspan> 부터 봅니다.</text>
+        <text class="lbl s" x="60" y="190" font-size="11.5" fill="var(--mute)">초안과 폐기된 정책은 아예 후보가 아닙니다</text>
+      </g>
+      <g class="a d2">
+        <rect class="box acc" x="40" y="210" width="380" height="70" rx="10"/>
+        <text class="lbl s" x="60" y="234" font-weight="700">2. 이름과 주제로 좁힙니다</text>
+        <text class="lbl s" x="60" y="256" font-size="11.5">파일명에 캐시가 있고 주제도 캐시입니다.</text>
+        <text class="lbl s" x="60" y="272" font-size="11.5" fill="var(--mute)">규칙적이라 목록만 훑어도 걸립니다</text>
+      </g>
+      <g class="a d3">
+        <rect class="box acc" x="40" y="292" width="380" height="70" rx="10"/>
+        <text class="lbl s" x="60" y="316" font-weight="700">3. 링크를 따라갑니다</text>
+        <text class="lbl s" x="60" y="338" font-size="11.5">근거로 원문까지, 관련으로 옆 문서까지.</text>
+        <text class="lbl s" x="60" y="354" font-size="11.5" fill="var(--mute)">한 번 걸리면 딸린 것이 함께 옵니다</text>
+      </g>
+
+      <!-- 찾아낸 문서 둘 -->
+      <path class="ln acc draw d4" d="M424 200 C 470 200, 480 150, 528 150" marker-end="url(#s1a)"/>
+      <path class="ln acc draw d4" d="M424 320 C 470 320, 480 330, 528 330" marker-end="url(#s1a)"/>
+
+      <g class="a d4">
+        <text class="lbl m" x="536" y="86" font-size="12.5" fill="var(--mute)">context/</text>
+        <rect class="box acc" x="528" y="100" width="360" height="100" rx="10"/>
+        <text class="lbl s" x="548" y="126" font-weight="700">캐시-무효화-정책</text>
+        <text class="lbl s" x="548" y="150" font-size="11.5">버전 단위로 무효화, 두 벌 유지</text>
+        <text class="lbl m" x="548" y="176" font-size="11" fill="var(--acc)">근거: 캐시-오류-대응-회의</text>
+      </g>
+      <g class="a d5">
+        <text class="lbl m" x="536" y="272" font-size="12.5" fill="var(--mute)">sources/</text>
+        <rect class="box" x="528" y="286" width="360" height="94" rx="10"/>
+        <text class="lbl s" x="548" y="312" font-weight="700">캐시-오류-대응-회의</text>
+        <text class="lbl s" x="548" y="336" font-size="11.5" fill="var(--ink2)">원문 그대로. 논쟁과 미결 포함</text>
+        <text class="lbl s" x="548" y="358" font-size="11.5" fill="var(--mute)">되돌아갈 자리</text>
+      </g>
+      <path class="ln acc dash draw d5" d="M708 200 L 708 282" marker-end="url(#s1a)"/>
+      <text class="lbl s" x="718" y="246" font-size="11" fill="var(--acc)">근거 링크</text>
+
+      <!-- 답 -->
+      <path class="ln acc draw d5" d="M892 240 L 950 240" marker-end="url(#s1a)"/>
+      <g class="a d5">
+        <rect class="box acc" x="956" y="100" width="424" height="230" rx="10"/>
+        <text class="lbl s" x="978" y="132" font-weight="700">API 버전 단위로 무효화합니다.</text>
+        <text class="lbl s" x="978" y="156" font-weight="700">롤백에 대비해 두 벌을 유지합니다.</text>
+        <line x1="978" y1="180" x2="1358" y2="180" stroke="var(--line)"/>
+        <text class="lbl s" x="978" y="206" font-size="11.5" fill="var(--ink2)">근거: <tspan font-weight="700">캐시-무효화-정책</tspan> <tspan fill="var(--mute)">(지식)</tspan></text>
+        <text class="lbl s" x="978" y="230" font-size="11.5" fill="var(--ink2)">원문: <tspan font-weight="700">캐시-오류-대응-회의</tspan> <tspan fill="var(--mute)">(증거)</tspan></text>
+        <text class="lbl s" x="978" y="262" font-size="11.5" fill="var(--mute)">"왜 전체 비우기가 아니었나"까지</text>
+        <text class="lbl s" x="978" y="280" font-size="11.5" fill="var(--mute)">물으면 원문의 논쟁 대목을 폅니다.</text>
+        <text class="lbl s" x="978" y="308" font-size="11.5" fill="var(--acc)">답과 출처가 함께 옵니다</text>
+      </g>
+      <g class="a d6">
+        <text class="lbl s" x="1168" y="366" text-anchor="middle" font-weight="700">검색창이 없어도 됩니다. 구조가 검색입니다</text>
+      </g>
+    </svg>
+  </div>
+  <aside class="notes">
+    <p>왼쪽 세 단계가 이 슬라이드의 핵심입니다. 에이전트가 그냥 뒤지는 것이 아니라 <strong>넣을 때 만든 손잡이를 순서대로 씁니다.</strong> 폴더로 후보를 줄이고, 이름과 주제로 좁히고, 링크로 딸린 것을 끌어옵니다.</p>
+    <p>1번 단계를 특히 짚습니다. 초안과 폐기된 정책이 후보에서 빠지는 것은 검색을 잘해서가 아니라 <em>단계를 표시해 두었기 때문</em>입니다. 3장에서 한 일이 여기서 값을 합니다.</p>
+    <p>오른쪽 답에서 (지식)과 (증거)를 손으로 짚습니다. 각각 context와 sources입니다. 폴더 이름을 여기서 한 번 더 확인시켜 줍니다.</p>
+    <p>노트 앱 검색과의 차이를 한 줄로 말합니다. 노트 앱은 걸린 문서 목록을 주고, 이 체계는 답과 그 답을 믿을 근거를 함께 줍니다.</p>
+  </aside>
+</section>
+
+<section class="slide wide" data-ch="5">
+  <div class="in">
+    <h2>장면 2. 새로 쓸 때 기존 결론이 재료가 됩니다</h2>
+    <p class="lead" style="max-width:none;margin-bottom:.5em">몇 달 뒤 "캐시 계층 개편" 설계를 씁니다. 빈 화면에서 시작하지 않습니다.</p>
+    <svg class="fig" viewBox="0 0 1420 400" aria-label="주제 손잡이로 관련 결론을 모아 새 설계 문서의 재료로 깔고 모순을 짚어 준다" style="max-width:1420px;margin:0 auto">
+      <defs><marker id="s2a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker>
+      <marker id="s2r" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--warn)"/></marker></defs>
+
+      <rect class="box" x="40" y="24" width="400" height="50" rx="10"/>
+      <text class="lbl s" x="60" y="54">"캐시 계층 개편 설계 초안 잡아 줘"</text>
+
+      <!-- 모으는 근거 -->
+      <text class="lbl s" x="240" y="106" text-anchor="middle" font-weight="700" fill="var(--acc)">주제와 링크를 손잡이로 모읍니다</text>
+      <g class="a d1">
+        <text class="lbl m" x="48" y="136" font-size="12.5" fill="var(--mute)">context/</text>
+        <rect class="box acc" x="40" y="148" width="400" height="46" rx="8"/>
+        <text class="lbl s" x="60" y="170" font-weight="700">캐시-무효화-정책</text>
+        <text class="lbl s" x="60" y="187" font-size="11" fill="var(--mute)">주제: 캐시, 배포</text>
+        <rect class="box acc" x="40" y="202" width="400" height="46" rx="8"/>
+        <text class="lbl s" x="60" y="224" font-weight="700">배포-롤백-기준</text>
+        <text class="lbl s" x="60" y="241" font-size="11" fill="var(--mute)">관련: 캐시-무효화-정책</text>
+        <rect class="box acc" x="40" y="256" width="400" height="46" rx="8"/>
+        <text class="lbl s" x="60" y="278" font-weight="700">api-버전-정책</text>
+        <text class="lbl s" x="60" y="295" font-size="11" fill="var(--mute)">주제: api, 배포</text>
+      </g>
+      <g class="a d2">
+        <text class="lbl s" x="240" y="330" text-anchor="middle" font-size="11.5" fill="var(--mute)">주제가 겹치는 것과 서로 링크된 것이 함께 딸려 옵니다</text>
+        <text class="lbl s" x="240" y="352" text-anchor="middle" font-size="11.5" fill="var(--mute)">초안과 폐기된 정책은 빠집니다</text>
+      </g>
+
+      <path class="ln acc draw d3" d="M446 225 L 520 225" marker-end="url(#s2a)"/>
+
+      <!-- 새 문서 -->
+      <g class="a d3">
+        <rect class="box" x="528" y="100" width="420" height="250" rx="10"/>
+        <text class="lbl s" x="548" y="128" font-weight="700">캐시 계층 개편 (초안)</text>
+        <text class="lbl s" x="548" y="156" font-size="11.5" fill="var(--mute)">이미 정해진 것</text>
+        <rect x="542" y="166" width="392" height="76" rx="5" fill="var(--acc2)" fill-opacity=".5"/>
+        <text class="lbl s" x="556" y="186" font-size="11.5">무효화는 버전 단위. 두 벌 유지</text>
+        <text class="lbl s" x="556" y="206" font-size="11.5">롤백은 직전 버전으로만</text>
+        <text class="lbl s" x="556" y="226" font-size="11.5">버전 표기는 api-버전-정책을 따름</text>
+        <text class="lbl s" x="548" y="266" font-size="11.5" fill="var(--mute)">이번에 정할 것</text>
+        <text class="lbl s" x="556" y="290" font-size="11.5">계층을 둘로 나눌지</text>
+        <text class="lbl s" x="556" y="310" font-size="11.5">상한을 어디에 둘지</text>
+        <text class="lbl s" x="556" y="334" font-size="11" fill="var(--acc)">빈 화면이 아니라 여기서 시작합니다</text>
+      </g>
+
+      <!-- 모순 감지 -->
+      <path class="ln draw d5" d="M954 225 L 1010 225" marker-end="url(#s2r)" stroke="var(--warn)"/>
+      <g class="a d5">
+        <rect class="box warn" x="1018" y="120" width="362" height="120" rx="10"/>
+        <text class="lbl s" x="1038" y="148" font-weight="700" fill="var(--warn)">"전체 비우기로 가겠다"고 하면</text>
+        <text class="lbl s" x="1038" y="174" font-size="11.5">기존 결론과 어긋난다고 먼저 알립니다.</text>
+        <text class="lbl s" x="1038" y="196" font-size="11.5">그 결론의 근거인 원문까지 함께 폅니다.</text>
+        <text class="lbl s" x="1038" y="222" font-size="11.5" fill="var(--ink2)">바꾸려면 <tspan font-weight="700">왜 바꾸는지를 적게</tspan> 됩니다.</text>
+      </g>
+      <g class="a d6">
+        <rect class="box acc" x="1018" y="262" width="362" height="88" rx="10"/>
+        <text class="lbl s" x="1038" y="290" font-weight="700">같은 논쟁을 두 번 하지 않습니다</text>
+        <text class="lbl s" x="1038" y="314" font-size="11.5">지난번에 왜 그렇게 정했는지가</text>
+        <text class="lbl s" x="1038" y="332" font-size="11.5">문서로 남아 있기 때문입니다.</text>
+      </g>
+    </svg>
+  </div>
+  <aside class="notes">
+    <p>이것이 노트 앱과 갈라지는 지점입니다. 노트 앱은 과거를 보관하고, 이 체계는 과거를 다음 작업의 재료로 깔아 줍니다.</p>
+    <p>왼쪽에서 세 문서가 모이는 이유를 짚습니다. 주제가 겹치거나 서로 링크되어 있어서입니다. 넣을 때 붙인 손잡이가 여기서 값을 합니다.</p>
+    <p>오른쪽 모순 감지가 이 장면의 절정입니다. 조직에서 같은 논쟁이 반복되는 비용을 아는 사람에게 가장 크게 와닿습니다. 다르게 갈 수 없다는 뜻이 아니라, 다르게 가려면 이유를 적게 된다는 뜻임을 분명히 합니다.</p>
+  </aside>
+</section>
+
+<section class="slide wide" data-ch="5">
   <div class="in">
     <h2>장면 3. 잊고 있던 것이 먼저 말을 겁니다</h2>
-    <div class="cols eq">
-      <div>
-        <div class="cstack">
-          <div class="card frag">
-            <h3>오래된 결론을 다시 묻습니다</h3>
-            <p class="small">"이 결론을 오래 안 봤습니다. 아직 유효한가요?" 날짜가 남아 있으니 물을 수 있습니다. 유효, 폐기, 보강 중 하나로 답하면 그 상태가 다시 기록됩니다.</p>
-          </div>
-          <div class="card frag">
-            <h3>안 이어진 것을 이어 줍니다</h3>
-            <p class="small">4장의 그 장면입니다. 낱말이 겹치지 않아 못 만나던 두 문서를 뜻으로 찾아 "이을까요"라고 묻습니다.</p>
-          </div>
-          <div class="card acc frag">
-            <h3>내가 안 물어도 옵니다</h3>
-            <p class="small">앞의 두 장면은 내가 물어야 시작됩니다. 이건 <strong>묻지 않아도 옵니다.</strong> 잊었다는 사실조차 잊은 것을 꺼내 주는 것이 이 체계가 노트 앱과 가장 다른 지점입니다.</p>
-          </div>
-        </div>
-      </div>
-      <div>
-        <svg class="fig" viewBox="0 0 460 340" aria-label="오래된 문서와 연결 없는 문서가 스스로 떠올라 사용자에게 제안된다">
-          <defs><marker id="ib8" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
-          <g class="lbl s">
-            <circle class="node" cx="90" cy="86" r="15"/><circle class="node" cx="180" cy="56" r="15"/>
-            <circle class="node" cx="160" cy="150" r="15"/><circle class="node" cx="270" cy="110" r="15"/>
-            <path class="ln acc" d="M105 82 L 165 60"/><path class="ln acc" d="M100 98 L 150 138"/>
-            <path class="ln acc" d="M195 62 L 255 104"/><path class="ln acc" d="M175 143 L 255 118"/>
-          </g>
-          <g class="a d1">
-            <circle class="node old pulse" cx="350" cy="215" r="15"/>
-            <text class="lbl s" x="350" y="248" text-anchor="middle" fill="var(--mute)">오래 안 봄</text>
-          </g>
-          <g class="a d2">
-            <circle class="node orph pulse" cx="80" cy="212" r="15"/>
-            <text class="lbl s" x="80" y="245" text-anchor="middle" fill="var(--rej)">이어진 곳 없음</text>
-          </g>
-          <g class="a d3">
-            <rect class="box acc" x="60" y="272" width="340" height="54" rx="10"/>
-            <text class="lbl s" x="230" y="296" text-anchor="middle" font-weight="700">"이 둘, 지금 한번 보시겠어요?"</text>
-            <text class="lbl s" x="230" y="316" text-anchor="middle" fill="var(--mute)">판단은 사람이 합니다</text>
-            <path class="ln acc draw d3" d="M340 232 C 320 250, 300 258, 280 268" marker-end="url(#ib8)"/>
-            <path class="ln acc draw d3" d="M90 230 C 110 248, 130 258, 150 268" marker-end="url(#ib8)"/>
-          </g>
-        </svg>
-      </div>
-    </div>
+    <p class="lead" style="max-width:none;margin-bottom:.5em">앞의 두 장면은 내가 물어야 시작됩니다. 이건 묻지 않아도 옵니다.</p>
+    <svg class="fig" viewBox="0 0 1420 400" aria-label="날짜와 링크를 손잡이로 오래된 문서와 안 이어진 문서를 찾아 먼저 제안한다" style="max-width:1420px;margin:0 auto">
+      <defs><marker id="s3a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
+
+      <!-- 위키 상태 -->
+      <text class="lbl s" x="230" y="26" text-anchor="middle" font-weight="700">쌓인 위키를 훑습니다</text>
+      <g class="lbl s">
+        <circle class="node" cx="120" cy="90" r="15"/><circle class="node" cx="230" cy="66" r="15"/>
+        <circle class="node" cx="200" cy="160" r="15"/><circle class="node" cx="320" cy="120" r="15"/>
+        <path class="ln acc" d="M135 86 L 215 70"/><path class="ln acc" d="M130 102 L 190 148"/>
+        <path class="ln acc" d="M245 72 L 305 114"/><path class="ln acc" d="M216 152 L 305 128"/>
+      </g>
+      <g class="a d1">
+        <circle class="node old pulse" cx="330" cy="250" r="15"/>
+        <path class="ln thin" d="M322 134 L 330 234"/>
+        <text class="lbl s" x="330" y="284" text-anchor="middle" fill="var(--mute)">마지막 갱신이 오래됨</text>
+      </g>
+      <g class="a d2">
+        <circle class="node orph pulse" cx="110" cy="250" r="15"/>
+        <text class="lbl s" x="110" y="284" text-anchor="middle" fill="var(--rej)">아무 데도 안 이어짐</text>
+      </g>
+      <g class="a d3">
+        <text class="lbl s" x="230" y="330" text-anchor="middle" font-size="11.5" fill="var(--acc)">쓰는 손잡이: 날짜와 링크</text>
+        <text class="lbl s" x="230" y="352" text-anchor="middle" font-size="11.5" fill="var(--mute)">넣을 때 붙여 둔 것으로 스스로 찾아냅니다</text>
+      </g>
+
+      <path class="ln acc draw d3" d="M370 200 C 430 200, 450 130, 510 130" marker-end="url(#s3a)"/>
+      <path class="ln acc draw d4" d="M370 220 C 430 220, 450 290, 510 290" marker-end="url(#s3a)"/>
+
+      <!-- 제안 둘 -->
+      <g class="a d3">
+        <rect class="box" x="518" y="60" width="440" height="150" rx="10"/>
+        <text class="lbl s" x="540" y="88" font-weight="700">"이 결론, 오래 안 보셨습니다"</text>
+        <rect x="532" y="100" width="412" height="46" rx="5" fill="var(--bg2)"/>
+        <text class="lbl s" x="546" y="120" font-size="11.5" font-weight="700">캐시-무효화-정책</text>
+        <text class="lbl m" x="546" y="138" font-size="11" fill="var(--mute)">마지막 갱신: 여섯 달 전</text>
+        <text class="lbl s" x="540" y="170" font-size="11.5">그동안 캐시 계층이 바뀌었습니다.</text>
+        <text class="lbl s" x="540" y="192" font-size="11.5" fill="var(--ink2)">아직 유효한가요? <tspan fill="var(--acc)">유효 / 고침 / 폐기</tspan></text>
+      </g>
+      <g class="a d4">
+        <rect class="box" x="518" y="230" width="440" height="140" rx="10"/>
+        <text class="lbl s" x="540" y="258" font-weight="700">"이 둘, 이어 두시겠습니까"</text>
+        <rect x="532" y="270" width="412" height="66" rx="5" fill="var(--acc2)" fill-opacity=".45"/>
+        <text class="lbl s" x="546" y="290" font-size="11.5" font-weight="700">결제-실패-재시도-기준</text>
+        <text class="lbl s" x="546" y="310" font-size="11.5" font-weight="700">주문-중복-생성-사고</text>
+        <text class="lbl s" x="546" y="328" font-size="11" fill="var(--mute)">낱말은 안 겹치지만 한 사안으로 보입니다</text>
+        <text class="lbl s" x="540" y="358" font-size="11.5" fill="var(--ink2)">이으면 다음부터 함께 딸려 옵니다</text>
+      </g>
+
+      <!-- 결과 -->
+      <path class="ln acc draw d5" d="M964 215 L 1020 215" marker-end="url(#s3a)"/>
+      <g class="a d5">
+        <rect class="box acc" x="1028" y="96" width="352" height="112" rx="10"/>
+        <text class="lbl s" x="1048" y="124" font-weight="700">사람은 고르기만 합니다</text>
+        <text class="lbl s" x="1048" y="148" font-size="11.5">유효하다고 하면 날짜가 갱신되고,</text>
+        <text class="lbl s" x="1048" y="168" font-size="11.5">폐기하면 뒤로 물러나고,</text>
+        <text class="lbl s" x="1048" y="188" font-size="11.5">이으면 링크가 하나 늘어납니다.</text>
+      </g>
+      <g class="a d6">
+        <rect class="box" x="1028" y="228" width="352" height="142" rx="10"/>
+        <text class="lbl s" x="1048" y="256" font-weight="700">그리고 위키가 조금 더 좋아집니다</text>
+        <text class="lbl s" x="1048" y="282" font-size="11.5">답한 결과가 다시 손잡이가 되어</text>
+        <text class="lbl s" x="1048" y="302" font-size="11.5">다음 장면 1과 2가 더 정확해집니다.</text>
+        <text class="lbl s" x="1048" y="332" font-size="11.5" fill="var(--acc)">쓸수록 나아지는 이유가</text>
+        <text class="lbl s" x="1048" y="352" font-size="11.5" fill="var(--acc)">이 되먹임에 있습니다.</text>
+      </g>
+    </svg>
   </div>
   <aside class="notes">
     <p>1장 세 번째 곤란("오래된 결론을 다시 보게 하는 일을 아무도 안 해 준다")이 여기서 갚아집니다.</p>
-    <p>이것이 되려면 날짜와 링크가 문서에 남아 있어야 합니다. 3장에서 문서 머리에 붙인 정보가 여기서 쓰입니다. 넣을 때의 수고와 이 장면을 연결해 말합니다.</p>
+    <p>이것이 되려면 날짜와 링크가 문서에 남아 있어야 합니다. 왼쪽 아래 "쓰는 손잡이" 줄을 짚으며, 3장에서 문서 머리에 붙인 정보가 여기서 쓰인다고 연결합니다.</p>
+    <p>오른쪽 아래 되먹임이 이 장의 마무리입니다. 답한 결과가 다시 손잡이가 되므로 쓸수록 나아집니다. 넣기만 하는 체계가 아니라는 최종 근거입니다.</p>
+    <p>기각한 제안은 다시 묻지 않는다는 점도 한마디 덧붙입니다. 사람의 판단을 기억하기 때문에 잔소리가 되지 않습니다.</p>
   </aside>
 </section>
 
