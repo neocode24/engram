@@ -194,6 +194,8 @@ body.read .slide.cover{background-size:cover}
 body.read{overflow:auto}
 body.read #deck{position:static;inset:auto;overflow:visible;padding-top:60px}
 body.read .slide{position:relative;display:block;inset:auto;min-height:0;padding:3.2em 6vw 1.4em;font-size:clamp(15px,1.15vw,18px);animation:none;border-bottom:1px solid var(--line)}
+/* 해시 이동과 모드 전환의 scrollIntoView가 고정 바(44px)와 진행 바(3px) 아래에 착지하게 한다 */
+body.read .slide{scroll-margin-top:55px}
 body.read .slide.center{text-align:left}
 body.read .slide.center .in > *{margin-left:0}
 body.read .slide.chap{padding:4em 6vw 2em;background:var(--bg2)}
