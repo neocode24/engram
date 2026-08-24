@@ -18,6 +18,10 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+/* 한국어는 어절 단위로 줄바꿈한다. keep-all 이 없으면 "받습니/다" 처럼
+   어절 중간에서 끊긴다. 코드와 터미널은 아래에서 따로 되돌린다. */
+html,body{word-break:keep-all;overflow-wrap:break-word}
+pre,code,kbd,.term,.term .body{word-break:normal}
 body{overflow:hidden}
 a{color:var(--acc)}
 code,kbd,pre{font-family:var(--mono)}
