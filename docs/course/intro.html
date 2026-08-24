@@ -84,6 +84,21 @@ body.read .frag{opacity:1;transform:none}
 .card.rej{border-color:var(--rej);background:#fffafa}
 .card.warn{border-color:var(--warn);background:#fffdf7}
 .card.ok{border-color:var(--ok);background:#f7fdf9}
+/* 같은 행의 카드 높이를 맞춘다. 산만해 보이지 않게 eq를 붙인 격자에만 건다 */
+.cols.eq,.cols3.eq{align-items:stretch}
+.cols.eq>.card,.cols3.eq>.card{height:100%}
+.cstack{display:flex;flex-direction:column;gap:.8em;height:100%}
+.cstack>.card{flex:1;margin-top:0!important}
+/* 여정 레인. 카드 넷 위를 곡선이 가로지른다 */
+.journey{position:relative;padding-top:58px}
+.journey .jarc{position:absolute;top:0;left:0;width:100%;height:58px;pointer-events:none}
+.jrow{display:grid;grid-template-columns:repeat(4,1fr);gap:1em;align-items:stretch}
+.jcell{display:flex;flex-direction:column;min-width:0}
+.jtag{font-family:var(--mono);font-size:.72em;font-weight:700;color:var(--acc);margin-bottom:.35em;letter-spacing:.01em}
+.jcell>.card{flex:1;margin:0}
+.jnum{display:inline-block;width:1.6em;height:1.6em;line-height:1.6em;text-align:center;border-radius:50%;background:var(--acc);color:#fff;font-weight:700;font-size:.8em;margin-right:.4em}
+.jcell.dimc>.card{background:var(--bg2)}
+.jcell.dimc .jtag{color:var(--mute)}
 .tag{display:inline-block;white-space:nowrap;font-size:.7em;font-weight:700;letter-spacing:.06em;padding:.15em .55em;border-radius:999px;background:var(--bg2);color:var(--ink2);vertical-align:middle}
 .tag.acc{background:var(--acc2);color:var(--acc)} .tag.rej{background:var(--rej2);color:var(--rej)} .tag.warn{background:var(--warn2);color:var(--warn)} .tag.ok{background:var(--ok2);color:var(--ok)}
 table{border-collapse:collapse;width:100%;font-size:.88em}
@@ -227,28 +242,37 @@ body.read #hint{display:none}
   <div class="in">
     <div class="kicker">engram course / 기초 / 30분</div>
     <h1>메모는 쌓이는데<br>지식은 안 쌓입니다</h1>
-    <p class="lead" style="margin:0 auto;max-width:36em">메모를 지식으로 바꾸는 데 필요한 개념은 셋입니다. 파일로 남기고, 단계를 거치게 하고, 구조로 찾습니다. 이 셋을 회의록 한 건이 지식이 되는 이야기로 따라갑니다.</p>
+    <p class="lead" style="margin:0 auto;max-width:36em">메모를 지식으로 바꾸는 데 필요한 개념은 셋입니다. 파일로 남기고, 단계를 거치게 하고, 구조로 찾습니다. 회의록 한 건이 지식이 되어 다시 쓰이기까지를 따라갑니다.</p>
     <p class="foot">도구 사용법과 커맨드는 나오지 않습니다. 개념이 잡힌 뒤 볼 자료를 마지막에 안내합니다. 상단의 <strong>읽기 모드</strong>를 누르면 노트가 함께 펼쳐집니다.</p>
   </div>
   <aside class="notes">
-    <p>이 덱은 오리엔테이션(index.html)이 어렵다는 피드백에서 나온 기초판입니다. 순서는 이 덱을 먼저, 오리엔테이션을 나중에 봅니다. 오리엔테이션은 같은 이야기를 설계 근거와 실제 도구 출력까지 넓혀 다룹니다.</p>
-    <p>이 덱에서 새로 붙이는 이름은 승급 하나뿐입니다. 나머지는 일상어로만 말합니다. 끝났을 때 수강생이 개념 셋을 자기 말로 설명할 수 있으면 성공입니다.</p>
+    <p>이 덱은 오리엔테이션(index.html)이 어렵다는 피드백에서 나온 기초판입니다. 순서는 이 덱을 먼저, 오리엔테이션을 나중에 봅니다.</p>
+    <p>이 덱에서 새로 붙이는 이름은 승급 하나뿐입니다. 끝났을 때 수강생이 개념 셋과 "넣은 것이 어떻게 돌아오는가"를 자기 말로 설명할 수 있으면 성공입니다.</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="0">
   <div class="in">
-    <h2>오늘 가져갈 것은 개념 셋입니다</h2>
-    <ol style="font-size:1.15em;line-height:1.8">
-      <li class="frag"><strong>파일로 남깁니다.</strong> 대화와 기억은 흘러가지만 파일은 남습니다.</li>
-      <li class="frag"><strong>단계를 거치게 합니다.</strong> 메모가 판단을 거쳐 지식이 됩니다.</li>
-      <li class="frag"><strong>구조로 찾습니다.</strong> 규칙이 지켜진 구조는 그 자체가 찾는 수단이 됩니다.</li>
-    </ol>
-    <p class="frag" style="margin-top:1em">이 셋을 <strong>회의록 한 건</strong>으로 따라갑니다. 3월 4일 회의에서 정한 캐시 정책이 지식이 되기까지의 이야기입니다.</p>
-    <p class="foot frag">진행: 1장 문제 (5분), 2장 파일 (5분), 3장 단계 (10분), 4장 구조 (7분), 5장 사람과 도구 (3분)</p>
+    <h2>오늘 가져갈 것은 개념 셋과 답 하나입니다</h2>
+    <div class="cols eq">
+      <div>
+        <ol style="font-size:1.08em;line-height:1.75">
+          <li class="frag"><strong>파일로 남깁니다.</strong> 대화와 기억은 흘러가지만 파일은 남습니다.</li>
+          <li class="frag"><strong>단계를 거치게 합니다.</strong> 메모가 판단을 거쳐 지식이 됩니다.</li>
+          <li class="frag"><strong>구조로 찾습니다.</strong> 규칙이 지켜진 구조는 그 자체가 찾는 수단이 됩니다.</li>
+        </ol>
+      </div>
+      <div class="card acc frag">
+        <h3>그리고 답해야 할 질문 하나</h3>
+        <p>"넣는 건 알겠는데 <strong>그래서 뭐가 좋은가.</strong> 힘들게 넣기만 하는 것 아닌가."</p>
+        <p class="small">정당한 질문입니다. 넣는 데 드는 수고가 꺼낼 때 무엇으로 돌아오는지 5장에서 장면으로 봅니다. 돌아오는 것이 없으면 이 체계는 할 이유가 없습니다.</p>
+      </div>
+    </div>
+    <p class="foot frag">진행: 1장 문제 (4분), 2장 파일 (4분), 3장 단계 (7분), 4장 구조 (5분), 5장 그래서 뭐가 좋은가 (8분), 6장 사람과 도구 (2분)</p>
   </div>
   <aside class="notes">
-    <p>셋을 지금 외우게 하지 않습니다. 장이 끝날 때마다 이 목록으로 돌아와 하나씩 확인합니다. 마지막에 셋이 남아 있으면 됩니다.</p>
+    <p>오른쪽 카드를 반드시 소리 내어 읽습니다. 이 질문을 먼저 인정하고 시작해야 3장의 규칙 이야기가 잔소리로 들리지 않습니다.</p>
+    <p>5장이 이 덱에서 가장 중요한 장입니다. 시간이 모자라면 3장을 줄이고 5장을 지킵니다.</p>
   </aside>
 </section>
 
@@ -260,61 +284,100 @@ body.read #hint{display:none}
     <p class="lead">익숙한 장면 하나에서 시작합니다.</p>
   </div>
   <div class="num">1</div>
-  <aside class="notes"><p>5분. 이 장의 목적은 설명이 아니라 공감입니다. 이 장면이 공감되지 않는 수강생에게는 이 체계가 아직 필요하지 않습니다.</p></aside>
+  <aside class="notes"><p>4분. 이 장의 목적은 설명이 아니라 공감입니다. 이 장면이 공감되지 않는 수강생에게는 이 체계가 아직 필요하지 않습니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="1">
   <div class="in">
-    <h2>3월에 정했는데, 6월에 처음부터 다시 논의합니다</h2>
-    <div class="cols">
-      <div>
-        <p class="lead">3월 4일 회의에서 이렇게 정했습니다. 회의록은 노트 앱 어딘가에 있습니다.</p>
-        <div class="card">
-          <p>"캐시 무효화는 API 버전 단위로 한다. 롤백에 대비해 두 버전을 유지한다."</p>
-          <p class="small mute">3월 4일 회의록에서</p>
-        </div>
-      </div>
-      <div>
-        <p class="lead" style="margin-bottom:.6em">석 달 뒤 같은 주제가 다시 올라오면 이런 일이 벌어집니다.</p>
-        <ul>
-          <li class="frag">그 회의록을 <strong>못 찾아서</strong> 같은 논의를 처음부터 다시 합니다.</li>
-          <li class="frag">겨우 찾아도 그 결론이 <strong>지금도 유효한지 알 수 없어서</strong> 결국 다시 논의합니다.</li>
-          <li class="frag">비슷한 메모가 여기저기 흩어져 있어서 <strong>어느 것이 최신인지 모릅니다.</strong></li>
-        </ul>
-      </div>
-    </div>
+    <h2>결론은 분명히 있었는데, 다시 논의합니다</h2>
+    <svg class="fig" viewBox="0 0 1000 340" aria-label="회의에서 결론을 냈지만 몇 달 뒤 그 결론을 못 찾아 처음부터 다시 논의한다" style="max-width:1000px;margin:.2em auto 0">
+      <defs>
+        <marker id="ib1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z"/></marker>
+        <marker id="ib1r" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--rej)"/></marker>
+      </defs>
+
+      <!-- 시간 축 -->
+      <line class="ln dash" x1="40" y1="60" x2="960" y2="60" stroke="var(--mute)"/>
+      <circle cx="120" cy="60" r="7" fill="var(--acc)"/>
+      <circle cx="860" cy="60" r="7" fill="var(--rej)"/>
+      <text class="lbl s" x="120" y="42" text-anchor="middle" font-weight="700">회의에서 결론을 냈다</text>
+      <text class="lbl s" x="860" y="42" text-anchor="middle" font-weight="700" fill="var(--rej)">몇 달 뒤, 같은 주제</text>
+      <text class="lbl s" x="490" y="46" text-anchor="middle" fill="var(--mute)">시간이 흐른다</text>
+
+      <!-- 왼쪽: 결론 문서 -->
+      <g class="a">
+        <rect class="box acc" x="55" y="95" width="140" height="72" rx="10"/>
+        <text class="lbl s" x="125" y="122" text-anchor="middle" font-weight="700">회의록</text>
+        <text class="lbl s" x="125" y="144" text-anchor="middle">결론이 여기 있다</text>
+      </g>
+
+      <!-- 흩어짐 -->
+      <g class="a d1">
+        <text class="lbl s" x="300" y="112" text-anchor="middle" fill="var(--mute)">여기저기 흩어진다</text>
+        <rect class="box dim" x="240" y="130" width="86" height="30" rx="6" opacity=".9"/><text class="lbl s" x="283" y="150" text-anchor="middle">노트 앱</text>
+        <rect class="box dim" x="240" y="172" width="86" height="30" rx="6" opacity=".65"/><text class="lbl s" x="283" y="192" text-anchor="middle" opacity=".8">채팅 기록</text>
+        <rect class="box dim" x="240" y="214" width="86" height="30" rx="6" opacity=".4"/><text class="lbl s" x="283" y="234" text-anchor="middle" opacity=".6">문서 폴더</text>
+        <path class="ln thin" d="M195 131 L 236 145"/><path class="ln thin" d="M195 135 L 236 187"/><path class="ln thin" d="M195 139 L 236 229"/>
+      </g>
+
+      <!-- 가운데: 흐려지는 기억 -->
+      <g class="a d2">
+        <text class="lbl s" x="470" y="150" text-anchor="middle" fill="var(--mute)">어디에 뒀는지</text>
+        <text class="lbl s" x="470" y="170" text-anchor="middle" fill="var(--mute)">기억이 흐려진다</text>
+        <text class="lbl" x="470" y="215" text-anchor="middle" font-size="34" fill="var(--mute)" opacity=".45">?</text>
+      </g>
+
+      <!-- 오른쪽: 세 가지 곤란 -->
+      <g class="a d3">
+        <rect class="box rej" x="600" y="95" width="330" height="46" rx="8"/>
+        <text class="lbl s" x="618" y="123">못 찾는다. 그래서 처음부터 다시 논의한다</text>
+      </g>
+      <g class="a d4">
+        <rect class="box rej" x="600" y="150" width="330" height="46" rx="8"/>
+        <text class="lbl s" x="618" y="178">찾아도 지금 유효한지 몰라 못 믿는다</text>
+      </g>
+      <g class="a d5">
+        <rect class="box rej" x="600" y="205" width="330" height="46" rx="8"/>
+        <text class="lbl s" x="618" y="233">비슷한 메모가 여럿인데 최신을 모른다</text>
+      </g>
+      <path class="ln rej draw d3" d="M520 172 L 594 145" marker-end="url(#ib1r)"/>
+
+      <!-- 결론 -->
+      <g class="a d6">
+        <text class="lbl" x="500" y="300" text-anchor="middle" font-weight="700">한 일이 사라진 것이 아니라, 다시 찾을 수 없게 된 것입니다</text>
+      </g>
+    </svg>
   </div>
   <aside class="notes">
-    <p>이 회의록이 덱 전체의 주인공입니다. 여기서 "이 회의록 한 건으로 끝까지 갑니다"라고 말해 둡니다.</p>
-    <p>세 가지 곤란은 뒤에서 하나씩 풀립니다. 못 믿는 것과 흩어지는 것은 3장의 단계와 링크가, 못 찾는 것은 4장의 구조가 풉니다. 지금은 대응을 말하지 않고 곤란만 쌓아 둡니다.</p>
+    <p>왼쪽에서 오른쪽으로 손가락으로 짚어 가며 20초 안에 설명합니다. 결론은 분명히 있었고 사라지지도 않았는데, 다시 쓸 수 없는 상태가 되었다는 것이 요점입니다.</p>
+    <p>오른쪽 붉은 상자 셋이 이 덱이 갚아야 할 빚입니다. 3장에서 둘, 4장에서 하나가 풀리고 5장에서 확인합니다.</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="1">
   <div class="in">
     <h2>넣기는 잘 되는데, 그다음이 없습니다</h2>
-    <div class="cols">
-      <div>
-        <div class="card">
-          <h3>노트 앱이 해 주는 것</h3>
-          <p>빠른 캡처, 폴더, 태그, 검색창. 넣는 순간까지는 편합니다.</p>
-        </div>
+    <div class="cols eq">
+      <div class="card">
+        <h3>노트 앱이 해 주는 것</h3>
+        <p>빠른 캡처, 폴더, 태그, 검색창. <strong>넣는 순간까지는 편합니다.</strong></p>
+        <p class="small mute">그래서 대부분의 사람은 넣기에서 멈춥니다. 문제는 넣기가 어려워서가 아닙니다.</p>
       </div>
-      <div>
-        <div class="card warn">
-          <h3>아무도 안 해 주는 것</h3>
-          <p>이 메모가 <strong>아직 정리 중인지, 확정된 결론인지</strong> 표시하는 일.<br>이 결론이 <strong>무엇을 근거로 나왔는지</strong> 남기는 일.<br>오래된 결론을 <strong>다시 보게</strong> 하는 일.</p>
-        </div>
+      <div class="card warn">
+        <h3>아무도 안 해 주는 것</h3>
+        <p>이 메모가 <strong>정리 중인지 확정된 결론인지</strong> 표시하는 일.</p>
+        <p>이 결론이 <strong>무엇을 근거로 나왔는지</strong> 남기는 일.</p>
+        <p>오래된 결론을 <strong>다시 보게</strong> 하는 일.</p>
       </div>
     </div>
     <p class="frag big" style="margin-top:1em">문제는 저장이 아니라 <span class="acc">저장 다음의 관리</span>입니다.</p>
   </div>
   <aside class="notes">
-    <p>오른쪽 카드의 세 가지가 이 덱의 남은 내용 전부입니다. 상태 표시와 근거 남기기는 3장의 단계와 여정이, 다시 보게 하기는 4장의 구조와 연결이 맡습니다. 여기서는 용어 없이 문제로만 둡니다.</p>
+    <p>오른쪽 카드의 세 가지가 이 덱의 남은 내용 전부입니다. 상태 표시와 근거 남기기는 3장이, 다시 보게 하기는 5장이 맡습니다.</p>
   </aside>
 </section>
 
-<!-- ============ 2. 개념 1 ============ -->
+<!-- ============ 2. 파일 ============ -->
 <section class="slide chap dark" data-ch="2">
   <div class="in">
     <div class="kicker">2장 / 개념 하나</div>
@@ -322,7 +385,7 @@ body.read #hint{display:none}
     <p class="lead">대화창도, 모델의 기억도 아니고 내가 소유한 파일에 남깁니다.</p>
   </div>
   <div class="num">2</div>
-  <aside class="notes"><p>5분. LLM을 쓰는 사람일수록 이 장이 중요합니다. AI가 정리해 준 결론도 대화 기록에 두면 회의록과 똑같이 사라진다는 것을 심습니다.</p></aside>
+  <aside class="notes"><p>4분. LLM을 쓰는 사람일수록 이 장이 중요합니다. AI가 정리해 준 결론도 대화 기록에 두면 회의록과 똑같이 사라진다는 것을 심습니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="2">
@@ -365,40 +428,63 @@ body.read #hint{display:none}
     </div>
   </div>
   <aside class="notes">
-    <p>"남길 곳"의 조건을 물어보면 좋습니다. 어떤 도구로도 열리는가, 내가 소유했는가. 두 조건의 최소 조합이 마크다운 파일과 git입니다. 다음 슬라이드에서 확인합니다.</p>
+    <p>"남길 곳"의 조건을 물어보면 좋습니다. 어떤 도구로도 열리는가, 내가 소유했는가. 두 조건의 최소 조합이 마크다운 파일과 git입니다.</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="2">
   <div class="in">
-    <h2>마크다운 파일과 git이면 충분합니다</h2>
-    <div class="cols">
-      <div>
-        <div class="card ok">
-          <h3>파일이 주는 것</h3>
-          <ul>
-            <li>어떤 도구로도 열립니다. 앱이 없어져도 파일은 남습니다.</li>
-            <li>git이 "언제 무엇이 바뀌었나"를 이력으로 남깁니다.</li>
-            <li>AI 에이전트가 읽고 쓸 수 있는 형식입니다.</li>
-          </ul>
-        </div>
-      </div>
-      <div>
-        <div class="card">
-          <h3>그럼 LLM은 무엇을 하나</h3>
-          <p>기억은 파일이 맡습니다. LLM은 그 파일을 <strong>읽고, 정리하고, 제안합니다.</strong> 파일이 남아 있으면 도구와 모델은 언제든 갈아 끼울 수 있습니다.</p>
-        </div>
-      </div>
-    </div>
-    <p class="frag" style="margin-top:1em"><strong>개념 하나를 확인했습니다.</strong> 지식은 내가 소유한 파일로 남깁니다. 3월 4일 회의록도 이제 파일 한 건입니다. 그럼 그 파일을 <strong>어디에 두어야 할까요.</strong> 다음 장입니다.</p>
+    <h2>파일은 남고, LLM은 그 위에서 일합니다</h2>
+    <svg class="fig" viewBox="0 0 1000 330" aria-label="파일이 바닥에 남고 LLM은 그 위에서 읽고 쓰고 제안하며 언제든 교체된다" style="max-width:1000px;margin:0 auto">
+      <defs><marker id="ib2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
+
+      <!-- 위: LLM 층 -->
+      <g class="a">
+        <rect class="box" x="330" y="20" width="340" height="72" rx="12" stroke-dasharray="6 4"/>
+        <text class="lbl" x="500" y="48" text-anchor="middle" font-weight="700">LLM (에이전트)</text>
+        <text class="lbl s" x="500" y="72" text-anchor="middle" fill="var(--mute)">갈아 끼울 수 있는 층. 오늘의 모델, 내년의 모델</text>
+      </g>
+
+      <!-- 세 가지 일 -->
+      <g class="a d1">
+        <rect class="box acc" x="90" y="130" width="220" height="56" rx="10"/>
+        <text class="lbl s" x="200" y="154" text-anchor="middle" font-weight="700">읽는다</text>
+        <text class="lbl s" x="200" y="174" text-anchor="middle">물으면 파일에서 근거를 찾아 답한다</text>
+      </g>
+      <g class="a d2">
+        <rect class="box acc" x="390" y="130" width="220" height="56" rx="10"/>
+        <text class="lbl s" x="500" y="154" text-anchor="middle" font-weight="700">정리한다</text>
+        <text class="lbl s" x="500" y="174" text-anchor="middle">러프한 메모에서 결론만 뽑아 쓴다</text>
+      </g>
+      <g class="a d3">
+        <rect class="box acc" x="690" y="130" width="220" height="56" rx="10"/>
+        <text class="lbl s" x="800" y="154" text-anchor="middle" font-weight="700">제안한다</text>
+        <text class="lbl s" x="800" y="174" text-anchor="middle">이을 문서와 다시 볼 문서를 알려 준다</text>
+      </g>
+      <path class="ln acc draw d1" d="M420 92 C 330 100, 240 110, 205 126" marker-end="url(#ib2)"/>
+      <path class="ln acc draw d2" d="M500 92 L 500 126" marker-end="url(#ib2)"/>
+      <path class="ln acc draw d3" d="M580 92 C 670 100, 760 110, 795 126" marker-end="url(#ib2)"/>
+
+      <!-- 아래: 파일 층 -->
+      <g class="a d4">
+        <rect class="box acc" x="90" y="228" width="820" height="66" rx="12"/>
+        <text class="lbl" x="500" y="256" text-anchor="middle" font-weight="700">내 파일 (마크다운 + git)</text>
+        <text class="lbl s" x="500" y="280" text-anchor="middle">기억은 여기에 있습니다. 도구가 바뀌어도 이 층은 그대로입니다</text>
+      </g>
+      <path class="ln acc draw d4" d="M200 186 L 200 224" marker-end="url(#ib2)"/>
+      <path class="ln acc draw d4" d="M500 186 L 500 224" marker-end="url(#ib2)"/>
+      <path class="ln acc draw d4" d="M800 186 L 800 224" marker-end="url(#ib2)"/>
+      <g class="a d5"><text class="lbl s" x="500" y="318" text-anchor="middle" fill="var(--acc)">기억하는 쪽과 일하는 쪽을 나눈 것이 이 그림의 전부입니다</text></g>
+    </svg>
   </div>
   <aside class="notes">
-    <p>개념 목록 슬라이드로 잠깐 돌아가 첫째에 확인 표시를 하는 동작을 하면 리듬이 생깁니다.</p>
-    <p>"어디에 두는가"라는 질문이 3장으로 넘어가는 다리입니다. 폴더 이야기로 자연스럽게 이어집니다.</p>
+    <p>7페이지가 "어디에 남기나"였다면 이 그림은 "그럼 LLM은 무엇을 하나"입니다. 위층과 아래층을 손으로 나눠 짚습니다.</p>
+    <p>읽는다, 정리한다, 제안한다 셋은 5장에서 그대로 활용 장면 셋이 됩니다. 여기서 이름만 심고 넘어갑니다.</p>
+    <p>노트 앱과의 차이를 한 줄로 말하면, 노트 앱은 저장만 하고 LLM은 그 저장물 위에서 일한다는 것입니다. 그래서 저장 형식이 기계가 읽을 수 있어야 합니다. 다음 장의 규칙 이야기가 여기서 출발합니다.</p>
   </aside>
 </section>
 
-<!-- ============ 3. 개념 2 ============ -->
+<!-- ============ 3. 단계 ============ -->
 <section class="slide chap dark" data-ch="3">
   <div class="in">
     <div class="kicker">3장 / 개념 둘</div>
@@ -406,32 +492,58 @@ body.read #hint{display:none}
     <p class="lead">폴더가 주제가 아니라 문서의 상태를 말하게 합니다.</p>
   </div>
   <div class="num">3</div>
-  <aside class="notes"><p>10분. 이 덱의 핵심 장입니다. 폴더가 분류함이 아니라 상태 표시라는 관점 하나만 가져가도 절반은 성공입니다.</p></aside>
+  <aside class="notes"><p>7분. 폴더가 분류함이 아니라 상태 표시라는 관점 하나만 가져가도 절반은 성공입니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="3">
   <div class="in">
-    <h2>폴더를 주제로 나누면 두 가지가 막힙니다</h2>
-    <div class="cols">
-      <div>
-        <p class="lead">보통은 폴더를 주제로 나눕니다. 회의록, 개발, 아이디어. 이렇게 나누면 두 가지 문제가 생깁니다.</p>
-        <ul>
-          <li class="frag"><strong>넣을 때마다 고민하게 됩니다.</strong> 캐시 회의록은 회의록 폴더인가, 개발 폴더인가. 그 고민이 캡처 자체를 미루게 합니다.</li>
-          <li class="frag"><strong>폴더가 문서의 상태를 말해 주지 않습니다.</strong> 회의록 폴더 안에는 정리 안 된 메모와 확정된 결론이 섞여 있고, 열어 보기 전에는 구분되지 않습니다.</li>
-        </ul>
-      </div>
-      <div>
-        <div class="card acc frag">
-          <h3>그래서 폴더를 상태로 나눕니다</h3>
-          <p>주제가 아니라 <strong>이 문서를 얼마나 믿을 수 있는가</strong>로 나눕니다. 아직 판단 전이면 임시, 원문 그대로면 증거, 검토를 마친 결론이면 지식입니다.</p>
-          <p class="small">주제는 문서 머리의 표시 하나로 남기면 됩니다. 폴더가 맡을 일이 아닙니다.</p>
-        </div>
-      </div>
-    </div>
+    <h2>주제로 나눈 폴더는 두 가지를 못 합니다</h2>
+    <svg class="fig" viewBox="0 0 1000 320" aria-label="주제 폴더는 넣을 곳을 고민하게 하고 폴더 안에서 초안과 확정이 섞인다" style="max-width:1000px;margin:0 auto">
+      <defs><marker id="ib3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--rej)"/></marker></defs>
+
+      <text class="lbl" x="250" y="24" text-anchor="middle" font-weight="700" fill="var(--rej)">문제 1. 넣을 때마다 고민합니다</text>
+      <text class="lbl" x="750" y="24" text-anchor="middle" font-weight="700" fill="var(--rej)">문제 2. 열기 전에는 믿을지 모릅니다</text>
+      <line class="ln dash" x1="500" y1="40" x2="500" y2="300" stroke="var(--line)"/>
+
+      <!-- 왼쪽: 어디 넣지 -->
+      <g class="a">
+        <rect class="box" x="200" y="52" width="110" height="40" rx="8"/>
+        <text class="lbl s" x="255" y="77" text-anchor="middle">캐시 회의록</text>
+      </g>
+      <g class="a d1">
+        <rect class="box dim" x="55" y="170" width="120" height="44" rx="8"/><text class="lbl s" x="115" y="197" text-anchor="middle">회의록/</text>
+        <rect class="box dim" x="195" y="170" width="120" height="44" rx="8"/><text class="lbl s" x="255" y="197" text-anchor="middle">개발/</text>
+        <rect class="box dim" x="335" y="170" width="120" height="44" rx="8"/><text class="lbl s" x="395" y="197" text-anchor="middle">아이디어/</text>
+        <path class="ln rej dash" d="M235 94 L 130 166" marker-end="url(#ib3)"/>
+        <path class="ln rej dash" d="M255 94 L 255 166" marker-end="url(#ib3)"/>
+        <path class="ln rej dash" d="M275 94 L 380 166" marker-end="url(#ib3)"/>
+      </g>
+      <g class="a d2">
+        <text class="lbl" x="255" y="128" text-anchor="middle" font-size="22" fill="var(--rej)">?</text>
+        <text class="lbl s" x="255" y="246" text-anchor="middle" fill="var(--rej)">어디에 넣어도 맞고, 어디서도 못 찾습니다</text>
+        <text class="lbl s" x="255" y="270" text-anchor="middle" fill="var(--mute)">이 고민이 캡처 자체를 미루게 합니다</text>
+      </g>
+
+      <!-- 오른쪽: 폴더 안이 섞임 -->
+      <g class="a d3">
+        <rect class="box dim" x="580" y="60" width="340" height="176" rx="10"/>
+        <text class="lbl s" x="750" y="86" text-anchor="middle" font-weight="700">회의록/</text>
+        <rect class="box warn" x="605" y="100" width="130" height="34" rx="6"/><text class="lbl s" x="670" y="122" text-anchor="middle">정리 안 된 메모</text>
+        <rect class="box acc" x="755" y="100" width="140" height="34" rx="6"/><text class="lbl s" x="825" y="122" text-anchor="middle">확정된 결론</text>
+        <rect class="box acc" x="605" y="144" width="130" height="34" rx="6"/><text class="lbl s" x="670" y="166" text-anchor="middle">확정된 결론</text>
+        <rect class="box warn" x="755" y="144" width="140" height="34" rx="6"/><text class="lbl s" x="825" y="166" text-anchor="middle">쓰다 만 초안</text>
+        <rect class="box warn" x="605" y="188" width="130" height="34" rx="6"/><text class="lbl s" x="670" y="210" text-anchor="middle">폐기된 옛 정책</text>
+        <rect class="box acc" x="755" y="188" width="140" height="34" rx="6"/><text class="lbl s" x="825" y="210" text-anchor="middle">확정된 결론</text>
+      </g>
+      <g class="a d4">
+        <text class="lbl s" x="750" y="264" text-anchor="middle" fill="var(--rej)">섞여 있어서 열어 보기 전에는 구분되지 않습니다</text>
+        <text class="lbl s" x="750" y="288" text-anchor="middle" fill="var(--mute)">폴더가 주제만 말하고 상태는 말하지 않기 때문입니다</text>
+      </g>
+    </svg>
   </div>
   <aside class="notes">
-    <p>"주제 폴더에서 못 찾는다"는 공감을 먼저 받습니다. 폴더 열 개짜리 노트 앱은 대부분 갖고 있습니다.</p>
-    <p>오리엔테이션의 "디렉토리는 분류함이 아니라 성숙 단계다"를 일상어로 푼 슬라이드입니다. 성숙이라는 낱말도 여기서는 쓰지 않고 "얼마나 믿을 수 있는가"로만 말합니다.</p>
+    <p>왼쪽은 넣을 때의 마찰, 오른쪽은 꺼낼 때의 마찰입니다. 둘 다 폴더가 주제를 말하기 때문에 생깁니다.</p>
+    <p>오른쪽 그림에서 노란 상자와 청록 상자가 섞인 것을 손으로 짚습니다. 이 그림이 다음 슬라이드에서 색깔별로 갈라집니다.</p>
   </aside>
 </section>
 
@@ -460,14 +572,14 @@ body.read #hint{display:none}
             <text class="lbl" x="260" y="51" text-anchor="middle" font-weight="700">증거</text>
             <text class="lbl s" x="260" y="72" text-anchor="middle">sources/</text>
             <path class="ln draw d1" d="M140 122 C 170 105, 170 80, 196 66" marker-end="url(#ia2)"/>
-            <text class="lbl s" x="128" y="82">원문은 그대로</text>
+            <text class="lbl s" x="120" y="84">원문은 그대로</text>
           </g>
           <g class="a d2">
             <rect class="box acc" x="200" y="204" width="120" height="64" rx="10"/>
             <text class="lbl" x="260" y="231" text-anchor="middle" font-weight="700">지식</text>
             <text class="lbl s" x="260" y="252" text-anchor="middle">context/</text>
             <path class="ln acc draw d2" d="M140 162 C 170 180, 170 205, 196 220" marker-end="url(#ia2)"/>
-            <text class="lbl s" x="120" y="215">결론만 뽑아서</text>
+            <text class="lbl s" x="112" y="217">결론만 뽑아서</text>
           </g>
           <g class="a d3">
             <path class="ln acc dash draw d3" d="M260 88 L 260 200" marker-end="url(#ia2)"/>
@@ -478,79 +590,74 @@ body.read #hint{display:none}
             <text class="lbl" x="395" y="137" text-anchor="middle" font-weight="700">폐기</text>
             <text class="lbl s" x="395" y="158" text-anchor="middle">archive/</text>
             <path class="ln draw d4" d="M320 220 C 360 210, 380 195, 392 178" marker-end="url(#ia2)"/>
-            <text class="lbl s" x="352" y="220">수명이 다하면</text>
+            <text class="lbl s" x="356" y="222">수명이 다하면</text>
           </g>
         </svg>
       </div>
     </div>
   </div>
   <aside class="notes">
-    <p>도식의 화살표 셋이 무슨 뜻인지는 여기서 길게 설명하지 않습니다. 다음 슬라이드에서 회의록 한 건으로 그대로 따라갑니다.</p>
+    <p>앞 슬라이드에서 섞여 있던 노란 상자와 청록 상자가 여기서 폴더로 갈라진 것입니다. 그 연결을 말로 이어 줍니다.</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="3">
   <div class="in">
     <h2>회의록 한 건의 여정입니다</h2>
-    <div class="cols">
-      <div>
-        <div class="card warn frag">
-          <h3>1. 회의 직후, 임시로</h3>
-          <p><code>inbox/2026-03-04-캐시-정책-회의.md</code></p>
-          <p class="small">급하게 받아 둔 원문입니다. 결론과 논의와 미결이 섞여 있어도 됩니다. 넣는 순간에는 아무것도 묻지 않습니다.</p>
+    <div class="journey">
+      <svg class="jarc" viewBox="0 0 1000 58" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="jg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="var(--warn)" stop-opacity=".55"/>
+            <stop offset="45%" stop-color="var(--acc)" stop-opacity=".75"/>
+            <stop offset="100%" stop-color="var(--mute)" stop-opacity=".5"/>
+          </linearGradient>
+          <marker id="jm" markerUnits="userSpaceOnUse" markerWidth="15" markerHeight="15" refX="12" refY="7.5" orient="auto"><path d="M0,0 L15,7.5 L0,15 z" fill="var(--mute)" fill-opacity=".55"/></marker>
+        </defs>
+        <path class="jpath" d="M125 46 C 250 4, 375 4, 500 30 C 625 56, 750 12, 875 40"
+              fill="none" stroke="url(#jg)" stroke-width="9" stroke-linecap="round" marker-end="url(#jm)"/>
+      </svg>
+      <div class="jrow">
+        <div class="jcell frag">
+          <div class="jtag">inbox/</div>
+          <div class="card warn">
+            <h3><span class="jnum">1</span>원문 그대로 받습니다</h3>
+            <p class="small">회의 직후에는 아무것도 묻지 않습니다. 결론과 논의와 미결이 섞여 있어도 그대로 받습니다. 넣는 자리에 마찰이 있으면 넣지 않게 되기 때문입니다.</p>
+          </div>
         </div>
-        <div class="card frag" style="margin-top:.7em">
-          <h3>2. 원문은 증거로</h3>
-          <p><code>sources/2026-03-04-캐시-정책-회의.md</code></p>
-          <p class="small">본문을 고치지 않고 옮깁니다. 나중에 "그때 정말 그렇게 정했나"를 확인하러 돌아올 근거이기 때문입니다.</p>
+        <div class="jcell frag">
+          <div class="jtag">sources/</div>
+          <div class="card">
+            <h3><span class="jnum">2</span>증거로 확정합니다</h3>
+            <p class="small">본문은 한 글자도 고치지 않고, 문서 머리에 <strong>출처와 날짜와 참석자</strong>만 붙여 옮깁니다. 나중에 "정말 그렇게 정했나"를 확인하러 돌아올 자리라 원문 그대로여야 합니다.</p>
+          </div>
         </div>
-      </div>
-      <div>
-        <div class="card acc frag">
-          <h3>3. 결론은 지식으로</h3>
-          <p><code>context/캐시-무효화-정책.md</code></p>
-          <p class="small">결론만 뽑아 새 문서로 씁니다. 회의를 몰라도 읽히는 글이 되고, 원문을 가리키는 링크를 답니다. 이렇게 검토를 거쳐 지식 폴더로 올리는 이동을 <strong>승급</strong>이라고 부릅니다. 이 덱에서 새로 붙이는 이름은 이것 하나입니다.</p>
+        <div class="jcell frag">
+          <div class="jtag">context/</div>
+          <div class="card acc">
+            <h3><span class="jnum">3</span>결론만 뽑아 씁니다</h3>
+            <p class="small">회의를 몰라도 읽히는 글로 새로 씁니다. 2번을 가리키는 <strong>근거 링크</strong>와 관련 문서 링크를 답니다. 이 이동이 <strong>승급</strong>이고, 이 덱에서 새로 붙이는 이름은 이것 하나입니다.</p>
+          </div>
         </div>
-        <div class="card frag" style="margin-top:.7em">
-          <h3>4. 6월에 정책이 바뀌면</h3>
-          <p class="small">지식 문서를 고치고, git이 언제 바뀌었는지를 이력으로 남깁니다. 결론이 통째로 무효가 되면 폐기 폴더로 물러나고, 이력은 지워지지 않습니다.</p>
+        <div class="jcell dimc frag">
+          <div class="jtag">archive/</div>
+          <div class="card">
+            <h3><span class="jnum">4</span>수명이 다하면 물립니다</h3>
+            <p class="small">정책이 바뀌면 3번을 고치고 git이 이력을 남깁니다. 통째로 무효가 되면 여기로 물러납니다. <strong>지우지 않습니다.</strong> 가리키던 링크가 깨지지 않고 왜 물러났는지가 남습니다.</p>
+          </div>
         </div>
       </div>
     </div>
+    <p class="frag small" style="margin-top:.7em">1번은 누구나 합니다. 이 체계가 더 하는 일은 2번에서 <strong>증거를 분리</strong>하고 3번에서 <strong>결론을 연결</strong>하는 것입니다. 그 둘이 5장에서 이자로 돌아옵니다.</p>
   </div>
   <aside class="notes">
-    <p>이 슬라이드가 덱의 심장입니다. 네 카드를 순서대로 하나씩 띄우며 읽습니다. 3번 카드의 "회의를 몰라도 읽히는 글"을 천천히 말합니다. 메모가 지식이 되는 순간의 정의입니다.</p>
+    <p>덱의 심장입니다. 위를 가로지르는 곡선을 먼저 손으로 훑고 카드를 하나씩 엽니다. 곡선이 아래로 내려앉는 지점이 3번인 것은 우연이 아니라, 손이 가장 많이 가는 자리가 거기라서입니다.</p>
+    <p>2번 카드의 "머리에 붙이는 정보"가 뒤에서 frontmatter라고 불립니다. 이름은 여기서 꺼내지 않습니다. 무엇을 왜 붙이는지만 남깁니다.</p>
     <p>같은 회의록이 증거와 지식 두 벌이 되는 것이 이상하게 들릴 수 있습니다. 원문과 결론은 수명이 다르다고 답합니다. 결론은 바뀌지만 "그때 그렇게 정했다"는 사실은 바뀌지 않습니다.</p>
   </aside>
 </section>
 
-<section class="slide" data-ch="3">
-  <div class="in">
-    <h2>단계가 있으면, 열어 본 파일을 믿을 수 있습니다</h2>
-    <div class="cols">
-      <div>
-        <ul style="line-height:1.9">
-          <li class="frag">지식 폴더에 있으면 <strong>검토를 마친 결론</strong>입니다. 그대로 써도 됩니다.</li>
-          <li class="frag">의심스러우면 근거 링크를 타고 <strong>증거 폴더의 원문</strong>으로 돌아갑니다.</li>
-          <li class="frag">폐기 폴더에 있으면 <strong>더는 유효하지 않은 결론</strong>입니다. 왜 물러났는지 이력이 남아 있습니다.</li>
-        </ul>
-      </div>
-      <div>
-        <div class="card ok frag">
-          <h3>6월의 곤란 셋 중 둘이 풀렸습니다</h3>
-          <p>믿을 수 있는가는 폴더와 근거 링크가 답합니다. 어느 것이 최신인가는 지식 문서 한 건과 git 이력이 답합니다.</p>
-          <p class="small">남은 하나는 "못 찾는다"입니다. 다음 장이 그 답입니다.</p>
-        </div>
-      </div>
-    </div>
-    <p class="frag" style="margin-top:.8em"><strong>개념 둘을 확인했습니다.</strong> 메모는 단계를 거쳐 지식이 됩니다.</p>
-  </div>
-  <aside class="notes">
-    <p>단계는 분류를 위한 것이 아니라 신뢰를 위한 것이라는 문장으로 장을 닫습니다.</p>
-  </aside>
-</section>
-
-<!-- ============ 4. 개념 3 ============ -->
+<!-- ============ 4. 구조 ============ -->
 <section class="slide chap dark" data-ch="4">
   <div class="in">
     <div class="kicker">4장 / 개념 셋</div>
@@ -558,121 +665,368 @@ body.read #hint{display:none}
     <p class="lead">규칙이 지켜진 폴더는 검색 시스템 없이도 찾아집니다.</p>
   </div>
   <div class="num">4</div>
-  <aside class="notes"><p>7분. 핵심은 "규칙적인 구조는 그 자체가 색인"이라는 한 문장입니다. 검색 엔진과 벡터 이야기는 꺼내지 않습니다.</p></aside>
+  <aside class="notes"><p>5분. 핵심은 "규칙적인 구조는 그 자체가 색인"이라는 한 문장입니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="4">
   <div class="in">
     <h2>규칙이 지켜진 목록에서는 그냥 찾아집니다</h2>
-    <p class="lead">규칙이 지켜진 폴더의 목록을 봅니다. 여기서 3월 4일 회의의 원문을 직접 찾아 보세요.</p>
-    <div class="cols">
-      <div>
-<pre class="code">sources/
-  2026-02-18-캐시-무효화-설계-방법.md
-  2026-03-04-캐시-정책-회의.md
-  2026-03-11-배포-롤백-점검.md
-  2026-04-02-api-버전-정리.md
+    <svg class="fig" viewBox="0 0 1000 300" aria-label="규칙 없는 파일명 목록과 규칙이 지켜진 목록에서 찾는 과정 비교" style="max-width:1000px;margin:0 auto">
+      <text class="lbl" x="230" y="22" text-anchor="middle" font-weight="700" fill="var(--rej)">규칙이 없으면</text>
+      <text class="lbl" x="720" y="22" text-anchor="middle" font-weight="700" fill="var(--acc)">규칙이 지켜지면</text>
 
-context/
-  캐시-무효화-정책.md
-  api-버전-정책.md</pre>
-      </div>
-      <div>
-        <ul>
-          <li class="frag">날짜로 시기를 좁히고 제목으로 확인합니다. <strong>목록을 훑는 것만으로 찾았습니다.</strong></li>
-          <li class="frag">결론이 필요하면 지식 폴더, 원문이 필요하면 증거 폴더. 폴더가 이미 절반을 걸러 줍니다.</li>
-          <li class="frag">문서 머리에도 같은 규칙의 정보(frontmatter)가 붙습니다. 단계와 날짜와 연결이 늘 같은 자리에 있습니다.</li>
-        </ul>
-        <p class="frag" style="margin-top:.6em">성립 조건이 하나 있습니다. <strong>이름과 위치와 머리 정보가 늘 규칙대로여야 합니다.</strong> 규칙이 무너지면 이 찾기도 같이 무너집니다.</p>
-      </div>
-    </div>
+      <!-- 왼쪽 -->
+      <g class="a">
+        <rect class="box dim" x="40" y="40" width="380" height="150" rx="10"/>
+        <text class="lbl m" x="60" y="66" font-size="12.5">메모 최종.md</text>
+        <text class="lbl m" x="60" y="90" font-size="12.5">회의 정리 (수정본2).md</text>
+        <text class="lbl m" x="60" y="114" font-size="12.5">캐시 관련.md</text>
+        <text class="lbl m" x="60" y="138" font-size="12.5">무제 3.md</text>
+        <text class="lbl m" x="60" y="162" font-size="12.5">캐시 정리 진짜최종.md</text>
+      </g>
+      <g class="a d1">
+        <text class="lbl s" x="230" y="218" text-anchor="middle" fill="var(--rej)">언제 것인지, 확정인지 초안인지</text>
+        <text class="lbl s" x="230" y="240" text-anchor="middle" fill="var(--rej)">전부 열어 봐야 압니다</text>
+      </g>
+
+      <!-- 오른쪽 -->
+      <g class="a d2">
+        <rect class="box" x="530" y="40" width="430" height="150" rx="10"/>
+        <text class="lbl m" x="550" y="62" font-size="12" fill="var(--mute)">sources/</text>
+        <text class="lbl m" x="566" y="84" font-size="12.5">2026-02-18-캐시-무효화-설계-방법.md</text>
+        <rect x="560" y="94" width="330" height="24" rx="4" fill="var(--acc2)"/>
+        <text class="lbl m" x="566" y="111" font-size="12.5">2026-03-04-캐시-정책-회의.md</text>
+        <text class="lbl m" x="566" y="133" font-size="12.5">2026-03-11-배포-롤백-점검.md</text>
+        <text class="lbl m" x="550" y="159" font-size="12" fill="var(--mute)">context/</text>
+        <text class="lbl m" x="566" y="179" font-size="12.5">캐시-무효화-정책.md</text>
+      </g>
+      <g class="a d3">
+        <text class="lbl s" x="745" y="218" text-anchor="middle" fill="var(--acc)">날짜로 시기를 좁히고 제목으로 확인합니다</text>
+        <text class="lbl s" x="745" y="240" text-anchor="middle" fill="var(--acc)">폴더가 증거인지 지식인지 이미 갈라 줍니다</text>
+      </g>
+      <g class="a d4">
+        <text class="lbl" x="500" y="284" text-anchor="middle" font-weight="700">목록을 훑는 것만으로 찾았습니다. 검색 시스템을 세우지 않았습니다</text>
+      </g>
+    </svg>
   </div>
   <aside class="notes">
-    <p>실제로 찾게 해 봅니다. "어떻게 찾았나"를 물으면 날짜와 제목을 봤다는 답이 나옵니다. 그것이 규칙의 존재 이유 증명입니다.</p>
-    <p>사람만이 아니라 AI 에이전트도 같은 방식으로 목록을 훑습니다. 구조가 규칙적이면 검색 시스템을 따로 세우지 않아도 에이전트가 바로 일할 수 있다는 것이 이 체계의 바탕입니다. frontmatter의 상세는 오리엔테이션에서 다룹니다.</p>
+    <p>오른쪽에서 실제로 찾게 해 봅니다. "어떻게 찾았나"를 물으면 날짜와 제목을 봤다는 답이 나옵니다. 그것이 규칙의 존재 이유 증명입니다.</p>
+    <p>사람만이 아니라 AI 에이전트도 같은 방식으로 목록을 훑습니다. 구조가 규칙적이면 검색 시스템 없이도 에이전트가 바로 일할 수 있다는 것이 이 체계의 바탕입니다.</p>
+    <p>성립 조건을 분명히 합니다. 이름과 위치와 머리 정보가 늘 규칙대로여야 합니다. 규칙이 무너지면 이 찾기도 같이 무너지고, 그래서 6장에서 기계가 검사하게 됩니다.</p>
   </aside>
 </section>
 
 <section class="slide" data-ch="4">
   <div class="in">
     <h2>같은 이야기를 다른 낱말로 쓰면 못 찾습니다</h2>
-    <div class="cols">
-      <div>
-        <p class="lead">목록 훑기에는 한계가 하나 있습니다. 낱말이 겹치지 않는 문서는 훑어도 나오지 않습니다.</p>
-        <div class="card frag">
-          <h3>예를 들면</h3>
-          <p>"배치가 데이터베이스를 잡는다"라고 쓴 문서와 "조회를 복제본으로 돌린다"라고 쓴 문서는 같은 문제를 다룹니다. 겹치는 낱말이 거의 없어서 목록과 낱말 검색으로는 이 둘이 만나지 않습니다.</p>
-        </div>
-      </div>
-      <div>
-        <div class="card acc frag">
-          <h3>그 자리에만 모델을 씁니다</h3>
-          <p>뜻이 비슷한데 연결이 없는 문서 쌍을 찾아 "이 둘을 이을까요"라고 제안하는 일입니다. 제안을 받아들일지는 사람이 정합니다.</p>
-        </div>
-        <p class="frag" style="margin-top:.8em">찾기의 기본은 구조가 하고, 구조가 못 잡는 자리만 모델이 돕습니다. 모델이 전부를 찾아 주는 체계가 아닙니다.</p>
-      </div>
-    </div>
-    <p class="frag" style="margin-top:.6em"><strong>개념 셋을 모두 확인했습니다.</strong> 파일로 남기고, 단계를 거치게 하고, 구조로 찾습니다.</p>
+    <svg class="fig" viewBox="0 0 1000 300" aria-label="낱말이 겹치지 않아 만나지 못하던 두 문서를 뜻으로 이어 준다" style="max-width:1000px;margin:0 auto">
+      <defs><marker id="ib4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
+
+      <!-- 두 문서 -->
+      <g class="a">
+        <rect class="box" x="60" y="60" width="290" height="90" rx="10"/>
+        <text class="lbl s" x="205" y="88" text-anchor="middle" font-weight="700">문서 A</text>
+        <text class="lbl s" x="205" y="112" text-anchor="middle">"배치가 데이터베이스를 잡는다"</text>
+        <text class="lbl s" x="205" y="134" text-anchor="middle" fill="var(--mute)">낱말: 배치, 데이터베이스</text>
+      </g>
+      <g class="a d1">
+        <rect class="box" x="650" y="60" width="290" height="90" rx="10"/>
+        <text class="lbl s" x="795" y="88" text-anchor="middle" font-weight="700">문서 B</text>
+        <text class="lbl s" x="795" y="112" text-anchor="middle">"조회를 복제본으로 돌린다"</text>
+        <text class="lbl s" x="795" y="134" text-anchor="middle" fill="var(--mute)">낱말: 조회, 복제본</text>
+      </g>
+
+      <!-- 낱말로는 안 만남 -->
+      <g class="a d2">
+        <path class="ln dash" d="M355 105 L 645 105" stroke="var(--mute)"/>
+        <line x1="486" y1="88" x2="514" y2="122" stroke="var(--rej)" stroke-width="3"/>
+        <line x1="514" y1="88" x2="486" y2="122" stroke="var(--rej)" stroke-width="3"/>
+        <text class="lbl s" x="500" y="172" text-anchor="middle" fill="var(--rej)">겹치는 낱말이 없어 목록과 낱말 검색으로는 만나지 않습니다</text>
+      </g>
+
+      <!-- 뜻으로 이어짐 -->
+      <g class="a d3">
+        <path class="ln acc draw d3" d="M205 150 C 205 220, 795 220, 795 152" marker-end="url(#ib4)"/>
+        <rect class="box acc" x="350" y="196" width="300" height="46" rx="10"/>
+        <text class="lbl s" x="500" y="224" text-anchor="middle" font-weight="700">뜻이 비슷합니다. 이을까요?</text>
+      </g>
+      <g class="a d5">
+        <text class="lbl s" x="500" y="272" text-anchor="middle">사람이 보면 같은 문제입니다. 이 자리에만 모델을 쓰고, 이을지는 사람이 정합니다</text>
+      </g>
+    </svg>
+    <p class="frag" style="margin-top:.4em">찾기의 기본은 구조가 하고, 구조가 못 잡는 자리만 모델이 돕습니다. <strong>개념 셋을 모두 확인했습니다.</strong></p>
   </div>
   <aside class="notes">
-    <p>"AI가 다 찾아 주면 안 되나"라는 질문이 나올 수 있습니다. 모델이 전부를 찾는 체계는 검색 시스템을 따로 세워 운영하는 쪽으로 돌아가는 것이고, 이 체계는 운영할 것이 없는 규칙을 바탕으로 삼는다고 답합니다. 바탕이 규칙이므로 모델은 언제든 갈아 끼울 수 있습니다.</p>
+    <p>"AI가 다 찾아 주면 안 되나"라는 질문이 나올 수 있습니다. 모델이 전부를 찾는 체계는 검색 시스템을 따로 세워 운영하는 쪽으로 돌아가는 것이고, 이 체계는 운영할 것이 없는 규칙을 바탕으로 삼는다고 답합니다.</p>
+    <p>이 연결 제안이 5장의 세 번째 활용 장면입니다. 바로 이어집니다.</p>
   </aside>
 </section>
 
-<!-- ============ 5. 사람과 도구 ============ -->
+<!-- ============ 5. 그래서 뭐가 좋은가 ============ -->
 <section class="slide chap dark" data-ch="5">
   <div class="in">
-    <div class="kicker">5장</div>
-    <h1>남은 문제는 하나,<br>규칙은 사람이 못 지킵니다</h1>
-    <p class="lead">개념이 도구를 만나는 지점입니다.</p>
+    <div class="kicker">5장 / 가장 중요한 장</div>
+    <h1>그래서 뭐가 좋은가</h1>
+    <p class="lead">넣을 때 낸 수고가 무엇으로 돌아오는지를 장면 셋으로 봅니다.</p>
   </div>
   <div class="num">5</div>
-  <aside class="notes"><p>3분. engram 소개가 아니라 도구가 왜 필요한가의 논리만 둡니다. 커맨드 이름은 이 덱에 나오지 않습니다.</p></aside>
+  <aside class="notes"><p>8분. 이 덱의 존재 이유입니다. 앞의 네 장은 이 장을 위한 준비였습니다.</p></aside>
 </section>
 
 <section class="slide" data-ch="5">
   <div class="in">
-    <h2>검사는 기계가 하고, 판단은 사람이 합니다</h2>
-    <div class="cols">
-      <div>
-        <p class="lead">규칙이 무너지는 이유는 사람이 게을러서가 아닙니다. 바쁠 때 가장 먼저 건너뛰게 되는 일이 검사이기 때문입니다.</p>
-        <ul>
-          <li class="frag">회의 직후에 파일명 규칙을 지켜 쓰는 사람은 드뭅니다.</li>
-          <li class="frag">"일단 넣고 나중에 정리"의 나중은 잘 오지 않습니다.</li>
-          <li class="frag">규칙을 문서로 적어 두어도 매번 읽는 사람은 만든 사람뿐입니다.</li>
-        </ul>
-      </div>
-      <div>
-        <div class="card acc frag">
-          <h3>그래서 이렇게 나눕니다</h3>
-          <p><strong>셀 수 있는 것은 기계가 검사합니다.</strong> 파일이 제자리에 있는지, 머리 정보가 채워졌는지, 다른 문서와 이어져 있는지.</p>
-          <p><strong>판단은 사람이 합니다.</strong> 이 결론을 남길 것인지, 무엇과 이을 것인지, 아직 유효한지.</p>
-        </div>
-        <p class="frag" style="margin-top:.8em">예를 들어 연결이 하나도 없는 문서를 지식 폴더로 올리려 하면 도구가 거절합니다. 혼자 떨어진 문서는 나중에 다시 찾아지지 않기 때문입니다. 무엇과 이을지는 도구가 정하지 않습니다.</p>
-        <p class="frag small">이 나눔을 코드로 만든 도구가 <strong>engram</strong>입니다. 사용법은 다음 자료가 다룹니다.</p>
-      </div>
-    </div>
+    <h2>넣을 때의 수고가 꺼낼 때 돌아옵니다</h2>
+    <svg class="fig" viewBox="0 0 1000 320" aria-label="넣을 때 한 세 가지가 각각 꺼낼 때 무엇으로 돌아오는지" style="max-width:1000px;margin:0 auto">
+      <defs><marker id="ib5" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
+
+      <text class="lbl" x="215" y="26" text-anchor="middle" font-weight="700">넣을 때 한 일</text>
+      <text class="lbl" x="215" y="48" text-anchor="middle" font-size="12.5" fill="var(--mute)">약간의 수고</text>
+      <text class="lbl" x="780" y="26" text-anchor="middle" font-weight="700" fill="var(--acc)">꺼낼 때 받는 것</text>
+      <text class="lbl" x="780" y="48" text-anchor="middle" font-size="12.5" fill="var(--mute)">계속 쌓이는 이득</text>
+
+      <g class="a">
+        <rect class="box" x="40" y="66" width="350" height="62" rx="10"/>
+        <text class="lbl s" x="60" y="92" font-weight="700">단계를 표시했다</text>
+        <text class="lbl s" x="60" y="114" fill="var(--mute)">임시인지 증거인지 지식인지</text>
+        <rect class="box acc" x="610" y="66" width="350" height="62" rx="10"/>
+        <text class="lbl s" x="630" y="92" font-weight="700">검증된 것만 골라 쓸 수 있다</text>
+        <text class="lbl s" x="630" y="114">에이전트가 초안을 결론으로 착각하지 않는다</text>
+        <path class="ln acc draw" d="M392 97 L 604 97" marker-end="url(#ib5)"/>
+      </g>
+
+      <g class="a d1">
+        <rect class="box" x="40" y="140" width="350" height="62" rx="10"/>
+        <text class="lbl s" x="60" y="166" font-weight="700">근거 링크를 걸었다</text>
+        <text class="lbl s" x="60" y="188" fill="var(--mute)">결론이 무엇에서 나왔는지</text>
+        <rect class="box acc" x="610" y="140" width="350" height="62" rx="10"/>
+        <text class="lbl s" x="630" y="166" font-weight="700">근거를 대며 답할 수 있다</text>
+        <text class="lbl s" x="630" y="188">의심스러우면 원문까지 한 번에 따라간다</text>
+        <path class="ln acc draw d1" d="M392 171 L 604 171" marker-end="url(#ib5)"/>
+      </g>
+
+      <g class="a d2">
+        <rect class="box" x="40" y="214" width="350" height="62" rx="10"/>
+        <text class="lbl s" x="60" y="240" font-weight="700">관련 문서를 이었다</text>
+        <text class="lbl s" x="60" y="262" fill="var(--mute)">무엇과 이어지는지</text>
+        <rect class="box acc" x="610" y="214" width="350" height="62" rx="10"/>
+        <text class="lbl s" x="630" y="240" font-weight="700">하나를 찾으면 딸려 나온다</text>
+        <text class="lbl s" x="630" y="262">잊고 있던 것이 먼저 말을 건다</text>
+        <path class="ln acc draw d2" d="M392 245 L 604 245" marker-end="url(#ib5)"/>
+      </g>
+
+      <g class="a d4">
+        <text class="lbl" x="500" y="308" text-anchor="middle" font-weight="700">넣기만 하는 것이 아닙니다. 넣는 방식이 꺼내는 능력을 정합니다</text>
+      </g>
+    </svg>
   </div>
   <aside class="notes">
-    <p>커맨드 이름과 실제 거절 메시지는 여기서 꺼내지 않습니다. 실제 출력은 오리엔테이션 4장의 시연에 있습니다. 이 덱은 나눔의 논리까지만 갑니다.</p>
+    <p>이 슬라이드가 "힘들게 넣기만 하는 것 아닌가"에 대한 정면 답입니다. 왼쪽 셋은 3장에서 이미 한 일이고, 오른쪽 셋이 그 대가입니다.</p>
+    <p>순서를 뒤집어 말해 봅니다. 오른쪽을 원하지 않는다면 왼쪽을 할 이유가 없습니다. 이 체계는 꺼내 쓸 생각이 있는 사람에게만 값어치가 있습니다.</p>
+    <p>다음 세 슬라이드가 오른쪽 셋을 각각 장면으로 보여 줍니다.</p>
   </aside>
 </section>
 
-<!-- ============ 6. 정리 ============ -->
-<section class="slide center" data-ch="6">
+<section class="slide" data-ch="5">
+  <div class="in">
+    <h2>장면 1. 물으면 근거를 대며 답합니다</h2>
+    <div class="cols eq">
+      <div>
+        <svg class="fig" viewBox="0 0 460 330" aria-label="사용자 질문에 에이전트가 위키를 읽고 근거와 함께 답한다">
+          <defs><marker id="ib6" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
+          <g class="a">
+            <rect class="box" x="20" y="14" width="420" height="44" rx="10"/>
+            <text class="lbl s" x="38" y="42">"캐시 무효화 어떻게 하기로 했더라?"</text>
+          </g>
+          <g class="a d1">
+            <rect class="box dim" x="150" y="80" width="160" height="40" rx="8"/>
+            <text class="lbl s" x="230" y="105" text-anchor="middle">에이전트가 위키를 훑는다</text>
+            <path class="ln acc draw d1" d="M230 58 L 230 76" marker-end="url(#ib6)"/>
+          </g>
+          <g class="a d2">
+            <rect class="box acc" x="20" y="140" width="420" height="112" rx="10"/>
+            <text class="lbl s" x="38" y="166" font-weight="700">API 버전 단위로 무효화합니다.</text>
+            <text class="lbl s" x="38" y="188">롤백에 대비해 두 버전을 유지합니다.</text>
+            <text class="lbl s" x="38" y="216" fill="var(--mute)">근거: 캐시-무효화-정책 (지식)</text>
+            <text class="lbl s" x="38" y="238" fill="var(--mute)">원문: 캐시-정책-회의 (증거)</text>
+            <path class="ln acc draw d2" d="M230 120 L 230 136" marker-end="url(#ib6)"/>
+          </g>
+          <g class="a d4">
+            <text class="lbl s" x="230" y="284" text-anchor="middle" fill="var(--acc)">지식 폴더에서 답을 찾고</text>
+            <text class="lbl s" x="230" y="306" text-anchor="middle" fill="var(--acc)">근거 링크로 원문까지 함께 답합니다</text>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <div class="cstack">
+          <div class="card frag">
+            <h3>이게 되는 이유</h3>
+            <p class="small"><strong>단계 표시</strong>가 있어서 검증된 결론만 골라 답합니다. 초안과 폐기된 옛 정책은 답에 섞이지 않습니다.</p>
+            <p class="small"><strong>근거 링크</strong>가 있어서 "믿어도 되나"에 문서로 답합니다. 사람도 에이전트도 같은 경로로 확인합니다.</p>
+          </div>
+          <div class="card acc frag">
+            <h3>1장의 곤란과 견주면</h3>
+            <p class="small">못 찾던 것을 <strong>물어서 찾고</strong>, 못 믿던 것을 <strong>근거로 믿고</strong>, 최신을 모르던 것을 <strong>지식 폴더 한 건</strong>으로 압니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>이 장면이 활용의 기본형입니다. 노트 앱 검색과 다른 점은 답이 아니라 근거가 함께 온다는 것입니다.</p>
+    <p>기억할 것은 이 답의 품질이 3장에서 한 일의 품질이라는 점입니다. 증거를 분리하지 않았으면 원문 줄이 없고, 링크를 안 걸었으면 근거 줄이 없습니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="5">
+  <div class="in">
+    <h2>장면 2. 새로 쓸 때 기존 결론이 재료가 됩니다</h2>
+    <div class="cols eq">
+      <div class="card">
+        <h3>없을 때</h3>
+        <p class="small">새 설계 문서를 쓸 때마다 <strong>빈 화면에서 시작합니다.</strong> 지난 결정은 기억나는 만큼만 반영되고, 기억 못 한 것은 없던 일이 됩니다.</p>
+        <p class="small mute">그래서 반년 전과 모순되는 결정이 조용히 들어갑니다.</p>
+      </div>
+      <div class="card acc">
+        <h3>있을 때</h3>
+        <p class="small">"캐시 관련해서 우리가 정해 둔 것 모아 줘"라고 하면 <strong>지식 폴더의 결론들이 재료로 깔립니다.</strong> 새 문서는 그 위에서 시작합니다.</p>
+        <p class="small">모순되는 결정을 하려 하면 기존 결론이 먼저 보입니다. 다르게 가려면 <strong>왜 바꾸는지를 적게 됩니다.</strong></p>
+      </div>
+    </div>
+    <svg class="fig" viewBox="0 0 1000 150" aria-label="흩어진 결론들이 새 문서의 재료로 모인다" style="max-width:1000px;margin:.6em auto 0">
+      <defs><marker id="ib7" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
+      <g class="a d1">
+        <rect class="box acc" x="40" y="16" width="180" height="34" rx="7"/><text class="lbl s" x="130" y="38" text-anchor="middle">캐시 무효화 정책</text>
+        <rect class="box acc" x="40" y="58" width="180" height="34" rx="7"/><text class="lbl s" x="130" y="80" text-anchor="middle">API 버전 정책</text>
+        <rect class="box acc" x="40" y="100" width="180" height="34" rx="7"/><text class="lbl s" x="130" y="122" text-anchor="middle">배포 롤백 기준</text>
+      </g>
+      <g class="a d2">
+        <path class="ln acc draw d2" d="M224 33 C 330 33, 360 60, 430 70" marker-end="url(#ib7)"/>
+        <path class="ln acc draw d2" d="M224 75 L 430 75" marker-end="url(#ib7)"/>
+        <path class="ln acc draw d2" d="M224 117 C 330 117, 360 90, 430 80" marker-end="url(#ib7)"/>
+      </g>
+      <g class="a d3">
+        <rect class="box" x="440" y="40" width="230" height="70" rx="10"/>
+        <text class="lbl s" x="555" y="68" text-anchor="middle" font-weight="700">새 설계 문서</text>
+        <text class="lbl s" x="555" y="90" text-anchor="middle" fill="var(--mute)">이미 정한 것 위에서 시작</text>
+      </g>
+      <g class="a d4">
+        <text class="lbl s" x="830" y="60" text-anchor="middle" fill="var(--acc)">쌓일수록</text>
+        <text class="lbl s" x="830" y="82" text-anchor="middle" fill="var(--acc)">시작점이 높아집니다</text>
+      </g>
+    </svg>
+  </div>
+  <aside class="notes">
+    <p>이것이 노트 앱과 갈라지는 지점입니다. 노트 앱은 과거를 보관하고, 이 체계는 과거를 다음 작업의 재료로 씁니다.</p>
+    <p>"모순되는 결정을 하려 하면 기존 결론이 먼저 보인다"를 강조합니다. 조직에서 같은 논쟁이 반복되는 비용을 아는 사람에게 가장 크게 와닿는 문장입니다.</p>
+  </aside>
+</section>
+
+<section class="slide" data-ch="5">
+  <div class="in">
+    <h2>장면 3. 잊고 있던 것이 먼저 말을 겁니다</h2>
+    <div class="cols eq">
+      <div>
+        <div class="cstack">
+          <div class="card frag">
+            <h3>오래된 결론을 다시 묻습니다</h3>
+            <p class="small">"이 결론을 오래 안 봤습니다. 아직 유효한가요?" 날짜가 남아 있으니 물을 수 있습니다. 유효, 폐기, 보강 중 하나로 답하면 그 상태가 다시 기록됩니다.</p>
+          </div>
+          <div class="card frag">
+            <h3>안 이어진 것을 이어 줍니다</h3>
+            <p class="small">4장의 그 장면입니다. 낱말이 겹치지 않아 못 만나던 두 문서를 뜻으로 찾아 "이을까요"라고 묻습니다.</p>
+          </div>
+          <div class="card acc frag">
+            <h3>내가 안 물어도 옵니다</h3>
+            <p class="small">앞의 두 장면은 내가 물어야 시작됩니다. 이건 <strong>묻지 않아도 옵니다.</strong> 잊었다는 사실조차 잊은 것을 꺼내 주는 것이 이 체계가 노트 앱과 가장 다른 지점입니다.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <svg class="fig" viewBox="0 0 460 340" aria-label="오래된 문서와 연결 없는 문서가 스스로 떠올라 사용자에게 제안된다">
+          <defs><marker id="ib8" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--acc)"/></marker></defs>
+          <g class="lbl s">
+            <circle class="node" cx="90" cy="86" r="15"/><circle class="node" cx="180" cy="56" r="15"/>
+            <circle class="node" cx="160" cy="150" r="15"/><circle class="node" cx="270" cy="110" r="15"/>
+            <path class="ln acc" d="M105 82 L 165 60"/><path class="ln acc" d="M100 98 L 150 138"/>
+            <path class="ln acc" d="M195 62 L 255 104"/><path class="ln acc" d="M175 143 L 255 118"/>
+          </g>
+          <g class="a d1">
+            <circle class="node old pulse" cx="350" cy="215" r="15"/>
+            <text class="lbl s" x="350" y="248" text-anchor="middle" fill="var(--mute)">오래 안 봄</text>
+          </g>
+          <g class="a d2">
+            <circle class="node orph pulse" cx="80" cy="212" r="15"/>
+            <text class="lbl s" x="80" y="245" text-anchor="middle" fill="var(--rej)">이어진 곳 없음</text>
+          </g>
+          <g class="a d3">
+            <rect class="box acc" x="60" y="272" width="340" height="54" rx="10"/>
+            <text class="lbl s" x="230" y="296" text-anchor="middle" font-weight="700">"이 둘, 지금 한번 보시겠어요?"</text>
+            <text class="lbl s" x="230" y="316" text-anchor="middle" fill="var(--mute)">판단은 사람이 합니다</text>
+            <path class="ln acc draw d3" d="M340 232 C 320 250, 300 258, 280 268" marker-end="url(#ib8)"/>
+            <path class="ln acc draw d3" d="M90 230 C 110 248, 130 258, 150 268" marker-end="url(#ib8)"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>1장 세 번째 곤란("오래된 결론을 다시 보게 하는 일을 아무도 안 해 준다")이 여기서 갚아집니다.</p>
+    <p>이것이 되려면 날짜와 링크가 문서에 남아 있어야 합니다. 3장에서 문서 머리에 붙인 정보가 여기서 쓰입니다. 넣을 때의 수고와 이 장면을 연결해 말합니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 6. 사람과 도구 ============ -->
+<section class="slide chap dark" data-ch="6">
+  <div class="in">
+    <div class="kicker">6장</div>
+    <h1>남은 문제는 하나,<br>규칙은 사람이 못 지킵니다</h1>
+    <p class="lead">개념이 도구를 만나는 지점입니다.</p>
+  </div>
+  <div class="num">6</div>
+  <aside class="notes"><p>2분. engram 소개가 아니라 도구가 왜 필요한가의 논리만 둡니다.</p></aside>
+</section>
+
+<section class="slide" data-ch="6">
+  <div class="in">
+    <h2>검사는 기계가 하고, 판단은 사람이 합니다</h2>
+    <div class="cols eq">
+      <div class="card">
+        <h3>규칙이 무너지는 진짜 이유</h3>
+        <p class="small">게을러서가 아니라, 바쁠 때 가장 먼저 건너뛰게 되는 일이 검사이기 때문입니다.</p>
+        <p class="small">회의 직후에 파일명 규칙을 지켜 쓰는 사람은 드물고, "일단 넣고 나중에 정리"의 나중은 잘 오지 않으며, 규칙 문서를 매번 읽는 사람은 만든 사람뿐입니다.</p>
+        <p class="small mute">그리고 규칙이 무너지면 4장의 찾기와 5장의 활용이 같이 무너집니다.</p>
+      </div>
+      <div class="card acc">
+        <h3>그래서 이렇게 나눕니다</h3>
+        <p class="small"><strong>셀 수 있는 것은 기계가 검사합니다.</strong> 파일이 제자리에 있는지, 머리 정보가 채워졌는지, 다른 문서와 이어져 있는지.</p>
+        <p class="small"><strong>판단은 사람이 합니다.</strong> 이 결론을 남길 것인지, 무엇과 이을 것인지, 아직 유효한지.</p>
+        <p class="small">예를 들어 어디에도 이어지지 않은 문서를 지식 폴더로 올리려 하면 도구가 거절합니다. 혼자 떨어진 문서는 5장의 어느 장면에서도 다시 나타나지 않기 때문입니다. 무엇과 이을지는 도구가 정하지 않습니다.</p>
+      </div>
+    </div>
+    <p class="frag small" style="margin-top:.9em">이 나눔을 코드로 만든 도구가 <strong>engram</strong>입니다. 사용법은 다음 자료가 다룹니다.</p>
+  </div>
+  <aside class="notes">
+    <p>거절의 이유를 5장과 연결해 말하는 것이 중요합니다. 규칙을 위한 규칙이 아니라 활용을 지키기 위한 검사입니다.</p>
+    <p>커맨드 이름과 실제 거절 메시지는 여기서 꺼내지 않습니다. 실제 출력은 오리엔테이션의 시연에 있습니다.</p>
+  </aside>
+</section>
+
+<!-- ============ 정리 ============ -->
+<section class="slide center" data-ch="7">
   <div class="in">
     <div class="kicker">정리</div>
-    <h1 style="font-size:2em">회의록 한 건이 지식이 되는 데<br>필요한 것은 셋이었습니다</h1>
-    <div class="cols3" style="text-align:left;margin-top:1.4em;font-size:.9em">
-      <div class="card frag"><h3>파일로 남깁니다</h3><p>대화와 기억은 흘러갑니다. 내가 소유한 파일에 남긴 것만 지식의 재료가 됩니다.</p></div>
-      <div class="card frag"><h3>단계를 거치게 합니다</h3><p>임시, 증거, 지식, 폐기. 폴더가 문서의 상태를 말하면 열어 본 파일을 믿을 수 있습니다. 지식으로 올리는 이동이 승급입니다.</p></div>
+    <h1 style="font-size:2em">넣는 방식이<br>꺼내는 능력을 정합니다</h1>
+    <div class="cols3 eq" style="text-align:left;margin-top:1.4em;font-size:.9em">
+      <div class="card frag"><h3>파일로 남깁니다</h3><p>대화와 기억은 흘러갑니다. 내가 소유한 파일에 남긴 것만 지식의 재료가 되고, LLM은 그 위에서 읽고 정리하고 제안합니다.</p></div>
+      <div class="card frag"><h3>단계를 거치게 합니다</h3><p>임시, 증거, 지식, 폐기. 원문을 증거로 분리하고 결론을 연결하는 이동이 승급입니다.</p></div>
       <div class="card frag"><h3>구조로 찾습니다</h3><p>규칙이 지켜진 구조는 목록만 훑어도 찾아집니다. 규칙은 기계가 검사하고 판단은 사람이 합니다.</p></div>
     </div>
-    <p class="frag" style="margin-top:1.4em">6월의 곤란으로 돌아가 봅니다. 못 찾던 결론은 지식 폴더에 한 건으로 있고, 믿어도 되는지는 근거 링크와 이력이 말해 주고, 흩어진 메모는 연결로 모입니다.</p>
+    <p class="frag" style="margin-top:1.3em">그 대가로 셋을 받습니다. <strong>물으면 근거를 대며 답하고, 새로 쓸 때 기존 결론이 재료가 되고, 잊은 것이 먼저 말을 겁니다.</strong></p>
     <p class="foot">다음 자료: 같은 이야기를 설계 이유, 실제 도구 출력, 조직 관점까지 넓혀 다루는 오리엔테이션 <code>index.html</code> (60분). 손으로 해 보는 실습은 <code>hands-on.md</code>가 안내합니다.</p>
   </div>
   <aside class="notes">
-    <p>마지막 확인 질문을 하나 던집니다. "승급이 무엇인지 자기 말로 말해 보세요." 메모가 검토를 거쳐 재사용할 지식이 되는 이동이라는 답이 나오면 이 덱은 성공입니다.</p>
+    <p>마지막 확인 질문을 던집니다. "승급이 무엇인지, 그리고 그걸 해서 무엇을 얻는지 자기 말로 말해 보세요." 둘 다 나오면 이 덱은 성공입니다.</p>
+    <p>제목 문장이 이 덱의 결론입니다. 넣기와 꺼내기가 따로가 아니라는 것, 그것이 "힘들게 넣기만 하는 것 아닌가"에 대한 최종 답입니다.</p>
   </aside>
 </section>
 
@@ -680,7 +1034,7 @@ context/
 
 <script>
 (function(){
-  const CH = ['표지','1 문제','2 파일','3 단계','4 구조','5 사람과 도구','정리'];
+  const CH = ['표지','1 문제','2 파일','3 단계','4 구조','5 뭐가 좋은가','6 사람과 도구','정리'];
   const slides = Array.from(document.querySelectorAll('.slide'));
   const deck = document.getElementById('deck');
   const counter = document.getElementById('counter');
