@@ -94,9 +94,11 @@ engram이 관여하지 않는다.
 
 **upstream 규정**: `scripts/wiki_resurface.py:99-133`, `scripts/sync_updated_field.py:32-34, 52`가 파일 수정 시각을 git 커밋 시각에서 얻되 `BULK_COMMIT_THRESHOLD`(15) 이상 파일을 건드린 커밋은 건너뛴다. 근거로 실제 사고를 적었다(2026-08-07 `quality_level` 폐기 커밋이 `context/` 79개를 오늘 날짜로 바꿔 resurface 결과가 0건이 됨).
 
-**engram 대응**: `internal/resurface/resurface.go:51-62`는 프론트매터 `updated`/`created`를 읽는다. 벌크 커밋 개념이 없다. `internal/cli/sync.go:109`가 마지막 커밋 날짜를 그대로 쓴다. ADR 0037은 `sync_updated_field.py`를 대조 대상으로 지목하면서도 이 규칙을 옮기지 않았다.
+**engram 대응**: `internal/gitdate/gitdate.go:28`의 `BulkCommitThreshold`가 15이고, `History`가 위키 마크다운 문서를 그 수 이상 건드린 커밋을 날짜 신호에서 뺀다(`gitdate.go:65-70`). 그 값의 근거로 upstream이 겪은 사고를 주석에 적었다(`gitdate.go:20-24`). 세는 대상은 커밋이 건드린 파일 전부가 아니라 `.md` 문서다(`gitdate.go:131-133`).
 
-**영향**: `migrate`는 정의상 문서 전체의 프론트매터를 한 번에 고치는 커맨드이고, 그 커밋 뒤에 `engram sync --apply`를 돌리면 모든 `context` 문서의 `updated`가 오늘이 된다. 그러면 `resurface`는 `stale_days`를 넘는 문서를 하나도 찾지 못하고, 같은 날짜를 읽는 `digest`의 노후 집계도 0이 된다. upstream이 겪은 사고가 engram에서 그대로 재현된다.
+필터가 붙는 자리는 upstream과 다르다. upstream은 `wiki_resurface.py`와 `sync_updated_field.py` 양쪽이 각각 git을 읽으며 거르고, engram은 `internal/gitdate` 한 곳에서 걸러 `sync`가 그 결과를 프론트매터에 정정한다. `internal/resurface/resurface.go:71-82`의 `BaseDate`는 프론트매터 `updated`를 우선하고 없으면 `created`를 쓰므로 걸러진 날짜를 그대로 물려받는다.
+
+**영향**: 닫혔다. `migrate`는 정의상 문서 전체의 프론트매터를 한 번에 고치는 커맨드이므로 그 커밋 뒤에 `engram sync --apply`를 돌리면 upstream이 겪은 사고가 그대로 열릴 자리였다. 필터가 그 커밋을 신호에서 빼므로 `context` 문서의 `updated`가 한꺼번에 오늘이 되지 않고, `resurface`의 `stale_days` 판정과 `digest`의 노후 집계도 남는다. 커밋이 전부 대량 커밋인 문서는 날짜를 채우지 않고 `sync`가 그 수를 따로 알린다(`internal/cli/sync.go:79-83`, `219-221`).
 
 **자리**: 코드
 
@@ -844,9 +846,11 @@ upstream 쪽 속도를 실제로 돌려 쟀다. 같은 기계(Apple M4 Pro), ups
 
 **upstream 규정**: `scripts/sync_updated_field.py:29-30`이 `updated` 갱신 대상은 `context`와 `agents/workflows`뿐이다. "sources/는 원본 보존이라 건드리지 않는다."
 
-**engram 대응**: `internal/cli/sync.go:108`이 `stage != wiki.StageSource`로 sources만 뺀다. `inbox`와 `archive`에도 `updated`를 쓴다.
+**engram 대응**: `internal/cli/sync.go:133`의 `dateChanges()`가 `stage == wiki.StageContext`일 때만 `updated`를 정정한다. `inbox`와 `archive`와 `sources`는 대상이 아니다. 가르는 기준은 그 값을 읽는 쪽이 있는가이고, `updated`는 재발견의 노후 판정 입력이며 재발견 대상은 `context`뿐이다(ADR 0072). 같은 함수의 `sourced_at`은 `sources` 단계에만 쓴다(`sync.go:138-150`).
 
-**영향**: `updated` 갱신 대상이 다르다.
+upstream이 함께 대상으로 두는 `agents/workflows`는 engram에 대응하는 단계가 없다. 단계는 `inbox`, `source`, `context`, `archive` 넷이다(`internal/wiki/wiki.go:27-32`).
+
+**영향**: 닫혔다. 대상이 `context` 하나로 좁혀져 upstream보다 좁고, 남는 차이는 engram에 `agents/` 단계가 없다는 것뿐이다.
 
 **자리**: 코드
 
@@ -858,9 +862,9 @@ upstream 쪽 속도를 실제로 돌려 쟀다. 같은 기계(Apple M4 Pro), ups
 
 **upstream 규정**: `scripts/sync_updated_field.py:110-111`이 벌크 커밋으로만 등장한 파일은 날짜를 비워 두고 건너뛴다. "다음 실제 편집 때 채워진다."
 
-**engram 대응**: 대응 없음(B3의 결과).
+**engram 대응**: `internal/gitdate/gitdate.go:85-89`가 커밋이 전부 대량 커밋인 문서를 `Dates{BulkOnly: true}`로 두어 날짜를 비운다. 대량 커밋의 날짜로 대신 채우지 않는다(G3의 결과). `internal/cli/sync.go:79-83`이 `if inHist && d.BulkOnly`로 그 문서를 세고, `printSync`가 개수를 별도 줄로 낸다(`sync.go:219-221`). 0이면 줄을 내지 않는다.
 
-**영향**: 벌크 커밋 파일 날짜가 비워있지 않는다.
+**영향**: 닫혔다. 대량 커밋으로만 등장한 문서는 날짜가 비어 있고 다음 실제 편집 때 채워진다. 커밋이 없어 건너뛴 문서와 사유를 나눠 알리는 것은 upstream보다 자세하다.
 
 **자리**: 코드
 
