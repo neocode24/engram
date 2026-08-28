@@ -108,7 +108,7 @@ updated: 2026-01-01
 | `indexable` | yes | Whether 검색 시스템 may index this artifact |
 | `created` | source stage 필수 / 그 외 recommended | 원본이 처음 기록된 날. 회의한 날, 문서가 쓰인 날이다. `YYYY-MM-DD` 또는 연월까지만 아는 경우 `YYYY-MM` |
 | `sourced_at` | source stage 필수 | 이 wiki에 source로 편입된 날. git 최초 커밋일이 진실원이다 |
-| `updated` | auto | 마지막으로 내용이 갱신된 날. `scripts/sync_updated_field.py`가 git 이력에서 채운다. 손으로 쓰지 않는다 |
+| `updated` | auto | 마지막으로 내용이 갱신된 날. pre-commit 훅이 `scripts/sync_updated_field.py --precommit`으로 스테이징된 문서에 이번 커밋의 날짜를 쓴다. 손으로 쓰지 않는다 |
 
 ### sources의 날짜를 두 개로 나눈 이유
 
