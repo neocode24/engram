@@ -295,6 +295,9 @@ LLM으로 승급 기준 전부를 판정하게 하면 그 판정은 재현되지
 | ~~`indexable` 단계 기본값~~ | wiki-artifact-schema.md가 유형별 인덱싱 기본값으로 선언. upstream lint는 위반을 검사 | ~~강제 규칙이 없다~~ `schema.indexable-stage`가 검사한다([0071](decisions/0071-lint-checks-indexable-stage-and-deprecated-fields.md)). `archive`는 빠진다 |
 | `agents/workflows/` 전체 | 에이전트 절차 명세. 텍스트 드롭 인테이크, 음성 메모 인테이크 등 | 대응표가 `meta/` 명세만 덮어서 **아예 보지 않았다**. 아래에 적는다 |
 | `transcript`, `source-manifest` 종류 | wiki-artifact-schema.md 의 Artifact Types 표가 선언 | 기본 종류에 없다. `source-raw`가 전자의 일반형이고([ADR 0051](decisions/0051-sources-holds-originals-and-refined-summaries.md)) 후자는 개념 자체가 없다 |
+| 자산 배치와 고아 자산 검사 | wiki-artifact-schema.md 의 `Assets` 절(2026-08-28). 자산은 참조 문서와 같은 층의 `assets/` 에 두고 아무 마크다운도 참조하지 않으면 고아로 FAIL 한다 | 없다. 순회가 마크다운만 보므로 자산 파일이 아예 보이지 않는다 |
+
+자산 배치는 2026-08-28 upstream 의 `Assets` 절로 생겼고 CHANGELOG 는 `binary-affecting` 이다. 그런데 이 규칙은 파일 존재를 본다. engram 의 순회는 확장자 `.md` 만 고르므로 자산은 걸리지 않고, 고아 검사를 넣으려면 문서가 아닌 파일을 열거하는 능력이 먼저다. 결정할 시점은 engram 이 위키의 구성 요소에 마크다운 아닌 파일을 포함하기로 할 때다.
 
 `supersedes`와 `superseded_by`는 지금 사람이 `related`나 본문 링크로 대신 표현한다. 결정할 시점은 대체 이력을 코드가 다뤄야 할 때다. 폐기와 개정의 이력 관리가 `archive` 너머로 확장되거나, 동등성 검증에서 이 필드를 쓰는 문서가 걸릴 때다.
 
