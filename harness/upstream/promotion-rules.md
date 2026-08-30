@@ -5,6 +5,13 @@
 
 Promotion means moving reusable knowledge from `inbox/` into `context/`.
 
+*(llm-wiki 승급 구조. 원본 그림은 upstream 의 assets/promotion-layers.svg 에 있다)*
+
+세 계층은 역할이 다르다. `inbox/`는 담는 곳이라 스키마 검사를 받지 않고,
+`sources/`는 남기는 곳이라 read-mostly이며, `context/`는 쓰는 곳이라 RAG
+인덱싱 대상이다. 계층 사이의 이동은 사람이 판단하고, `context/` 진입만
+pre-commit 게이트가 지킨다.
+
 ## Promote When
 
 - the note answers a future question likely to recur

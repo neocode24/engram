@@ -123,6 +123,27 @@ def load_replacements():
     return entries, len(entries)
 
 
+IMAGE_LINK_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)\)")
+
+
+def annotate_asset_links(text):
+    """그림 링크를 글 설명으로 바꾼다.
+
+    vendoring 대상은 계약 선언에 든 마크다운 일곱뿐이다. upstream 이 그
+    문서 안에서 assets/ 자산을 그림으로 걸면 사본에는 파일이 없어 링크가
+    깨진다(check-adr 의 링크 검사). 자산을 함께 가져오는 선택은 하지
+    않는다. 계약 선언 밖의 파일을 경계 심사 없이 공개 저장소에 들이는
+    일이 되기 때문이다. 대체 텍스트를 산문으로 남겨 무엇을 뜻하는지는
+    지킨다.
+    """
+    def repl(m):
+        alt, target = m.group(1).strip(), m.group(2).strip()
+        if not alt:
+            alt = "그림"
+        return f"*({alt}. 원본 그림은 upstream 의 {target} 에 있다)*"
+    return IMAGE_LINK_RE.sub(repl, text)
+
+
 def apply_replacements(text, entries):
     """치환을 적용하고 적용 건수를 센다."""
     count = 0
@@ -326,6 +347,7 @@ def main():
     for name in names:
         src = git(upstream, "show", f"{head}:meta/{name}").stdout
         body, n = apply_replacements(src, entries)
+        body = annotate_asset_links(body)
         total_subs += n
         text = vendor_header(n).replace("NAME", name) + body
         target = os.path.join(UPSTREAM_DIR, name)
