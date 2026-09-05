@@ -113,6 +113,7 @@
 | [0096](0096-docs-harness-checks-quantitative-claims.md) | 문서의 정량 주장을 하니스가 실행 결과와 대조한다 | 2026-08-23 | accepted |
 | [0097](0097-internals-deck-identity-and-scoring-contract.md) | 내부 구조 덱의 정체를 읽기 문서로 확정하고 채점 계약을 둔다 | 2026-08-23 | accepted |
 | [0098](0098-upstream-updated-field-timing-change-needs-no-engram-change.md) | upstream이 updated 필드를 채우는 시점을 바꿔도 engram은 바꾸지 않는다 | 2026-08-28 | accepted |
+| [0099](0099-upstream-wiki-link-updated-exception-needs-no-engram-change.md) | upstream이 wiki-link 커밋에 updated 예외를 둬도 engram은 바꾸지 않는다 | 2026-09-05 | accepted |
 
 ## 공개 범위 밖
 
