@@ -11,10 +11,13 @@ Use these axes for LLM Wiki artifacts.
 
 | Axis | Meaning | Examples |
 | --- | --- | --- |
-| `source_channel` | Where the material came from | `voice-memo`, `web`, `slack`, `teams`, `confluence`, `jira`, `mobile`, `manual`, `automation` |
+| `source_channel` | Where the material came from | `voice-memo`, `web`, `slack`, `teams`, `confluence`, `jira`, `mobile`, `manual`, `automation`, `agent-session` |
 | `trigger_mode` | How the work started | `manual-prompt`, `scheduled-automation`, `file-drop`, `mcp-fetch`, `script-import` |
 | `workflow` | What processing flow is being run | `voice-memo-intake`, `tech-news-digest`, `meeting-note`, `issue-decision-extract`, `page-summarize` |
 | `artifact_stage` | What layer this file belongs to | `inbox`, `source`, `context`, `agent-workflow`, `index` |
+
+`agent-session`은 Hermes 또는 터미널 에이전트와의 대화에서 에이전트가 정리한
+결론을 뜻한다. 외부 시스템에서 가져온 것이 아니다.
 
 This avoids creating folders like `inbox/news` only because a workflow exists. News is usually `source_channel: web` plus `workflow: tech-news-digest`.
 
@@ -48,6 +51,9 @@ created: 2026-01-01
 updated: 2026-01-01
 ---
 ```
+
+`source_refs`는 보통 파일 경로를 가리킨다. `source_channel: agent-session`에서는
+경로 대신 `hermes-session:<session_id>` 식별자를 쓸 수 있다.
 
 The canonical frontmatter contract is `meta/frontmatter-schema.md`. This file defines the classification vocabulary; the frontmatter schema defines required fields by quality level.
 
@@ -112,6 +118,11 @@ The canonical frontmatter contract is `meta/frontmatter-schema.md`. This file de
 그것은 발행 부산물이지 위키 지식이 아니다. 위키에 남길 값어치가 있다면
 먼저 그 내용을 설명하는 문서를 위키 안에 만들고, 자산은 그 문서의 저작
 자산으로 붙인다. 문서 없이 자산만 커밋하지 않는다.
+
+그런 자산이 `exports/` 아래에 있으면 규칙 위반이 아니다. `exports/`는
+레이어가 아니라 발행 작업대이고 자산의 원문은 같은 디렉터리의 산출물
+소스다. 덱의 `assets/`에 있는 SVG가 여기 해당하며, 원문은 같은 디렉터리의
+`deck.js`다.
 
 2026-08-28에 `context/assets/`의 AIDx 도식 3종을 이 규칙으로 정리했다.
 Confluence 페이지 전용 1회성 산출물이었고 위키 안에 원문이 없었다.
