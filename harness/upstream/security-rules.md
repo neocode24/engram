@@ -23,6 +23,6 @@ If a source is sensitive but produces a reusable operational lesson, promote onl
 
 ## Mirror Handling
 
-Do not mirror private or raw source folders to iCloud.
+Do not mirror paths that never reach Git (`private/`, `sources/raw-private/`, `.local/`) to iCloud.
 
-The iCloud mirror is for mobile reading and quick capture, not for sensitive source storage.
+The iCloud mirror is a read view of the private repository. It does not filter by `sensitivity` because every mirrored file is already in the private GitHub repository (2026-09-25).

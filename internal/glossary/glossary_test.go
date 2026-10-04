@@ -55,6 +55,34 @@ func TestParsePicksOnlyAutoCorrect(t *testing.T) {
 	}
 }
 
+func TestParseLeavesNotApplicableRowsAlone(t *testing.T) {
+	// upstream 사전의 자동 교정 칸 어휘는 no, conditional, n/a, review, yes
+	// 다섯이다. n/a 는 변형이 없거나 치환 대상이 아닌 항목이라 규칙이 되면
+	// 안 된다. 지금까지 이 동작은 yes 로 시작하는 행만 고르는 조건에서
+	// 따라 나왔을 뿐 명시되지 않았다(ADR 0101).
+	g := Parse("| Canonical | STT / spoken variants | Auto-correct? | Notes |\n" +
+		"| --- | --- | --- | --- |\n" +
+		"| `테스트용어` | 테스트 용어, 시험용어 | yes | 합성 테스트 데이터 |\n" +
+		"| `예시항목` | (없음) | n/a | 치환 대상이 아님 |\n" +
+		"| `없는이름` | 가짜변형 | N/A | 대소문자가 달라도 같다 |\n" +
+		"| `금지항목` | 금지변형 | **no** | 쓰지 않는다 |\n")
+	got := map[string]string{}
+	for _, r := range g.Rules {
+		got[r.Variant] = r.Canonical
+	}
+	if len(got) != 2 || got["테스트 용어"] != "테스트용어" || got["시험용어"] != "테스트용어" {
+		t.Errorf("yes 행의 변형 둘만 규칙이어야 함: %+v", g.Rules)
+	}
+	for _, v := range []string{"(없음)", "가짜변형", "금지변형"} {
+		if _, ok := got[v]; ok {
+			t.Errorf("%q 가 규칙이 됨", v)
+		}
+	}
+	if g.Reviewed != 3 {
+		t.Errorf("n/a 둘과 no 하나가 검토 항목이어야 함: %d", g.Reviewed)
+	}
+}
+
 func TestParseSortsLongestFirst(t *testing.T) {
 	// 짧은 변형이 긴 변형의 일부이면 순서가 뒤집혔을 때 긴 것이
 	// 영영 안 잡힌다.

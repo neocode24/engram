@@ -86,7 +86,7 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 ### 4.3 promotion-rules.md
 
-**이 명세가 선언하는 것.** 승급 기준과 승급 금지 기준을 각각 다섯 줄과 네 줄로 적고, 승급 문서가 갖춰야 할 출력물 다섯을 적는다. 전문은 5절에서 분석한다.
+**이 명세가 선언하는 것.** 승급 기준과 승급 금지 기준을 각각 다섯 줄과 네 줄로 적고, 승급 문서가 갖춰야 할 출력물 다섯을 적는다. 초안이 `inbox/`를 떠나는 조건(`Inbox Exit` 절)도 적는다. 전문은 5절에서 분석한다.
 
 **코드로 강제하는 것.**
 
@@ -99,6 +99,8 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 **설정으로 열어 둔 것.** `min_wikilinks`. 0으로 두면 게이트가 꺼진다.
 
 **사람에게 남긴 것.** 승급 기준 다섯 줄과 금지 기준 네 줄의 판단 전부. "재발할 질문에 답하는가", "결론이 재사용할 만큼 안정적인가"는 코드가 판정할 수 없어 검토자의 몫으로 남는다. 골격의 절을 채우는 일도 사람과 에이전트가 한다.
+
+**미반영.** `Inbox Exit` 절(2026-09-13)이 초안이 `inbox/`를 떠나는 사건을 셋으로 정한다. 승급 커밋에서 초안을 `archive/<channel>/`로 함께 옮기는 것, 사람이 `exports/docs/`나 맞는 채널로 재배치하는 것, 사람이 승급하지 않기로 하고 지우는 것이다. 나이 기한은 없다. 이 절은 `sources/`와 `context/` 문서의 `source_refs`나 `derived_from`이 아직 존재하는 `inbox/` 경로를 가리키면 lint가 실패해야 한다고 적는다. engram은 이 검사를 옮기지 않았다. 이유와 결정할 시점은 6절과 [0101](decisions/0101-upstream-inbox-exit-rule-is-recorded-as-unimplemented.md)에 있다.
 
 ### 4.4 wiki-graph-policy.md
 
@@ -151,7 +153,7 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 ### 4.7 security-rules.md
 
-**이 명세가 선언하는 것.** 커밋 금지 항목(자격증명, API 토큰, 개인 키, 세션 쿠키, 불필요한 개인 식별 정보, 통제 안 된 원본 반출, 편집 없는 고객 민감 정보)을 나열한다. 민감 원본은 `sources/raw-private/`에 두고 개인 클라우드로 미러링하지 말라고 정한다.
+**이 명세가 선언하는 것.** 커밋 금지 항목(자격증명, API 토큰, 개인 키, 세션 쿠키, 불필요한 개인 식별 정보, 통제 안 된 원본 반출, 편집 없는 고객 민감 정보)을 나열한다. 민감 원본은 gitignore 된 `sources/raw-private/`에 두라고 하고, Git에 올라가지 않는 경로(`private/`, `sources/raw-private/`, `.local/`)는 개인 클라우드로 미러링하지 말라고 정한다. 2026-09-25 개정으로 미러는 `sensitivity` 값으로 거르지 않는다. 미러되는 파일이 이미 비공개 저장소에 있어 노출 범위가 넓어지지 않는다는 판단이다. engram은 미러를 다루지 않으므로 이 개정은 코드에 닿지 않는다.
 
 **코드로 강제하는 것.** 2026-08-19까지 없었다. 이 명세는 engram이 가장 적게 옮긴 명세였다. [0069](decisions/0069-secrets-and-sensitivity-block-promotion-and-export.md)가 그 자리를 채웠다.
 
@@ -196,6 +198,8 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 **코드로 강제하는 것.** 셋 중 하나뿐이다. `promote`가 `inbox`에서 `context`로 옮긴다([ADR 0022](decisions/0022-promote-moves-inbox-derives-sources.md)). 삭제는 사용자가 파일을 지우면 되고 커맨드가 없어도 성립한다.
 
 **셋이 다 열려 있다.** `promote`가 `context`로 올리고, `promote --to sources`가 증거를 옮기며([ADR 0058](decisions/0058-promote-to-sources-moves-evidence.md)), 삭제는 파일을 지우면 된다. 가운데 길은 이 README를 읽고 나서야 만들어졌다. 그전에는 실제 에이전트가 `engram source ... < inbox파일`이라는 잘못된 우회를 두 번 지어냈다. 프론트매터가 본문에 박히고 `inbox` 원본이 남아 같은 내용이 두 곳에 생겼다.
+
+**upstream이 이 절을 고쳤다(2026-09-13).** `Completion`이 위 인용문 대신 초안이 `inbox/`를 떠나는 세 경우를 적는다. 승급 커밋이 초안을 `source_refs`나 `derived_from`으로 가리키고 같은 커밋에서 `archive/<channel>/`로 옮기는 것, 사람이 `exports/docs/`나 맞는 채널로 재배치하는 것, 사람이 승급하지 않기로 하고 지우는 것이다. 초안은 `sources/`로 옮겨지는 것이 아니라 `sources/` 문서를 만드는 재료가 되고 원본은 `archive/`에 남는다. 위 인용은 개정 전 문구다. 규칙의 본문은 계약 파일인 `promotion-rules.md`가 갖게 되었으므로 4.3절과 6절이 다룬다.
 
 **차이.** upstream은 채널별 하위 디렉토리를 두고 engram은 `source_channel` 속성 값으로만 남긴다. 4.6절에 이미 적은 차이다.
 
@@ -296,8 +300,11 @@ LLM으로 승급 기준 전부를 판정하게 하면 그 판정은 재현되지
 | `agents/workflows/` 전체 | 에이전트 절차 명세. 텍스트 드롭 인테이크, 음성 메모 인테이크 등 | 대응표가 `meta/` 명세만 덮어서 **아예 보지 않았다**. 아래에 적는다 |
 | `transcript`, `source-manifest` 종류 | wiki-artifact-schema.md 의 Artifact Types 표가 선언 | 기본 종류에 없다. `source-raw`가 전자의 일반형이고([ADR 0051](decisions/0051-sources-holds-originals-and-refined-summaries.md)) 후자는 개념 자체가 없다 |
 | 자산 배치와 고아 자산 검사 | wiki-artifact-schema.md 의 `Assets` 절(2026-08-28). 자산은 참조 문서와 같은 층의 `assets/` 에 두고 아무 마크다운도 참조하지 않으면 고아로 FAIL 한다 | 없다. 순회가 마크다운만 보므로 자산 파일이 아예 보이지 않는다 |
+| inbox 잔류 참조 검사 | promotion-rules.md 의 `Inbox Exit` 절(2026-09-13). `sources/`나 `context/` 문서의 `source_refs`와 `derived_from`이 아직 존재하는 `inbox/` 경로를 가리키면 FAIL 한다 | 없다. `promote`는 초안을 옮기므로 `inbox/`에 남기지 않고 이 상태를 스스로 만들지 않는다. 사용자가 `source --ref inbox/...`로 직접 적은 경우에만 생기며 그때 engram은 알리지 않는다 |
 
 자산 배치는 2026-08-28 upstream 의 `Assets` 절로 생겼고 CHANGELOG 는 `binary-affecting` 이다. 그런데 이 규칙은 파일 존재를 본다. engram 의 순회는 확장자 `.md` 만 고르므로 자산은 걸리지 않고, 고아 검사를 넣으려면 문서가 아닌 파일을 열거하는 능력이 먼저다. 결정할 시점은 engram 이 위키의 구성 요소에 마크다운 아닌 파일을 포함하기로 할 때다.
+
+`Inbox Exit` 절도 CHANGELOG 가 `binary-affecting` 으로 표시했고, upstream 의 `scripts/lint-frontmatter.sh`가 같은 날 잔류 참조 검사를 갖췄다. 임시 위키에서 같은 입력을 양쪽에 돌려 차이를 확인했다. `source_refs`가 아직 남은 `inbox/` 초안을 가리키는 `sources/` 문서에 upstream 은 FAIL 을 내고 engram `lint`는 위반을 내지 않는다. 초안을 `archive/`로 옮기면 upstream 이 통과한다. 넣으려면 먼저 정할 것이 둘이다. 하나는 고칠 길이다. `archive`는 `context` 문서만 받고 `update`는 `--force` 없이 `sources` 문서를 거절하므로 걸린 사용자가 쓸 커맨드가 없다. 다른 하나는 [ADR 0035](decisions/0035-stage-mismatch-severity-by-direction.md)의 원칙이다. 막는 등급을 고칠 길 없이 두지 않는다. 결정할 시점은 `inbox` 초안을 `archive`로 보존하는 커맨드를 만들 때, 또는 위 상태가 실제 위키에서 걸려 나올 때다. 근거는 [ADR 0101](decisions/0101-upstream-inbox-exit-rule-is-recorded-as-unimplemented.md)에 있다.
 
 `supersedes`와 `superseded_by`는 지금 사람이 `related`나 본문 링크로 대신 표현한다. 결정할 시점은 대체 이력을 코드가 다뤄야 할 때다. 폐기와 개정의 이력 관리가 `archive` 너머로 확장되거나, 동등성 검증에서 이 필드를 쓰는 문서가 걸릴 때다.
 
