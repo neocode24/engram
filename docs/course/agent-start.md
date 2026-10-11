@@ -8,14 +8,14 @@
 
 전제는 둘입니다.
 
-- 셸이나 MCP를 쓰는 에이전트. Claude Code, Cursor 등
+- 셸을 쓰는 에이전트. VS Code의 Copilot 에이전트 모드, Claude Code 등
 - `engram` 설치. `go install github.com/neocode24/engram/cmd/engram@latest` 또는 `brew`
 
 설치는 [hands-on.md](hands-on.md) 1단계에 자세히 있습니다.
 
 ## 1. 에이전트에 붙입니다
 
-두 가지를 붙입니다. 하나는 **문서**이고 하나는 **도구**입니다.
+먼저 **스킬 문서**를 설치합니다. MCP는 선택 사항입니다. **MCP가 없어도 셸을 쓰는 에이전트와 스킬 경로로 승급까지 할 수 있습니다.**
 
 ### 문서. 에이전트가 규약을 읽습니다
 
@@ -24,12 +24,14 @@ engram skills install
 ```
 
 ```
-심었습니다. 파일 1개
-  /Users/<당신>/.claude/skills/engram/SKILL.md
+심었습니다. 파일 3개
+  /Users/사용자/.claude/skills/engram/SKILL.md
+  /Users/사용자/.agents/skills/engram/SKILL.md
+  /Users/사용자/.copilot/skills/engram/SKILL.md
 에이전트를 다시 시작해야 스킬이 잡힐 수 있습니다
 ```
 
-`--dir` 없이 치면 홈 디렉토리에서 **실제로 있는** 에이전트 스킬 디렉토리를 찾아 전부에 심습니다. 없는 도구를 위해 디렉토리를 만들지 않습니다. 하나도 못 찾으면 실패하니 그때는 `--dir`로 직접 줍니다.
+`--dir` 없이 치면 홈 디렉토리에서 **실제로 있는** 에이전트 스킬 디렉토리를 찾아 전부에 심습니다. 위 출력은 세 곳이 모두 있는 경우입니다. Copilot만 쓴다면 `~/.copilot/skills/engram/SKILL.md`만 나올 수 있습니다. 없는 도구를 위해 디렉토리를 만들지 않습니다. 하나도 못 찾으면 `engram skills install --dir ~/.copilot/skills`처럼 직접 지정하세요. Claude Code는 `~/.claude/skills`를 지정하면 됩니다.
 
 이 문서에는 임계값이나 허용값이 없습니다. **그 위키의 규칙은 에이전트가 `rules show`로 물어봅니다.** 그래서 한 번 심으면 위키가 여럿이어도 통합니다.
 
@@ -37,7 +39,23 @@ engram skills install
 
 셸을 쓰는 에이전트는 이 단계가 필요 없습니다. 커맨드를 그냥 칩니다.
 
-MCP만 쓰는 클라이언트는 등록합니다. Claude Code 기준입니다.
+MCP로도 연결하려면 Copilot의 사용자 설정 `~/.copilot/mcp-config.json`이나 작업공간의 `.mcp.json`에 다음 서버를 등록하세요. 이미 `mcpServers`가 있으면 그 안에 `engram` 항목을 더하세요.
+
+```json
+{
+  "mcpServers": {
+    "engram": {
+      "type": "stdio",
+      "command": "engram",
+      "args": ["mcp", "--wiki", "/Users/사용자/my-wiki"]
+    }
+  }
+}
+```
+
+위키 경로는 자기 위키의 절대 경로로 바꾸세요. 아직 위키가 없다면 2절에서 만든 뒤 연결하세요. **조직 설정에 따라 MCP가 꺼져 있을 수 있습니다. 그때도 스킬 경로로 승급까지 진행할 수 있습니다.**
+
+Claude Code에서는 다음과 같이 등록합니다.
 
 ```
 claude mcp add engram -- engram mcp --wiki ~/my-wiki
@@ -47,13 +65,25 @@ claude mcp add engram -- engram mcp --wiki ~/my-wiki
 
 MCP로 붙으면 1절의 스킬 문서가 **프로토콜로도 전달됩니다.** 서버가 접속할 때 그 문서를 지시로 함께 내므로, 스킬 디렉토리를 안 읽는 클라이언트도 같은 규약을 받습니다. 그래서 셸을 쓰든 MCP를 쓰든 에이전트가 아는 규칙이 같습니다.
 
-전사까지 쓰려면 서버를 하나 더 등록합니다. 선택입니다.
+전사까지 MCP로 쓰려면 서버를 하나 더 등록합니다. 선택입니다. Copilot에서는 같은 `mcpServers` 객체에 다음 항목을 추가하세요.
+
+```json
+{
+  "engram-voice": {
+    "type": "stdio",
+    "command": "engram-voice",
+    "args": ["mcp"]
+  }
+}
+```
+
+Claude Code에서는 다음과 같습니다.
 
 ```
 claude mcp add engram-voice -- engram-voice mcp
 ```
 
-도구가 열입니다.
+`engram` 서버의 도구가 열입니다.
 
 ```
 backlinks, bridge, capture, digest, lint, recall, resurface, rules, search, status
@@ -193,22 +223,23 @@ engram search "장애 대응" --semantic
 
 `bridge`가 이 도구의 특별한 자리입니다. 낱말이 안 겹치는데 같은 문제를 다루는 문서 짝을 찾습니다. 사용자가 "화면이 한참 멈춰서 두 번 눌렀다"고 적은 것과 엔지니어가 "상위 백분위 응답이 320밀리초로 튀었다"고 적은 것이 같은 새벽의 같은 일입니다. 검색으로는 안 이어집니다.
 
-## 7. 에이전트가 못 하는 것
+## 7. 승인은 당신이 합니다
 
-도구 목록에 `promote`가 없습니다. 일부러 뺐습니다.
+MCP 도구 목록에는 `promote`가 없습니다. **스킬 경로에서는 당신이 내용을 승인한 뒤 에이전트가 승급을 실행합니다.**
 
 | 에이전트가 하는 것 | 사람이 하는 것 |
 |---|---|
-| `capture`로 `inbox`에 넣기 | **`context`로 올리기** |
+| `capture`로 `inbox`에 넣기 | **정리본과 승급 결과 승인** |
+| 승인 뒤 `update`와 `promote` 실행 | 원문을 바꾸거나 올릴 값어치가 있는지 판단 |
 | 검색, 회수, 백링크, 재발견 | **되돌리기, 폐기** |
 | 링크 후보 제안 | 그 제안을 받을지 판단 |
 | 규칙 조회 | 규칙 바꾸기 |
 
-**에이전트가 쓸 수 있는 곳은 `inbox`까지입니다.**
+정리한 본문으로 원문을 바꾸기 전에 한 번, 무엇이 올라가고 무엇이 사라지는지 확인할 때 한 번 승인합니다. 커맨드가 아니라 문서를 읽고 결정하세요.
 
 승급은 "이것이 나중에도 쓸 지식이다"라고 선언하는 일입니다. 그 선언을 도구가 대신하면 위키가 쓰레기로 찹니다. 그리고 그것을 알아채는 데 몇 달이 걸립니다.
 
-셸을 쥔 에이전트는 `engram promote`를 직접 칠 수 있습니다. 막을 방법이 없습니다. 그래서 **스킬 문서가 하지 말라고 적어 두었습니다.** 에이전트가 그것을 어기고 올리면 그 자리에서 되돌리게 하세요.
+셸을 쥔 에이전트는 `engram promote`를 실행할 수 있지만 **승인 없이 실행해서는 안 됩니다.** MCP만 연결한 클라이언트로는 승급할 수 없으므로, 승급은 셸 도구가 있는 에이전트에서 진행하세요.
 
 `engram lint`가 언제든 위키 상태를 봅니다.
 

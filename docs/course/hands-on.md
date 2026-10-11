@@ -964,6 +964,8 @@ Error: 승급 게이트를 넘지 못했습니다: 이어지는 위키링크가 
 
 ## 2. 에이전트를 붙입니다
 
+VS Code의 Copilot 에이전트 모드, Claude Code 등 셸 도구가 있는 에이전트를 사용하세요. **MCP가 없어도 스킬 경로로 승급까지 할 수 있습니다.**
+
 **터미널**
 
 ```
@@ -971,31 +973,32 @@ engram skills install --dry-run
 ```
 
 ```
-심을 예정인 파일 2개 (dry-run. 아직 쓰지 않았습니다)
+심을 예정인 파일 3개 (dry-run. 아직 쓰지 않았습니다)
   /Users/사용자/.claude/skills/engram/SKILL.md
   /Users/사용자/.agents/skills/engram/SKILL.md
+  /Users/사용자/.copilot/skills/engram/SKILL.md
 에이전트를 다시 시작해야 스킬이 잡힐 수 있습니다
 ```
 
-**홈을 건드리므로 먼저 봅니다.** 실제로 있는 스킬 디렉토리를 찾아 전부에 심고, 없는 도구를 위해 디렉토리를 만들지 않습니다.
+**홈을 건드리므로 먼저 봅니다.** 실제로 있는 스킬 디렉토리를 찾아 전부에 심고, 없는 도구를 위해 디렉토리를 만들지 않습니다. 위 출력은 세 곳이 모두 있는 경우입니다. Copilot만 쓴다면 `~/.copilot/skills/engram/SKILL.md`만 나올 수 있습니다. 아무 곳도 감지되지 않으면 `engram skills install --dir ~/.copilot/skills`로 직접 지정하세요.
 
 ### 전역이냐 이 위키만이냐
 
 | | 전역 (기본값) | 이 위키만 |
 |---|---|---|
 | 커맨드 | `engram skills install` | `engram skills install --dir <프로젝트>/.claude/skills` |
-| 심는 곳 | `~/.claude/skills/engram/` | `<프로젝트>/.claude/skills/engram/` |
+| 심는 곳 | 감지된 `~/.copilot/skills/engram/`, `~/.claude/skills/engram/`, `~/.agents/skills/engram/` | `<프로젝트>/.claude/skills/engram/` |
 | 언제 | 위키를 실제로 쓰기 시작했을 때 | **기능을 검증하거나 시험해 볼 때** |
 
-전역이 기본값인 이유는 **스킬 문서가 위키와 무관하기 때문**입니다. 임계값이나 허용값을 담지 않아 위키가 몇 개든 하나면 되고, 위키 밖에서 에이전트를 띄웠을 때도 필요합니다. 회의 노트가 있는 다른 폴더에서 "이거 위키에 넣어 줘"가 되어야 합니다.
+프로젝트 단위 예시는 Claude Code 기준입니다. Copilot 실습에서는 전역 `~/.copilot/skills`를 사용하세요. 스킬 문서는 위키와 무관하므로 위키가 여럿이어도 한 번 설치하면 됩니다. 회의 노트가 있는 다른 폴더에서도 "이거 위키에 넣어 줘"라고 할 수 있습니다.
 
 지울 때는 디렉토리를 지웁니다. 전용 커맨드는 없습니다.
 
 ```
-rm -rf ~/.claude/skills/engram
+rm -rf ~/.copilot/skills/engram
 ```
 
-**실습에서는 전역으로 갑니다.** 8단계까지 쓰고 그 뒤로도 쓰기 때문입니다.
+Claude Code에 설치한 것을 지우려면 `~/.claude/skills/engram`을 지정하세요. **실습에서는 전역으로 갑니다.** 8단계까지 쓰고 그 뒤로도 쓰기 때문입니다.
 
 **터미널**
 
@@ -1005,9 +1008,10 @@ engram reindex
 ```
 
 ```
-심었습니다 2개
+심었습니다. 파일 3개
   /Users/사용자/.claude/skills/engram/SKILL.md
   /Users/사용자/.agents/skills/engram/SKILL.md
+  /Users/사용자/.copilot/skills/engram/SKILL.md
 에이전트를 다시 시작해야 스킬이 잡힐 수 있습니다
 ```
 
@@ -1018,15 +1022,14 @@ engram reindex
 **터미널**
 
 ```
-cat ~/.claude/skills/engram/SKILL.md
+cat ~/.copilot/skills/engram/SKILL.md
 ```
 
-**여기가 이 과정에서 제일 중요한 페이지입니다.** 에이전트가 무엇을 할 수 있고 무엇을 못 하는지가 전부 여기 있습니다.
+Claude Code라면 `~/.claude/skills/engram/SKILL.md`를 읽으세요. **여기가 이 과정에서 제일 중요한 페이지입니다.** 에이전트가 무엇을 할 수 있고 무엇을 못 하는지가 전부 여기 있습니다.
 
-> 네가 쓸 수 있는 곳은 inbox까지다. 새 자료는 capture로 inbox에 넣고
-> inbox 문서의 본문은 update로 고칠 수 있다. 그 안에서는 자유롭게 하라.
-> context로 올리는 일은 승급 게이트를 지나야 하고 확정은 사람이 한다.
-> promote를 제안할 수 있지만 실행은 사람에게 맡겨라.
+> 승급은 다르다. **확정은 사람이 한다.** 다만 사람에게 커맨드를 받아
+> 치게 만들지 마라. 그것은 판단이 아니라 타이핑이다. **무엇이 올라가고
+> 무엇이 사라지는지 보여 주고 승인을 받은 뒤 네가 실행한다.**
 
 **에이전트를 다시 시작합니다.**
 
@@ -1970,7 +1973,29 @@ engram MCP 서버를 띄웁니다: /Users/you/engram-wiki
 
 **아무 일도 안 일어난 것처럼 보입니다.** 이 서버는 화면이 아니라 표준 입출력으로 말합니다. 붙는 쪽은 에이전트입니다.
 
-Claude Code에 붙이려면 설정에 서버를 등록합니다. 붙고 나면 도구 목록이 보입니다.
+이제 직접 띄운 서버를 `Ctrl+C`로 종료하고, 에이전트가 서버를 띄우도록 등록하세요. Copilot은 사용자 설정 `~/.copilot/mcp-config.json`이나 작업공간의 `.mcp.json`에 다음 내용을 넣습니다. 이미 `mcpServers`가 있으면 그 안에 `engram` 항목을 더하세요.
+
+```json
+{
+  "mcpServers": {
+    "engram": {
+      "type": "stdio",
+      "command": "engram",
+      "args": ["mcp", "--wiki", "/Users/사용자/engram-wiki"]
+    }
+  }
+}
+```
+
+위키 경로는 자기 위키의 절대 경로로 바꾸세요. **조직 설정에 따라 MCP가 꺼져 있을 수 있습니다. MCP가 없어도 4단계의 스킬 경로로 승급까지 할 수 있습니다.**
+
+Claude Code에서는 다음과 같이 등록합니다.
+
+```
+claude mcp add engram -- engram mcp --wiki ~/engram-wiki
+```
+
+연결한 뒤 에이전트의 도구 목록을 확인하세요.
 
 **실측 출력** (도구 열입니다)
 
