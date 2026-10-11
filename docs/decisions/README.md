@@ -116,6 +116,7 @@
 | [0099](0099-upstream-wiki-link-updated-exception-needs-no-engram-change.md) | upstream이 wiki-link 커밋에 updated 예외를 둬도 engram은 바꾸지 않는다 | 2026-09-05 | accepted |
 | [0100](0100-upstream-sources-entry-and-agent-session-channel-need-no-engram-change.md) | upstream이 sources 진입 기준과 agent-session 채널을 신설해도 engram은 바꾸지 않는다 | 2026-09-12 | accepted |
 | [0101](0101-upstream-inbox-exit-rule-is-recorded-as-unimplemented.md) | upstream이 inbox 퇴장 규칙을 신설해도 engram은 코드를 바꾸지 않고 미이행으로 기록한다 | 2026-10-04 | accepted |
+| [0102](0102-engram-stays-in-maintenance-and-adapts-to-the-learner-toolchain.md) | engram은 유지보수를 유지하고 수강생 도구 환경에만 맞춘다 | 2026-10-11 | accepted |
 
 ## 공개 범위 밖
 
