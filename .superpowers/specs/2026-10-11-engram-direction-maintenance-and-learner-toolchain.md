@@ -72,4 +72,6 @@ Copilot만 쓰는 PC에서 스킬 설치가 실패한다. `internal/skills/skill
 
 ## 확인하지 못한 것
 
+> 2026-10-11 갱신: 사용자 확인으로 수강생 환경에서 VS Code Copilot 에이전트 모드와 Copilot CLI 둘 다 쓸 수 있다. PM 실측으로, 임시 홈에서 `engram skills install` 로 `~/.copilot/skills/engram/SKILL.md` 를 심으면 Copilot CLI 1.0.92 의 `copilot skill list` 가 Personal skills 에 `engram` 을 잡는다. VS Code 쪽 인식은 여전히 돌려 보지 않았다.
+
 ADR 0102 "확인하지 못한 것" 절과 같다. 수강생 좌석의 에이전트 모드와 터미널 도구 허용 여부, MCP 정책 값, Claude Enterprise의 Claude Code 포함 여부, VS Code에서 심은 스킬이 실제로 잡히는지. 2의 scribe가 VS Code를 열 수 있으면 마지막 하나는 그 자리에서 확인한다.
