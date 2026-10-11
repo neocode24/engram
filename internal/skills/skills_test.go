@@ -107,4 +107,33 @@ func TestDetect(t *testing.T) {
 			t.Errorf("같은 물리적 디렉토리는 하나로 합쳐야 함: %v", got)
 		}
 	})
+
+	t.Run(".copilot/skills만 있는 홈에서 하나를 잡는다", func(t *testing.T) {
+		home := t.TempDir()
+		if err := os.MkdirAll(filepath.Join(home, ".copilot", "skills"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		got := Detect(home)
+		if len(got) != 1 || !strings.HasSuffix(filepath.ToSlash(got[0]), ".copilot/skills") {
+			t.Errorf(".copilot/skills 하나만 잡아야 함: %v", got)
+		}
+	})
+
+	t.Run("셋이 모두 있으면 셋 모두 잡는다", func(t *testing.T) {
+		home := t.TempDir()
+		for _, rel := range []string{".claude/skills", ".agents/skills", ".copilot/skills"} {
+			if err := os.MkdirAll(filepath.Join(home, filepath.FromSlash(rel)), 0o755); err != nil {
+				t.Fatal(err)
+			}
+		}
+		got := Detect(home)
+		if len(got) != 3 {
+			t.Fatalf("셋 모두 잡아야 함: %v", got)
+		}
+		for i, suffix := range []string{".claude/skills", ".agents/skills", ".copilot/skills"} {
+			if !strings.HasSuffix(filepath.ToSlash(got[i]), suffix) {
+				t.Errorf("순서는 candidates 를 따라야 함 [%d]=%s, 기대 %s", i, got[i], suffix)
+			}
+		}
+	})
 }

@@ -69,6 +69,7 @@ type candidate struct {
 var candidates = []candidate{
 	{".claude/skills", "core.skills.note_claude"},
 	{".agents/skills", "core.skills.note_agents"},
+	{".copilot/skills", "core.skills.note_copilot"},
 }
 
 // Detect는 홈 디렉토리에서 실제로 존재하는 설치 대상을 절대 경로로

@@ -106,8 +106,9 @@ func init() {
 		// walk
 		"core.walk.read_fail": "문서를 읽을 수 없음: %s",
 		// skills
-		"core.skills.note_claude": "Claude Code 개인 스킬 디렉토리",
-		"core.skills.note_agents": "Agents Skills 표준 디렉토리. skills CLI(npx skills)가 쓴다",
+		"core.skills.note_claude":  "Claude Code 개인 스킬 디렉토리",
+		"core.skills.note_agents":  "Agents Skills 표준 디렉토리. skills CLI(npx skills)가 쓴다",
+		"core.skills.note_copilot": "GitHub Copilot 개인 스킬 디렉토리",
 		// mcpserver
 		"core.mcpserver.description": "승급 파이프라인을 지키는 지식관리 위키. 쓰기는 inbox 까지만 허용하고 승급 확정은 사람이 한다",
 		// serve
@@ -236,8 +237,9 @@ func init() {
 		// walk
 		"core.walk.read_fail": "cannot read the document: %s",
 		// skills
-		"core.skills.note_claude": "Claude Code personal skills directory",
-		"core.skills.note_agents": "Agents Skills standard directory, used by the skills CLI (npx skills)",
+		"core.skills.note_claude":  "Claude Code personal skills directory",
+		"core.skills.note_agents":  "Agents Skills standard directory, used by the skills CLI (npx skills)",
+		"core.skills.note_copilot": "GitHub Copilot personal skills directory",
 		// mcpserver
 		"core.mcpserver.description": "a knowledge wiki with a promotion pipeline. writes are allowed only to inbox, and promotion is confirmed by a person",
 		// serve
