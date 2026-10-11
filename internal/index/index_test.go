@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/walk"
@@ -311,8 +312,21 @@ func TestSaveLoad(t *testing.T) {
 		if !ix.Fresh(walked, dir) {
 			t.Fatal("방금 만든 색인은 신선해야 함")
 		}
-		if err := os.WriteFile(filepath.Join(dir, "context", "a.md"),
+		p := filepath.Join(dir, "context", "a.md")
+		before, err := os.Stat(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p,
 			[]byte(simpleDoc("context", "# 바뀐 문서\n\n내용이 달라졌다")), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		// 바뀐 내용은 원래와 바이트 수가 같아 크기로는 구분되지 않는다. 파일
+		// 시각 해상도가 거친 러너(windows-11-arm)에서는 다시 쓴 파일이 같은
+		// 수정 시각을 받을 수 있다. 시각을 2초 뒤로 명시해 수정 시각 비교
+		// 경로를 러너와 무관하게 시험한다.
+		later := before.ModTime().Add(2 * time.Second)
+		if err := os.Chtimes(p, later, later); err != nil {
 			t.Fatal(err)
 		}
 		// 바뀐 파일을 다시 순회해 판정한다.
