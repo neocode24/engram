@@ -1,5 +1,5 @@
 {
-  "commit": "8cafb54917898cda209c21569612640f409d642e",
+  "commit": "95c5c2192492b1724efc435465a24258f00cb566",
   "files": [
     "frontmatter-schema.md",
     "ingest-rules.md",
@@ -9,5 +9,5 @@
     "wiki-artifact-schema.md",
     "wiki-graph-policy.md"
   ],
-  "synced_at": "2026-10-24T20:01:20"
+  "synced_at": "2026-10-24T20:18:18"
 }
