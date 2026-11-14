@@ -69,6 +69,14 @@ func TestResurfaceParity(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// wiki_resurface.py 는 같은 디렉토리의 wiki_link.py 를 import 한다.
+	// 함께 옮기지 않으면 ModuleNotFoundError 로 비교가 성립하지 않는다.
+	if link, err := os.ReadFile(filepath.Join(root, "scripts", "wiki_link.py")); err == nil {
+		if err := os.WriteFile(filepath.Join(wiki, "scripts", "wiki_link.py"), link, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
 	// upstream 스크립트는 자기 위치의 상위를 위키 루트로 보므로 사본 루트의
 	// scripts/ 아래에 둔다. lint 축과 같은 방식이다.
 	gitInit(t, gitBin, wiki)

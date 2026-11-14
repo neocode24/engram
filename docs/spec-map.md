@@ -66,6 +66,8 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 **설정으로 열어 둔 것.** 속성 14종의 on/off(`axes`), 문서 종류 집합(`types`), 문서가 아닌 파일 목록(`ignore_files`, 기본 `README.md`), 폐기한 프론트매터 키 목록(`deprecated_fields`, 기본 빈 목록). 꺼진 축의 필수성은 사라지고 `schema.axis-off`가 오히려 그 필드의 존재를 잡는다. 필수 필드 검사가 명세의 단계별 표를 그대로 옮기지 않고 프리셋에 따라 변형되는 것이 이 대응이다. 날짜 필드의 이름과 형식은 설정 키가 없이 코드에 고정되어 있다.
 
+**미반영.** 설계 문서용 선택 필드 여섯(`architecture_state`, `baseline`, `entity_types`, `domain`, `layer`, `biz_codes`, 2026-11-11)과 그 검사 셋이다. 폐쇄 집합 하나와 조건부 필수 둘이며 upstream 스크립트는 위반을 FAIL로 낸다. engram은 이 키를 모르는 키로 지나친다. 이유와 결정할 시점은 6절과 [0103](decisions/0103-upstream-design-state-fields-are-recorded-as-unimplemented.md)에 있다.
+
 **사람에게 남긴 것.** 검토 상태(review state)의 운용, `meta/templates/`의 템플릿 관리(Template Rule), "indexable: true인데 restricted인 문서 찾기" 같은 검토 뷰의 구성이다. engram에는 검토 상태 속성이 없다.
 
 ### 4.2 wiki-artifact-schema.md
@@ -300,11 +302,14 @@ LLM으로 승급 기준 전부를 판정하게 하면 그 판정은 재현되지
 | `agents/workflows/` 전체 | 에이전트 절차 명세. 텍스트 드롭 인테이크, 음성 메모 인테이크 등 | 대응표가 `meta/` 명세만 덮어서 **아예 보지 않았다**. 아래에 적는다 |
 | `transcript`, `source-manifest` 종류 | wiki-artifact-schema.md 의 Artifact Types 표가 선언 | 기본 종류에 없다. `source-raw`가 전자의 일반형이고([ADR 0051](decisions/0051-sources-holds-originals-and-refined-summaries.md)) 후자는 개념 자체가 없다 |
 | 자산 배치와 고아 자산 검사 | wiki-artifact-schema.md 의 `Assets` 절(2026-08-28). 자산은 참조 문서와 같은 층의 `assets/` 에 두고 아무 마크다운도 참조하지 않으면 고아로 FAIL 한다 | 없다. 순회가 마크다운만 보므로 자산 파일이 아예 보이지 않는다 |
+| 설계 상태 필드 여섯과 검사 | frontmatter-schema.md 의 선택 필드(2026-11-11). `architecture_state` 폐쇄 집합, `baseline`과 `architecture_state` 조건부 필수 | 없다. 이 키는 모르는 키로 지나가며 lint 가 위반을 내지 않는다 |
 | inbox 잔류 참조 검사 | promotion-rules.md 의 `Inbox Exit` 절(2026-09-13). `sources/`나 `context/` 문서의 `source_refs`와 `derived_from`이 아직 존재하는 `inbox/` 경로를 가리키면 FAIL 한다 | 없다. `promote`는 초안을 옮기므로 `inbox/`에 남기지 않고 이 상태를 스스로 만들지 않는다. 사용자가 `source --ref inbox/...`로 직접 적은 경우에만 생기며 그때 engram은 알리지 않는다 |
 
 자산 배치는 2026-08-28 upstream 의 `Assets` 절로 생겼고 CHANGELOG 는 `binary-affecting` 이다. 그런데 이 규칙은 파일 존재를 본다. engram 의 순회는 확장자 `.md` 만 고르므로 자산은 걸리지 않고, 고아 검사를 넣으려면 문서가 아닌 파일을 열거하는 능력이 먼저다. 결정할 시점은 engram 이 위키의 구성 요소에 마크다운 아닌 파일을 포함하기로 할 때다.
 
 `Inbox Exit` 절도 CHANGELOG 가 `binary-affecting` 으로 표시했고, upstream 의 `scripts/lint-frontmatter.sh`가 같은 날 잔류 참조 검사를 갖췄다. 임시 위키에서 같은 입력을 양쪽에 돌려 차이를 확인했다. `source_refs`가 아직 남은 `inbox/` 초안을 가리키는 `sources/` 문서에 upstream 은 FAIL 을 내고 engram `lint`는 위반을 내지 않는다. 초안을 `archive/`로 옮기면 upstream 이 통과한다. 넣으려면 먼저 정할 것이 둘이다. 하나는 고칠 길이다. `archive`는 `context` 문서만 받고 `update`는 `--force` 없이 `sources` 문서를 거절하므로 걸린 사용자가 쓸 커맨드가 없다. 다른 하나는 [ADR 0035](decisions/0035-stage-mismatch-severity-by-direction.md)의 원칙이다. 막는 등급을 고칠 길 없이 두지 않는다. 결정할 시점은 `inbox` 초안을 `archive`로 보존하는 커맨드를 만들 때, 또는 위 상태가 실제 위키에서 걸려 나올 때다. 근거는 [ADR 0101](decisions/0101-upstream-inbox-exit-rule-is-recorded-as-unimplemented.md)에 있다.
+
+설계 상태 필드 여섯도 2026-11-11 CHANGELOG가 `binary-affecting`으로 표시했고 upstream `scripts/lint-frontmatter.sh`가 같은 날 검사 15줄을 갖췄다. 임시 위키에서 같은 입력을 양쪽에 돌렸다. 잘못된 `architecture_state` 값, `baseline` 누락, `baseline` 빈 값, `architecture_state` 없는 `entity_types` 넷에 upstream은 FAIL을 내고 engram `lint`는 위반을 내지 않는다. 코드를 바꾸지 않은 이유는 이 필드를 가진 문서가 없고, 한 도메인의 선택 필드라 값 사전 없이는 반쪽 검사가 되며, 규칙이 늘면 문서 수치와 `eject` 린터가 함께 움직이기 때문이다. 결정할 시점은 이 필드를 쓰는 위키를 engram으로 운영하는 사용자가 나타날 때, 또는 upstream이 범용 어휘로 올릴 때다. 근거는 [ADR 0103](decisions/0103-upstream-design-state-fields-are-recorded-as-unimplemented.md)에 있다.
 
 `supersedes`와 `superseded_by`는 지금 사람이 `related`나 본문 링크로 대신 표현한다. 결정할 시점은 대체 이력을 코드가 다뤄야 할 때다. 폐기와 개정의 이력 관리가 `archive` 너머로 확장되거나, 동등성 검증에서 이 필드를 쓰는 문서가 걸릴 때다.
 
