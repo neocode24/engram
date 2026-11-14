@@ -92,6 +92,12 @@ updated: 2026-01-01
 | Field | Required | Meaning |
 | --- | --- | --- |
 | `type` | yes | Artifact type such as `decision`, `procedure`, `source-summary`, `agent-workflow` |
+| `architecture_state` | optional | 설계 주장의 상태. `historical-design`, `observed-as-is`, `target-proposal`, `target-approved`, `target-rejected`. `status`와 별개 |
+| `baseline` | when architecture_state exists | 주장의 문서, 논의, 관측 기준. 비어 있지 않은 문자열 |
+| `entity_types` | optional | 문서가 다루는 설계 대상의 종류. 문자열 리스트, 개방 집합. 쓰면 `architecture_state` 필수 |
+| `domain` | optional | `nbss-naming-map`의 도메인 키 리스트 |
+| `layer` | optional | `nbss-naming-map`의 레이어 키 리스트 |
+| `biz_codes` | optional | ESB 업무 코드 `<도메인>/<코드>` 리스트. 도메인 없는 값 금지 |
 | `artifact_stage` | yes | `inbox`, `source`, or `context` |
 | `status` | yes | `inbox`, `sourced`, `promoted`, `archived`, `superseded` |
 | `scope` | yes | `work`, `personal`, `mixed`, `unknown` |
@@ -109,6 +115,23 @@ updated: 2026-01-01
 | `created` | source stage 필수 / 그 외 recommended | 원본이 처음 기록된 날. 회의한 날, 문서가 쓰인 날이다. `YYYY-MM-DD` 또는 연월까지만 아는 경우 `YYYY-MM` |
 | `sourced_at` | source stage 필수 | 이 wiki에 source로 편입된 날. git 최초 커밋일이 진실원이다 |
 | `updated` | auto | 마지막으로 내용이 갱신된 날. pre-commit 훅이 `scripts/sync_updated_field.py --precommit`으로 스테이징된 문서에 이번 커밋의 날짜를 쓴다. 손으로 쓰지 않는다. 예외: `WIKI_LINK_ONLY=1` 환경에서 만드는 `wiki-link:` 커밋(재발견 링크 자동 반영, `related` 한 줄 추가뿐)은 내용 갱신이 아니므로 `updated`를 쓰지 않는다 |
+
+## NBSS Knowledge Vocabulary
+
+차세대 BSS/OSS(NBSS) 설계 문서에만 쓰는 선택 필드다. 근거는 `.superpowers/specs/2026-11-10-nbss-knowledge-vocabulary.md` 7.1절이다.
+
+- 문서 형식 `type`과 설계 대상 `entity_types`를 섞어 쓰지 않는다.
+- `architecture_state`는 폐쇄 집합이다. 값을 더하거나 빼면 계약 변경이다.
+- `architecture_state`를 쓰면 `baseline`을 쓴다. `entity_types`를 쓰면 `architecture_state`를 쓴다.
+- `status`는 wiki 처리 상태이며 설계의 채택, 기각, 실현 여부가 아니다. `historical-design`을 현재 구현 사실로 읽지 않는다.
+- 같은 주제라도 `historical-design`, `observed-as-is`, `target-*`는 다른 문서로 둔다.
+- `entity_types`, `domain`, `layer`, `baseline`의 값 목록은 `nbss-naming-map`의 값 사전에 두며 값 추가는 계약 변경이 아니다.
+- `biz_codes`는 ESB 범위의 도메인/코드다. PO, NEXA 이름을 섞지 않고 대소문자를 고치지 않는다. 의미 대응은 `nbss-naming-map`의 행 상태와 `evidence_ref`로 판단한다.
+- 코드 수준 관계(calls, called_by, depends_on, shares_table_with, participates_2pc)와 코드 객체별 문서를 만들지 않는다. kos-can 서버 또는 그 DB dump에서 조회한다.
+- 사람이 판단한 이름의 의미 대응은 승인된 `nbss-naming-map` 한 문서에 모으고 `aliases` 사본을 만들지 않는다. kos-can의 현행 이름·라벨·관측은 DB가 원본이며 위키에 표 전체를 복제하지 않는다. 위키 표에는 필요한 식별자 참조와 대응 상태·근거만 남긴다.
+- 승인된 이름 대응 표와 원칙·패턴의 관측 단서 표에서 로컬 Turtle facts를 한 방향으로 생성한다. 파생 facts는 편집하지 않으며 OWL이나 facts에서 context 문서를 역생성하지 않는다. OWL 어휘와 OBDA 매핑은 Git 파일이 원본이다. 근거는 `.superpowers/specs/2026-11-11-nbss-ontop-layer.md` 2·7·8.1절이며, 여섯 NBSS 필드와 기존 상태·승급 규칙은 바꾸지 않는다.
+- 한 문서에 원칙이나 패턴이 여럿이면 원문 절 번호를 항목 ID로 붙인다.
+- kos-can 관측을 인용할 때는 조회 시각(dump면 dump 파일명)과 받은 `exec_time`을 본문에 적는다.
 
 ### sources의 날짜를 두 개로 나눈 이유
 

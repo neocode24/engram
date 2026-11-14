@@ -117,6 +117,7 @@
 | [0100](0100-upstream-sources-entry-and-agent-session-channel-need-no-engram-change.md) | upstream이 sources 진입 기준과 agent-session 채널을 신설해도 engram은 바꾸지 않는다 | 2026-09-12 | accepted |
 | [0101](0101-upstream-inbox-exit-rule-is-recorded-as-unimplemented.md) | upstream이 inbox 퇴장 규칙을 신설해도 engram은 코드를 바꾸지 않고 미이행으로 기록한다 | 2026-10-04 | accepted |
 | [0102](0102-engram-stays-in-maintenance-and-adapts-to-the-learner-toolchain.md) | engram은 유지보수를 유지하고 수강생 도구 환경에만 맞춘다 | 2026-10-11 | accepted |
+| [0103](0103-upstream-design-state-fields-are-recorded-as-unimplemented.md) | upstream이 설계 상태 필드 여섯을 신설해도 engram은 코드를 바꾸지 않고 미이행으로 기록한다 | 2026-11-14 | accepted |
 
 ## 공개 범위 밖
 
