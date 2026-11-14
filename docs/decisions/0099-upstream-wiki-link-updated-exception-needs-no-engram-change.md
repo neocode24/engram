@@ -28,7 +28,7 @@ engram이 이 자동 반영 자체를 나중에 만든다면(재발견 판정을
 - `internal/resurface`, `internal/bridge`, `internal/digest` 어디에도 위키 파일을 쓰는 코드가 없다. 읽기 전용이다.
 - `internal/cli/update.go`의 `autoUpdated` 채움 조건에 커밋 메시지 접두사나 환경변수 분기가 없다.
 - `harness/parity` lint 축과 resurface 축 모두 이 변경 전후로 동일하게 통과한다(`go test ./... -count=1`, `ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/parity/ -v`).
-- `docs/spec-map.md` 6절 절차의 3~4번(lint 규칙, 프리셋 임계값)에 해당하는 변경점이 없다.
+- `docs/spec-map.md` 6절(정정: 7절 「규칙이 바뀌었을 때 무엇을 함께 고치나」) 절차의 3~4번(lint 규칙, 프리셋 임계값)에 해당하는 변경점이 없다.
 - 골든 스냅샷을 재생성할 필요가 없었다.
 
 ## 대안

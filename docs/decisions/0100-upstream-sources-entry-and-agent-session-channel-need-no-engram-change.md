@@ -32,7 +32,7 @@ upstream `meta/promotion-rules.md`와 `meta/wiki-artifact-schema.md`가 커밋 d
 - `internal/config/config.go` 172번 줄 주석이 `source_channel`을 개방 집합으로 명시한다.
 - `go test ./...` 전체 통과.
 - `ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/parity/ -v` 통과. lint 축, resurface 축 모두 이 변경 전후로 갈림이 없다.
-- `docs/spec-map.md` 6절 절차의 3~4번(lint 규칙, 프리셋 임계값)에 해당하는 변경점이 없다.
+- `docs/spec-map.md` 6절(정정: 7절 「규칙이 바뀌었을 때 무엇을 함께 고치나」) 절차의 3~4번(lint 규칙, 프리셋 임계값)에 해당하는 변경점이 없다.
 - 골든 스냅샷을 재생성할 필요가 없었다.
 
 ## 대안

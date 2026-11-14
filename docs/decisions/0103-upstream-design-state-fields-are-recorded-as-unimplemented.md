@@ -49,7 +49,7 @@ upstream `scripts/lint-frontmatter.sh`가 같은 날 검사 15줄을 갖췄다.
 - `ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/parity/ -v` 통과. lint 축은 양쪽 다 잡음 49쌍이다.
 - **이것은 새 규칙이 동등하다는 증거가 아니다.** `harness/fixtures/golden-wiki`에 이 필드를 가진 문서가 없어 parity가 이 규칙을 비교하지 않는다. 위 임시 위키 실측이 실제 근거다.
 - 골든 스냅샷을 재생성하지 않았다. 코드가 바뀌지 않았다.
-- `docs/spec-map.md` 6절 절차의 3번(lint 규칙과 임계값)과 4번(프리셋 기본값)에 고칠 것이 없다.
+- `docs/spec-map.md` 6절(정정: 7절 「규칙이 바뀌었을 때 무엇을 함께 고치나」) 절차의 3번(lint 규칙과 임계값)과 4번(프리셋 기본값)에 고칠 것이 없다.
 
 parity의 resurface 축은 이번 실행 이전부터 실패하고 있었다. upstream `wiki_resurface.py`가 같은 디렉토리의 `wiki_link.py`를 부르도록 바뀌었는데 비교 하니스가 `wiki_resurface.py`만 임시 위키로 복사했기 때문이다(`ModuleNotFoundError`). `harness/parity/parity_resurface_test.go`가 `wiki_link.py`도 함께 복사하도록 고쳤다. 이 고침은 이 lock과 무관하게 upstream 스크립트 구조 변화를 따라간 것이다.
 

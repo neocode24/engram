@@ -46,7 +46,7 @@ upstream 규칙 명세 사본이 lock bf401e4에서 07f8737 사이에 셋 바뀌
 - `go test ./...`와 `ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/parity/ -v` 모두 통과한다.
 - parity의 lint 축과 resurface 축 출력은 이전 lock(bf401e4)의 upstream과 이번 lock(07f8737)의 upstream에서 소요 시간 줄을 빼면 바이트 단위로 같다. **그러나 이것은 새 규칙이 동등하다는 증거가 아니다.** `harness/fixtures/golden-wiki`에 `inbox/` 잔류 참조 사례가 없어 그 규칙을 아무도 비교하지 않는다. 위 임시 위키 실측이 실제 근거다.
 - 골든 스냅샷을 재생성할 필요가 없었다. 코드가 바뀌지 않았다.
-- `docs/spec-map.md` 6절 절차의 3번(lint 규칙과 임계값)과 4번(프리셋 기본값)에 고칠 것이 없다.
+- `docs/spec-map.md` 6절(정정: 7절 「규칙이 바뀌었을 때 무엇을 함께 고치나」) 절차의 3번(lint 규칙과 임계값)과 4번(프리셋 기본값)에 고칠 것이 없다.
 
 ## 대안
 

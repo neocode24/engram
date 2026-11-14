@@ -81,7 +81,7 @@ status: accepted
 | 승인 지점 | **PR 머지.** Hermes 는 머지하지 않는다 |
 | 골든 재생성 | 해도 된다. 단 **PR 본문에 무엇이 바뀌었는지 적는다** |
 | PR 에 반드시 담을 것 | upstream 의 무엇이 무엇으로 바뀌었나, engram 의 어디를 고쳤나, parity 결과, 골든 diff 요약 |
-| 반영 절차 | [spec-map](../spec-map.md) 6절에 순서로 적는다 |
+| 반영 절차 | [spec-map](../spec-map.md) 6절(정정: 7절 「규칙이 바뀌었을 때 무엇을 함께 고치나」)에 순서로 적는다 |
 
 ## 결과
 
