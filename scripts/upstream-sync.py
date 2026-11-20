@@ -258,9 +258,10 @@ def build_delta(upstream, old_head, head, entries):
     old = git(upstream, "show", f"{old_head}:meta/CHANGELOG.md", check=False)
     old_text = old.stdout if old.returncode == 0 else ""
     old_lines = {s for _, _, s in parse_changelog(old_text)}
+    held = tuple(n[:-3] for n in HELD)  # CHANGELOG 의 파일 절 제목은 "pin-rules: ..." 처럼 확장자 없이 시작한다
     fresh = [e for e in parse_changelog(
         git(upstream, "show", f"{head}:meta/CHANGELOG.md").stdout)
-        if e[2] not in old_lines]
+        if e[2] not in old_lines and not (e[1] or "").startswith(held)]
 
     binary = [e for e in fresh if "binary-affecting" in e[2]]
     wiki = [e for e in fresh if "binary-affecting" not in e[2]]
