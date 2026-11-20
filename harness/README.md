@@ -91,7 +91,8 @@ python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki
 문서에서 이것을 "계약 파일" 이라 부르며 `upstream-sync.py` 가 그 문자열을 그대로
 파싱하므로 그쪽 표기는 바뀌지 않는다(ADR 0034). 이쪽에
 목록을 복제하지 않는다(ADR 0029). `terminology-normalization.md` 는 사전
-전체가 조직 어휘 목록이라 제외한다.
+전체가 조직 어휘 목록이라 제외한다. `pin-rules.md` 는 따라갈지 아직 정하지
+않은 명세라 `upstream-sync.py` 의 `HELD` 로 뺀다(ADR 0104).
 
 복사한 파일은 `private/vendor-replacements.txt` 로 익명화한 뒤
 `scripts/check-boundary.py` 를 통과해야 한다. **걸리면 sync 가 실패하고

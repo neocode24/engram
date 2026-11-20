@@ -170,6 +170,7 @@ upstream 명세 동기화 과제와 coordinator/worker 실행 체제는 `private
 - ~~MCP 노출 시 도구 단위 분해.~~ [0043](decisions/0043-mcp-exposes-one-write-tool-and-omits-promote.md)이 도구 열로 정했다.
 - ~~**`engram model`이 관리할 모델의 범위.**~~ [0068](decisions/0068-model-command-manages-embeddings-only.md)이 임베딩 하나로 정했다. STT는 파일이 만들어지기 전이고 TTS는 꺼낸 다음이라 engram이 볼 자리가 아니다. 사용자가 자기 도구로 준비하고 engram은 결과 텍스트를 받는다.
 - 강의 일정, 대상, 평가 방식.
+- **할 일 원장을 engram에 둘지와 범위.** upstream이 원장 규칙을 계약 파일 `pin-rules.md`로 선언했고 harness는 이 파일을 따라가지 않는다([0104](decisions/0104-upstream-pin-rules-are-held-out-of-the-harness.md)). 후보 하나는 위키 문서만 출처로 삼는 원장을 `serve` 화면에 보이는 것이다. 미리알림과 채팅 같은 외부 출처는 넣지 않는다. 쓰기 게이트와 [0044](decisions/0044-serve-is-read-only-and-shows-only-vetted-knowledge.md)의 읽기 전용 결정을 함께 본다.
 
 ## 검증 수단
 

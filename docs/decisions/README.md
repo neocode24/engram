@@ -118,6 +118,7 @@
 | [0101](0101-upstream-inbox-exit-rule-is-recorded-as-unimplemented.md) | upstream이 inbox 퇴장 규칙을 신설해도 engram은 코드를 바꾸지 않고 미이행으로 기록한다 | 2026-10-04 | accepted |
 | [0102](0102-engram-stays-in-maintenance-and-adapts-to-the-learner-toolchain.md) | engram은 유지보수를 유지하고 수강생 도구 환경에만 맞춘다 | 2026-10-11 | accepted |
 | [0103](0103-upstream-design-state-fields-are-recorded-as-unimplemented.md) | upstream이 설계 상태 필드 여섯을 신설해도 engram은 코드를 바꾸지 않고 미이행으로 기록한다 | 2026-11-14 | accepted |
+| [0104](0104-upstream-pin-rules-are-held-out-of-the-harness.md) | upstream이 할 일 원장 규칙을 계약으로 선언해도 harness는 한동안 따라가지 않는다 | 2026-11-20 | accepted |
 
 ## 공개 범위 밖
 

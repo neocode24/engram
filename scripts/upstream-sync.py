@@ -38,6 +38,10 @@ CHECK_BOUNDARY = os.path.join(ROOT, "scripts", "check-boundary.py")
 EXCLUDED = "terminology-normalization.md"
 # 사전 내용 대신 표 형식만 뜬 지문이 사는 파일이다.
 FORMAT_NAME = "terminology-format.md"
+# upstream 이 계약으로 선언했지만 engram 이 한동안 따라가지 않는 명세다.
+# 값은 근거 ADR 이다. 여기 든 파일은 vendoring 도, 유지/갱신 판정도 하지 않으므로
+# 주간 harness 가 이 파일의 변화로 PR 을 열지 않는다. 풀 때는 이 줄을 지우고 새 ADR 을 쓴다.
+HELD = {"pin-rules.md": "ADR 0104"}
 
 
 def die(msg):
@@ -332,6 +336,10 @@ def main():
     if EXCLUDED in names:
         names.remove(EXCLUDED)
         print(f"{EXCLUDED} 는 사전 전체가 조직 어휘 목록이라 제외합니다 (ADR 0029)")
+    for name in sorted(HELD):
+        if name in names:
+            names.remove(name)
+            print(f"{name} 는 따라가지 않기로 보류한 명세라 제외합니다 ({HELD[name]})")
     entries, dict_size = load_replacements()
 
     old_lock = None
