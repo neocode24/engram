@@ -66,6 +66,12 @@ FAIL해야 한다. `/assets/`를 포함하는 경로는 제외한다. 근거 자
 `source_channel: agent-session` 초안은 교정 대신 "다음 세션에서 근거로
 참조됨"을 사실 확인 행위로 본다.
 
+`workflow: learning-alert` 초안(학습 기록)은 교정 대신 "사용자가 그 주제의
+학습 질문에 한 번 이상 답함"을 사실 확인 행위로 본다. 답 원문과 시각이
+문서에 남는 것이 증거다. 더 새 학습 주제가 시작되면 학습 자료 동기화
+스크립트가 승급 커밋(sources 문서 생성, 초안의 `archive/web/` 이동, 자산의
+`sources/assets/` 이동)을 만든다. 답이 없는 주제는 `inbox/`에 남는다.
+
 ## Context Entry
 
 ### Promote When
