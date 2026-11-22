@@ -459,7 +459,7 @@ func TestPageCSPHashesEveryInlineBlock(t *testing.T) {
 
 func TestOpsTablesMatchUpstreamShape(t *testing.T) {
 	// 표를 줄이면 하네스가 견줄 때마다 예외를 적어야 한다. 줄지 않았는지 개수로 막는다(내용은 harness/pin 이 upstream 과 견준다).
-	if len(opsByVia["web"]) != 16 || len(opsByVia["command"]) != 17 || len(opsByVia["extract"]) != 8 {
+	if len(opsByVia["web"]) != 17 || len(opsByVia["command"]) != 18 || len(opsByVia["extract"]) != 8 {
 		t.Fatalf("허용 연산 표의 크기가 바뀌었습니다: web %d, command %d, extract %d",
 			len(opsByVia["web"]), len(opsByVia["command"]), len(opsByVia["extract"]))
 	}

@@ -1188,7 +1188,7 @@ func (l *Ledger) clearUnseenByHuman(req obj, itemID string) {
 	}
 	args := asObj(req["args"])
 	touched := []string{itemID, str(req["item"])}
-	if op := str(req["op"]); op == "add_relation" || op == "remove_relation" {
+	if op := str(req["op"]); op == "add_relation" || op == "remove_relation" || op == "confirm_relation" {
 		touched = append(touched, str(args["from"]), str(args["to"]))
 	}
 	for _, id := range touched {
@@ -1570,14 +1570,56 @@ func (l *Ledger) opRemoveRelation(req obj) (outcome, *Reject) {
 			return outcome{}, reject("bad_args", "remove_relation에는 from, to, kind가 필요합니다")
 		}
 	}
+	i := l.findRelation(args["from"], args["to"], args["kind"])
+	if i < 0 {
+		return outcome{msg: "그런 관계가 없습니다", noop: true}, nil
+	}
+	rel := l.relations[i]
+	l.relations = append(l.relations[:i:i], l.relations[i+1:]...)
+	l.rememberRejection(req, obj{"kind": "relation", "frm": rel["from"], "to": rel["to"], "rel": rel["kind"]})
+	return outcome{item: str(rel["from"]), msg: "관계 지움"}, nil
+}
+
+// findRelation은 (from, to, kind)가 같은 관계의 위치를 낸다. 없으면 -1 이다. upstream find_relation 과 같다.
+// 선행(before)은 방향이 뜻이라 from, to 가 그대로 같아야 하고, 연관과 중복은 방향이 없어 두 끝이 같으면 된다.
+// 화면은 연관과 중복의 저장 방향을 모르므로 사람이 끊고 확인하는 요청도 두 끝이 맞으면 찾는다.
+func (l *Ledger) findRelation(frm, to, kind any) int {
 	for i, rel := range l.relations {
-		if rel["from"] == args["from"] && rel["to"] == args["to"] && rel["kind"] == args["kind"] {
-			l.relations = append(l.relations[:i:i], l.relations[i+1:]...)
-			l.rememberRejection(req, obj{"kind": "relation", "frm": rel["from"], "to": rel["to"], "rel": rel["kind"]})
-			return outcome{item: str(rel["from"]), msg: "관계 지움"}, nil
+		if rel["kind"] != kind {
+			continue
+		}
+		if (rel["from"] == frm && rel["to"] == to) || (kind != "before" && rel["from"] == to && rel["to"] == frm) {
+			return i
 		}
 	}
-	return outcome{msg: "그런 관계가 없습니다", noop: true}, nil
+	return -1
+}
+
+// opConfirmRelation은 사람이 추정 관계를 맞다고 하는 것이다. 그 관계의 confirmed 만 true 로 바꾸고
+// basis 는 그대로 둔다. args 는 from, to, kind 정확히 셋이다. 관계 목록이 대상이라 항목 rev 를 올리지
+// 않고 양 끝 항목만 mark 한다. 이미 확인했거나 그런 관계가 없으면 바뀐 것 없음이다. 거절이 아니다.
+func (l *Ledger) opConfirmRelation(req obj) (outcome, *Reject) {
+	args := asObj(req["args"])
+	if len(args) != 3 || !has(args, "from") || !has(args, "to") || !has(args, "kind") {
+		return outcome{}, reject("bad_args", "confirm_relation은 from, to, kind만 받습니다: %s", pyList(sortedKeys(args)))
+	}
+	i := l.findRelation(args["from"], args["to"], args["kind"])
+	if i < 0 {
+		return outcome{msg: "그런 관계가 없습니다", noop: true}, nil
+	}
+	rel := l.relations[i]
+	if rel["confirmed"] == true {
+		return outcome{msg: "이미 확인한 관계입니다", noop: true}, nil
+	}
+	rel["confirmed"] = true
+	for _, k := range []string{"from", "to"} {
+		if pid := str(rel[k]); pid != "" {
+			if _, ok := l.items[pid]; ok {
+				l.mark(pid)
+			}
+		}
+	}
+	return outcome{item: str(rel["from"]), msg: fmt.Sprintf("관계 확인 %s>%s %s", str(rel["from"]), str(rel["to"]), relationWord(str(rel["kind"])))}, nil
 }
 
 func (l *Ledger) opPropose(req obj) (outcome, *Reject) {
@@ -1967,7 +2009,7 @@ func (l *Ledger) handler(op string) func(obj) (outcome, *Reject) {
 		"add": l.opAdd, "set_status": l.opSetStatus, "touch": l.opTouch, "set_title": l.opSetTitle, "set_owner": l.opSetOwner,
 		"set_work": l.opSetWork, "set_work_order": l.opSetWorkOrder, "mark_seen": l.opMarkSeen, "set_work_desc": l.opSetWorkDesc,
 		"set_due": l.opSetDue, "set_parent": l.opSetParent, "update_ai": l.opUpdateAI,
-		"add_relation": l.opAddRelation, "remove_relation": l.opRemoveRelation, "propose": l.opPropose,
+		"add_relation": l.opAddRelation, "remove_relation": l.opRemoveRelation, "confirm_relation": l.opConfirmRelation, "propose": l.opPropose,
 		"accept": l.opAccept, "reject": l.opReject, "move_path": l.opMovePath,
 		"delete": l.opDelete, "cancel_delete": l.opCancelDelete,
 	}[op]
