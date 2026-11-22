@@ -12,7 +12,7 @@
 
 - upstream 진실원은 별도 저장소인 `llm-wiki`이며 이 저장소는 그 체계를 특정 시점에 얼려 출판한 산물이다. upstream은 비공개다.
 - upstream을 건드릴 때는 반드시 그쪽 `AGENTS.md`의 계약을 먼저 읽는다.
-- 1.0 마일스톤까지의 커맨드가 동작한다. 스물아홉이며 `engram --help`가 목록의 진실원이다. 넣기(`capture`, `source`), 올리기(`promote`, `new`, `demote`, `archive`), 조회(`search`, `recall`, `backlinks`, `lint`, `status`, `doctor`), 재발견(`resurface`, `bridge`, `digest`), 관리(`init`, `mv`, `update`, `reindex`, `migrate`, `sync`, `rules show`, `model`, `eject`, `skills install`, `mcp`, `serve`, `export`, `version`)로 나뉜다. **이 목록은 `harness/docs`가 `--help`와 대조한다(ADR 0096). 커맨드를 더하면 여기도 함께 고친다.**
+- 1.0 마일스톤까지의 커맨드가 동작한다. 서른이며 `engram --help`가 목록의 진실원이다. 넣기(`capture`, `source`), 올리기(`promote`, `new`, `demote`, `archive`), 조회(`search`, `recall`, `backlinks`, `lint`, `status`, `doctor`), 재발견(`resurface`, `bridge`, `digest`), 할 일 원장(`pin`, 하위는 init, list, apply), 관리(`init`, `mv`, `update`, `reindex`, `migrate`, `sync`, `rules show`, `model`, `eject`, `skills install`, `mcp`, `serve`, `export`, `version`)로 나뉜다. **이 목록은 `harness/docs`가 `--help`와 대조한다(ADR 0096). 커맨드를 더하면 여기도 함께 고친다.**
 
 ## 저장소 구조
 
@@ -20,7 +20,7 @@
 
 | 경로 | 역할 |
 |---|---|
-| `docs/architecture.md` | 동작 구조 전체. mermaid 도식 11종 |
+| `docs/architecture.md` | 동작 구조 전체. mermaid 도식 12종 |
 | `docs/decisions/` | ADR. 번호순, 소급 수정 금지. `README.md`가 색인 |
 | `docs/spec-map.md` | upstream 규칙 명세와 구현의 대응. 무엇을 코드가 강제하고 무엇을 사람에게 남겼는지 |
 | `docs/design.md` | 커맨드 체계, 설정, 마일스톤 |
@@ -36,7 +36,7 @@
 |---|---|
 | `cmd/engram/`, `internal/` | Go 구현. 저장소 루트가 모듈 루트 |
 | `voice/` | `engram-voice` 의 **중첩 모듈**. 루트의 `./...` 에 안 잡히므로 따로 빌드하고 시험한다([0080](docs/decisions/0080-voice-is-a-nested-module-in-this-repository.md)) |
-| `harness/` | 검증. `parity/`(upstream 대조), `eject/`(내보낸 린터 대조), `examples/`(데모 위키 재생성), `journey/`(여정 통합), `docs/`(문서의 정량 주장 대조), `golden/`, `fixtures/`, `realdata/`, `upstream/`(vendored 명세 사본) |
+| `harness/` | 검증. `parity/`(upstream 대조), `eject/`(내보낸 린터 대조), `examples/`(데모 위키 재생성), `journey/`(여정 통합), `pin/`(할 일 원장을 upstream 파이썬과 바이트 단위로 대조. `ENGRAM_UPSTREAM`이 없으면 건너뛴다), `docs/`(문서의 정량 주장 대조), `golden/`, `fixtures/`, `realdata/`, `upstream/`(vendored 명세 사본) |
 | `examples/personal/` | 데모 위키. 커맨드 시퀀스의 생성물이므로 손으로 고치지 않는다. `go test ./harness/examples -update`로 재생성 |
 | `examples/materials/` | 실습 재료. 수강생이 위키에 집어넣을 원재료이며 위키가 아니다. 합성 자료다 |
 | `private/` | 공개 경계 밖 자료. **gitignore 대상이라 커밋되지 않는다** ([0024](docs/decisions/0024-public-boundary-and-private-directory.md)) |
