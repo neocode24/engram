@@ -2,7 +2,7 @@
 number: 0106
 title: 할 일 원장은 문서를 넣는 명령에서 선언받고 loopback 화면에서만 쓴다
 date: 2026-11-22
-status: accepted
+status: amended
 ---
 
 # 할 일 원장은 문서를 넣는 명령에서 선언받고 loopback 화면에서만 쓴다

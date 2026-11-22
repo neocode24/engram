@@ -27,7 +27,7 @@ const (
 )
 
 // ingestResult는 capture와 source의 공통 결과다. --json 출력에 그대로 쓰인다.
-// Pin은 Pin을 켠 위키에서만 채워진다. 켜지 않은 위키의 출력은 1.0과 같다.
+// Pin은 선언의 결과다. 문서를 넣는 명령은 모두 선언을 받으므로 --json 출력에 항상 나간다.
 type ingestResult struct {
 	Path  string      `json:"path"`
 	Slug  string      `json:"slug"`
@@ -74,8 +74,8 @@ func newCaptureCmd() *cobra.Command {
 			// 승급 시 날짜가 사라져 resurface와 digest가 이 문서를
 			// 대상에서 빼게 된다.
 			fm["created"] = date
-			// Pin을 켠 위키는 --pin 선언 없이 쓰지 않는다. 선언이 게이트에서
-			// 거절되면 문서도 쓰지 않는다(ADR 0106).
+			// --pin 선언 없이 쓰지 않는다. 선언이 게이트에서 거절되면 문서도
+			// 쓰지 않는다(ADR 0106, 0108).
 			plan, err := planPin(cmd, root)
 			if err != nil {
 				return err
@@ -85,7 +85,7 @@ func newCaptureCmd() *cobra.Command {
 				return err
 			}
 			if jsonOutput(cmd) {
-				return writeIngestJSON(cmd, res, rep)
+				return writeIngestJSON(cmd, res)
 			}
 			printIngested(cmd.OutOrStdout(), res, i18n.T("cli.capture.next_hint"))
 			printPinReport(cmd.OutOrStdout(), rep)
@@ -247,17 +247,9 @@ func resolveSlug(flagValue, title string) (string, error) {
 	return wiki.Slug(title)
 }
 
-// writeIngested는 문서를 만들고, Pin을 켠 위키면 그 문서를 근거로 한 선언을 같은 덩어리로 원장에
-// 넣는다. 선언이 하나라도 거절되면 문서도 쓰지 않는다. 원장 쓰기가 실패하면 방금 만든 문서를 지운다.
+// writeIngested는 문서를 만들고 그 문서를 근거로 한 선언을 같은 덩어리로 원장에 넣는다. 선언이 하나라도 거절되면 문서도 쓰지 않는다. 원장 쓰기가 실패하면 방금 만든 문서를 지운다.
 func writeIngested(cmd *cobra.Command, root string, cfg config.Config, stage wiki.Stage, stageDir, date, slug string,
 	fm map[string]any, content string, plan *pinPlan) (ingestResult, *pin.Report, error) {
-	if plan == nil {
-		path, err := wiki.Create(root, cfg, stage, date, slug, fm, content)
-		if err != nil {
-			return ingestResult{}, nil, err
-		}
-		return ingestResult{Path: path, Slug: slug, Stage: string(stage)}, nil, nil
-	}
 	rel, err := wiki.FilePath(cfg, stage, date, slug)
 	if err != nil {
 		return ingestResult{}, nil, err
@@ -305,11 +297,8 @@ func pinRejections(e *pin.RejectedError) string {
 	return b.String()
 }
 
-// writeIngestJSON은 --json 출력을 낸다. pin 칸은 Pin을 켠 위키에서만 나간다.
-func writeIngestJSON(cmd *cobra.Command, res ingestResult, rep *pin.Report) error {
-	if rep == nil {
-		res.Pin = nil
-	}
+// writeIngestJSON은 --json 출력을 낸다.
+func writeIngestJSON(cmd *cobra.Command, res ingestResult) error {
 	enc := json.NewEncoder(cmd.OutOrStdout())
 	enc.SetIndent("", "  ")
 	return enc.Encode(res)

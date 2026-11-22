@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// startPinServer는 engram 을 빌드하고 Pin 을 켠 위키를 만들어 serve 를 띄운다. 위키에는 선언 하나로 제안 둘이 들어 있다.
+// startPinServer는 engram 을 빌드하고 init 으로 위키를 만들어 serve 를 띄운다. 위키에는 선언 하나로 제안 둘이 들어 있다.
 // 돌려주는 것은 서버 주소(http://포함 안 함)와 서버 프로세스다. 프로세스는 시험이 끝나면 정리된다.
 func startPinServer(t *testing.T) (addr string, srv *exec.Cmd) {
 	t.Helper()
@@ -31,7 +31,6 @@ func startPinServer(t *testing.T) (addr string, srv *exec.Cmd) {
 		return string(out)
 	}
 	run("", "init", wiki)
-	run("", "pin", "init", "--wiki", wiki)
 	decl := filepath.Join(t.TempDir(), "decl.json")
 	body := `{"requests":[` +
 		`{"op":"add","args":{"title":"견적서 보내기","evidence":[{"section":"","quote":"김대리가 금요일까지 견적서를 보낸다."}]}},` +

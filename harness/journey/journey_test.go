@@ -117,18 +117,49 @@ func TestJourney(t *testing.T) {
 	// 1. init. 만들어진 위키가 곧 첫 검사 대상이다.
 	w.mustOK(t, w.run("init", "init", wiki))
 	w.assertLintClean(t, "init")
+	// init 은 할 일 원장 pin/ 까지 만든다. 문서를 넣는 세 명령이 이것을 요구한다(ADR 0108).
+	assertFileExists(t, wiki, "pin/config.json")
+	// 이미 있는 위키에 init 을 다시 실행하면 거절하지 않고 채울 것이 없다고 말한다.
+	again := w.run("init 재실행", "init", wiki)
+	w.mustOK(t, again)
+	if !strings.Contains(again.stdout, "채울 것이 없습니다") {
+		w.fail(t, again, "갖춰진 위키에 init 을 다시 실행하면 채울 것이 없다고 말해야 한다")
+	}
 
 	// 2. capture. inbox 문서 하나를 넣는다.
 	w.mustOK(t, w.run("capture",
 		"capture", "--wiki", wiki, "--title", "현장 메모", "--slug", "field-memo",
-		"회의 중 적은 메모"))
+		"--pin", "none", "회의 중 적은 메모"))
+	// --pin 이 없으면 아무것도 쓰지 않고 거절한다.
+	noPin := w.run("capture --pin 없음",
+		"capture", "--wiki", wiki, "--title", "선언 없는 메모", "--slug", "no-pin", "내용")
+	if noPin.code == 0 || !strings.Contains(noPin.stderr, "--pin") {
+		w.fail(t, noPin, "--pin 없는 capture 는 거절되어야 한다")
+	}
+	assertFileAbsent(t, wiki, "inbox/2026-05-10-no-pin.md")
 	w.assertLintClean(t, "capture")
 
 	// 3. source. 원본 문서를 sources 에 넣는다.
 	w.mustOK(t, w.run("source",
 		"source", "--wiki", wiki, "--title", "기술 강연 원본", "--slug", "tech-talk",
-		"--created", "2026-04-01", "--ref", "https://example.com/talk", "강연 필사 원본"))
+		"--created", "2026-04-01", "--ref", "https://example.com/talk",
+		"--pin", "none", "강연 필사 원본"))
 	w.assertLintClean(t, "source")
+
+	// 3-2. 할 일 판단. 선언이 있는 capture 는 제안으로 들어가고, 그 문서를 sources 로 옮기면
+	// 근거 경로가 따라간다(ADR 0106). 판단은 에이전트의 일이라 여기서는 선언 파일을 직접 쓴다.
+	decl := filepath.Join(files, "decl.json")
+	writeFile(t, decl, `{"requests":[{"op":"add","args":{"title":"견적서 보내기","evidence":[{"section":"","quote":"김대리가 금요일까지 견적서를 보낸다."}]}}]}`)
+	w.mustOK(t, w.run("capture 선언",
+		"capture", "--wiki", wiki, "--title", "견적 메모", "--slug", "quote-memo",
+		"--pin", decl, "김대리가 금요일까지 견적서를 보낸다."))
+	assertFileExists(t, wiki, "pin/items/P0001.json")
+	w.mustOK(t, w.run("promote 선언 메모를 sources 로",
+		"promote", "--wiki", wiki, "--to", "sources", "--pin", "none", "inbox/2026-05-10-quote-memo.md"))
+	assertFileExists(t, wiki, "sources/2026-05-10-quote-memo.md")
+	assertFileContains(t, wiki, "pin/items/P0001.json", "sources/2026-05-10-quote-memo.md")
+	assertFileContains(t, wiki, "pin/proposals.json", "위키에서 찾았습니다: sources/2026-05-10-quote-memo.md")
+	w.assertLintClean(t, "capture 선언과 promote sources")
 
 	// 4. new. context 문서 둘을 서로 위키링크로 잇는다. 게이트는 실재하는
 	// 문서를 가리키는 링크만 세므로(ADR 0054) doc-a 는 그 시점에 이미 있는

@@ -71,7 +71,7 @@ mv, demote, archive 는 네 것이 아니다. 여러 파일을 한 번에
 넣지 마라. 원문을 그대로 capture 한다. inbox 는 검수된 곳이 아니라
 받는 곳이다. 무엇을 남길지는 승급할 때 사람이 정한다.
 
-    engram capture --title <제목> --wiki <위키 경로> < 원문파일
+    engram capture --title <제목> --pin <선언 파일 또는 none> --wiki <위키 경로> < 원문파일
 
 제목과 슬러그를 사용자에게 묻지 마라. 내용에서 추론하고 확인만 받는다.
 --title 을 생략하면 본문 첫 줄이 제목이 되는데 날것 원문의 첫 줄은
@@ -144,7 +144,8 @@ update 는 그 전에 본문을 덮는다. **되돌릴 수 없는 판단은 사�
 증거로 남기겠다고 하면 갈아 끼우기 **전에** 이것을 먼저 실행한다.
 
     engram promote <inbox 문서 경로> --to sources \
-        --created <원본이 쓰인 날> --ref <출처> --wiki <위키 경로>
+        --created <원본이 쓰인 날> --ref <출처> --pin <선언 파일 또는 none> \
+        --wiki <위키 경로>
 
 이것도 이동이라 inbox 원본이 사라지지만 sources 에 증거로 남는다.
 그 뒤 그 sources 문서를 promote 하면 파생이 만들어지고 원본은 남는다.
@@ -193,7 +194,8 @@ inbox 에 남아 적체된다.
 원문을 오래 보존할 값어치가 있어 보이면 사람에게 출처와 작성일을 보여
 주고 승인을 받은 뒤 실행한다. 커맨드를 받아 치게 만들지 마라.
 
-    engram source --title <제목> --created <원본 작성일> --ref <출처> < 원문파일
+    engram source --title <제목> --created <원본 작성일> --ref <출처> \
+        --pin <선언 파일 또는 none> < 원문파일
 
 sources 는 원본 보존 계층이고 이후 본문을 고치지 않는 것이 계약이다.
 --created 는 원본이 쓰인 날이고 --ref 는 출처다. **둘 다 사실이어야
@@ -203,9 +205,9 @@ sources 는 원본 보존 계층이고 이후 본문을 고치지 않는 것이 
 
 ## 할 일은 문서를 넣을 때 네가 판단한다
 
-위키 루트에 pin/ 이 있으면 할 일 원장을 켠 위키다. 이 위키에서
-capture, source, promote --to sources 는 --pin 없이는 아무것도 쓰지
-않는다. 문서를 넣기 전에 그 안에 할 일이 있는지 읽고 판단해서 선언한다.
+위키 루트의 pin/ 은 할 일 원장이다. capture, source, promote --to
+sources 는 --pin 없이는 아무것도 쓰지 않는다. 문서를 넣기 전에 그 안에
+할 일이 있는지 읽고 판단해서 선언한다.
 
     engram pin list --json                              열린 일과 사람이 버린 일
     engram capture --title <제목> --pin <선언 파일> ...
@@ -239,7 +241,10 @@ promote(context), mv, demote, archive 는 옮긴 문서를 근거로 둔 열린
 아니다. 사람에게 전하고 닫을지는 사람이 정하게 한다. context 문서는
 판단 대상이 아니라 promote(context)는 --pin 을 받지 않는다.
 
-pin/ 이 없는 위키에서는 이 절 전체가 해당하지 않는다. --pin 도 받지 않는다.
+pin/ 이 없는 위키는 아직 갱신하지 않은 위키다. 위 세 명령은 아무것도 쓰지
+않고 engram init 을 다시 실행하라고 안내하며 끝난다. 사람에게 그 안내를
+전하고 init 재실행을 승인받아 실행한다. init 은 빠진 pin/ 만 채우고 있는
+문서와 설정은 바꾸지 않는다.
 
 ## 조회는 --json이 주 경로다
 
@@ -341,7 +346,7 @@ MCP 로 붙어 있으면 도구 `transcribe` 와 `model_status` 가 보인다. �
 
 - 넣기: capture(네가 쓴다. inbox 까지), source(승인받고 네가 실행. 원본 보존)
 - 올리기: promote(승인받고 네가 실행. --to sources 로 증거 보존), demote(제안만 한다)
-- 할 일: pin list(열린 일을 읽는다), pin apply(사람이 시킨 변경만). pin/ 이 있는 위키에서 capture, source, promote --to sources 는 --pin 선언이 필요하다
+- 할 일: pin list(열린 일을 읽는다), pin apply(사람이 시킨 변경만). capture, source, promote --to sources 는 --pin 선언이 필요하다
 - 조회: search(이을 곳을 찾는다. --semantic 으로 의미 축), recall(내용을 꺼낸다), status
 - 재발견: resurface, digest
 - 관리: init, update(inbox 문서 본문 정리에 쓴다)

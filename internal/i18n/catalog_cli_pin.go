@@ -6,15 +6,16 @@ func init() {
 		"cli.pin.short": "위키 문서에서 나온 할 일 원장을 다룹니다",
 		"cli.pin.long": `위키 문서에서 나온 할 일 원장(pin/)을 다룹니다.
 
-원장은 켜야 켜집니다. pin init 이 위키 루트에 pin/ 을 만들고, 그 뒤로 capture,
-source, promote --to sources 는 --pin 선언 없이는 아무것도 쓰지 않습니다.
-할 일인지의 판단은 명령을 부른 에이전트가 하고, 확정은 사람이 serve 의 /pin
-화면에서 합니다.`,
-		"cli.pin.flag_pin": "할 일 선언(JSON 파일 경로, - 는 표준 입력) 또는 none. pin 을 켠 위키에서만 쓰고 거기서는 필수입니다",
-		"cli.pin.required": "이 위키는 Pin 을 켰으므로 %s 에 --pin 이 필요합니다. 아무것도 쓰지 않았습니다.\n" +
+원장은 engram init 이 위키 루트에 만듭니다. capture, source, promote --to sources
+는 --pin 선언 없이는 아무것도 쓰지 않습니다. 할 일인지의 판단은 명령을 부른
+에이전트가 하고, 확정은 사람이 serve 의 /pin 화면에서 합니다. pin/ 이 없는 위키는
+아직 갱신하지 않은 위키이니 engram init 을 다시 실행하세요.`,
+		"cli.pin.flag_pin": "할 일 선언(JSON 파일 경로, - 는 표준 입력) 또는 none. 필수입니다",
+		"cli.pin.required": "%s 에는 --pin 이 필요합니다. 아무것도 쓰지 않았습니다.\n" +
 			"engram pin list --json 으로 열린 일을 보고 선언을 만드세요. 할 일이 없으면 --pin none 입니다",
-		"cli.pin.required_mcp":    "이 위키는 Pin 을 켰으므로 pin 인자가 필요합니다. 아무것도 쓰지 않았습니다. 할 일이 없으면 none 을 주세요",
-		"cli.pin.mcp_not_enabled": "이 위키는 Pin 을 켜지 않았습니다. pin 인자를 받지 않습니다",
+		"cli.pin.required_mcp": "pin 인자가 필요합니다. 아무것도 쓰지 않았습니다. 할 일이 없으면 none 을 주세요",
+		"cli.pin.not_updated": "이 위키에는 할 일 원장(pin/)이 없습니다. 아직 갱신하지 않은 위키입니다. 아무것도 쓰지 않았습니다.\n" +
+			"engram init <위키 경로> 를 다시 실행하면 pin/ 이 채워집니다. 있는 문서와 설정은 바뀌지 않습니다",
 		"cli.pin.not_for_context": "context 문서는 할 일 판단 대상이 아닙니다. --pin 은 inbox 와 sources 에 문서를 넣을 때만 씁니다",
 		"cli.pin.decl_invalid":    "선언이 올바르지 않습니다",
 		"cli.pin.decl_read_fail":  "선언을 읽을 수 없음: %s",
@@ -26,14 +27,6 @@ source, promote --to sources 는 --pin 선언 없이는 아무것도 쓰지 않�
 		"cli.pin.affected_head":   "Pin: %s 를 근거로 둔 열린 일 %d건의 경로를 따라 고쳤습니다",
 		"cli.pin.affected_item":   "  %s %s (%s)",
 		"cli.pin.affected_tail":   "  이 문서가 옮겨졌다고 일이 끝난 것은 아닙니다. 닫을지는 사람이 /pin 화면에서 정합니다",
-
-		"cli.pin.init.short": "위키에 할 일 원장(pin/)을 만듭니다",
-		"cli.pin.init.long": `위키 루트에 pin/ 뼈대를 만듭니다. 프로젝트는 비워 둡니다. 이미 있는 파일은 건드리지 않습니다.
-
-pin/ 은 사람의 판단이 담긴 상태이므로 git 이 추적하게 두는 것을 권합니다. engram 은 커밋하지 않습니다.`,
-		"cli.pin.init.done":   "원장을 만들었습니다: %s",
-		"cli.pin.init.exists": "이미 원장이 있습니다: %s",
-		"cli.pin.init.next":   "다음: capture, source, promote --to sources 에 --pin 선언을 붙여 씁니다. 화면은 engram serve 후 /pin 입니다",
 
 		"cli.pin.list.short": "열린 일과 프로젝트와 사람이 버린 것을 냅니다",
 		"cli.pin.list.long": `에이전트가 문서에서 할 일을 찾기 전에 읽는 색인입니다. 열린 일, 프로젝트,
@@ -59,8 +52,9 @@ id 와 at 은 생략하면 채웁니다. 거절된 요청이 있으면 종료 �
 		"cli.pin.apply.summary":       "반영 %d, 변화 없음 %d, 거절 %d, 건너뜀 %d, 보관 %d",
 		"cli.pin.apply.rejected":      "요청 %d건이 거절되었습니다",
 
-		"cli.serve.notice_pin":     "Pin 화면: http://%s/pin (이 위키는 Pin 을 켰습니다. 쓰는 곳은 pin/ 뿐입니다)",
-		"cli.serve.notice_pin_off": "Pin 화면을 열지 않았습니다: %s 는 이 컴퓨터 밖에서 닿는 주소입니다. 인증 없는 쓰기를 열 수 없습니다. 127.0.0.1 에 묶으세요",
+		"cli.serve.notice_pin":         "Pin 화면: http://%s/pin (쓰는 곳은 pin/ 뿐입니다)",
+		"cli.serve.notice_pin_missing": "Pin 화면을 열지 않았습니다: 이 위키에는 pin/ 이 없습니다. engram init 을 다시 실행하세요",
+		"cli.serve.notice_pin_off":     "Pin 화면을 열지 않았습니다: %s 는 이 컴퓨터 밖에서 닿는 주소입니다. 인증 없는 쓰기를 열 수 없습니다. 127.0.0.1 에 묶으세요",
 
 		"core.serve.pin_bad_host":   "Host 가 이 컴퓨터의 주소가 아닙니다: %s",
 		"core.serve.pin_bad_origin": "다른 출처에서 온 요청입니다",
@@ -72,15 +66,17 @@ id 와 at 은 생략하면 채웁니다. 거절된 요청이 있으면 종료 �
 		"cli.pin.short": "Manage the to-do ledger derived from wiki documents",
 		"cli.pin.long": `Manage the to-do ledger (pin/) derived from wiki documents.
 
-The ledger is opt-in. pin init creates pin/ at the wiki root, and from then on
-capture, source and promote --to sources write nothing without a --pin
-declaration. The agent that runs the command judges whether something is a
-to-do; a person confirms it on the /pin page of serve.`,
-		"cli.pin.flag_pin": "to-do declaration (JSON file path, - for stdin) or none. Only for wikis with pin enabled, where it is required",
-		"cli.pin.required": "This wiki has pin enabled, so %s needs --pin. Nothing was written.\n" +
+The ledger is created by engram init at the wiki root. capture, source and
+promote --to sources write nothing without a --pin declaration. The agent that
+runs the command judges whether something is a to-do; a person confirms it on
+the /pin page of serve. A wiki without pin/ has not been updated yet: run
+engram init again.`,
+		"cli.pin.flag_pin": "to-do declaration (JSON file path, - for stdin) or none. Required",
+		"cli.pin.required": "%s needs --pin. Nothing was written.\n" +
 			"Read the open items with engram pin list --json and build a declaration. Use --pin none when there is no to-do",
-		"cli.pin.required_mcp":    "This wiki has pin enabled, so the pin argument is required. Nothing was written. Pass none when there is no to-do",
-		"cli.pin.mcp_not_enabled": "This wiki has not enabled pin. The pin argument is not accepted",
+		"cli.pin.required_mcp": "The pin argument is required. Nothing was written. Pass none when there is no to-do",
+		"cli.pin.not_updated": "This wiki has no to-do ledger (pin/). It has not been updated yet. Nothing was written.\n" +
+			"Run engram init <wiki path> again and pin/ will be filled in. Existing documents and config are not changed",
 		"cli.pin.not_for_context": "context documents are not judged for to-dos. --pin is only for putting documents into inbox and sources",
 		"cli.pin.decl_invalid":    "The declaration is invalid",
 		"cli.pin.decl_read_fail":  "cannot read the declaration: %s",
@@ -92,14 +88,6 @@ to-do; a person confirms it on the /pin page of serve.`,
 		"cli.pin.affected_head":   "Pin: followed the paths of %[2]d open items that cite %[1]s",
 		"cli.pin.affected_item":   "  %s %s (%s)",
 		"cli.pin.affected_tail":   "  Moving this document does not mean the work is done. A person decides on the /pin page",
-
-		"cli.pin.init.short": "Create the to-do ledger (pin/) in the wiki",
-		"cli.pin.init.long": `Create the pin/ skeleton at the wiki root. Projects are left empty. Existing files are not touched.
-
-pin/ holds human judgement, so letting git track it is recommended. engram does not commit.`,
-		"cli.pin.init.done":   "Created the ledger: %s",
-		"cli.pin.init.exists": "The ledger already exists: %s",
-		"cli.pin.init.next":   "Next: add a --pin declaration to capture, source and promote --to sources. Open /pin after engram serve",
 
 		"cli.pin.list.short": "List open items, projects and what people discarded",
 		"cli.pin.list.long": `The index an agent reads before looking for to-dos in a document. It lists open items,
@@ -125,8 +113,9 @@ id and at are filled in when omitted. The exit code is 1 when any request is rej
 		"cli.pin.apply.summary":       "applied %d, no change %d, rejected %d, skipped %d, archived %d",
 		"cli.pin.apply.rejected":      "%d requests were rejected",
 
-		"cli.serve.notice_pin":     "Pin page: http://%s/pin (this wiki has pin enabled. Writes go to pin/ only)",
-		"cli.serve.notice_pin_off": "The Pin page is not open: %s is reachable from outside this computer. Writes without authentication cannot be opened. Bind to 127.0.0.1",
+		"cli.serve.notice_pin":         "Pin page: http://%s/pin (writes go to pin/ only)",
+		"cli.serve.notice_pin_missing": "The Pin page is not open: this wiki has no pin/. Run engram init again",
+		"cli.serve.notice_pin_off":     "The Pin page is not open: %s is reachable from outside this computer. Writes without authentication cannot be opened. Bind to 127.0.0.1",
 
 		"core.serve.pin_bad_host":   "Host is not an address of this computer: %s",
 		"core.serve.pin_bad_origin": "The request came from another origin",

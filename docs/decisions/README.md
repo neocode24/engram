@@ -120,8 +120,9 @@
 | [0103](0103-upstream-design-state-fields-are-recorded-as-unimplemented.md) | upstream이 설계 상태 필드 여섯을 신설해도 engram은 코드를 바꾸지 않고 미이행으로 기록한다 | 2026-11-14 | accepted |
 | [0104](0104-upstream-pin-rules-are-held-out-of-the-harness.md) | upstream이 할 일 원장 규칙을 계약으로 선언해도 harness는 한동안 따라가지 않는다 | 2026-11-20 | amended |
 | [0105](0105-upstream-learning-record-fact-check-needs-no-engram-change.md) | upstream이 학습 기록의 사실 확인 행위를 신설해도 engram은 바꾸지 않는다 | 2026-11-21 | accepted |
-| [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) | 할 일 원장은 문서를 넣는 명령에서 선언받고 loopback 화면에서만 쓴다 | 2026-11-22 | accepted |
+| [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) | 할 일 원장은 문서를 넣는 명령에서 선언받고 loopback 화면에서만 쓴다 | 2026-11-22 | amended |
 | [0107](0107-harness-judges-pin-surfaces-and-pulls-only-the-page.md) | harness가 Pin 표면을 견본에 돌려 판정하고 화면만 바뀐 회차에만 화면을 가져온다 | 2026-11-22 | accepted |
+| [0108](0108-pin-is-a-default-feature-created-by-init-and-refilled-by-rerunning-it.md) | Pin은 기본 기능이고 init이 만들며 기존 위키는 init 재실행으로 채운다 | 2026-11-22 | accepted |
 
 ## 공개 범위 밖
 
@@ -201,6 +202,8 @@
 | 0057 | `source`는 사람이 직접 친다 | [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) 출처와 작성일을 보여 주고 승인받은 뒤 에이전트가 실행한다. `--pin` 선언을 에이전트가 판단해야 하기 때문이다 |
 | 0043 | MCP `capture`는 인자로 문서만 받는다 | [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) `pin` 인자를 받는다. 쓰기 도구는 여전히 하나이고 새 일은 제안으로만 들어간다 |
 | 0104 | `pin-rules.md`는 vendoring하지 않고 유지와 갱신도 판정하지 않는다 | [0107](0107-harness-judges-pin-surfaces-and-pulls-only-the-page.md) 보류를 푼다. engram이 기대는 절만 사본으로 두고 Pin의 화면, 상태, 게이트, 상수는 견본에 돌려 견준다 |
+| 0106 | 원장은 켜야 켜진다. `pin init`이 `pin/`을 만들고 켠 위키에서만 `--pin`이 필요하다 | [0108](0108-pin-is-a-default-feature-created-by-init-and-refilled-by-rerunning-it.md) 기본 기능이다. `init`이 `pin/`을 만들고 기존 위키는 `init` 재실행으로 채운다. `pin init`을 없애고 `--pin`은 모든 위키에서 필요하다 |
+| 0106 | 교재는 바꾸지 않는다(원장은 켜야 켜지므로 실습 위키에 나타나지 않는다) | [0108](0108-pin-is-a-default-feature-created-by-init-and-refilled-by-rerunning-it.md) 실습 위키의 `init` 출력에 `pin/`이 나온다. 교재가 Pin을 흐름 안에서 가르친다 |
 
 ## 근거만 갱신된 경우
 

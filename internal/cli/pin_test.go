@@ -30,9 +30,6 @@ func newPinWiki(t *testing.T) string {
 	if _, err := runEngram(t, "", "init", dir); err != nil {
 		t.Fatal(err)
 	}
-	if out, err := runEngram(t, "", "pin", "init", "--wiki", dir); err != nil {
-		t.Fatalf("pin init: %v\n%s", err, out)
-	}
 	return dir
 }
 
@@ -66,32 +63,67 @@ func listFiles(t *testing.T, dir string) []string {
 	return out
 }
 
-func TestPinDisabledWikiBehavesLikeBefore(t *testing.T) {
+// init 이 만든 위키에는 pin/ 이 있다. pin/ 이 없는 위키는 아직 갱신하지 않은 위키이고, 문서를 넣는 세 명령은
+// 아무것도 쓰지 않고 engram init 을 다시 실행하라고 안내하며 끝난다.
+func TestWikiWithoutLedgerAsksForInit(t *testing.T) {
 	dir := initWiki(t)
-	// Pin 을 켜지 않은 위키는 --pin 을 보지 않는다. 주어도 받지 않는다.
+	if _, err := os.Stat(filepath.Join(dir, "pin", "config.json")); err != nil {
+		t.Fatalf("init 이 pin/ 을 만들지 않았습니다: %v", err)
+	}
+	if err := os.RemoveAll(filepath.Join(dir, "pin")); err != nil {
+		t.Fatal(err)
+	}
+	before := listFiles(t, dir)
 	for _, args := range [][]string{
-		{"capture", "--wiki", dir, "--now", nowFlag, "메모"},
-		{"capture", "--wiki", dir, "--now", nowFlag, "--pin", "/없는/파일.json", "다른 메모"},
-		{"source", "--wiki", dir, "--now", nowFlag, "--title", "자료", "내용"},
+		{"capture", "--wiki", dir, "--now", nowFlag, "--pin", "none", "메모"},
+		{"source", "--wiki", dir, "--now", nowFlag, "--title", "자료", "--pin", "none", "내용"},
 	} {
 		out, err := runEngram(t, "", args...)
-		if err != nil {
-			t.Fatalf("%v: %v\n%s", args, err, out)
+		if err == nil || !strings.Contains(err.Error(), "engram init") {
+			t.Errorf("%v: init 을 다시 실행하라는 안내가 없습니다: %v\n%s", args, err, out)
 		}
-		if strings.Contains(out, "Pin:") {
-			t.Errorf("%v: 켜지 않은 위키의 출력에 Pin 이 나옵니다:\n%s", args, out)
-		}
+	}
+	if after := listFiles(t, dir); strings.Join(after, "|") != strings.Join(before, "|") {
+		t.Fatalf("안내로 끝나야 하는데 파일이 바뀌었습니다: %v", after)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "pin")); err == nil {
-		t.Fatal("Pin 을 켜지 않았는데 pin/ 이 생겼습니다")
+		t.Fatal("문서를 넣는 명령이 pin/ 을 만들었습니다. 만드는 것은 init 뿐입니다")
 	}
-	out, err := runEngram(t, "", "capture", "--wiki", dir, "--now", nowFlag, "--json", "세번째")
-	if err != nil || strings.Contains(out, `"pin"`) {
-		t.Errorf("--json 출력에 pin 칸이 생겼습니다: %v\n%s", err, out)
+	// init 을 다시 실행하면 pin/ 이 채워지고 같은 명령이 돈다.
+	if out, err := runEngram(t, "", "init", dir); err != nil {
+		t.Fatalf("init 재실행: %v\n%s", err, out)
+	}
+	if out, err := runEngram(t, "", "capture", "--wiki", dir, "--now", nowFlag, "--pin", "none", "메모"); err != nil {
+		t.Fatalf("갱신한 위키에서 capture 가 실패했습니다: %v\n%s", err, out)
 	}
 }
 
-func TestPinEnabledWikiRequiresDeclaration(t *testing.T) {
+func TestPinListOnWikiWithoutLedgerAsksForInit(t *testing.T) {
+	dir := initWiki(t)
+	if err := os.RemoveAll(filepath.Join(dir, "pin")); err != nil {
+		t.Fatal(err)
+	}
+	_, err := runEngram(t, "", "pin", "list", "--wiki", dir)
+	if err == nil || !strings.Contains(err.Error(), "engram init") {
+		t.Fatalf("pin list 가 init 안내를 내지 않았습니다: %v", err)
+	}
+}
+
+func TestPinHasNoInitSubcommand(t *testing.T) {
+	out, _ := runEngram(t, "", "pin", "--help")
+	for _, line := range strings.Split(out, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "init ") {
+			t.Fatalf("pin 아래에 init 이 아직 있습니다:\n%s", out)
+		}
+	}
+	for _, want := range []string{"list", "apply"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("pin 아래에 %s 가 없습니다:\n%s", want, out)
+		}
+	}
+}
+
+func TestIngestCommandsRequireDeclaration(t *testing.T) {
 	dir := newPinWiki(t)
 	before := listFiles(t, dir)
 	for _, args := range [][]string{

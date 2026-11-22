@@ -464,7 +464,7 @@ flowchart LR
 
 ## 12. 할 일 원장(Pin)
 
-위키 문서에서 나온 할 일을 모으는 원장이다. **켜야 켜진다.** `engram pin init`이 위키 루트에 `pin/`을 만들기 전에는 아무 커맨드의 동작도 바뀌지 않는다. 결정은 [0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md)이고 upstream과 다른 점은 [spec-map 4.10](spec-map.md)에 있다.
+위키 문서에서 나온 할 일을 모으는 원장이다. **기본 기능이다.** `engram init`이 위키 루트에 `pin/`을 만들고, 이미 있는 위키에서 `init`을 다시 실행하면 빠진 `pin/`을 채운다. 켜고 끄는 길은 없다. `pin/`이 없는 위키는 아직 갱신하지 않은 위키라 `capture`, `source`, `promote --to sources`가 쓰지 않고 `init`을 다시 실행하라고 안내하며 끝난다. 결정은 [0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md)과 이를 개정한 [0108](decisions/0108-pin-is-a-default-feature-created-by-init-and-refilled-by-rerunning-it.md)이고 upstream과 다른 점은 [spec-map 4.10](spec-map.md)에 있다.
 
 판단은 에이전트가 하고 바이너리는 형식과 게이트만 강제한다. 원장을 쓰는 곳은 `internal/pin`의 게이트 하나이며 세 입구가 같은 게이트를 부른다.
 
@@ -506,9 +506,9 @@ flowchart LR
 
 **선언으로는 새 일과 맥락만 더한다.** 선언이 낼 수 있는 연산은 일곱이다. 수락, 상태 변경, 삭제는 낼 수 없다. 선언으로 들어온 새 일에는 제안 표시가 붙고 확정은 사람이 화면에서 한다.
 
-**문서를 옮기면 근거 경로가 따라간다.** `promote`, `mv`, `demote`, `archive`가 옮긴 문서를 근거로 둔 열린 일이 있으면 같은 명령 안에서 경로를 고치고 출력에 번호와 제목을 알린다. 인용문은 다시 대조하지 않는다. 원장이 참조하지 않는 문서의 이동은 아무것도 쓰지 않는다.
+**문서를 옮기면 근거 경로가 따라간다.** `promote`, `mv`, `demote`, `archive`가 옮긴 문서를 근거로 둔 열린 일이 있으면 같은 명령 안에서 경로를 고치고 출력에 번호와 제목을 알린다. 인용문은 다시 대조하지 않는다. 그 문서를 근거로 둔 새 일 제안 카드의 근거 문장("위키에서 찾았습니다: <경로>")도 새 경로로 고친다. 원장이 참조하지 않는 문서의 이동은 아무것도 쓰지 않는다.
 
-**`serve`의 쓰기는 이 경로 하나다.** `/pin`은 리스너가 loopback 주소이고 위키가 원장을 켰을 때만 등록된다. 그 밖의 주소에 묶이면 경로가 없다. 쓰기 요청은 `Host`, `Origin`, `X-Pin: 1`, `Content-Type`, 본문 크기를 검사한 뒤에야 게이트에 닿고, 쓰는 곳은 `pin/`뿐이다. 이 경로에만 인라인 스크립트를 해시로 허용하는 보안 정책이 걸리며 다른 경로의 정책은 그대로다. 역방향 프록시나 터널이 `Host`를 고쳐 loopback으로 넘기면 이 검사를 통과한다. 원격 접속은 지원하지 않는다.
+**`serve`의 쓰기는 이 경로 하나다.** `/pin`은 리스너가 loopback 주소이고 위키에 `pin/`이 있을 때만 등록된다. 그 밖의 주소에 묶이면 경로가 없다. 쓰기 요청은 `Host`, `Origin`, `X-Pin: 1`, `Content-Type`, 본문 크기를 검사한 뒤에야 게이트에 닿고, 쓰는 곳은 `pin/`뿐이다. 이 경로에만 인라인 스크립트를 해시로 허용하는 보안 정책이 걸리며 다른 경로의 정책은 그대로다. 역방향 프록시나 터널이 `Host`를 고쳐 loopback으로 넘기면 이 검사를 통과한다. 원격 접속은 지원하지 않는다.
 
 ## 관련
 

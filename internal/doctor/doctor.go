@@ -16,6 +16,7 @@ import (
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/graph"
 	"github.com/neocode24/engram/internal/i18n"
+	"github.com/neocode24/engram/internal/pin"
 	"github.com/neocode24/engram/internal/state"
 	"github.com/neocode24/engram/internal/walk"
 )
@@ -71,7 +72,7 @@ func Run(root string) Result {
 	findings = append(findings, checkConsoleEncoding())
 	findings = append(findings, checkWritePerm(root))
 
-	// 위키 항목 여섯. engram.yaml 이 없으면 모두 skip 이다.
+	// 위키 항목 일곱. engram.yaml 이 없으면 모두 skip 이다.
 	cfg, isWiki, cfgFinding := loadConfig(root)
 	findings = append(findings, cfgFinding)
 	findings = append(findings, checkUnknownKeys(cfg, isWiki))
@@ -80,6 +81,7 @@ func Run(root string) Result {
 	findings = append(findings, checkRootFiles(root, cfg, isWiki))
 	findings = append(findings, checkEngramGitignore(root, hasGit, isWiki))
 	findings = append(findings, checkBridgeRejections(root, cfg, isWiki))
+	findings = append(findings, checkPinLedger(root, isWiki))
 
 	res := Result{Findings: findings}
 	res.Summary.Items = len(findings)
@@ -402,6 +404,24 @@ func checkRootFiles(root string, cfg config.Config, isWiki bool) Finding {
 		return f
 	}
 	f.Status, f.Detail = StatusOK, i18n.T("doctor.wiki.root_files.ok", len(cfg.RootFiles))
+	return f
+}
+
+// checkPinLedger는 할 일 원장 pin/ 이 있는지 본다. 없는 위키는 아직 갱신하지 않은 위키라 capture,
+// source, promote --to sources 가 쓰지 않고 끝난다. warn 이다. 고치는 것은 init 을 다시 실행하는 것이다.
+// ADR 0108.
+func checkPinLedger(root string, isWiki bool) Finding {
+	if !isWiki {
+		return skipFinding("wiki.pin")
+	}
+	f := Finding{ID: "wiki.pin"}
+	if !pin.Present(root) {
+		f.Status = StatusWarn
+		f.Detail = i18n.T("doctor.wiki.pin.missing")
+		f.Fix = i18n.T("doctor.wiki.pin.missing_fix", root)
+		return f
+	}
+	f.Status, f.Detail = StatusOK, i18n.T("doctor.wiki.pin.ok")
 	return f
 }
 

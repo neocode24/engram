@@ -87,7 +87,7 @@ func TestServeNotice(t *testing.T) {
 			"sources 2개",
 			"archive 4개(--include-archive 로 엽니다)",
 			"private-local-only 와 restricted 문서 2개를 제외했습니다",
-			"쓰기 경로가 없습니다",
+			"문서 화면에는 쓰기 경로가 없습니다",
 		} {
 			if !strings.Contains(got, want) {
 				t.Errorf("안내에 %q 가 없습니다:\n%s", want, got)

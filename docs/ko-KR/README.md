@@ -283,7 +283,7 @@ flowchart LR
 
 | 커맨드 | 하는 일 |
 |---|---|
-| `init` | 새 위키를 만듭니다. 프리셋 3종 |
+| `init` | 새 위키를 만들거나 이미 있는 위키의 빠진 것(`pin/` 등)을 채웁니다. 프리셋 3종 |
 | `mv` | 문서 슬러그를 바꾸고 걸린 링크를 모두 고칩니다 |
 | `update` | 문서의 프론트매터와 본문을 갱신합니다 |
 | `reindex` | 검색 색인을 만듭니다. 색인을 쓰는 유일한 커맨드입니다 |
@@ -294,8 +294,8 @@ flowchart LR
 | `eject` | 규칙을 명세 문서와 Python 린터로 풀어 사용자에게 넘깁니다. 되돌리는 커맨드는 없습니다 |
 | `skills install` | 에이전트에 스킬 문서를 심습니다 |
 | `mcp` | 위키를 MCP 서버로 노출합니다. 쓰기 도구는 `capture` 하나입니다 |
-| `serve` | 읽기 전용 웹 뷰어입니다. `context/`만 보여 줍니다. 예외는 `/pin` 화면 하나이고, `pin`을 켠 위키를 loopback 주소로 열었을 때만 나옵니다 |
-| `pin` | 위키 문서에서 나온 할 일 원장입니다. `pin init`으로 켜야 켜집니다. `init`, `list`, `apply`가 있고, 켜면 `capture`, `source`, `promote --to sources`가 `--pin` 선언을 받습니다 |
+| `serve` | 읽기 전용 웹 뷰어입니다. `context/`만 보여 줍니다. 예외는 `/pin` 화면 하나이고, loopback 주소로 열었을 때만 나옵니다 |
+| `pin` | 위키 문서에서 나온 할 일 원장입니다. `init`이 만들고, 기존 위키는 `init`을 다시 실행하면 얻습니다. `list`, `apply`가 있고, `capture`, `source`, `promote --to sources`는 `--pin` 선언이 필요합니다 |
 | `export` | 문서를 반출합니다. 노출 규칙은 `serve`와 같고, 사용자가 준 사전으로 익명화합니다 |
 | `version` | 버전과 빌드 정보 |
 

@@ -24,10 +24,10 @@ const (
 	pinChanges = "/pin/api/changes"
 )
 
-// PinEnabled는 /pin 경로를 등록할지 판정한다. 위키가 Pin 을 켰고 리스너가 loopback 일 때만 참이다.
+// PinEnabled는 /pin 경로를 등록할지 판정한다. 위키에 원장이 있고 리스너가 loopback 일 때만 참이다.
 // 그 밖의 주소에 묶이면 경로를 등록하지 않는다. 인증 없는 쓰기와 미검수 문서의 인용이 네트워크에
 // 나가기 때문이다. ADR 0044 가 막은 바로 그것이다.
-func (s *Server) PinEnabled() bool { return s.opts.Loopback && pin.Enabled(s.root) }
+func (s *Server) PinEnabled() bool { return s.opts.Loopback && pin.Present(s.root) }
 
 // registerPin은 Pin 경로를 등록한다. /pin 은 화면, 나머지 셋은 API 다.
 func (s *Server) registerPin(mux *http.ServeMux) {

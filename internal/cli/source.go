@@ -89,7 +89,7 @@ func newSourceCmd() *cobra.Command {
 				return err
 			}
 			if jsonOutput(cmd) {
-				return writeIngestJSON(cmd, res, rep)
+				return writeIngestJSON(cmd, res)
 			}
 			printIngested(cmd.OutOrStdout(), res,
 				i18n.T("cli.source.next_hint"))

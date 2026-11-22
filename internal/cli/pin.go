@@ -18,23 +18,23 @@ import (
 // flagPin은 문서를 넣는 세 명령(capture, source, promote --to sources)이 받는 선언 플래그 이름이다.
 const flagPin = "pin"
 
-// addPinFlag는 선언 플래그를 단다. Pin 을 켠 위키에서는 필수이고 켜지 않은 위키에서는 무시한다.
+// addPinFlag는 선언 플래그를 단다. 문서를 넣는 세 명령에서 필수다.
 func addPinFlag(cmd *cobra.Command) {
 	cmd.Flags().String(flagPin, "", i18n.T("cli.pin.flag_pin"))
 }
 
-// pinPlan은 문서를 넣는 명령 하나가 Pin 에 맡기는 일이다. Pin 을 켜지 않은 위키에서는 nil 이다.
+// pinPlan은 문서를 넣는 명령 하나가 Pin 에 맡기는 일이다.
 type pinPlan struct {
 	wiki string
 	decl *pin.Declaration
 }
 
-// planPin은 --pin 인자를 읽는다. 켜지 않은 위키에서는 인자를 보지 않고 nil 을 낸다(1.0과 같게 돈다).
-// 켠 위키에서 인자가 없으면 아무것도 쓰지 않고 끝나도록 에러를 낸다. 에러 문구가 pin list 를 보고
+// planPin은 --pin 인자를 읽는다. pin/ 이 없는 위키는 아직 갱신하지 않았으므로 아무것도 쓰지 않고 init 을
+// 다시 실행하라고 안내하며 끝낸다. 인자가 없을 때도 아무것도 쓰지 않는다. 에러 문구가 pin list 를 보고
 // 선언을 만들라고 안내한다.
 func planPin(cmd *cobra.Command, root string) (*pinPlan, error) {
-	if !pin.Enabled(root) {
-		return nil, nil
+	if !pin.Present(root) {
+		return nil, errors.New(i18n.T("cli.pin.not_updated"))
 	}
 	raw, err := stringFlag(cmd, flagPin)
 	if err != nil {
@@ -125,10 +125,10 @@ func printAffected(w io.Writer, moved string, affected []pin.Affected) {
 	fmt.Fprintln(w, i18n.T("cli.pin.affected_tail"))
 }
 
-// pinMoves는 문서 이동 하나를 근거 경로 따라가기에 맡긴다. Pin 을 켜지 않은 위키에서는 아무것도 하지 않는다.
-// 선언이 없는 기계적 변경이라 rev 를 올리지 않는다.
+// pinFollow는 문서 이동 하나를 근거 경로 따라가기에 맡긴다. 아직 갱신하지 않은 위키(pin/ 이 없음)에서는
+// 따라갈 근거가 없으므로 아무것도 하지 않는다. 선언이 없는 기계적 변경이라 rev 를 올리지 않는다.
 func pinFollow(cmd *cobra.Command, root string, moves []pin.Move) error {
-	if len(moves) == 0 || !pin.Enabled(root) {
+	if len(moves) == 0 || !pin.Present(root) {
 		return nil
 	}
 	affected, err := pin.Follow(root, moves, Now(cmd))
@@ -151,39 +151,7 @@ func newPinCmd() *cobra.Command {
 		Short: i18n.T("cli.pin.short"),
 		Long:  i18n.T("cli.pin.long"),
 	}
-	cmd.AddCommand(newPinInitCmd(), newPinListCmd(), newPinApplyCmd())
-	return cmd
-}
-
-func newPinInitCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "init",
-		Short: i18n.T("cli.pin.init.short"),
-		Long:  i18n.T("cli.pin.init.long"),
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			root, _, err := ingestTarget(cmd)
-			if err != nil {
-				return err
-			}
-			created, err := pin.Init(root)
-			if err != nil {
-				return err
-			}
-			if jsonOutput(cmd) {
-				return writeJSON(cmd.OutOrStdout(), map[string]any{"path": filepath.Join(root, "pin"), "created": nonNil(created)})
-			}
-			out := cmd.OutOrStdout()
-			if len(created) == 0 {
-				fmt.Fprintln(out, i18n.T("cli.pin.init.exists", filepath.Join(root, "pin")))
-				return nil
-			}
-			fmt.Fprintln(out, i18n.T("cli.pin.init.done", filepath.Join(root, "pin")))
-			fmt.Fprintln(out, i18n.T("cli.pin.init.next"))
-			return nil
-		},
-	}
-	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
+	cmd.AddCommand(newPinListCmd(), newPinApplyCmd())
 	return cmd
 }
 
@@ -297,11 +265,4 @@ func writeJSON(w io.Writer, v any) error {
 	enc.SetIndent("", "  ")
 	enc.SetEscapeHTML(false)
 	return enc.Encode(v)
-}
-
-func nonNil(s []string) []string {
-	if s == nil {
-		return []string{}
-	}
-	return s
 }

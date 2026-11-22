@@ -24,7 +24,7 @@ func runPromoteRoot(t *testing.T, args ...string) (string, error) {
 	var out bytes.Buffer
 	root.SetOut(&out)
 	root.SetErr(&out)
-	root.SetArgs(args)
+	root.SetArgs(withPinNone(t, args))
 	err := root.Execute()
 	return out.String(), err
 }

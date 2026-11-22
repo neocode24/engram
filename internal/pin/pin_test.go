@@ -44,16 +44,16 @@ func memoDoc() Doc {
 		Text: "# 메모\n\n김대리가 금요일까지 견적서를 보낸다.\n"}
 }
 
-func TestEnabledFollowsConfigFile(t *testing.T) {
+func TestPresentFollowsConfigFile(t *testing.T) {
 	wiki := t.TempDir()
-	if Enabled(wiki) {
-		t.Fatal("pin/config.json 이 없는데 켜진 것으로 판정했습니다")
+	if Present(wiki) {
+		t.Fatal("pin/config.json 이 없는데 있는 것으로 판정했습니다")
 	}
 	if _, err := Init(wiki); err != nil {
 		t.Fatal(err)
 	}
-	if !Enabled(wiki) {
-		t.Fatal("pin init 뒤에도 꺼진 것으로 판정했습니다")
+	if !Present(wiki) {
+		t.Fatal("Init 뒤에도 없는 것으로 판정했습니다")
 	}
 }
 

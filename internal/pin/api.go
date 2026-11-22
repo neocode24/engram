@@ -32,6 +32,9 @@ const (
 // withLock은 `pin/.lock`을 배타 생성으로 잡고 fn 을 돌린다. 읽기, 검사, 저장이 모두 그 안에서
 // 끝난다. 쓰는 프로세스가 둘이다(serve 의 화면 쓰기, CLI). 오래된 잠금은 시각으로 가려 치운다.
 func withLock(wiki string, fn func() error) error {
+	if !Present(wiki) {
+		return notUpdated(wiki)
+	}
 	dir := filepath.Join(wiki, "pin")
 	path := filepath.Join(dir, lockName)
 	deadline := time.Now().Add(lockWait)

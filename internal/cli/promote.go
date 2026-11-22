@@ -322,49 +322,41 @@ func promoteToSources(cmd *cobra.Command, root string, cfg config.Config,
 		return nil
 	}
 
-	// 순서는 새 문서 쓰기, 원장 쓰기, inbox 원본 지우기다. Pin 을 켠 위키에서는 선언이 있어야 하고,
-	// 선언이 거절되면 아무것도 옮기지 않는다. 원본 inbox 문서의 경로를 근거로 둔 일은 새 경로로 따라간다.
-	var rep *pin.Report
-	if plan != nil {
-		srcRel, err := filepath.Rel(root, srcPath)
-		if err != nil {
-			return fmt.Errorf("%s: %w", i18n.T("cli.ingest.rel_fail"), err)
-		}
-		srcRel = filepath.ToSlash(srcRel)
-		var written string
-		rep, err = pin.Run(pin.Txn{
-			Wiki: root, Now: Now(cmd), Decl: plan.decl,
-			Doc:   pinDoc(root, destPath, "sources", created, string(doc.RenderMap(fm, d.Body))),
-			Moves: []pin.Move{{From: srcRel, To: filepath.ToSlash(destRel)}},
-			Commit: func() error {
-				var cerr error
-				written, cerr = wiki.Create(root, cfg, wiki.StageSource, created, slug, fm, d.Body)
-				return cerr
-			},
-			Rollback: func() {
-				if written != "" {
-					_ = os.Remove(written)
-				}
-			},
-		})
-		if err != nil {
-			var rej *pin.RejectedError
-			if errors.As(err, &rej) {
-				return errors.New(i18n.T("cli.pin.rejected", pinRejections(rej)))
+	// 순서는 새 문서 쓰기, 원장 쓰기, inbox 원본 지우기다. 선언이 거절되면 아무것도 옮기지 않는다.
+	// 원본 inbox 문서의 경로를 근거로 둔 일은 새 경로로 따라간다.
+	srcRel, err := filepath.Rel(root, srcPath)
+	if err != nil {
+		return fmt.Errorf("%s: %w", i18n.T("cli.ingest.rel_fail"), err)
+	}
+	srcRel = filepath.ToSlash(srcRel)
+	var written string
+	rep, err := pin.Run(pin.Txn{
+		Wiki: root, Now: Now(cmd), Decl: plan.decl,
+		Doc:   pinDoc(root, destPath, "sources", created, string(doc.RenderMap(fm, d.Body))),
+		Moves: []pin.Move{{From: srcRel, To: filepath.ToSlash(destRel)}},
+		Commit: func() error {
+			var cerr error
+			written, cerr = wiki.Create(root, cfg, wiki.StageSource, created, slug, fm, d.Body)
+			return cerr
+		},
+		Rollback: func() {
+			if written != "" {
+				_ = os.Remove(written)
 			}
-			return err
+		},
+	})
+	if err != nil {
+		var rej *pin.RejectedError
+		if errors.As(err, &rej) {
+			return errors.New(i18n.T("cli.pin.rejected", pinRejections(rej)))
 		}
-	} else if _, err := wiki.Create(root, cfg, wiki.StageSource, created, slug, fm, d.Body); err != nil {
 		return err
 	}
 	if err := os.Remove(srcPath); err != nil {
 		return fmt.Errorf("%s: %w", i18n.T("cli.promote.inbox_remove_fail", srcPath), err)
 	}
 	if jsonOutput(cmd) {
-		out := sourcesOutcome{writeOutcome: res, Type: docType}
-		if rep != nil {
-			out.Pin = pinOutcomeOf(rep)
-		}
+		out := sourcesOutcome{writeOutcome: res, Type: docType, Pin: pinOutcomeOf(rep)}
 		enc := json.NewEncoder(cmd.OutOrStdout())
 		enc.SetIndent("", "  ")
 		return enc.Encode(out)
@@ -373,10 +365,7 @@ func promoteToSources(cmd *cobra.Command, root string, cfg config.Config,
 	fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.type_line", docType))
 	fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.to_sources_next"))
 	printPinReport(cmd.OutOrStdout(), rep)
-	if rep != nil {
-		srcRel, _ := filepath.Rel(root, srcPath)
-		printAffected(cmd.ErrOrStderr(), filepath.ToSlash(srcRel), rep.Affected)
-	}
+	printAffected(cmd.ErrOrStderr(), srcRel, rep.Affected)
 	return nil
 }
 

@@ -96,19 +96,155 @@ func TestInit(t *testing.T) {
 		}
 	})
 
-	t.Run("이미 engram.yaml이 있으면 거절합니다", func(t *testing.T) {
+	t.Run("새 위키는 pin/ 까지 만들고 출력에 나옵니다", func(t *testing.T) {
+		dir := filepath.Join(t.TempDir(), "wiki")
+		out, err := runRoot(t, "init", dir)
+		if err != nil {
+			t.Fatalf("init 실패: %v", err)
+		}
+		if !strings.Contains(out, "pin/") {
+			t.Errorf("출력에 pin/ 이 없음:\n%s", out)
+		}
+		for _, name := range []string{"config.json", "relations.json", "proposals.json", "rejections.jsonl"} {
+			if _, err := os.Stat(filepath.Join(dir, "pin", name)); err != nil {
+				t.Errorf("pin/%s 가 없음: %v", name, err)
+			}
+		}
+	})
+
+	t.Run("이미 있는 위키에 다시 실행하면 거절하지 않고 이미 있다고 말합니다", func(t *testing.T) {
 		dir := t.TempDir()
 		if _, err := runRoot(t, "init", dir); err != nil {
 			t.Fatalf("첫 init 실패: %v", err)
 		}
-		_, err := runRoot(t, "init", dir)
-		if err == nil {
-			t.Fatal("재실행은 거절되어야 함")
+		cfgBefore := readWikiFile(t, dir, "engram.yaml")
+		out, err := runRoot(t, "init", dir)
+		if err != nil {
+			t.Fatalf("재실행은 거절되면 안 됨: %v\n%s", err, out)
 		}
-		for _, want := range []string{"이미 engram 위키", "다른 경로"} {
-			if !strings.Contains(err.Error(), want) {
-				t.Errorf("거절 메시지에 %q 없음: %v", want, err)
+		for _, want := range []string{"이미 있는 위키", "채울 것이 없습니다", "이미 있어서 바꾸지 않은 것", "pin/"} {
+			if !strings.Contains(out, want) {
+				t.Errorf("출력에 %q 없음:\n%s", want, out)
 			}
+		}
+		if got := readWikiFile(t, dir, "engram.yaml"); got != cfgBefore {
+			t.Errorf("engram.yaml 이 바뀜:\n%s", got)
+		}
+	})
+
+	t.Run("pin/ 이 없는 기존 위키는 재실행으로 pin/ 을 얻고 다른 것은 바뀌지 않습니다", func(t *testing.T) {
+		dir := t.TempDir()
+		if _, err := runRoot(t, "init", dir, "--preset", "team"); err != nil {
+			t.Fatalf("첫 init 실패: %v", err)
+		}
+		if err := os.RemoveAll(filepath.Join(dir, "pin")); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.RemoveAll(filepath.Join(dir, "archive")); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "index.md"), []byte("내가 고친 인덱스\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, ".gitignore"), []byte("node_modules\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		docPath := filepath.Join(dir, "inbox", "2026-01-01-메모.md")
+		if err := os.WriteFile(docPath, []byte("내 문서\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		cfgBefore := readWikiFile(t, dir, "engram.yaml")
+		out, err := runRoot(t, "init", dir)
+		if err != nil {
+			t.Fatalf("재실행 실패: %v\n%s", err, out)
+		}
+		for _, want := range []string{"채운 것", "pin/", "archive/", ".gitignore", "이미 있어서 바꾸지 않은 것", "프리셋: team"} {
+			if !strings.Contains(out, want) {
+				t.Errorf("출력에 %q 없음:\n%s", want, out)
+			}
+		}
+		if _, err := os.Stat(filepath.Join(dir, "pin", "config.json")); err != nil {
+			t.Errorf("pin/ 이 채워지지 않음: %v", err)
+		}
+		if info, err := os.Stat(filepath.Join(dir, "archive")); err != nil || !info.IsDir() {
+			t.Errorf("빠진 archive/ 가 채워지지 않음")
+		}
+		if got := readWikiFile(t, dir, "engram.yaml"); got != cfgBefore {
+			t.Errorf("engram.yaml 이 바뀜:\n%s", got)
+		}
+		if got := readWikiFile(t, dir, "index.md"); got != "내가 고친 인덱스\n" {
+			t.Errorf("index.md 가 바뀜: %q", got)
+		}
+		if got := readWikiFile(t, dir, "inbox/2026-01-01-메모.md"); got != "내 문서\n" {
+			t.Errorf("문서가 바뀜: %q", got)
+		}
+		gi := readWikiFile(t, dir, ".gitignore")
+		if !strings.Contains(gi, "node_modules") || !strings.Contains(gi, ".engram/") {
+			t.Errorf(".gitignore 병합이 잘못됨:\n%s", gi)
+		}
+		// 그다음 재실행은 채울 것이 없다.
+		out, err = runRoot(t, "init", dir)
+		if err != nil || !strings.Contains(out, "채울 것이 없습니다") {
+			t.Errorf("두 번째 재실행은 채울 것이 없다고 말해야 함: %v\n%s", err, out)
+		}
+	})
+
+	t.Run("pin/ 안의 있는 원장 파일은 재실행해도 바뀌지 않습니다", func(t *testing.T) {
+		dir := t.TempDir()
+		if _, err := runRoot(t, "init", dir); err != nil {
+			t.Fatal(err)
+		}
+		custom := `{"works":[{"id":"a","name":"내 프로젝트"}]}` + "\n"
+		if err := os.WriteFile(filepath.Join(dir, "pin", "config.json"), []byte(custom), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := runRoot(t, "init", dir); err != nil {
+			t.Fatal(err)
+		}
+		if got := readWikiFile(t, dir, "pin/config.json"); got != custom {
+			t.Errorf("원장 설정이 바뀜: %q", got)
+		}
+	})
+
+	t.Run("있는 위키에 다른 프리셋을 주면 바꾸지 않고 migrate 를 안내합니다", func(t *testing.T) {
+		dir := t.TempDir()
+		if _, err := runRoot(t, "init", dir, "--preset", "personal"); err != nil {
+			t.Fatal(err)
+		}
+		cfgBefore := readWikiFile(t, dir, "engram.yaml")
+		out, err := runRoot(t, "init", dir, "--preset", "team")
+		if err != nil {
+			t.Fatalf("거절되면 안 됨: %v\n%s", err, out)
+		}
+		if !strings.Contains(out, "migrate") || !strings.Contains(out, "personal") {
+			t.Errorf("프리셋을 바꾸지 않았다는 안내와 migrate 가 없음:\n%s", out)
+		}
+		if got := readWikiFile(t, dir, "engram.yaml"); got != cfgBefore {
+			t.Errorf("프리셋이 바뀜:\n%s", got)
+		}
+	})
+
+	t.Run("--json 은 채운 것과 이미 있던 것을 낸다", func(t *testing.T) {
+		dir := t.TempDir()
+		if _, err := runRoot(t, "init", dir); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.RemoveAll(filepath.Join(dir, "pin")); err != nil {
+			t.Fatal(err)
+		}
+		out, err := runRoot(t, "init", "--json", dir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var res initResult
+		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
+			t.Fatalf("JSON 파싱 실패: %v\n%s", err, out)
+		}
+		if res.Fresh || !reflect.DeepEqual(res.Created, []string{"pin/"}) {
+			t.Errorf("created = %v, fresh = %v", res.Created, res.Fresh)
+		}
+		if len(res.Existing) == 0 {
+			t.Errorf("existing 이 비었음")
 		}
 	})
 

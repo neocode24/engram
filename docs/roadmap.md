@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-**1.0의 커맨드 범위가 닫혔다.** 커맨드 서른, ADR 107건, 동작 구조 도식 12종, 여정 24개가 문서로 있고, `internal/` 패키지는 28개다. [저장소](https://github.com/neocode24/engram)는 공개 상태이며 [v1.0.0 릴리스](https://github.com/neocode24/engram/releases/tag/v1.0.0)도 공개됐다. upstream 동등성 검증 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
+**1.0의 커맨드 범위가 닫혔다.** 커맨드 서른, ADR 108건, 동작 구조 도식 12종, 여정 24개가 문서로 있고, `internal/` 패키지는 28개다. [저장소](https://github.com/neocode24/engram)는 공개 상태이며 [v1.0.0 릴리스](https://github.com/neocode24/engram/releases/tag/v1.0.0)도 공개됐다. upstream 동등성 검증 결과는 [parity.md](parity.md)에 있다. Windows 실환경 2차 검증까지 마쳤으나 콘솔 직결 항목은 검증 스크립트 결함으로 아직 미확인이다.
 
 ## 끝난 것
 

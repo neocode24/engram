@@ -1496,6 +1496,17 @@ func (l *Ledger) opMovePath(req obj) (outcome, *Reject) {
 			l.dirtyArchive[str(it["id"])] = true
 		}
 	}
+	// 새 일 제안 카드의 근거 문장은 add 때 경로를 박아 둔 것이라 함께 따라 고친다(그대로 두면 카드가 옛 경로를 보인다).
+	moved := map[string]bool{}
+	for _, it := range holders {
+		moved[str(it["id"])] = true
+	}
+	oldReason, newReason := "위키에서 찾았습니다: "+old, "위키에서 찾았습니다: "+nw
+	for _, prop := range l.proposals {
+		if str(prop["kind"]) == "new_item" && moved[str(prop["item"])] && prop["reason"] == oldReason {
+			prop["reason"] = newReason
+		}
+	}
 	return outcome{item: str(holders[0]["id"]), msg: fmt.Sprintf("근거 경로 %s>%s: 항목 %d건", old, nw, len(holders))}, nil
 }
 

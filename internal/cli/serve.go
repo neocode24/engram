@@ -164,10 +164,11 @@ func printServeNotice(w io.Writer, root, host, addr string, e serve.Exposure) {
 // 판정은 internal/expose 한 곳에 있다(ADR 0046).
 func loopbackHost(host string) bool { return expose.LoopbackHost(host) }
 
-// printPinNotice는 Pin 화면의 안내를 낸다. Pin 을 켠 위키에서만 나간다. 바깥 주소에 묶였으면 경로를
-// 등록하지 않았다고 알린다. 켜지 않은 위키의 출력은 바뀌지 않는다.
+// printPinNotice는 Pin 화면의 안내를 낸다. 바깥 주소에 묶였으면 경로를 등록하지 않았다고 알린다.
+// 원장이 없는 위키(아직 갱신하지 않음)는 init 을 다시 실행하라고 알린다.
 func printPinNotice(w io.Writer, root, host, addr string, enabled bool) {
-	if !pin.Enabled(root) {
+	if !pin.Present(root) {
+		fmt.Fprint(w, i18n.T("cli.serve.notice_pin_missing")+"\n")
 		return
 	}
 	if enabled {

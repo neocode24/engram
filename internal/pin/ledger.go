@@ -65,11 +65,12 @@ func newLedger(dir, wiki string) *Ledger {
 	}
 }
 
-// ConfigPath는 위키에서 원장의 설정 파일 경로다. 이 파일이 있어야 Pin이 켜진 위키다.
+// ConfigPath는 위키에서 원장의 설정 파일 경로다.
 func ConfigPath(wiki string) string { return filepath.Join(wiki, "pin", "config.json") }
 
-// Enabled는 위키가 Pin을 켰는지 본다. 켜지 않은 위키에서 세 명령은 1.0과 같게 돈다.
-func Enabled(wiki string) bool {
+// Present는 위키에 원장이 있는지 본다. 없는 위키는 아직 갱신하지 않은 위키이고 engram init 을
+// 다시 실행하면 채워진다. 원장을 쓰는 명령은 없으면 쓰지 않고 그 안내로 끝난다.
+func Present(wiki string) bool {
 	st, err := os.Stat(ConfigPath(wiki))
 	return err == nil && !st.IsDir()
 }
@@ -86,13 +87,18 @@ func readJSONFile(path string) (any, error) {
 	return normalizeNumbers(v), nil
 }
 
-// load는 원장을 읽는다. config.json이 없으면 init을 안내하는 에러다.
+// notUpdated는 pin/ 이 없는 위키에서 원장을 읽거나 쓰려 할 때의 에러다. 만드는 것은 init 뿐이다.
+func notUpdated(wiki string) error {
+	return fmt.Errorf("%s가 없습니다. 이 위키는 아직 갱신하지 않았습니다. engram init 을 다시 실행해 pin/ 을 채워 주세요", ConfigPath(wiki))
+}
+
+// load는 원장을 읽는다. config.json이 없으면 init 을 다시 실행하라고 안내하는 에러다.
 func load(wiki string) (*Ledger, error) {
 	dir := filepath.Join(wiki, "pin")
 	led := newLedger(dir, wiki)
 	cfg, err := readJSONFile(filepath.Join(dir, "config.json"))
 	if errors.Is(err, fs.ErrNotExist) {
-		return nil, fmt.Errorf("%s가 없습니다. `engram pin init`으로 먼저 켜 주세요", filepath.Join(dir, "config.json"))
+		return nil, notUpdated(wiki)
 	}
 	if err != nil {
 		return nil, err
@@ -439,7 +445,7 @@ func (l *Ledger) save() ([]string, error) {
 	return written, nil
 }
 
-// DefaultConfig는 `pin init`이 쓰는 설정이다. upstream 의 설정에서 사내 프로젝트와
+// DefaultConfig는 init 이 pin/ 에 쓰는 설정이다. upstream 의 설정에서 사내 프로젝트와
 // 미리알림, Hermes, 캘린더 칸을 뺐다. 프로젝트는 비워 두고 사람이 정한다.
 func DefaultConfig() obj {
 	return obj{

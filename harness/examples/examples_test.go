@@ -148,15 +148,16 @@ func buildDemo(t *testing.T, dir string) {
 
 	// 3. inbox 에 미처리 메모 둘. 하나는 승급하고 하나는 남긴다.
 	// 밀린 것이 0인 위키는 status 가 무엇을 보는지 보여주지 못한다.
+	// 문서를 넣는 세 명령은 --pin 선언이 필요하다(ADR 0108). 데모의 메모에는 할 일이 없어 none 이다.
 	r.run("capture", "--wiki", dir, "--title", "읽을거리 메모", "--slug", "reading-note",
-		"주간 회고에서 나온 이야기. 정리 전 상태다.")
+		"--pin", "none", "주간 회고에서 나온 이야기. 정리 전 상태다.")
 	r.run("capture", "--wiki", dir, "--title", "강연 메모", "--slug", "talk-note",
-		"강연을 들으며 적은 조각. 아직 지식이 아니다.")
+		"--pin", "none", "강연을 들으며 적은 조각. 아직 지식이 아니다.")
 
 	// 4. sources 에 원본 하나. 원본 보존 계층을 보여준다.
 	r.run("source", "--wiki", dir, "--title", "지식관리 입문 자료", "--slug", "km-primer",
 		"--created", "2026-02-10", "--ref", "https://example.com/km-primer",
-		"외부 자료의 원문 발췌. 이 계층은 고치지 않는다.")
+		"--pin", "none", "외부 자료의 원문 발췌. 이 계층은 고치지 않는다.")
 
 	// 5. inbox 문서 하나를 승급시킨다. 게이트가 위키링크를 요구하므로
 	// 본문에 실제 링크를 넣어 통과시킨다. 강제 플래그를 쓰지 않는다.
@@ -189,14 +190,14 @@ func buildDemo(t *testing.T, dir string) {
 		if d.created != "" {
 			r.run("source", "--wiki", dir, "--title", d.title, "--slug", d.slug,
 				"--created", d.created, "--ref", "https://example.com/"+d.slug,
-				"외부 자료의 원문 발췌. 이 계층은 고치지 않는다.")
+				"--pin", "none", "외부 자료의 원문 발췌. 이 계층은 고치지 않는다.")
 			r.run("promote", "--wiki", dir, "--type", d.kind,
 				"--related", "index", "--related", "promotion-pipeline",
 				"sources/"+d.created+"-"+d.slug+".md")
 			continue
 		}
 		r.run("capture", "--wiki", dir, "--title", d.title, "--slug", d.slug,
-			"승급 전 원문. 4단계에서 정리한다.")
+			"--pin", "none", "승급 전 원문. 4단계에서 정리한다.")
 		r.run("promote", "--wiki", dir, "--type", d.kind,
 			"--related", "index", "--related", "promotion-pipeline",
 			"inbox/"+capturedDate+"-"+d.slug+".md")

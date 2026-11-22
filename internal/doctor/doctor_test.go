@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/neocode24/engram/internal/pin"
 )
 
 // wantIDs는 항목 순서 계약이다. 순서가 바뀌면 출력이 바뀌므로 테스트가 잡는다.
@@ -22,6 +24,7 @@ var wantIDs = []string{
 	"wiki.root-files",
 	"wiki.engram-gitignore",
 	"wiki.bridge-rejections",
+	"wiki.pin",
 }
 
 func ids(res Result) []string {
@@ -60,6 +63,9 @@ func makeWiki(t *testing.T, engramYAML string) string {
 			t.Fatal(err)
 		}
 	}
+	if _, err := pin.Init(root); err != nil {
+		t.Fatal(err)
+	}
 	return root
 }
 
@@ -87,8 +93,8 @@ func TestRun(t *testing.T) {
 				wikiSkips++
 			}
 		}
-		if wikiSkips != 7 {
-			t.Errorf("위키 항목 7개가 skip 이어야 한다, got %d", wikiSkips)
+		if wikiSkips != 8 {
+			t.Errorf("위키 항목 8개가 skip 이어야 한다, got %d", wikiSkips)
 		}
 	})
 
@@ -216,6 +222,20 @@ func TestRun(t *testing.T) {
 			t.Errorf("상태 합이 items 와 다르다: %+v", s)
 		}
 	})
+}
+
+func TestPinLedgerFinding(t *testing.T) {
+	root := makeWiki(t, healthyYAML)
+	if f := finding(Run(root), "wiki.pin"); f.Status != StatusOK {
+		t.Errorf("원장이 있으면 ok 여야 한다: %+v", f)
+	}
+	if err := os.RemoveAll(filepath.Join(root, "pin")); err != nil {
+		t.Fatal(err)
+	}
+	f := finding(Run(root), "wiki.pin")
+	if f.Status != StatusWarn || !strings.Contains(f.Fix, "engram init") {
+		t.Errorf("원장이 없으면 init 을 다시 실행하라는 warn 이어야 한다: %+v", f)
+	}
 }
 
 func equal(a, b []string) bool {

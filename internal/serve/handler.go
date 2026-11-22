@@ -180,7 +180,7 @@ func (s *Server) Handler() http.Handler {
 
 // readOnly는 GET 과 HEAD 외의 메서드를 전부 막는다. 라우팅에 닿기 전에
 // 끝낸다. 핸들러마다 메서드를 따로 판단하면 언젠가 하나가 빠진다. 예외는
-// 하나다. Pin 이 켜진 loopback 서버의 POST /pin/api/changes(ADR 0106).
+// 하나다. loopback 서버의 POST /pin/api/changes(ADR 0106).
 func (s *Server) readOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
