@@ -83,7 +83,7 @@ var (
 var (
 	humanOps = []string{
 		"add", "set_status", "touch", "set_owner", "set_work", "set_due", "set_parent", "set_title", "accept", "reject",
-		"add_relation", "remove_relation", "delete", "cancel_delete", "set_work_order", "mark_seen",
+		"add_relation", "remove_relation", "confirm_relation", "delete", "cancel_delete", "set_work_order", "mark_seen",
 	}
 	// opsByVia는 요청 경로마다 허용된 연산이다. upstream 의 세 경로(web, command,
 	// extract)를 글자 그대로 옮겼다. engram 에서 쓸 일이 없는 연산도 표에 두고

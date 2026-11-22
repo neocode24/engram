@@ -220,6 +220,8 @@ button.cf-stat-card.sel{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--
 .row .ttw{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:8px;min-width:0}.row .ttw .pendchip{grid-column:2;justify-self:end;white-space:nowrap}.row .sub{font-size:.8125rem;color:var(--tx2)}
 .mini .row{grid-template-columns:54px minmax(0,1fr) auto}
 .filters{display:flex;gap:8px;flex-wrap:wrap}
+/* 할 일과 미리알림 탭: 상태 단추 줄 오른쪽 끝(넓은 화면, 카드 오른쪽 끝선과 맞춤) 또는 단추 줄 바로 아래 오른쪽(좁은 화면)에 지금 조건으로 보이는 카드 수 */
+.filters .fcount{margin-left:auto;align-self:center;font-size:.8125rem;color:var(--tx2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .seg{display:inline-flex;flex-wrap:wrap;max-width:100%;background:var(--bg);border:1px solid var(--bd2);border-radius:6px;overflow:hidden}
 .seg button{background:none;border:0;border-right:1px solid var(--bd);padding:5px 11px;color:var(--tx2);font-size:.84rem}
 .seg button:hover:not(.on){background:color-mix(in oklab,var(--ac) 8%,var(--bg));color:var(--tx)}
@@ -259,6 +261,7 @@ svg text{font-family:inherit}
 .m-bandtxt{fill:var(--tx2);font-size:13px;font-weight:700}
 .m-arrow{fill:var(--ac)}
 .m-line{fill:none}.m-pre{stroke:var(--ac)}.m-rel{stroke:var(--tx2)}.m-dup{stroke:var(--tx2)}
+.m-par{stroke:var(--tx2)}.m-lab.m-par{stroke:var(--tx2)}.m-labtxt.m-par{fill:var(--tx2)}.m-dot{fill:var(--tx2);stroke:none}
 .m-lab{fill:var(--bg);stroke:var(--bd2)}.m-lab.m-pre{stroke:var(--ac)}.m-lab.m-dup{stroke:var(--tx2)}
 .m-labtxt{font-size:11.5px;font-weight:400;fill:var(--tx2)}.m-labtxt.m-pre{fill:var(--ac-ink)}.m-labtxt.m-dup{fill:var(--tx2)}
 /* 지도 상자: 테두리와 바탕은 상태 색이 아니라 일반 색이다. 상태는 오른쪽 위 라벨의 앞 점(.nd)으로 나타낸다(상태 칩과 같은 모양) */
@@ -272,6 +275,10 @@ svg text{font-family:inherit}
 .legend i{display:inline-block;width:34px;height:0;border-top:2.5px solid var(--ac);vertical-align:middle;margin-right:5px}
 .legend i.d{border-top:2px dashed var(--tx2)}
 .legend i.c{border-top:2.5px dashed var(--ac)}
+/* 범례는 선 종류를 켜고 끄는 단추(선행, 연관, 중복, 상위). 꺼진 종류는 흐리게 */
+.legend .lgbtn{display:inline-flex;align-items:center;border:1px solid var(--bd2);background:var(--bg);border-radius:6px;padding:2px 10px;min-height:32px;font-size:.8125rem;color:var(--tx2)}
+.legend .lgbtn i{margin-right:7px}.legend .lgbtn:not(.on) i{opacity:.35}.legend .lgbtn.on{border-color:var(--ac);color:var(--tx);font-weight:600}
+.legend i.p{border-top:1.4px solid var(--tx2);position:relative}.legend i.p:before{content:'';position:absolute;left:-1px;top:-5px;width:8px;height:8px;border-radius:50%;background:var(--tx2)}
 /* 중복: 지도의 선과 같은 굵기(각 2px)의 이중선 */
 .legend i.x{width:34px;height:6px;border-top:2px solid var(--warn);border-bottom:2px solid var(--warn)}
 #scrim{position:fixed;inset:0;background:color-mix(in oklab,var(--tx) 40%,transparent);display:none;z-index:9}
@@ -324,6 +331,30 @@ body.open #drawer{transform:none;transition:transform .22s ease-out,visibility 0
 .stbox{border:1px solid var(--bd);border-radius:10px;padding:10px 12px;background:var(--bg2)}
 .stbox .lab{font-size:.75rem;color:var(--tx2);font-weight:700;margin-bottom:6px}
 .stgrid{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+/* 관계 상자(상세 조작 영역): 한 줄씩의 관계, 종류 단추 여섯(390px에서도 한 줄), 뜻 한 줄, 찾기와 후보 목록 */
+.relrows{display:flex;flex-direction:column;gap:6px}
+.relrow{display:flex;align-items:center;gap:8px;border:1px solid var(--bd);border-radius:8px;padding:6px 8px;background:var(--bg)}
+.relrow .rel{flex:none;font-size:.75rem;padding:1px 7px}
+.relrow .rt{flex:1;min-width:0;font-size:.8125rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.relrow .rt a{color:inherit;text-decoration:none}.relrow .rt a:hover{text-decoration:underline}
+.relrow .rt .id{margin-right:2px;color:var(--tx);font-weight:700}
+.relrow .est{flex:none;font-size:.6875rem}
+.relrow .ra{flex:none;display:flex;gap:4px}
+.relrow .ra button{border:1px solid var(--bd2);background:var(--bg);border-radius:6px;padding:2px 9px;font-size:.75rem;min-height:28px}
+.relrow .ra button.ok{border-color:var(--ac);color:var(--ac-ink)}
+.relrow .ra button:disabled{opacity:.5;cursor:default}
+.relform{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.relform input{border:1px solid var(--bd2);border-radius:6px;padding:6px 9px;font-size:.8125rem;background:var(--bg);color:var(--tx);min-width:0;width:100%}
+.relkinds{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.relkinds button{padding:4px 2px}
+.relhint,.relmove{margin:0;font-size:.75rem}
+.relcands{display:flex;flex-direction:column;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.relcands .cand{display:flex;gap:6px;align-items:baseline;text-align:left;border:0;border-bottom:1px solid var(--bd);background:var(--bg);padding:7px 9px;font-size:.8125rem;color:var(--tx)}
+.relcands .cand:last-child{border-bottom:0}
+.relcands .cand.on{background:color-mix(in oklab,var(--ac) 10%,var(--bg))}
+.relcands .cand b{white-space:nowrap}
+.relcands .cand .ct{min-width:0}
+.relcands .cw{margin-left:auto;padding-left:6px;font-size:.6875rem;color:var(--tx2);white-space:nowrap}
+.relcands .empty{padding:8px 9px}
 .asklist{display:flex;flex-direction:column;gap:10px}
 /* 한 줄 메모 칸과 근거 문서 링크 */
 .noterow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}.noterow .nhint{flex:1 0 100%;font-size:.75rem;color:var(--tx2)}
@@ -502,7 +533,7 @@ details.pj-done[open]>summary::after{content:'접기'}
 .pn-h .sig-pop{width:300px}
 @media (max-width:1023px){.sig-help{position:static}.pj-title,.cf-card-title{position:relative}.sig-pop{left:0;right:0;width:auto}}  /* 좁은 화면: 창은 제목 줄 폭 안에 둔다(기준 단추 자리에서 열면 오른쪽 밖으로 나간다) */
 /* 좁은 화면: 거르기 묶음(담당, 상태)은 한 줄씩 폭을 다 쓰고 단추는 같은 너비로 나눈다. 상태 여섯도 한 줄 */
-@media (max-width:1023px){.filters{flex-direction:column;align-items:stretch;gap:8px}.filters .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;width:100%}.filters .seg button{padding:7px 2px;text-align:center;white-space:nowrap}}
+@media (max-width:1023px){.filters{flex-direction:column;align-items:stretch;gap:8px}.filters .fcount{margin-left:0;align-self:flex-end;margin-top:-2px}.filters .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;width:100%}.filters .seg button{padding:7px 2px;text-align:center;white-space:nowrap}}
 .sig-legend .pn-n{min-width:3.25rem;text-align:center}
 .sig-legend .pn-dot{margin:0 22px}
 </style></head>
@@ -533,7 +564,7 @@ var ASK_LABEL={accept:'맞음',reject:'아님',touch:'아직 진행 중',done:'�
 var TABS=[['today','오늘'],['works','프로젝트별 현황'],['map','연관 지도'],['items','할 일'],['rem','미리알림']].filter(function(t){return t[0]!=='rem'||SOURCES.indexOf('reminder')>=0});
 
 var S=null, PEND=[], LOCAL=load('pin.local'), NOTES=load('pin.notes'), loadError=null, authExpired=false, refreshing=false, actionError=null, busy=false;
-var tab='today', sub='all', todayWork='all', todayOwner='all', todayPick=null, mapWork='all', mapOwner='all', F={work:'all',owner:'all',status:'all'}, sel=null, openId=null, stFlow=null, ownerAsk=null, clsAsk=null, lastOpener=null, wkNew=null, dueFlow=null, titleFlow=null;
+var tab='today', sub='all', todayWork='all', todayOwner='all', todayPick=null, mapWork='all', mapOwner='all', F={work:'all',owner:'all',status:'all'}, sel=null, openId=null, stFlow=null, ownerAsk=null, clsAsk=null, lastOpener=null, wkNew=null, dueFlow=null, titleFlow=null, relFlow=null;
 var MAX_NOTE=500;
 var delAsk=null, DEL_WATCH={}, JUST_DELETED=[];  // delAsk: 삭제 확인 창({id, rev, opener}). DEL_WATCH: 삭제를 보낸(또는 미리알림에서 지우는 중인) 항목 id -> 제목. 상태에서 사라지면 `지웠습니다`를 한 번 보인다
 // 휴대폰(639px 이하)의 바텀 시트. CSS 경계와 같은 값이다.
@@ -625,7 +656,7 @@ function noteDeleted(){
   Object.keys(DEL_WATCH).forEach(function(id){
     if(IT[id])return;
     JUST_DELETED.push({id:id,text:'삭제했습니다 \''+DEL_WATCH[id]+'\''});delete DEL_WATCH[id];
-    if(openId===id){openId=null;stFlow=null;ownerAsk=null;clsAsk=null;wkNew=null;dueFlow=null;titleFlow=null}
+    if(openId===id){openId=null;stFlow=null;ownerAsk=null;clsAsk=null;wkNew=null;dueFlow=null;titleFlow=null;relFlow=null}
     if(delAsk&&delAsk.id===id)delAsk=null})}
 function noteText(a){var n=a&&typeof a.note==='string'?a.note.trim():'';return n?' (메모: '+(n.length>60?n.slice(0,60)+'...':n)+')':''}
 function opText(c){
@@ -638,6 +669,7 @@ function opText(c){
   if(c.op==='set_owner')return '담당자 변경: '+(a.who==='me'?'나':a.who==='unknown'?'모름':a.who||'');
   if(c.op==='set_due')return dueWord(a);
   if(c.op==='set_title')return '제목 변경: '+clipText(a.title,40);
+  if(REL_OPS.indexOf(c.op)>=0)return relOpText(c,{id:c.item});
   if(c.op==='set_work_order')return '프로젝트 순서 변경';
   if(c.op==='mark_seen')return '새 일 '+((a.items||[]).length)+'건 확인';
   if(c.op==='set_work')return a.new&&a.new.name?'새 프로젝트 '+a.new.name+'으로 이동':'프로젝트 변경: '+workName(a.work);
@@ -660,7 +692,7 @@ function send(body,note,after){
     if(b.op==='delete')watchDelete(IT[b.item]);
     save('pin.local',LOCAL)};
   post(body).then(function(res){
-    remember(body,res);stFlow=null;ownerAsk=null;clsAsk=null;wkNew=null;
+    remember(body,res);stFlow=null;ownerAsk=null;clsAsk=null;wkNew=null;relFlow=null;
     if(!afters.length){dueFlow=null;titleFlow=null;return null}
     return afters.reduce(function(p,a){return p.then(function(){return post(a).then(function(r2){remember(a,r2)},function(e){failed=a;throw e})})},Promise.resolve())
       .then(function(){dueFlow=null;titleFlow=null},function(e){dueFlow=null;titleFlow=null;actionError='답은 보냈지만 '+(failed&&failed.op==='set_title'?'제목':'기한')+'을 보내지 못했습니다: '+e.message})
@@ -841,7 +873,7 @@ function stateNow(drawer,own){var p={tab:tab,sub:sub};if(drawer){p.drawer=drawer
 function openItem(id,ev,mode){  // mode: 없음=칸을 쌓는다, 'none'=처음 들어온 주소(쌓지 않는다), 'native'=주소 해시가 이미 칸을 만들었다
   if(ev)ev.preventDefault();if(!IT[id])return;
   var wasOpen=!!openId, wasNew=IT[id].unseen===true;
-  lastOpener=document.activeElement;openId=id;stFlow=null;ownerAsk=null;clsAsk=null;wkNew=null;dueFlow=null;titleFlow=null;render();
+  lastOpener=document.activeElement;openId=id;stFlow=null;ownerAsk=null;clsAsk=null;wkNew=null;dueFlow=null;titleFlow=null;relFlow=null;render();
   var c=document.getElementById('cls');if(c&&getComputedStyle(c).visibility!=='hidden')c.focus();else{var dw=document.getElementById('drawer');if(dw)dw.focus({preventScroll:true})}
   try{
     if(wasOpen)history.replaceState(stateNow(id,drawerPushed),'','#'+id);  // 열린 서랍에서 다른 일로 가도 칸은 그대로
@@ -850,7 +882,7 @@ function openItem(id,ev,mode){  // mode: 없음=칸을 쌓는다, 'none'=처음 
     else{history.pushState(stateNow(id,true),'','#'+id);drawerPushed=true}
   }catch(e){/* 주소를 못 바꿔도 연다 */}
   if(wasNew)sendSeen([id])}  // 상세를 열면 본 것이다: 새 일 확인을 보낸다
-function dropDrawer(){sheetReset();openId=null;stFlow=null;ownerAsk=null;clsAsk=null;wkNew=null;dueFlow=null;titleFlow=null;render();if(lastOpener&&document.body.contains(lastOpener))lastOpener.focus()}
+function dropDrawer(){sheetReset();openId=null;stFlow=null;ownerAsk=null;clsAsk=null;wkNew=null;dueFlow=null;titleFlow=null;relFlow=null;render();if(lastOpener&&document.body.contains(lastOpener))lastOpener.focus()}
 function closeDrawer(){
   var wasOpen=!!openId, popIt=drawerPushed;
   dropDrawer();
@@ -1636,6 +1668,10 @@ function edges(){
     var w=i.wait;if(i.status!=='waiting'||!w||w.reason!=='prior'||typeof w.on!=='string'||!IT[w.on]||w.on===i.id)return;
     var key=w.on+'>'+i.id;if(seen[key])return;seen[key]=true;
     out.push({a:w.on,b:i.id,label:'후행',reason:'대기: 선행 '+w.on,basis:'stated'})});
+  // 상위는 항목의 parent에서 화면만 합친다(원장 관계가 아니다). 상위 일이 a, 그 아래 일이 b
+  S.items.forEach(function(i){
+    if(!i.parent||!IT[i.parent]||i.parent===i.id)return;
+    out.push({a:i.parent,b:i.id,label:'상위',reason:'상위 일 아래에 달린 일입니다',basis:'stated'})});
   return out}
 // 띠 이름은 글자 수로 줄인다
 function short(t){return t.length>15?t.slice(0,14)+'…':t}
@@ -1645,8 +1681,26 @@ function fitTitle(t,px){var w=0,i=0,wide=/[\u1100-\u11ff\u3130-\u318f\uac00-\ud7
   if(i>=t.length)return t;
   w=0;for(i=0;i<t.length;i++){w+=wide.test(t.charAt(i))?13:7;if(w>px-13)break}
   return t.slice(0,i)+'…'}
-// 지도에 그리는 관계 종류. 선행(후행 쪽에서 한 번만 그린 `후행`)만 그린다. 관련과 중복은 지금 0건이라 쓰지 않고, 그리는 코드는 아래에 그대로 두었다. 다시 넣으려면 여기에 종류를 더한다
-var MAP_KINDS={'후행':true};
+// 지도에 그리는 관계 종류(범례 단추로 켜고 끈다): 선행(후행 쪽에서 한 번만 그린 `후행`), 연관(`관련`), 중복, 상위(항목의 parent에서 만든다). 기본은 모두 켜짐.
+// 선택은 sessionStorage(pin.map.kinds, 켠 종류 이름의 배열)에 기억하고 알 수 없는 값은 버린다. 하나도 켜지 않은 것으로 읽히면 선행만 켠 것이다.
+var MAP_KIND_OPTS=[['before','선행','후행'],['related','연관','관련'],['duplicate','중복','중복'],['parent','상위','상위']];
+var MAP_KINDS_KEY='pin.map.kinds', mapKinds=['before','related','duplicate','parent'];
+function readMapKinds(){
+  var all=MAP_KIND_OPTS.map(function(o){return o[0]});
+  try{
+    var raw=sessionStorage.getItem(MAP_KINDS_KEY);if(raw===null)return all;
+    var v=JSON.parse(raw);if(!Array.isArray(v))return all;
+    var on=all.filter(function(k){return v.indexOf(k)>=0});
+    return on.length?on:['before']}catch(e){return all}}
+function mapKindOn(label){return MAP_KIND_OPTS.some(function(o){return o[2]===label&&mapKinds.indexOf(o[0])>=0})}
+function setMapKind(kind){
+  var k=mapKinds.indexOf(kind),next=k>=0?mapKinds.filter(function(x){return x!==kind}):mapKinds.concat([kind]);
+  mapKinds=MAP_KIND_OPTS.map(function(o){return o[0]}).filter(function(x){return next.indexOf(x)>=0});
+  try{sessionStorage.setItem(MAP_KINDS_KEY,JSON.stringify(mapKinds))}catch(e){/* 못 저장해도 화면은 동작한다 */}
+  if(!mapKinds.length)mapKinds=['before'];
+  render()}
+// 지도와 목록의 관계 이름: 지도 화면은 `관련`이 아니라 `연관`을 쓴다(읽기 영역 relDrawer와 카드 아래 relChip은 그대로)
+function mapWord(label){return label==='후행'?'선행':label==='관련'?'연관':label}
 var MAP_WORK_KEY='pin.map.work', MAP_OWNER_KEY='pin.map.owner';
 function readMapWork(){return readStored(MAP_WORK_KEY,function(){return true})}
 function readMapOwner(){return readStored(MAP_OWNER_KEY,todayOwnerOk)}
@@ -1680,56 +1734,64 @@ function mapStages(list){
 function inScope(i,work,owner){return (work==='all'||i.work===work)&&(owner==='all'||(owner==='me'?isMine(i):!isMine(i)))}
 function vMap(){
   var cur=todayWorkOk(mapWork)?mapWork:'all', ownerCur=todayOwnerOk(mapOwner)?mapOwner:'all';
-  var all=edges().filter(function(r){return MAP_KINDS[r.label]&&r.a!==r.b});
+  var all=edges().filter(function(r){return mapKindOn(r.label)&&r.a!==r.b});
   var linked={};all.forEach(function(r){linked[r.a]=true;linked[r.b]=true});
   var scope=function(i){return inScope(i,cur,ownerCur)};
   // 조건에 맞는 일에 직접 이어진 선만 그린다. 그 선의 양 끝이 보이는 일이다(조건 밖이면 흐리게)
   var list=all.filter(function(r){return scope(IT[r.a])||scope(IT[r.b])});
   var unlinked=S.items.filter(function(i){return scope(i)&&!linked[i.id]}).length;
   var unl=unlinked?h('button',{type:'button',class:'linkbtn','data-map':'unlinked','aria-label':'이어진 일 없음 '+unlinked+'건, 할 일 탭으로 이동','on:click':function(){toItems(cur,ownerCur)}},'이어진 일 없음 '+unlinked+'건'):null;
-  if(!list.length)return [h('div',{class:'empty','data-map':'empty'},'막고 있는 일이 없습니다.'),unl];
+  if(!list.length)return [h('div',{class:'empty','data-map':'empty'},'이어진 일이 없습니다.'),unl];
   var vis={};list.forEach(function(r){vis[r.a]=true;vis[r.b]=true});
   if(sel&&!vis[sel])sel=null;
-  var lay=mapStages(all);
+  var lay=mapStages(all.filter(function(r){return r.label==='후행'}));  // 단계는 선행 선만으로 정한다. 연관, 중복, 상위로만 이어진 일은 0단계
+  var stg=function(id){return lay.stage[id]||0};
   // 칸은 보이는 일이 있는 단계만 왼쪽부터 차례로 둔다. 같은 단계 안에서는 프로젝트, 번호 순
   var wi={};worksView().forEach(function(w,k){wi[w.id]=k});
   var ids=Object.keys(vis).sort(function(x,y){var a=IT[x],b=IT[y];return (wi[a.work]-wi[b.work])||(x<y?-1:x>y?1:0)});
-  var used=[];ids.forEach(function(id){if(used.indexOf(lay.stage[id])<0)used.push(lay.stage[id])});
+  var used=[];ids.forEach(function(id){if(used.indexOf(stg(id))<0)used.push(stg(id))});
   used.sort(function(a,b){return a-b});
   var rowOf={},rowMax=0,pos={};
-  ids.forEach(function(id){var s=lay.stage[id];rowOf[s]=(rowOf[s]===undefined?-1:rowOf[s])+1;pos[id]=[used.indexOf(s),rowOf[s]];rowMax=Math.max(rowMax,rowOf[s]+1)});
+  ids.forEach(function(id){var s=stg(id);rowOf[s]=(rowOf[s]===undefined?-1:rowOf[s])+1;pos[id]=[used.indexOf(s),rowOf[s]];rowMax=Math.max(rowMax,rowOf[s]+1)});
   var NW=156,NLW=62,NH=68,CW=240,RH=100,X0=12,Y0=40;
   var W=X0+used.length*CW-(CW-NW)+12,H=Y0+rowMax*RH;
   function c(id){var p=pos[id];return [X0+p[0]*CW+NW/2,Y0+p[1]*RH+NH/2]}
   function edge(a,b){var A=c(a),B=c(b),dx=B[0]-A[0],dy=B[1]-A[1],t=1/Math.max(Math.abs(dx)/(NW/2+3),Math.abs(dy)/(NH/2+3));return [A[0]+dx*t,A[1]+dy*t,B[0]-dx*t,B[1]-dy*t]}
-  var pair={};list.forEach(function(r){pair[r.a+'>'+r.b]=true});
+  var pair={},grp={};list.forEach(function(r){pair[r.a+'>'+r.b]=true;var gk=[r.a,r.b].sort().join('~');(grp[gk]=grp[gk]||[]).push(r)});
+  var loopOf=function(r){return r.label==='후행'&&lay.loop(r)};
   // 색은 모두 CSS 클래스가 CSS 변수에서 가져온다. 여기에는 고정 색이 없다
-  var svg=sv('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H,role:'img','aria-label':'할 일 선행 지도'});
+  var svg=sv('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H,role:'img','aria-label':'할 일 연관 지도'});
   svg.appendChild(sv('defs',null,sv('marker',{id:'ar',viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'10',markerHeight:'10',markerUnits:'userSpaceOnUse',orient:'auto'},sv('path',{d:'M0 0L10 5L0 10z',class:'m-arrow'}))));
   svg.addEventListener('click',function(ev){if(sel&&!(ev.target.closest&&ev.target.closest('g.node'))&&!hasSelection()){sel=null;render()}});  // 지도 안의 빈 배경과 선
   used.forEach(function(s,k){svg.appendChild(sv('text',{x:X0+k*CW+4,y:22,class:'m-bandtxt','data-stage':s},s+'단계'))});
   list.forEach(function(r){
     var e=edge(r.a,r.b),on=!sel||r.a===sel||r.b===sel;
-    // 서로 기다리는 한 쌍은 두 선이 겹치지 않게 수직 방향으로 5px씩 벌린다
-    if(pair[r.b+'>'+r.a]){var ddx=e[2]-e[0],ddy=e[3]-e[1],ln=Math.sqrt(ddx*ddx+ddy*ddy)||1,sg=r.a<r.b?1:-1,px=-ddy/ln*5*sg,py=ddx/ln*5*sg;e=[e[0]+px,e[1]+py,e[2]+px,e[3]+py]}
+    // 서로 기다리는 한 쌍은 두 선이 겹치지 않게 수직 방향으로 5px씩 벌린다. 같은 두 일이 다른 종류로 이어져도(선행과 상위 등) 종류 순서대로 9px씩 벌린다
+    var gr=grp[[r.a,r.b].sort().join('~')];
+    if(r.label==='후행'&&pair[r.b+'>'+r.a]){var ddx=e[2]-e[0],ddy=e[3]-e[1],ln=Math.sqrt(ddx*ddx+ddy*ddy)||1,sg=r.a<r.b?1:-1,px=-ddy/ln*5*sg,py=ddx/ln*5*sg;e=[e[0]+px,e[1]+py,e[2]+px,e[3]+py]}
+    else if(gr.length>1){var gx=e[2]-e[0],gy=e[3]-e[1],gl=Math.sqrt(gx*gx+gy*gy)||1,gs=r.a<r.b?1:-1,go=(gr.indexOf(r)-(gr.length-1)/2)*9*gs,qx=-gy/gl*go,qy=gx/gl*go;e=[e[0]+qx,e[1]+qy,e[2]+qx,e[3]+qy]}
     var mx=(e[0]+e[2])/2,my=(e[1]+e[3])/2;
-    var g=sv('g',{class:on?'':'dim'});
-    var tone=r.label==='후행'?'m-pre':r.label==='중복'?'m-dup':'m-rel';
+    var g=sv('g',{class:on?'':'dim','data-edge':r.label});
+    var tone=r.label==='후행'?'m-pre':r.label==='중복'?'m-dup':r.label==='상위'?'m-par':'m-rel';
     if(r.label==='중복'){
       // 다른 관계와 같은 굵기(2px)의 평행선 두 줄. 선의 수직 방향으로 2px씩 벌린다
       var dx=e[2]-e[0],dy=e[3]-e[1],len=Math.sqrt(dx*dx+dy*dy)||1,ox=-dy/len*2,oy=dx/len*2;
       [1,-1].forEach(function(s){g.appendChild(sv('line',{x1:e[0]+ox*s,y1:e[1]+oy*s,x2:e[2]+ox*s,y2:e[3]+oy*s,'stroke-width':2,class:'m-line '+tone}))})}
     else if(r.label==='후행'){
-      var at={x1:e[0],y1:e[1],x2:e[2],y2:e[3],'stroke-width':2.4,'marker-end':'url(#ar)',class:'m-line '+tone+(lay.loop(r)?' m-loop':'')};
-      if(lay.loop(r))at['stroke-dasharray']='6 5';  // 서로 기다리는 순환 안의 선
+      var at={x1:e[0],y1:e[1],x2:e[2],y2:e[3],'stroke-width':2.4,'marker-end':'url(#ar)',class:'m-line '+tone+(loopOf(r)?' m-loop':'')};
+      if(loopOf(r))at['stroke-dasharray']='6 5';  // 서로 기다리는 순환 안의 선
       g.appendChild(sv('line',at))}
+    else if(r.label==='상위'){
+      // 가는 실선, 상위 쪽 끝(a)에 작은 동그라미
+      g.appendChild(sv('line',{x1:e[0],y1:e[1],x2:e[2],y2:e[3],'stroke-width':1.4,class:'m-line '+tone}));
+      g.appendChild(sv('circle',{cx:e[0],cy:e[1],r:4,class:'m-dot'}))}
     else g.appendChild(sv('line',{x1:e[0],y1:e[1],x2:e[2],y2:e[3],'stroke-width':1.8,'stroke-dasharray':'6 5',class:'m-line '+tone}));
     g.appendChild(sv('rect',{x:mx-16,y:my-10,width:32,height:19,rx:5,class:'m-lab '+(r.label==='관련'?'':tone)}));
-    g.appendChild(sv('text',{x:mx,y:my+4,'text-anchor':'middle',class:'m-labtxt '+(r.label==='관련'?'':tone)},r.label==='후행'?'선행':r.label));
-    g.appendChild(sv('title',null,r.a+' '+(r.label==='후행'?'선행':r.label)+' '+r.b+': '+r.reason+(lay.loop(r)?' (서로 기다리는 순환)':'')));
+    g.appendChild(sv('text',{x:mx,y:my+4,'text-anchor':'middle',class:'m-labtxt '+(r.label==='관련'?'':tone)},mapWord(r.label)));
+    g.appendChild(sv('title',null,r.a+' '+mapWord(r.label)+' '+r.b+(r.reason?': '+r.reason:'')+(loopOf(r)?' (서로 기다리는 순환)':'')));
     svg.appendChild(g)});
   // 이 일이 끝나면 직접 풀리는 열린 일의 수(전체 선행 선 기준). 열린 일에만 붙인다
-  var waitN={};all.forEach(function(r){if(isOpen(IT[r.b]))waitN[r.a]=(waitN[r.a]||0)+1});
+  var waitN={};all.forEach(function(r){if(r.label==='후행'&&isOpen(IT[r.b]))waitN[r.a]=(waitN[r.a]||0)+1});
   ids.forEach(function(id){
     var i=IT[id],p=c(id),n=isOpen(i)?waitN[id]||0:0;
     var near=!sel||sel===id||list.some(function(r){return (r.a===sel&&r.b===id)||(r.b===sel&&r.a===id)});
@@ -1749,21 +1811,25 @@ function vMap(){
       g.appendChild(sv('text',{x:p[0]+NW/2-7-38,y:p[1]+24,'text-anchor':'middle',class:'nwpt'},n+'건 대기 중'))}
     svg.appendChild(g)});
   var shown=sel?list.filter(function(r){return r.a===sel||r.b===sel}):list;
-  var cyc=list.some(lay.loop);
-  return [h('p',{class:'hint'},'왼쪽 일이 끝나야 오른쪽 일을 할 수 있습니다. \'N건 대기 중\'은 그 일이 끝나면 풀리는 일의 수입니다.'),
+  var cyc=list.some(loopOf);
+  var legBtn=function(o,glyph,tip){var on=mapKinds.indexOf(o[0])>=0;
+    return h('button',{type:'button',class:'lgbtn'+(on?' on':''),'aria-pressed':on?'true':'false','data-map-kind':o[0],title:tip,'on:click':function(){setMapKind(o[0])}},h('i',{class:glyph,'aria-hidden':'true'}),o[1])};
+  var KIND_GLYPH={before:'',related:'d',duplicate:'x',parent:'p'}, KIND_TIP={before:'화살표가 시작하는 일이 끝나야 화살표가 닿는 일을 합니다',related:'순서 없이 같은 산출물, 결정, 약속을 나눕니다',duplicate:'끝나는 조건이 같습니다',parent:'동그라미가 있는 쪽이 상위 일입니다'};
+  return [h('p',{class:'hint'},mapKinds.indexOf('before')>=0?'왼쪽 일이 끝나야 오른쪽 일을 할 수 있습니다. \'N건 대기 중\'은 그 일이 끝나면 풀리는 일의 수입니다.':'켜 둔 관계로 이어진 일입니다.'),
     unl,
-    h('div',{class:'legend'},h('span',null,h('i'),'선행: 화살표가 시작하는 일이 끝나야 화살표가 닿는 일을 합니다'),cyc?h('span',null,h('i',{class:'c'}),'서로 기다리는 순환'):null,h('span',null,h('span',{class:'by 명시'},'명시'),' 문서에 적힌 관계'),h('span',null,h('span',{class:'by'},'추정'),' Pin이 미루어 본 관계')),
+    h('div',{class:'legend'},MAP_KIND_OPTS.map(function(o){return legBtn(o,KIND_GLYPH[o[0]],KIND_TIP[o[0]])}),cyc?h('span',null,h('i',{class:'c'}),'서로 기다리는 순환'):null,h('span',null,h('span',{class:'by 명시'},'명시'),' 문서에 적힌 관계'),h('span',null,h('span',{class:'by'},'추정'),' Pin이 미루어 본 관계')),
     h('div',{class:'mapbox'},svg),
     secTitle('관계와 이유',[sel?sel+'에 이어진 '+shown.length+'건 ':'전체 '+shown.length+'건 ',sel?h('a',{href:'#',id:'clr','on:click':function(ev){ev.preventDefault();sel=null;render()}},'전체 보기'):null]),
-    h('div',{class:'list'},shown.length?shown.map(function(r){return h('div',{class:'card'},h('div',{class:'meta'},pinLink(r.a),h('span',{class:'rel r-'+r.label},r.label==='후행'?'선행':r.label),pinLink(r.b),h('span',{class:'by '+(r.basis==='stated'?'명시':'')},r.basis==='stated'?'명시':'추정')),h('p',null,r.reason||''))}):h('div',{class:'empty'},'관계가 없습니다.'))]}
+    h('div',{class:'list'},shown.length?shown.map(function(r){return h('div',{class:'card'},h('div',{class:'meta'},pinLink(r.a),h('span',{class:'rel r-'+r.label},mapWord(r.label)),pinLink(r.b),h('span',{class:'by '+(r.basis==='stated'?'명시':'')},r.basis==='stated'?'명시':'추정')),h('p',null,r.reason||''))}):h('div',{class:'empty'},'관계가 없습니다.'))]}
 
 // ---- 할 일 ----
 function seg(key,opts){
   return h('span',{class:'seg'},opts.map(function(o){return h('button',{type:'button',class:F[key]===o[0]?'on':'','aria-pressed':F[key]===o[0]?'true':'false','on:click':function(){F[key]=o[0];render()}},o[1])}))}
+function fcount(n){return h('span',{class:'fcount','data-count':String(n),'aria-live':'polite'},n+'건')}
 function itemsWork(){return todayWorkOk(F.work)?F.work:'all'}  // 모르는 프로젝트 값은 전체
 function vItems(){
   var wk=itemsWork(),its=S.items.filter(function(i){return (wk==='all'||i.work===wk)&&(F.owner==='all'||(F.owner==='me'?isMine(i):!isMine(i)))&&(F.status==='all'||i.status===F.status)});
-  return [h('div',{class:'filters'},seg('status',[['all','전체']].concat(STATUSES.map(function(s){return [s,STATUS_LABEL[s]]})))),
+  return [h('div',{class:'filters'},seg('status',[['all','전체']].concat(STATUSES.map(function(s){return [s,STATUS_LABEL[s]]}))),fcount(its.length)),
     its.length?h('div',{class:'cards'},its.map(function(i){return cardItem(i,null,true)})):h('div',{class:'empty'},'조건에 맞는 일이 없습니다.')]}
 
 // ---- 미리알림 ----
@@ -1820,7 +1886,7 @@ function vRem(){
   var shown=rems.filter(function(i){return inL(i)&&inT(i)&&(remSt==='all'||i.status===remSt)})
     .sort(function(a,b){return (a.status==='done')-(b.status==='done')||(a.id<b.id?-1:a.id>b.id?1:0)});  // 완료가 아닌 일 먼저, 그다음 번호순
   var st=h('div',{class:'filters'},h('span',{class:'seg',role:'group','aria-label':'상태 구분'},[['all','전체']].concat(STATUSES.map(function(x){return [x,STATUS_LABEL[x]]})).map(function(o){
-    return h('button',{type:'button',class:remSt===o[0]?'on':'','aria-pressed':remSt===o[0]?'true':'false','data-rem-status':o[0],'on:click':function(){setRemStatus(o[0])}},o[1])})));
+    return h('button',{type:'button',class:remSt===o[0]?'on':'','aria-pressed':remSt===o[0]?'true':'false','data-rem-status':o[0],'on:click':function(){setRemStatus(o[0])}},o[1])})),fcount(shown.length));
   return [h('div',{class:'pn-layout'},side,h('div',{class:'pn-main'},drop,h('p',{class:'hint','data-hint':'rem'},TAB_HINT.rem),st,
     shown.length?h('div',{class:'cards'},shown.map(function(i){return cardItem(i,null,true,remTagsOf(i))})):h('div',{class:'empty'},rems.length?'조건에 맞는 일이 없습니다.':'미리알림에서 들어온 일이 없습니다.')))]}
 
@@ -1977,6 +2043,112 @@ function titleRow(a,it,scope){
   var body=h('div',{id:pid});
   if(f){add(body,[titleForm(f,it,null),h('p',{class:'hint mt6'},'변경한 제목은 아래 답 단추를 누를 때 함께 보냅니다. 비우거나 그대로면 답만 보냅니다')])}
   return h('div',null,tog,body)}
+// ---- 관계 상자 ----
+// 상세 조작 영역의 `관계` 상자: 이 일에 걸린 관계(선행, 후행, 연관, 중복, 상위, 하위)를 한 줄씩 보이고 끊고(추정 관계는 맞음도), `관계 더하기`로 맺는다.
+// 모두 기존 send() 경로다. 관계 목록이 대상인 요청(add_relation, remove_relation, confirm_relation)은 item만 붙이고 base_rev는 붙이지 않는다. 상위와 하위는 set_parent(항목 rev)다.
+var REL_OPS=['add_relation','remove_relation','confirm_relation','set_parent'];
+var REL_OPT=[['prev','선행'],['next','후행'],['related','연관'],['duplicate','중복'],['parent','상위'],['child','하위']];
+var REL_HINT={prev:'고른 일이 끝나야 이 일을 할 수 있습니다',next:'이 일이 끝나야 고른 일을 할 수 있습니다',related:'순서는 없고 같은 산출물, 결정, 약속을 나눕니다',duplicate:'고른 일과 끝나는 조건이 같습니다',parent:'고른 일 아래에 이 일을 답니다',child:'고른 일을 이 일 아래에 답니다'};
+var REL_LIST_MAX=6;
+function relWord(label){return label==='후행'?'후행':label==='선행'?'선행':label==='관련'?'연관':label}
+// 관계 한 줄의 from, to. 선행(before)은 방향이 뜻이라 라벨로 가르고, 연관과 중복은 방향이 없어 이 일을 from으로 둔다(원장이 두 끝이 같으면 찾는다)
+function relEnds(i,r){return r.kind==='before'&&r.label==='선행'?[r.other,i.id]:[i.id,r.other]}
+function relKindWord(kind,fromMe){return kind==='before'?(fromMe?'후행':'선행'):kind==='related'?'연관':'중복'}
+// 요청 설명(반영 대기 머리와 위 배너). i는 보는 쪽 일이다: 배너는 요청의 item, 상자는 열린 일
+function relOpText(c,i){
+  var a=c.args||{};
+  if(c.op==='set_parent'){
+    var cut=a.parent===null||a.parent===undefined;
+    if(c.item===i.id)return cut?'상위 끊음':'상위 정함: '+a.parent;
+    return cut?'하위 끊음: '+c.item:'하위 정함: '+c.item}
+  var other=a.from===i.id?a.to:a.from;
+  var head=c.op==='add_relation'?'관계 맺음':c.op==='remove_relation'?'관계 끊음':'관계 확인';
+  return head+': '+relKindWord(a.kind,a.from===i.id)+' '+other}
+// 이 일의 상자에 걸리는 반영 대기 요청 가운데 마지막 것. 하위를 맺고 끊는 요청은 item이 하위 쪽 일이다
+function relPend(i){
+  var list=pending().filter(function(c){
+    var a=c.args||{};
+    if(REL_OPS.indexOf(c.op)<0)return false;
+    if(c.item===i.id)return true;
+    if(c.op==='set_parent')return a.parent===i.id||i.children.indexOf(c.item)>=0;
+    return a.from===i.id||a.to===i.id});
+  return list.length?list[list.length-1]:null}
+// 이 일의 상위 사슬과 하위 사슬(순환이 되는 일)
+function relChain(i){
+  var out={},cur=i,guard=0;
+  while(cur&&cur.parent&&IT[cur.parent]&&!out[cur.parent]&&guard++<200){out[cur.parent]=true;cur=IT[cur.parent]}
+  var todo=i.children.slice();
+  while(todo.length){var id=todo.pop();if(out[id]||id===i.id)continue;out[id]=true;if(IT[id])todo=todo.concat(IT[id].children)}
+  return out}
+// 후보: 열린 일만. 이 일 자신과 이미 관계가 있는 일(상위, 하위 포함)은 뺀다(상위, 하위를 고를 때는 사슬에 든 일도). 번호를 정확히 넣으면 완료된 일도 그 하나는 나온다
+function relCands(i,f){
+  var q=(f.q||'').trim(), ql=q.toLowerCase(), taken={};taken[i.id]=true;
+  i.relations.forEach(function(r){taken[r.other]=true});
+  if(i.parent)taken[i.parent]=true;
+  i.children.forEach(function(x){taken[x]=true});  // 상위와 하위로 이미 이어진 일도 관계가 있는 일이다
+  if(f.kind==='parent'||f.kind==='child'){var ch=relChain(i);Object.keys(ch).forEach(function(k){taken[k]=true})}
+  var has=function(t){return String(t).toLowerCase().indexOf(ql)>=0};
+  var out=S.items.filter(function(x){return !taken[x.id]&&isOpen(x)&&(!ql||has(x.id)||has(x.title)||has(workName(x.work)))});
+  var ex=/^p\d{4}$/i.test(q)?IT[q.toUpperCase()]:null;
+  if(ex&&!taken[ex.id]&&!isOpen(ex))out.unshift(ex);
+  return out.slice(0,REL_LIST_MAX)}
+function relSend(i,f){
+  var it=f&&IT[f.pick];if(!it||busy)return;
+  var why=(f.why||'').trim(), k=f.kind;
+  if(k==='related'&&!why)return;
+  if(k==='parent')return send({op:'set_parent',item:i.id,base_rev:i.rev,args:{parent:it.id}},i.title);
+  if(k==='child')return send({op:'set_parent',item:it.id,base_rev:it.rev,args:{parent:i.id}},i.title);
+  var from=k==='next'||k==='related'||k==='duplicate'?i.id:it.id, to=from===i.id?it.id:i.id;
+  send({op:'add_relation',item:i.id,args:{from:from,to:to,kind:k==='related'?'related':k==='duplicate'?'duplicate':'before',reason:k==='related'||k==='duplicate'?why:'',basis:'stated'}},i.title)}
+function relOther(id,title){return IT[id]?pinLink(id):h('span',null,h('span',{class:'id'},id),' ',title||'')}
+function relBox(i){
+  var pend=relPend(i), lock=!!pend||busy;
+  var f=!pend&&relFlow&&relFlow.item===i.id?relFlow:null;
+  var rel=function(label,tone){return h('span',{class:'rel'+(tone?' r-'+tone:'')},label)};
+  var act=function(label,kind,click,cls){return h('button',{type:'button',class:cls||null,disabled:lock||null,'data-rel-act':kind,'on:click':click},label)};
+  var ord={'선행':0,'후행':1,'관련':2,'중복':3};
+  var rs=i.relations.slice().sort(function(a,b){return (ord[a.label]-ord[b.label])||(a.other<b.other?-1:1)});
+  var rows=rs.map(function(r){
+    var guess=r.basis==='inferred'&&r.confirmed===false, e=relEnds(i,r), body={from:e[0],to:e[1],kind:r.kind};
+    return h('div',{class:'relrow','data-rel':r.kind,'data-other':r.other},rel(relWord(r.label),r.label),
+      h('span',{class:'rt'},relOther(r.other,r.other_title)),
+      guess?h('span',{class:'chip plain est'},'추정'):null,
+      h('span',{class:'ra'},guess?act('맞음','ok',function(){send({op:'confirm_relation',item:i.id,args:body},i.title)},'ok'):null,
+        act('끊기','cut',function(){send({op:'remove_relation',item:i.id,args:body},i.title)})))});
+  if(i.parent)rows.push(h('div',{class:'relrow','data-rel':'parent','data-other':i.parent},rel('상위'),h('span',{class:'rt'},relOther(i.parent,(IT[i.parent]||{}).title)),
+    h('span',{class:'ra'},act('끊기','cut',function(){send({op:'set_parent',item:i.id,base_rev:i.rev,args:{parent:null}},i.title)}))));
+  i.children.filter(function(x){return IT[x]}).forEach(function(x){
+    rows.push(h('div',{class:'relrow','data-rel':'child','data-other':x},rel('하위'),h('span',{class:'rt'},relOther(x)),
+      h('span',{class:'ra'},act('끊기','cut',function(){send({op:'set_parent',item:x,base_rev:IT[x].rev,args:{parent:null}},i.title)}))))});
+  var list=h('div',{class:'relrows'},rows.length?rows:h('div',{class:'empty'},'이어진 일이 없습니다.'));
+  var add;
+  if(f){
+    var kinds=h('div',{class:'relkinds btns',role:'group','aria-label':'관계 종류'},REL_OPT.map(function(o){
+      return h('button',{type:'button',class:f.kind===o[0]?'picked':null,'aria-pressed':f.kind===o[0]?'true':'false','data-rel-kind':o[0],'on:click':function(){f.kind=o[0];f.focus=true;render()}},o[1])}));
+    var hint=h('p',{class:'hint relhint','data-rel-hint':'1'},REL_HINT[f.kind]);
+    var q=h('input',{type:'search','aria-label':'번호나 제목으로 찾기',placeholder:'번호나 제목으로 찾기',value:f.q||'','data-rel-q':'1'});
+    var cands=h('div',{class:'relcands','data-rel-list':'1'}), move=h('p',{class:'hint relmove','data-rel-move':'1'});
+    var why=f.kind==='related'||f.kind==='duplicate'?h('input',{type:'text','aria-label':'이유',placeholder:f.kind==='related'?'무엇을 나누나요 (예: 2027 경영계획 회신)':'이유 (선택)',value:f.why||'','data-rel-why':'1'}):null;
+    var go=h('button',{type:'button',class:'pri','data-rel-act':'go',disabled:true,'on:click':function(){relSend(i,f)}},'관계 맺기');
+    var sync=function(){go.disabled=busy||!f.pick||(f.kind==='related'&&!(f.why||'').trim())};
+    var fill=function(){
+      var cs=relCands(i,f);
+      if(f.pick&&!cs.some(function(x){return x.id===f.pick}))f.pick=null;
+      cands.textContent='';
+      if(!cs.length)cands.appendChild(h('div',{class:'empty'},'찾는 일이 없습니다.'));
+      cs.forEach(function(x){cands.appendChild(h('button',{type:'button',class:'cand'+(f.pick===x.id?' on':''),'aria-pressed':f.pick===x.id?'true':'false','data-cand':x.id,'on:click':function(){f.pick=x.id;fill();sync()}},
+        h('b',null,x.id),' ',h('span',{class:'ct'},x.title),h('span',{class:'cw'},workName(x.work))))});
+      var pk=f.pick&&IT[f.pick];
+      move.textContent=f.kind==='child'&&pk&&pk.parent?'지금 상위 '+pk.parent+'에서 이 일 아래로 옮깁니다':'';
+      move.hidden=!move.textContent;
+      sync()};
+    q.addEventListener('input',function(){f.q=q.value;fill()});
+    if(why){why.addEventListener('input',function(){f.why=why.value;sync()});why.addEventListener('keydown',function(ev){if(ev.key==='Enter'&&!ev.isComposing){ev.preventDefault();if(!go.disabled)go.click()}})}
+    if(f.focus){f.focus=false;setTimeout(function(){if(document.body.contains(q))q.focus()},0)}
+    fill();
+    add=h('div',{class:'relform'},kinds,hint,q,cands,move,why,h('div',{class:'btns'},go,h('button',{type:'button','data-rel-act':'cancel','on:click':function(){relFlow=null;render()}},'취소')))}
+  else add=h('div',{class:'btns mt6'},h('button',{type:'button','data-rel-act':'open',disabled:lock||null,'on:click':function(){relFlow={item:i.id,kind:'prev',q:'',why:'',pick:null,focus:true};render()}},'관계 더하기'));
+  return h('div',{class:'stbox','data-box':'rel'},boxHead('관계',pend?relOpText(pend,i):null),list,add)}
 // 담당 바꾸기(나, 상대 이름, 모름)와 프로젝트 바꾸기(프로젝트 고르기 목록). 오늘 탭 단추와 같은 요청이고 같은 반영 대기 표시가 붙는다
 function ownerWord(who){return who==='me'?'나':who==='unknown'?'모름':'상대: '+who}
 function changeBoxes(i){
@@ -2002,7 +2174,8 @@ function changeBoxes(i){
   return h('div',{class:'stgrid mt12'},
     h('div',{class:'stbox'},boxHead('담당자 변경',po?ownerWord(ow):null),who,!po&&ownerAsk===key?ownerInput(i):null),
     h('div',{class:'stbox'},boxHead('프로젝트 변경 (지금 '+workName(i.work)+')',pw?(sentNew||workName(sentWork)):null),wk,mk?newWorkBox(i,mk):null),
-    dueBox(i))}
+    dueBox(i),
+    relBox(i))}
 function drawerAsks(i){
   var list=S.asks.filter(function(a){return (a.items||[]).indexOf(i.id)>=0});
   if(!list.length)return null;
@@ -2369,7 +2542,7 @@ function pollTick(){
   refresh()}
 setInterval(pollTick,FAST_MS);
 if(/^#w=/.test(location.hash))tab='works';
-sub=readSub();todayWork=readTodayWork();todayOwner=readTodayOwner();mapWork=readMapWork();mapOwner=readMapOwner();todayPick=readTodayPick();readRem();
+sub=readSub();todayWork=readTodayWork();todayOwner=readTodayOwner();mapWork=readMapWork();mapOwner=readMapOwner();todayPick=readTodayPick();mapKinds=readMapKinds();readRem();
 try{history.replaceState(stateNow(),'',location.href)}catch(e){/* 첫 칸에 탭을 적어 둔다. 못 적어도 된다 */}
 render();
 refresh().then(function(){var id=location.hash.slice(1);if(IT[id])openItem(id,null,'none')});

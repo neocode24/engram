@@ -1,13 +1,14 @@
 {
-  "commit": "48ee7a6710f74b31ff9ed73984958476a3f07fd6",
+  "commit": "85b791b35c1d1a8d5f8f936a3e4df18d9175c266",
   "files": [
     "frontmatter-schema.md",
     "ingest-rules.md",
+    "pin-rules.md",
     "promotion-rules.md",
     "security-rules.md",
     "taxonomy.md",
     "wiki-artifact-schema.md",
     "wiki-graph-policy.md"
   ],
-  "synced_at": "2026-11-21T20:01:00"
+  "synced_at": "2026-11-22T22:05:22"
 }

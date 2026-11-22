@@ -162,6 +162,110 @@
      }
     ]
    }
+  },
+  {
+   "id": "c-015",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "extract",
+   "op": "add_relation",
+   "args": {
+    "from": "P0004",
+    "to": "P0005",
+    "kind": "related",
+    "reason": "같은 점검 묶음",
+    "basis": "stated"
+   }
+  },
+  {
+   "id": "c-016",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "extract",
+   "op": "add_relation",
+   "args": {
+    "from": "P0005",
+    "to": "P0007",
+    "kind": "before",
+    "reason": "보관 기간 뒤에 남은 일",
+    "basis": "stated"
+   }
+  },
+  {
+   "id": "c-017",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "confirm_relation",
+   "args": {
+    "from": "P0005",
+    "to": "P0004",
+    "kind": "related"
+   }
+  },
+  {
+   "id": "c-018",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "confirm_relation",
+   "args": {
+    "from": "P0004",
+    "to": "P0005",
+    "kind": "related"
+   }
+  },
+  {
+   "id": "c-019",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "confirm_relation",
+   "args": {
+    "from": "P0007",
+    "to": "P0005",
+    "kind": "before"
+   }
+  },
+  {
+   "id": "c-020",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "confirm_relation",
+   "args": {
+    "from": "P0005",
+    "to": "P0007",
+    "kind": "before",
+    "reason": "x"
+   }
+  },
+  {
+   "id": "c-021",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "extract",
+   "op": "confirm_relation",
+   "args": {
+    "from": "P0005",
+    "to": "P0007",
+    "kind": "before"
+   }
+  },
+  {
+   "id": "c-022",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "confirm_relation",
+   "args": {
+    "from": "P0005",
+    "to": "P0007",
+    "kind": "before"
+   }
+  },
+  {
+   "id": "c-023",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "remove_relation",
+   "args": {
+    "from": "P0005",
+    "to": "P0004",
+    "kind": "related"
+   }
   }
  ]
 }
