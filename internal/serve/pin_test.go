@@ -98,6 +98,38 @@ func TestPinRoutesExistOnlyForLoopbackWithPinEnabled(t *testing.T) {
 	}
 }
 
+// 문서 화면의 상단 메뉴에는 /pin 이 열리는 서버에서만 Pin 링크가 맨 뒤에 붙는다.
+// 눌러도 404 인 링크를 내지 않는다. 화면마다 따로 판정하지 않고 같은 껍데기를 쓰는지 다섯 화면에서 본다.
+func TestPinNavLinkOnlyWhenPinOpens(t *testing.T) {
+	const link = `<li><a href="/pin">Pin</a></li>`
+	for name, tc := range map[string]struct {
+		root     func(*testing.T) string
+		loopback bool
+		want     bool
+	}{
+		"loopback 이고 원장이 있음": {pinWiki, true, true},
+		"바깥 주소에 묶임":          {pinWiki, false, false},
+		"원장이 없는 위키":          {func(t *testing.T) string { return makeWiki(t, "personal") }, true, false},
+	} {
+		t.Run(name, func(t *testing.T) {
+			h := pinServer(t, tc.root(t), tc.loopback)
+			for _, p := range []string{"/", "/search?q=hub", "/resurface", "/status", "/no-such-page"} {
+				r := send(t, h, http.MethodGet, p, "", nil)
+				if got := strings.Contains(r.body, link); got != tc.want {
+					t.Errorf("GET %s: Pin 링크 %v, 기대 %v", p, got, tc.want)
+				}
+				if !tc.want {
+					continue
+				}
+				status := strings.Index(r.body, `>위키 현황</a></li>`)
+				if i := strings.Index(r.body, link); status < 0 || i < status {
+					t.Errorf("GET %s: Pin 링크가 위키 현황 뒤에 있지 않습니다", p)
+				}
+			}
+		})
+	}
+}
+
 func TestPinPageHeadersAndOtherPathsKeepPolicy(t *testing.T) {
 	h := pinServer(t, pinWiki(t), true)
 	page := send(t, h, http.MethodGet, "/pin", "", nil)

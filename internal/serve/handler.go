@@ -61,6 +61,15 @@ type chrome struct {
 	Section  string
 	Query    string
 	Exposure Exposure
+	// Pin 은 상단 메뉴에 Pin 화면 링크를 낼지다. /pin 이 등록되는 조건(PinEnabled)과 같다.
+	// 바깥 주소에 묶였거나 원장이 없는 위키에서는 링크가 없다. 눌러도 404 인 링크를 내지 않기 위해서다.
+	Pin bool
+}
+
+// withPin은 화면 껍데기에 Pin 링크 여부를 채운다. 모든 화면이 이것을 거쳐 같은 판정을 쓴다.
+func (s *Server) withPin(c chrome) chrome {
+	c.Pin = s.PinEnabled()
+	return c
 }
 
 // group은 문서 목록의 묶음 하나다.
@@ -223,7 +232,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := indexData{
-		Chrome: chrome{Title: i18n.T("core.serve.title_docs"), Section: secIndex, Exposure: v.exposure},
+		Chrome: s.withPin(chrome{Title: i18n.T("core.serve.title_docs"), Section: secIndex, Exposure: v.exposure}),
 		Groups: []group{
 			{ID: locContext, Label: i18n.T("core.serve.group_context"), Docs: v.visibleDocs(locContext)},
 			{ID: locIndex, Label: i18n.T("core.serve.group_index"), Docs: v.visibleDocs(locIndex)},
@@ -275,7 +284,7 @@ func (s *Server) handleDoc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.render(w, http.StatusOK, "doc.html", docData{
-		Chrome:    chrome{Title: d.Title, Section: secDoc, Exposure: v.exposure},
+		Chrome:    s.withPin(chrome{Title: d.Title, Section: secDoc, Exposure: v.exposure}),
 		Doc:       d,
 		Body:      body,
 		Backlinks: backlinksOf(v, d),
@@ -325,7 +334,7 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
-	data := searchData{Chrome: chrome{Title: i18n.T("core.serve.title_search"), Section: secSearch, Query: q, Exposure: v.exposure}}
+	data := searchData{Chrome: s.withPin(chrome{Title: i18n.T("core.serve.title_search"), Section: secSearch, Query: q, Exposure: v.exposure})}
 	if q == "" {
 		s.render(w, http.StatusOK, "search.html", data)
 		return
@@ -378,7 +387,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.render(w, http.StatusOK, "status.html", statusData{
-		Chrome:     chrome{Title: i18n.T("core.serve.title_status"), Section: secStatus, Exposure: v.exposure},
+		Chrome:     s.withPin(chrome{Title: i18n.T("core.serve.title_status"), Section: secStatus, Exposure: v.exposure}),
 		Inbox:      res.Stages.Inbox,
 		Sources:    res.Stages.Source,
 		Context:    res.Stages.Context,
@@ -409,7 +418,7 @@ func (s *Server) handleResurface(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := resurfaceData{
-		Chrome: chrome{Title: i18n.T("core.serve.title_resurface"), Section: secResurface, Exposure: v.exposure},
+		Chrome: s.withPin(chrome{Title: i18n.T("core.serve.title_resurface"), Section: secResurface, Exposure: v.exposure}),
 	}
 
 	res, err := resurface.Run(s.root, s.cfg, time.Now(), resurfaceLimit, true)
@@ -547,7 +556,7 @@ func (s *Server) handleNotFound(w http.ResponseWriter, r *http.Request) {
 // notFound는 404 화면을 낸다.
 func (s *Server) notFound(w http.ResponseWriter, v *view) {
 	s.render(w, http.StatusNotFound, "notfound.html", indexData{
-		Chrome: chrome{Title: i18n.T("core.serve.title_notfound"), Section: secIndex, Exposure: v.exposure},
+		Chrome: s.withPin(chrome{Title: i18n.T("core.serve.title_notfound"), Section: secIndex, Exposure: v.exposure}),
 	})
 }
 
