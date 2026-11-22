@@ -18,6 +18,7 @@
         <li><a href="/search"{{if eq .Section "search"}} aria-current="page"{{end}}>검색</a></li>
         <li><a href="/resurface"{{if eq .Section "resurface"}} aria-current="page"{{end}}>재발견</a></li>
         <li><a href="/status"{{if eq .Section "status"}} aria-current="page"{{end}}>위키 현황</a></li>
+        {{if .Pin}}<li><a href="/pin">Pin</a></li>{{end}}
       </ul>
     </nav>
   </div>
