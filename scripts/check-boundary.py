@@ -62,7 +62,8 @@ def scan_worktree(pats):
             for i, line in enumerate(text.splitlines(), 1):
                 for p in pats:
                     if p.search(line):
-                        rel = os.path.relpath(path, ROOT)
+                        # 운영체제와 무관하게 / 경로로 낸다. 읽는 쪽(upstream-sync.py)이 이 꼴로 비교한다
+                        rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
                         # 적중한 내용을 출력하지 않는다. 로그가 유출 경로가 된다
                         hits.append(f"{rel}:{i} 금지 패턴 적중")
                         break
