@@ -22,7 +22,7 @@ func runIngestRoot(t *testing.T, stdin string, args ...string) (string, error) {
 	if stdin != "" {
 		root.SetIn(strings.NewReader(stdin))
 	}
-	root.SetArgs(args)
+	root.SetArgs(withPinNone(t, args))
 	err := root.Execute()
 	return out.String(), err
 }

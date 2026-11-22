@@ -36,4 +36,5 @@
 ## 남은 것
 
 - 2세션부터 6세션까지의 핸즈온 자료. 커리큘럼의 강의 세션 표를 따른다.
+- `intro.html`, `index.html`, `agent.html`, `internals.html`에 Pin(할 일 원장) 흐름을 반영하는 것. 지금 이 덱들은 `hands-on.md`와 `agent-start.md`보다 앞선 내용이다.
 - 데모 위키(`examples/`)가 채워지면 시연 슬라이드를 그 위키 기준으로 다시 찍는다.

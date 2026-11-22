@@ -41,8 +41,10 @@ func init() {
 		"cli.serve.short": "위키를 읽기 전용 웹 뷰어로 노출합니다",
 		"cli.serve.long": `위키를 읽기 전용 웹 뷰어로 노출합니다.
 
-쓰기 경로가 없습니다. 제안 접수도 두지 않으므로 GET 과 HEAD 외의
-요청은 전부 거절합니다.
+문서 화면에는 쓰기 경로가 없습니다. 제안 접수도 두지 않으므로 GET 과
+HEAD 외의 요청은 전부 거절합니다. 예외는 /pin 화면 하나입니다. 할 일
+원장 pin/ 에만 쓰며 127.0.0.1 처럼 이 컴퓨터 밖에서 닿지 않는 주소에
+묶였을 때만 열립니다.
 
 검수를 지난 context 문서와 색인 문서만 보입니다. inbox 와 sources 는
 목록에도 URL 에도 없습니다. archive 는 --include-archive 로 엽니다.
@@ -70,7 +72,7 @@ sensitivity 속성이 켜진 위키에서는 private-local-only 와 restricted �
 		"cli.serve.notice_excluded_unparsed": "제외: 프론트매터를 읽을 수 없어 판정하지 못한 문서 %d개 (engram lint 로 확인하세요)",
 		"cli.serve.notice_sensitivity_on":    "민감도: private-local-only 와 restricted 문서 %d개를 제외했습니다. 뒤집는 플래그는 없습니다",
 		"cli.serve.notice_sensitivity_off":   "민감도: 이 위키는 sensitivity 속성이 꺼져 있어 거를 값이 없습니다",
-		"cli.serve.notice_readonly":          "쓰기 경로가 없습니다. GET 과 HEAD 외의 요청은 거절합니다",
+		"cli.serve.notice_readonly":          "문서 화면에는 쓰기 경로가 없습니다. GET 과 HEAD 외의 요청은 거절합니다",
 		"cli.serve.notice_expose_warning":    "경고: %s 에 바인딩했습니다. 인증이 없으므로 이 주소에 닿는 모두가 위 문서를 읽습니다",
 		"cli.serve.notice_stop":              "멈추려면 Ctrl+C 를 누르세요",
 
@@ -220,8 +222,11 @@ reproducibility.`,
 		"cli.serve.short": "Serve the wiki as a read-only web viewer",
 		"cli.serve.long": `Serve the wiki as a read-only web viewer.
 
-There is no write path and no suggestion intake, so every request other
-than GET and HEAD is rejected.
+The document pages have no write path and no suggestion intake, so every
+request other than GET and HEAD is rejected. The one exception is the /pin
+page. It writes only to the to-do ledger pin/ and opens only when bound to
+an address that cannot be reached from outside this computer, such as
+127.0.0.1.
 
 Only context documents that passed review and index documents are visible.
 inbox and sources appear in neither listings nor URLs. archive opens with
@@ -250,7 +255,7 @@ above.`,
 		"cli.serve.notice_excluded_unparsed": "Excluded, frontmatter could not be parsed: %d (check with engram lint)",
 		"cli.serve.notice_sensitivity_on":    "Sensitivity: excluded %d private-local-only and restricted documents. No flag reverses this",
 		"cli.serve.notice_sensitivity_off":   "Sensitivity: this wiki has the sensitivity attribute off, so there is nothing to filter",
-		"cli.serve.notice_readonly":          "There is no write path. Requests other than GET and HEAD are rejected",
+		"cli.serve.notice_readonly":          "The document pages have no write path. Requests other than GET and HEAD are rejected",
 		"cli.serve.notice_expose_warning":    "Warning: bound to %s. There is no authentication, so everyone who reaches this address reads the documents above",
 		"cli.serve.notice_stop":              "Press Ctrl+C to stop",
 

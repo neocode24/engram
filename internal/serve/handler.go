@@ -173,17 +173,20 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/status", s.handleStatus)
 	mux.HandleFunc("/resurface", s.handleResurface)
 	mux.HandleFunc("/assets/engram.css", s.handleStyle)
+	s.registerPin(mux)
 	mux.HandleFunc("/", s.handleNotFound)
-	return readOnly(withHeaders(mux))
+	return s.readOnly(s.withHeaders(mux))
 }
 
-// readOnly는 GET 과 HEAD 외의 메서드를 전부 막는다. 이 서버에는 쓰기
-// 경로가 없으므로 라우팅에 닿기 전에 끝낸다. 핸들러마다 메서드를 따로
-// 판단하면 언젠가 하나가 빠진다.
-func readOnly(next http.Handler) http.Handler {
+// readOnly는 GET 과 HEAD 외의 메서드를 전부 막는다. 라우팅에 닿기 전에
+// 끝낸다. 핸들러마다 메서드를 따로 판단하면 언젠가 하나가 빠진다. 예외는
+// 하나다. loopback 서버의 POST /pin/api/changes(ADR 0106).
+func (s *Server) readOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet, http.MethodHead:
+		switch {
+		case r.Method == http.MethodGet || r.Method == http.MethodHead:
+			next.ServeHTTP(w, r)
+		case s.pinWritable(r):
 			next.ServeHTTP(w, r)
 		default:
 			w.Header().Set("Allow", "GET, HEAD")
@@ -196,11 +199,16 @@ func readOnly(next http.Handler) http.Handler {
 // 자산을 자기 자신으로 제한한다. 이 서버는 JavaScript 를 쓰지 않고
 // CDN 도 쓰지 않으므로 정책이 화면을 깨뜨리지 않는다. 위키 문서가 부르는
 // 바깥 이미지도 함께 막혀 폐쇄망에서 밖으로 나가는 요청이 생기지 않는다.
-func withHeaders(next http.Handler) http.Handler {
+//
+// /pin 경로의 정책은 따로 건다. 화면 파일이 인라인 script 를 쓰므로 해시로 허용한다(ADR 0106).
+// 다른 경로는 스크립트를 쓰지 않는다.
+func (s *Server) withHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
-		h.Set("Content-Security-Policy",
-			"default-src 'none'; style-src 'self'; img-src 'self' data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'")
+		if !(isPinPath(r.URL.Path) && s.PinEnabled()) {
+			h.Set("Content-Security-Policy",
+				"default-src 'none'; style-src 'self'; img-src 'self' data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'")
+		}
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "no-referrer")
 		next.ServeHTTP(w, r)

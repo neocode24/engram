@@ -20,14 +20,24 @@ func init() {
 		"cli.version.commit_at": "commit 시각: %s",
 
 		// init
-		"cli.init.short": "새 위키를 만듭니다",
+		"cli.init.short": "새 위키를 만들거나 이미 있는 위키의 빠진 것을 채웁니다",
 		"cli.init.long": `지정한 경로에 새 위키를 만듭니다. 경로를 생략하면 현재 디렉토리입니다.
 
-디렉토리 구성, engram.yaml 설정, 첫 문서 index.md, .gitignore를 만듭니다.
-이미 engram.yaml이 있으면 기존 위키를 보존하기 위해 거절합니다.`,
+디렉토리 구성, engram.yaml 설정, 첫 문서 index.md, .gitignore, 할 일 원장 pin/을 만듭니다.
+이미 위키(engram.yaml이 있음)이면 거절하지 않고 빠진 것만 채웁니다. 채우는 것은
+pin/, 설정이 요구하는 디렉토리, .gitignore의 .engram/ 항목입니다. 있는 파일은 바꾸지
+않습니다. 무엇을 채웠고 무엇이 이미 있었는지 출력에 적습니다. 기존 위키는 이 재실행으로
+pin/을 얻습니다. --preset은 새로 만들 때만 뜻이 있고 있는 위키의 프리셋은 바꾸지
+않습니다. 바꾸려면 migrate를 쓰세요.`,
 		"cli.init.flag_preset":          "스키마 프리셋. minimal, personal, team 중 하나",
 		"cli.init.preset_invalid":       "--preset 값이 허용값이 아님: %q (허용값: minimal, personal, team)",
-		"cli.init.already_wiki":         "대상이 이미 engram 위키입니다: %s\n기존 위키를 덮어쓰지 않습니다. 다른 경로를 지정하거나 기존 %s을 손으로 고치세요",
+		"cli.init.pin_fail":             "할 일 원장 pin/을 만들 수 없음",
+		"cli.init.dir_pin":              "할 일 원장. inbox와 sources에 문서가 들어올 때 판단한 일이 모입니다",
+		"cli.init.refill_head":          "이미 있는 위키입니다: %s (프리셋: %s)",
+		"cli.init.refill_nothing":       "채울 것이 없습니다. 이 위키는 이미 갖춰져 있습니다",
+		"cli.init.refill_created":       "채운 것:",
+		"cli.init.refill_existing":      "이미 있어서 바꾸지 않은 것:",
+		"cli.init.preset_kept":          "--preset은 새로 만들 때만 뜻이 있습니다. 프리셋은 %s 그대로입니다. 바꾸려면 engram.yaml을 고치고 engram migrate를 쓰세요",
 		"cli.init.path_check_fail":      "대상 경로를 확인할 수 없음",
 		"cli.init.root_mkdir_fail":      "위키 루트를 만들 수 없음",
 		"cli.init.config_load_fail":     "초기 설정을 읽을 수 없음",
@@ -88,7 +98,7 @@ root_files: [index.md]
 		"cli.init.dirs_header":     "디렉토리:",
 		"cli.init.files_header":    "파일:",
 		"cli.init.next_header":     "다음 단계:",
-		"cli.init.step_inbox":      "inbox에 첫 자료를 넣으세요",
+		"cli.init.step_inbox":      "inbox에 첫 자료를 넣으세요(capture에는 --pin 선언이 필요합니다)",
 		"cli.init.step_config":     "%s을 열어 속성과 임계값을 위키에 맞게 조정하세요",
 		"cli.init.step_fill_index": "index.md를 위키 소개로 채우세요",
 
@@ -311,15 +321,26 @@ reference time for deterministic results.`,
 		"cli.version.commit_at": "commit time: %s",
 
 		// init
-		"cli.init.short": "Create a new wiki",
+		"cli.init.short": "Create a new wiki, or fill in what an existing wiki is missing",
 		"cli.init.long": `Create a new wiki at the given path. Without a path, the current directory.
 
 Creates the directory layout, the engram.yaml config, the first document
-index.md, and .gitignore. Refuses if engram.yaml already exists, to preserve
-the existing wiki.`,
+index.md, .gitignore, and the to-do ledger pin/. On a wiki that already exists
+(engram.yaml is there) it does not refuse; it fills in only what is missing:
+pin/, the directories the config asks for, and the .engram/ entry in
+.gitignore. Existing files are not changed. The output says what was filled in
+and what was already there. Existing wikis get pin/ by running this again.
+--preset only matters when creating; an existing wiki keeps its preset. Use
+migrate to change it.`,
 		"cli.init.flag_preset":          "Schema preset. One of minimal, personal, team",
 		"cli.init.preset_invalid":       "--preset value is not allowed: %q (allowed: minimal, personal, team)",
-		"cli.init.already_wiki":         "Target is already an engram wiki: %s\nExisting wikis are not overwritten. Choose another path or edit the existing %s by hand",
+		"cli.init.pin_fail":             "Cannot create the to-do ledger pin/",
+		"cli.init.dir_pin":              "To-do ledger. Items judged when documents enter inbox and sources gather here",
+		"cli.init.refill_head":          "This wiki already exists: %s (preset: %s)",
+		"cli.init.refill_nothing":       "Nothing to fill in. This wiki is already complete",
+		"cli.init.refill_created":       "Filled in:",
+		"cli.init.refill_existing":      "Already there, not changed:",
+		"cli.init.preset_kept":          "--preset only matters when creating. The preset stays %s. To change it, edit engram.yaml and use engram migrate",
 		"cli.init.path_check_fail":      "Cannot check target path",
 		"cli.init.root_mkdir_fail":      "Cannot create wiki root",
 		"cli.init.config_load_fail":     "Cannot read initial config",
@@ -381,7 +402,7 @@ root_files: [index.md]
 		"cli.init.dirs_header":     "Directories:",
 		"cli.init.files_header":    "Files:",
 		"cli.init.next_header":     "Next steps:",
-		"cli.init.step_inbox":      "Put your first material in inbox",
+		"cli.init.step_inbox":      "Put your first material in inbox (capture needs a --pin declaration)",
 		"cli.init.step_config":     "Open %s and adjust attributes and thresholds for your wiki",
 		"cli.init.step_fill_index": "Fill index.md with a wiki introduction",
 

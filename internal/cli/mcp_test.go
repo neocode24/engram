@@ -18,6 +18,7 @@ import (
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/index"
 	"github.com/neocode24/engram/internal/mcpserver"
+	"github.com/neocode24/engram/internal/pin"
 	"github.com/neocode24/engram/internal/skills"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/spf13/cobra"
@@ -72,6 +73,9 @@ func makeMCPWiki(t *testing.T) string {
 		if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
 			t.Fatal(err)
 		}
+	}
+	if _, err := pin.Init(root); err != nil {
+		t.Fatal(err)
 	}
 	// 색인을 만들어 둔다. recall 과 bridge 는 색인이 필수다.
 	cfg, err := config.Load(root)
@@ -230,7 +234,7 @@ func TestMCPTools(t *testing.T) {
 
 	t.Run("capture 가 inbox 에 파일을 만든다", func(t *testing.T) {
 		out := callTool(t, session, "capture", map[string]any{
-			"title": "회의 메모", "slug": "meeting", "body": "회의 중 적은 메모다",
+			"title": "회의 메모", "slug": "meeting", "body": "회의 중 적은 메모다", "pin": "none",
 		})
 		path, _ := out["path"].(string)
 		if path == "" || !strings.Contains(filepath.ToSlash(path), "/inbox/") {
@@ -246,7 +250,7 @@ func TestMCPTools(t *testing.T) {
 			res, err := session.CallTool(context.Background(), &mcp.CallToolParams{
 				Name: "capture",
 				Arguments: map[string]any{
-					"title": "탈출 시험", "slug": hostile, "body": "경계 시험",
+					"title": "탈출 시험", "slug": hostile, "body": "경계 시험", "pin": "none",
 				},
 			})
 			if err != nil {
@@ -290,7 +294,7 @@ func TestMCPTools(t *testing.T) {
 			res, err := session.CallTool(context.Background(), &mcp.CallToolParams{
 				Name: "capture",
 				Arguments: map[string]any{
-					"title": "안전 검사", "slug": hostile, "body": "안전 검사 본문",
+					"title": "안전 검사", "slug": hostile, "body": "안전 검사 본문", "pin": "none",
 				},
 			})
 			if err != nil {
@@ -307,7 +311,7 @@ func TestMCPTools(t *testing.T) {
 		// 대문자와 공백과 한글은 통과한다. 취향인 규칙은 강제하지 않는다.
 		for _, ok := range []string{"대문자-슬러그", "UPPER-Case", "공백 있는 슬러그"} {
 			out := callTool(t, session, "capture", map[string]any{
-				"title": "통과 검사", "slug": ok, "body": "통과 검사 본문",
+				"title": "통과 검사", "slug": ok, "body": "통과 검사 본문", "pin": "none",
 			})
 			path, _ := out["path"].(string)
 			if filepath.Base(path) == "" || !strings.HasSuffix(path, ok+".md") {
@@ -444,4 +448,35 @@ func diffSnapshot(before, after string) string {
 		}
 	}
 	return strings.Join(out, "\n")
+}
+
+// pin 인자는 항상 필수다. 없으면 아무것도 쓰지 않고, pin/ 이 없는 위키는 init 을 다시 실행하라고 안내한다.
+func TestMCPCaptureRequiresPin(t *testing.T) {
+	root := makeMCPWiki(t)
+	session, done := connectMCP(t, root)
+	defer done()
+	before := snapshotWiki(t, root)
+	res, err := session.CallTool(context.Background(), &mcp.CallToolParams{
+		Name: "capture", Arguments: map[string]any{"title": "선언 없음", "body": "본문"},
+	})
+	if err == nil && !res.IsError {
+		t.Fatalf("pin 없이 capture 가 통과했습니다: %+v", res.StructuredContent)
+	}
+	if after := snapshotWiki(t, root); before != after {
+		t.Fatalf("거절됐는데 위키가 바뀌었습니다:\n%s", diffSnapshot(before, after))
+	}
+
+	if err := os.RemoveAll(filepath.Join(root, "pin")); err != nil {
+		t.Fatal(err)
+	}
+	before = snapshotWiki(t, root)
+	res, err = session.CallTool(context.Background(), &mcp.CallToolParams{
+		Name: "capture", Arguments: map[string]any{"title": "원장 없음", "body": "본문", "pin": "none"},
+	})
+	if err == nil && !res.IsError {
+		t.Fatalf("pin/ 이 없는 위키에서 capture 가 통과했습니다")
+	}
+	if after := snapshotWiki(t, root); before != after {
+		t.Fatalf("pin/ 이 없는 위키가 바뀌었습니다:\n%s", diffSnapshot(before, after))
+	}
 }

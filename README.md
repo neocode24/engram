@@ -309,7 +309,7 @@ flowchart LR
 
 | Command | What it does |
 |---|---|
-| `init` | Create a new wiki. Three presets |
+| `init` | Create a new wiki, or fill in what an existing one is missing (such as `pin/`). Three presets |
 | `mv` | Rename a slug and fix every link that points at it |
 | `update` | Update a document's frontmatter and body |
 | `reindex` | Build the search index. The only command that writes it |
@@ -320,7 +320,8 @@ flowchart LR
 | `eject` | Hand over the rules as spec documents and a Python linter. One way |
 | `skills install` | Install the skill document into an agent. The whole of the LLM integration |
 | `mcp` | Expose the wiki as an MCP server. The only write tool is `capture` |
-| `serve` | Read-only web viewer. Shows `context/` only |
+| `serve` | Read-only web viewer. Shows `context/` only. The `/pin` page is the one exception, and only on a loopback address |
+| `pin` | To-do ledger from wiki documents, created by `init` (run `init` again on an existing wiki to get it). `list`, `apply`. `capture`, `source` and `promote --to sources` take `--pin` |
 | `export` | Export a bundle of documents. Same exposure rules as `serve`, plus anonymization from a dictionary you supply |
 | `version` | Version and build info |
 
@@ -373,7 +374,7 @@ ENGRAM_LANG=en engram status
 
 ## Where it stands
 
-**0.1 through 1.0 are done.** All twenty-nine commands above work. The first release ships together with making the repository public.
+**0.1 through 1.0 are done.** All thirty commands above work. The first release ships together with making the repository public.
 
 | Milestone | Scope | Status |
 |---|---|---|

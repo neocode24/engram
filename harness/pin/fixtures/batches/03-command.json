@@ -1,0 +1,167 @@
+{
+ "now": "2026-11-24T09:00:00+09:00",
+ "requests": [
+  {
+   "id": "c-001",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "set_work_desc",
+   "args": {
+    "work": "alpha",
+    "desc": "알파의 설치, 견적, 점검"
+   }
+  },
+  {
+   "id": "c-002",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "set_status",
+   "item": "P0001",
+   "args": {
+    "status": "done",
+    "note": "견적서 발송 완료"
+   }
+  },
+  {
+   "id": "c-003",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "set_status",
+   "item": "P0001",
+   "args": {
+    "status": "done"
+   }
+  },
+  {
+   "id": "c-004",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "add",
+   "args": {
+    "title": "명령으로 넣은 일",
+    "work": "alpha",
+    "owner": {
+     "who": "이사원"
+    },
+    "evidence": [
+     {
+      "path": "sources/2026-11-12-notes.md",
+      "stage": "sources",
+      "section": "",
+      "date": "2026-11-12",
+      "quote": "제목이 없는 메모다."
+     }
+    ]
+   }
+  },
+  {
+   "id": "c-005",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "reject",
+   "args": {
+    "proposal": "Q0001"
+   }
+  },
+  {
+   "id": "c-006",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "remove_relation",
+   "args": {
+    "from": "P0001",
+    "to": "P0004",
+    "kind": "before"
+   }
+  },
+  {
+   "id": "c-007",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "add_relation",
+   "args": {
+    "from": "P0001",
+    "to": "P0004",
+    "kind": "before",
+    "reason": "",
+    "basis": "inferred"
+   }
+  },
+  {
+   "id": "c-008",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "add",
+   "args": {
+    "title": "프로젝트 이름만 있는 일",
+    "work": "없는프로젝트"
+   }
+  },
+  {
+   "id": "c-009",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "set_due",
+   "item": "P0004",
+   "args": {
+    "clear": true
+   }
+  },
+  {
+   "id": "c-010",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "set_owner",
+   "item": "P0004",
+   "args": {
+    "who": "unknown"
+   }
+  },
+  {
+   "id": "c-011",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "command",
+   "op": "delete",
+   "item": "P0006",
+   "args": {}
+  },
+  {
+   "id": "c-013",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "extract",
+   "op": "propose",
+   "item": "P0004",
+   "args": {
+    "kind": "work",
+    "question": "새 프로젝트를 만들까요?",
+    "reason": "같은 주제 셋",
+    "args": {
+     "name": "데모 준비",
+     "items": [
+      "P0003",
+      "P0004"
+     ],
+     "desc": "데모 일정과 환경 점검"
+    }
+   }
+  },
+  {
+   "id": "c-014",
+   "at": "2026-11-24T09:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "보안 검토 회신 확인",
+    "evidence": [
+     {
+      "path": "inbox/2026-11-10-kickoff.md",
+      "stage": "inbox",
+      "section": "",
+      "date": "2026-11-10",
+      "quote": "보안 검토 결과는 회신을 기다린다."
+     }
+    ]
+   }
+  }
+ ]
+}

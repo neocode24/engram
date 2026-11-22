@@ -16,15 +16,31 @@ upstream 이 목록을 바꿔도 이 쪽은 고칠 것이 없다는 것이 ADR 0
     python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki --check
 
 --check 는 아무것도 쓰지 않고 무엇이 바뀔지만 낸다.
+
+Pin 화면과 생성 코드(scripts/pin)는 계약 파일이 아니라서 위 목록과 별개로 견준다(ADR 0107).
+lock 커밋과 HEAD 의 upstream scripts/pin 을 git archive 로 꺼내 harness/pin/fixtures 견본에
+돌리고 표면별로 유지/갱신을 낸다. 마지막 줄 `pin 판정: <유지|화면만|PR|실패>` 이 잡이 읽는 신호다.
+화면만 바뀐 회차에만 화면 파일을 가져온다. 가져올지는 이 스크립트가 정하고 잡 지시문에 맡기지 않는다.
+--pull-page 는 판정과 무관하게 화면을 가져온다. PR 브랜치에서 Go 구현을 고친 뒤 쓰는 수동 스위치다.
 """
 
 import argparse
+import hashlib
+import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tarfile
+import tempfile
 from datetime import datetime
+
+# Windows 러너는 기본 인코딩이 cp1252라 한글 출력이 깨진다. 표준 출력을 UTF-8로 고정한다.
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UPSTREAM_DIR = os.path.join(ROOT, "harness", "upstream")
@@ -33,6 +49,11 @@ DELTAS_DIR = os.path.join(ROOT, "private", "deltas")
 LOCK_PATH = os.path.join(ROOT, "harness", "upstream.lock")
 REPLACEMENTS = os.path.join(ROOT, "private", "vendor-replacements.txt")
 CHECK_BOUNDARY = os.path.join(ROOT, "scripts", "check-boundary.py")
+PIN_FIXTURES = os.path.join(ROOT, "harness", "pin", "fixtures")
+PIN_DRIVER = os.path.join(ROOT, "harness", "pin", "driver.py")
+# 가져온 화면을 쓰는 자리. 바이너리가 go:embed 하는 파일이다(ADR 0106).
+PAGE_TARGET = os.path.join(ROOT, "internal", "pin", "web", "template.html")
+PAGE_REL = "internal/pin/web/template.html"
 
 # 사전 전체가 조직 어휘 목록이라 vendoring 하지 않는다 (ADR 0029).
 EXCLUDED = "terminology-normalization.md"
@@ -41,7 +62,25 @@ FORMAT_NAME = "terminology-format.md"
 # upstream 이 계약으로 선언했지만 engram 이 한동안 따라가지 않는 명세다.
 # 값은 근거 ADR 이다. 여기 든 파일은 vendoring 도, 유지/갱신 판정도 하지 않으므로
 # 주간 harness 가 이 파일의 변화로 PR 을 열지 않는다. 풀 때는 이 줄을 지우고 새 ADR 을 쓴다.
-HELD = {"pin-rules.md": "ADR 0104"}
+# 지금은 비어 있다. pin-rules.md 를 ADR 0107 이 풀었다.
+HELD = {}
+
+# engram 이 기대는 절만 떼어 사본으로 둔다. 파일 전체를 가져오지 않으므로 미리알림과
+# Hermes 절이 바뀐 주는 `유지` 다(ADR 0107). 값이 None 이면 절 전체, 숫자면 그 수만큼의 첫 문단.
+PIN_RULES = "pin-rules.md"
+PIN_RULES_SECTIONS = (
+    ("위키 문서에서 할 일을 찾을 때", None),
+    ("직접 입력과 원장 쓰기", None),
+    ("항목·관계·제안", None),
+    ("삭제", 1),
+)
+
+# 화면을 engram 값으로 바꾼다. 설정 구역의 값 한 줄과 사이트 구역 둘뿐이다.
+PAGE_MARKS = ("// pin:config begin", "// pin:config end", "<!-- pin:site begin -->", "<!-- pin:site end -->")
+PAGE_CONFIG_RE = re.compile(r"var API='[^']*', SOURCES=\[[^\]]*\], AUTH='[^']*';")
+PAGE_CONFIG_ENGRAM = "var API='/pin/api/', SOURCES=['wiki'], AUTH='none';"
+# 견본에서 뜬 표면 가운데 상태와 게이트와 상수가 하나라도 다르면 화면을 가져오지 않는다.
+PIN_SURFACE_ORDER = ("상태 형태", "상태 값", "게이트", "상수", "화면 요청")
 
 
 def die(msg):
@@ -53,7 +92,7 @@ def git(upstream, *args, check=True):
     """upstream 저장소에서 git 명령을 돌리고 stdout 을 돌려준다."""
     r = subprocess.run(
         ["git", "-C", upstream, *args],
-        capture_output=True, text=True, check=False,
+        capture_output=True, text=True, encoding="utf-8", check=False,
     )
     if check and r.returncode != 0:
         die(f"git {' '.join(args)} 실패: {r.stderr.strip()}")
@@ -302,10 +341,265 @@ def build_delta(upstream, old_head, head, entries):
     return text, len(binary), len(wiki), count
 
 
+# ---------------------------------------------------------------------------
+# 규칙 문서 pin-rules.md: engram 이 기대는 절만 뜬다 (ADR 0107)
+# ---------------------------------------------------------------------------
+
+def pin_rules_excerpt(text):
+    """pin-rules.md 에서 PIN_RULES_SECTIONS 의 절만 떼어 낸다.
+
+    절 제목은 끝의 괄호를 뗀 뒤 글자 그대로 견준다. 기대하는 절이 없으면 ValueError 다.
+    조용히 빈 사본을 만들면 upstream 이 절 이름을 바꿨을 때 알 수 없다.
+    """
+    title = ""
+    sections = {}
+    cur = None
+    for line in text.splitlines():
+        if line.startswith("# ") and not title:
+            title = line
+        elif line.startswith("## "):
+            cur = re.sub(r"\s*\(.*\)\s*$", "", line[3:].strip())
+            sections[cur] = [line]
+        elif cur is not None:
+            sections[cur].append(line)
+    out = [title] if title else []
+    for name, paragraphs in PIN_RULES_SECTIONS:
+        if name not in sections:
+            raise ValueError(f"기대하는 절 '{name}' 을 찾지 못했습니다")
+        body = sections[name]
+        while body and not body[-1].strip():
+            body = body[:-1]
+        if paragraphs is not None:
+            # 제목 다음의 첫 문단(빈 줄 전까지)만 둔다.
+            kept, seen = [body[0], ""], False
+            for line in body[1:]:
+                if not line.strip():
+                    if seen:
+                        break
+                    continue
+                seen = True
+                kept.append(line)
+            body = kept
+        out.append("")
+        out.extend(body)
+    return "\n".join(out).rstrip("\n") + "\n"
+
+
+def pin_rules_header(count):
+    line2 = f"익명화 치환 {count}건을 적용했다" if count else "치환 없음"
+    return (
+        f"<!-- upstream llm-wiki meta/{PIN_RULES} 에서 engram 이 기대는 절만 떼어 왔다. {line2}.\n"
+        f"     떼어 온 절: " + ", ".join(n for n, _ in PIN_RULES_SECTIONS) + " (삭제는 첫 문단만)\n"
+        f"     출처 커밋은 harness/upstream.lock 에 있다.\n"
+        f"     손으로 고치지 않는다. scripts/upstream-sync.py 가 다시 만든다. -->\n"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Pin 표면 판정과 화면 가져오기 (ADR 0107)
+# ---------------------------------------------------------------------------
+
+def sha12(data):
+    return hashlib.sha256(data).hexdigest()[:12]
+
+
+def pin_archive(upstream, commit):
+    """커밋의 scripts/pin 을 임시 디렉터리에 꺼낸다. 없으면 None.
+
+    scripts/wiki_link.py 는 derive.py 가 읽는 공용 파일이라 있으면 함께 꺼낸다. 없다고 실패시키지 않는다.
+    없어서 import 가 깨지면 견본에 돌지 못한 것이고 그 경로가 PR 로 보낸다.
+    """
+    dest = tempfile.mkdtemp(prefix="pin-up-")
+    for path, required in (("scripts/pin", True), ("scripts/wiki_link.py", False)):
+        r = subprocess.run(["git", "-C", upstream, "archive", commit, path], capture_output=True, check=False)
+        if r.returncode != 0:
+            if required:
+                shutil.rmtree(dest, ignore_errors=True)
+                return None
+            continue
+        with tarfile.open(fileobj=io.BytesIO(r.stdout)) as tar:
+            for m in tar.getmembers():
+                # 심볼릭 링크, 절대 경로, 상위 경로는 꺼내지 않는다.
+                if (m.isfile() or m.isdir()) and not os.path.isabs(m.name) and ".." not in m.name.split("/"):
+                    tar.extract(m, dest)
+    return dest
+
+
+def pin_page_requests(html):
+    """화면이 보내는 요청: 연산 이름 집합과 API 경로 집합. 설정 구역의 값(API 접두)은 뺀다."""
+    ops = set(re.findall(r"\bop:'(\w+)'", html)) | set(re.findall(r"sendAsk\(\w+,'(\w+)'", html))
+    paths = set(re.findall(r"getJson\('(\w+)'", html)) | set(re.findall(r"API\+'(\w+)'", html))
+    return {"ops": sorted(ops), "paths": sorted(paths)}
+
+
+def pin_surface(code_dir):
+    """코드 한 벌에서 표면을 뜬다. 견본 위키에 upstream 파이썬을 돌려 낸 JSON 이다."""
+    pin_dir = os.path.join(code_dir, "scripts", "pin")
+    with open(os.path.join(pin_dir, "template.html"), "rb") as f:
+        page_bytes = f.read()
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+    r = subprocess.run(
+        [sys.executable, PIN_DRIVER, "surface", pin_dir, PIN_FIXTURES],
+        capture_output=True, text=True, encoding="utf-8", env=env, check=False,
+    )
+    if r.returncode != 0:
+        tail = (r.stderr.strip().splitlines() or ["(출력 없음)"])[-1]
+        raise RuntimeError(f"견본에 돌지 못했습니다: {tail}")
+    surf = json.loads(r.stdout)
+    html = page_bytes.decode("utf-8")
+    return {
+        "화면": sha12(page_bytes),
+        "상태 형태": sha12("\n".join(surf["state_shape"]).encode()),
+        "상태 값": sha12(json.dumps(surf["state_value"], sort_keys=True).encode()),
+        "게이트": sha12(json.dumps(surf["gate"], sort_keys=True, ensure_ascii=False).encode()),
+        "상수": sha12(json.dumps(surf["consts"], sort_keys=True).encode()),
+        "화면 요청": sha12(json.dumps(pin_page_requests(html), sort_keys=True).encode()),
+    }, surf, html
+
+
+def pin_rules_at(upstream, commit):
+    r = git(upstream, "show", f"{commit}:meta/{PIN_RULES}", check=False)
+    if r.returncode != 0:
+        return None
+    try:
+        return pin_rules_excerpt(r.stdout)
+    except ValueError as e:
+        return str(e)
+
+
+def transform_page(src):
+    """upstream 화면을 engram 화면으로 바꾼다. 변환은 둘이다.
+
+    1. 설정 구역(`pin:config` 사이)의 값 한 줄을 engram 값으로 바꾼다.
+    2. 사이트 구역(`pin:site` 사이)을 지운다.
+    표시 네 개가 파일에 정확히 한 번씩 있어야 하고 값 한 줄도 정확히 한 번 맞아야 한다.
+    아니면 ValueError 다. 입력 예시 문구 같은 그 밖의 글은 건드리지 않는다. 경계 검사가 잡는다.
+    """
+    for m in PAGE_MARKS:
+        n = src.count(m)
+        if n != 1:
+            raise ValueError(f"표시 '{m}' 가 {n}번 있습니다(정확히 한 번이어야 합니다)")
+    b, e = src.index(PAGE_MARKS[0]), src.index(PAGE_MARKS[1])
+    if b > e:
+        raise ValueError("설정 구역의 시작과 끝 순서가 거꾸로입니다")
+    block = src[b:e]
+    if len(PAGE_CONFIG_RE.findall(block)) != 1:
+        raise ValueError("설정 구역에서 값 한 줄(API, SOURCES, AUTH)을 정확히 한 번 찾지 못했습니다")
+    out = src[:b] + PAGE_CONFIG_RE.sub(PAGE_CONFIG_ENGRAM, block) + src[e:]
+    b, e = out.index(PAGE_MARKS[2]), out.index(PAGE_MARKS[3])
+    if b > e:
+        raise ValueError("사이트 구역의 시작과 끝 순서가 거꾸로입니다")
+    return out[:b] + out[e + len(PAGE_MARKS[3]):]
+
+
+def pull_page(html):
+    """변환한 화면을 내장 자리에 쓰고 경계 검사를 돈다. 걸리면 이전 파일로 되돌리고 False 를 낸다."""
+    new = transform_page(html)
+    old = None
+    if os.path.exists(PAGE_TARGET):
+        with open(PAGE_TARGET, "rb") as f:
+            old = f.read()
+    if old == new.encode("utf-8"):
+        return "같음", True
+    os.makedirs(os.path.dirname(PAGE_TARGET), exist_ok=True)
+    with open(PAGE_TARGET, "w", encoding="utf-8", newline="") as f:
+        f.write(new)
+    code, out = run_boundary()
+    if code != 0 and any(l.lstrip().startswith(PAGE_REL) for l in out.splitlines()):
+        print(out)
+        if old is None:
+            os.remove(PAGE_TARGET)
+        else:
+            with open(PAGE_TARGET, "wb") as f:
+                f.write(old)
+        return "경계 검사 적중", False
+    return "바뀜", True
+
+
+def judge_pin(upstream, base_commit, head, check, force_pull):
+    """Pin 표면을 lock 커밋과 HEAD 에서 떠 견주고 판정을 낸다. 판정은 유지, 화면만, PR 셋이다.
+
+    출력은 한 줄에 하나다. 마지막 줄 `pin 판정: <값>` 이 잡이 읽는 고정 문자열이다.
+    돌지 못한 표면이 하나라도 있으면 PR 이다. 화면 가져오기에 실패하면 exit 1 이다.
+    """
+    verdict, reasons = None, []
+    base_dir = head_dir = None
+    try:
+        if base_commit is None:
+            reasons.append("lock 이 없어 견줄 기준이 없습니다")
+        else:
+            base_dir = pin_archive(upstream, base_commit)
+            if base_dir is None:
+                reasons.append(f"lock 커밋 {base_commit[:7]} 에 scripts/pin 이 없습니다")
+        head_dir = pin_archive(upstream, head)
+        if head_dir is None:
+            reasons.append(f"HEAD {head[:7]} 에 scripts/pin 이 없습니다")
+        if reasons:
+            for r in reasons:
+                print(f"  돌지 못함 pin: {r}")
+            print("pin 판정: PR")
+            return 0
+
+        try:
+            base, _, base_html = pin_surface(base_dir)
+            cur, _, head_html = pin_surface(head_dir)
+        except (RuntimeError, ValueError, OSError) as e:
+            print(f"  돌지 못함 pin 표면: {e}")
+            print("pin 판정: PR")
+            return 0
+
+        base_rules, head_rules = pin_rules_at(upstream, base_commit), pin_rules_at(upstream, head)
+        changed = {}
+        for name in ("화면", *PIN_SURFACE_ORDER):
+            changed[name] = base[name] != cur[name]
+            if changed[name]:
+                print(f"  갱신 pin {name} ({base[name]} 에서 {cur[name]})")
+            else:
+                print(f"  유지 pin {name} ({cur[name]})")
+        changed["규칙 문서"] = base_rules != head_rules
+        print(f"  {'갱신' if changed['규칙 문서'] else '유지'} pin 규칙 문서 ({PIN_RULES} 의 기대하는 절)")
+        others = [n for n in (*PIN_SURFACE_ORDER, "규칙 문서") if changed[n]]
+
+        if others:
+            verdict = "PR"
+            print(f"  화면은 가져오지 않습니다. 바뀐 표면: {', '.join(others)}")
+        elif changed["화면"]:
+            verdict = "화면만"
+        else:
+            verdict = "유지"
+
+        if verdict == "화면만" or force_pull:
+            try:
+                transformed = transform_page(head_html)
+            except ValueError as e:
+                print(f"실패: 화면을 가져오지 않습니다. {e}")
+                return 1
+            have = open(PAGE_TARGET, "rb").read() if os.path.exists(PAGE_TARGET) else None
+            same = have == transformed.encode("utf-8")
+            if check:
+                print(f"  화면 가져오기 예정 {PAGE_REL} (내장본과 {'같음' if same else '다름'})")
+            else:
+                try:
+                    state, ok = pull_page(head_html)
+                except ValueError as e:
+                    print(f"실패: 화면을 가져오지 않습니다. {e}")
+                    return 1
+                if not ok:
+                    print(f"실패: 가져온 화면이 {state} 로 거부됐습니다. 이전 화면을 유지합니다")
+                    return 1
+                print(f"  화면 가져옴 {PAGE_REL} ({state})")
+        print(f"pin 판정: {verdict}")
+        return 0
+    finally:
+        for d in (base_dir, head_dir):
+            if d:
+                shutil.rmtree(d, ignore_errors=True)
+
+
 def run_boundary():
     """경계 검사를 그대로 부른다. 출력은 경로와 줄번호만 있으므로 그대로 넘긴다."""
     r = subprocess.run(
-        [sys.executable, CHECK_BOUNDARY], capture_output=True, text=True, check=False,
+        [sys.executable, CHECK_BOUNDARY], capture_output=True, text=True, encoding="utf-8", check=False,
     )
     return r.returncode, r.stdout.strip()
 
@@ -326,6 +620,8 @@ def main():
     ap = argparse.ArgumentParser(description="upstream 계약 vendoring 과 delta 감지")
     ap.add_argument("--upstream", required=True, help="upstream llm-wiki 경로")
     ap.add_argument("--check", action="store_true", help="쓰지 않고 변화만 낸다")
+    ap.add_argument("--pull-page", action="store_true",
+                    help="Pin 판정과 무관하게 HEAD 의 화면을 가져온다(PR 브랜치에서 Go 구현을 고친 뒤 쓴다)")
     args = ap.parse_args()
 
     upstream = os.path.abspath(os.path.expanduser(args.upstream))
@@ -355,10 +651,17 @@ def main():
     total_subs = 0
     for name in names:
         src = git(upstream, "show", f"{head}:meta/{name}").stdout
+        if name == PIN_RULES:
+            # 파일 전체가 아니라 engram 이 기대는 절만 가져온다(ADR 0107).
+            try:
+                src = pin_rules_excerpt(src)
+            except ValueError as e:
+                die(f"{name}: {e}. upstream 이 절 이름을 바꿨는지 확인하십시오")
         body, n = apply_replacements(src, entries)
         body = annotate_asset_links(body)
         total_subs += n
-        text = vendor_header(n).replace("NAME", name) + body
+        header = pin_rules_header(n) if name == PIN_RULES else vendor_header(n).replace("NAME", name)
+        text = header + body
         target = os.path.join(UPSTREAM_DIR, name)
         if args.check:
             exists = os.path.exists(target)
@@ -388,7 +691,7 @@ def main():
             print(f"lock: 갱신 ({old_lock['commit'][:7]} 에서 {short})")
             _, b, w, _ = build_delta(upstream, old_lock["commit"], head, entries)
             print(f"delta: private/deltas/{short}.md 생성 (binary-affecting {b}건, wiki-only {w}건)")
-        return 0
+        return judge_pin(upstream, old_lock["commit"] if old_lock else None, head, True, args.pull_page)
 
     if fp is not None and write_if_changed(fp_target, fp):
         changed_files.append(FORMAT_NAME)
@@ -443,6 +746,11 @@ def main():
             print("위반은 vendoring 결과 밖의 파일에서 났습니다. "
                   "해당 파일을 정리한 뒤 다시 실행하십시오")
         return 1
+
+    code = judge_pin(upstream, old_lock["commit"] if old_lock else None, head, False, args.pull_page)
+    if code != 0:
+        print("lock 을 쓰지 않았습니다")
+        return code
 
     same_state = (old_lock is not None
                   and old_lock.get("commit") == head

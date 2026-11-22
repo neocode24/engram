@@ -82,6 +82,7 @@ func newRootCmd() *cobra.Command {
 	root.AddCommand(newResurfaceCmd())
 	root.AddCommand(newRecallCmd())
 	root.AddCommand(newNewCmd())
+	root.AddCommand(newPinCmd())
 	root.AddCommand(newPromoteCmd())
 	root.AddCommand(newReindexCmd())
 	root.AddCommand(newSearchCmd())

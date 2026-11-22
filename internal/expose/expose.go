@@ -18,6 +18,7 @@ package expose
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/neocode24/engram/internal/config"
@@ -312,4 +313,16 @@ func ReasonText(reason string) string {
 		return i18n.T("core.expose.reason_outside")
 	}
 	return i18n.T("core.expose.reason_none")
+}
+
+// LoopbackHost는 바인딩 주소나 Host 헤더의 호스트 이름이 이 컴퓨터 밖으로 나가지 않는 주소인지
+// 본다. 이름으로 준 주소는 localhost 하나만 인정하고 나머지는 풀지 않고 외부로 본다. 경고를
+// 빠뜨리는 쪽보다 더 내는 쪽이 안전하다. 노출 판정이 한 곳이라는 ADR 0046 을 지키려고 여기에 둔다.
+// Pin 의 쓰기 경로(ADR 0106)가 이 판정으로 열린다.
+func LoopbackHost(host string) bool {
+	if host == "localhost" {
+		return true
+	}
+	ip := net.ParseIP(strings.Trim(host, "[]"))
+	return ip != nil && ip.IsLoopback()
 }

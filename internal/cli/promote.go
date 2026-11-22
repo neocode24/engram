@@ -16,6 +16,7 @@ import (
 	"github.com/neocode24/engram/internal/doc"
 	"github.com/neocode24/engram/internal/i18n"
 	"github.com/neocode24/engram/internal/lint"
+	"github.com/neocode24/engram/internal/pin"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
 	"github.com/spf13/cobra"
@@ -65,6 +66,11 @@ func newPromoteCmd() *cobra.Command {
 			}
 			switch toStage {
 			case "", stageNameContext:
+				// context 문서는 판단 대상이 아니다(ADR 0106). 선언을 주면 쓸 곳이 없으니
+				// 받은 척하지 않고 알린다.
+				if cmd.Flags().Changed(flagPin) {
+					return errors.New(i18n.T("cli.pin.not_for_context"))
+				}
 				// 민감도와 시크릿을 본다. 파일 전문을 주어 거절의 줄 번호가
 				// 사용자가 편집기에서 보는 줄과 같게 한다(ADR 0069).
 				if err := checkContextGuards(fieldString(d, "sensitivity"), cfg, string(raw)); err != nil {
@@ -76,7 +82,11 @@ func newPromoteCmd() *cobra.Command {
 				if err := checkSecrets(string(raw)); err != nil {
 					return err
 				}
-				return promoteToSources(cmd, root, cfg, srcPath, d, stage)
+				plan, err := planPin(cmd, root)
+				if err != nil {
+					return err
+				}
+				return promoteToSources(cmd, root, cfg, srcPath, d, stage, plan)
 			default:
 				return errors.New(i18n.T("cli.promote.to_invalid", toStage,
 					stageNameContext+", "+stageNameSources))
@@ -179,6 +189,10 @@ func newPromoteCmd() *cobra.Command {
 				if err := os.Remove(srcPath); err != nil {
 					return fmt.Errorf("%s: %w", i18n.T("cli.promote.inbox_remove_fail", srcPath), err)
 				}
+				// inbox 문서가 context 로 옮겨졌다. 그 문서를 근거로 둔 일의 경로를 따라 고친다.
+				if err := pinFollow(cmd, root, []pin.Move{{From: rel, To: destRel}}); err != nil {
+					return err
+				}
 			}
 			if stage == "source" && cfg.Axes[config.AxisDerivedContext] {
 				// 역방향 기록. 프론트매터 필드만 갱신하고 본문은 그대로 둔다.
@@ -210,6 +224,7 @@ func newPromoteCmd() *cobra.Command {
 	cmd.Flags().String(flagChannel, "", i18n.T("cli.source.flag_channel"))
 	cmd.Flags().StringArray(flagRef, nil, i18n.T("cli.source.flag_ref"))
 	cmd.Flags().String(flagWiki, ".", i18n.T("cli.ingest.flag_wiki"))
+	addPinFlag(cmd)
 	return cmd
 }
 
@@ -220,7 +235,7 @@ func newPromoteCmd() *cobra.Command {
 //
 // 본문은 그대로 둔다. sources 는 이후 본문을 고치지 않는 것이 계약이다.
 func promoteToSources(cmd *cobra.Command, root string, cfg config.Config,
-	srcPath string, d doc.Doc, stage string) error {
+	srcPath string, d doc.Doc, stage string, plan *pinPlan) error {
 	if stage != "inbox" {
 		return errors.New(i18n.T("cli.promote.to_sources_from", srcPath, stage))
 	}
@@ -307,20 +322,50 @@ func promoteToSources(cmd *cobra.Command, root string, cfg config.Config,
 		return nil
 	}
 
-	if _, err := wiki.Create(root, cfg, wiki.StageSource, created, slug, fm, d.Body); err != nil {
+	// 순서는 새 문서 쓰기, 원장 쓰기, inbox 원본 지우기다. 선언이 거절되면 아무것도 옮기지 않는다.
+	// 원본 inbox 문서의 경로를 근거로 둔 일은 새 경로로 따라간다.
+	srcRel, err := filepath.Rel(root, srcPath)
+	if err != nil {
+		return fmt.Errorf("%s: %w", i18n.T("cli.ingest.rel_fail"), err)
+	}
+	srcRel = filepath.ToSlash(srcRel)
+	var written string
+	rep, err := pin.Run(pin.Txn{
+		Wiki: root, Now: Now(cmd), Decl: plan.decl,
+		Doc:   pinDoc(root, destPath, "sources", created, string(doc.RenderMap(fm, d.Body))),
+		Moves: []pin.Move{{From: srcRel, To: filepath.ToSlash(destRel)}},
+		Commit: func() error {
+			var cerr error
+			written, cerr = wiki.Create(root, cfg, wiki.StageSource, created, slug, fm, d.Body)
+			return cerr
+		},
+		Rollback: func() {
+			if written != "" {
+				_ = os.Remove(written)
+			}
+		},
+	})
+	if err != nil {
+		var rej *pin.RejectedError
+		if errors.As(err, &rej) {
+			return errors.New(i18n.T("cli.pin.rejected", pinRejections(rej)))
+		}
 		return err
 	}
 	if err := os.Remove(srcPath); err != nil {
 		return fmt.Errorf("%s: %w", i18n.T("cli.promote.inbox_remove_fail", srcPath), err)
 	}
 	if jsonOutput(cmd) {
+		out := sourcesOutcome{writeOutcome: res, Type: docType, Pin: pinOutcomeOf(rep)}
 		enc := json.NewEncoder(cmd.OutOrStdout())
 		enc.SetIndent("", "  ")
-		return enc.Encode(sourcesOutcome{writeOutcome: res, Type: docType})
+		return enc.Encode(out)
 	}
 	fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.to_sources_done", destPath))
 	fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.type_line", docType))
 	fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.promote.to_sources_next"))
+	printPinReport(cmd.OutOrStdout(), rep)
+	printAffected(cmd.ErrOrStderr(), srcRel, rep.Affected)
 	return nil
 }
 
@@ -330,8 +375,9 @@ const evidenceSourceType = "source-raw"
 // sourcesOutcome은 --to sources 의 결과다.
 type sourcesOutcome struct {
 	writeOutcome
-	Type   string `json:"type"`
-	DryRun bool   `json:"dryRun,omitempty"`
+	Type   string      `json:"type"`
+	DryRun bool        `json:"dryRun,omitempty"`
+	Pin    *pinOutcome `json:"pin,omitempty"`
 }
 
 // promoteOutcome은 promote의 결과다. 공통 결과에 문서 종류를 더 낸다.

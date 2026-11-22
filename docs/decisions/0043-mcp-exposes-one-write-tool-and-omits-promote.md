@@ -2,7 +2,7 @@
 number: 0043
 title: MCP는 쓰기 도구를 하나만 노출하고 promote를 내보내지 않는다
 date: 2026-08-17
-status: accepted
+status: amended
 ---
 
 # MCP 노출의 도구 분해

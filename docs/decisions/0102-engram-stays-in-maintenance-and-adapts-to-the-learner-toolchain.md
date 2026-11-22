@@ -2,7 +2,7 @@
 number: 0102
 title: engram은 유지보수를 유지하고 수강생 도구 환경에만 맞춘다
 date: 2026-10-11
-status: accepted
+status: amended
 ---
 
 # engram은 유지보수를 유지하고 수강생 도구 환경에만 맞춘다

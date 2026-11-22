@@ -90,7 +90,7 @@
 | `migrate` | 스키마 변경을 기존 문서에 적용. `--dry-run` 기본 |
 | `sync` | git 기반 동기화. 프론트매터 병합 |
 | `config` | 설정 조회와 편집 |
-| `init` | 새 위키 생성 마법사 |
+| `init` | 새 위키 생성 마법사. 이미 있는 위키에서는 빠진 것(`pin/` 등)만 채운다 |
 
 `doctor`는 사내 배포에서 필수다. git 버전, autocrlf 설정, 파일시스템 대소문자 구분, 콘솔 인코딩, 프록시 도달성, 스키마 유효성, 인덱스 신선도, 권한을 점검한다. 점검 실패를 나열만 하면 지원 요청이 그대로 들어오므로, 각 항목에 복구 명령을 함께 출력한다.
 
@@ -101,7 +101,8 @@
 | `eject` | 내장 규칙을 파일로 풀어 사용자에게 넘긴다 | 단방향 ([0013](decisions/0013-eject-redefined-seal-removed.md)) |
 | `rules show` | eject 없이 내장 규칙을 읽기 전용 출력 | |
 | `skills install` | 에이전트 스킬 문서를 설치 | LLM 통합의 전부 ([0014](decisions/0014-llm-boundary-agent-drives-binary.md)) |
-| `serve` | 웹 UI | |
+| `serve` | 웹 UI | 읽기 전용. 예외는 loopback에서 여는 `/pin` 하나 ([0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md)) |
+| `pin` | 위키 문서에서 나온 할 일 원장. `list`, `apply` | 기본 기능이다. `init`이 `pin/`을 만들고 기존 위키는 `init` 재실행으로 채운다. `capture`, `source`, `promote --to sources`는 `--pin`이 필요하다 ([0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md), [0108](decisions/0108-pin-is-a-default-feature-created-by-init-and-refilled-by-rerunning-it.md)) |
 | `model pull` | 재발견용 임베딩 모델 내려받기 | 선택 층. bge-m3 fp32 2.3GB ([0007](decisions/0007-platform-and-distribution.md), [0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)) |
 | `model status` | 모델 경로와 무결성 | `--verify`로 체크섬까지 본다 |
 | `self-update` | 릴리스 체크섬 검증 후 갱신 | |

@@ -1,0 +1,13 @@
+{
+ "archive_after_days": 30,
+ "confirm_stale_days": 10,
+ "reminder_lists": [],
+ "signal": {
+  "due_risk_days": 3,
+  "due_within_days": 14,
+  "waiting_over_days": 14,
+  "work_stale_days": 10
+ },
+ "smart_lists": {},
+ "works": []
+}

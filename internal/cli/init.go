@@ -13,6 +13,7 @@ import (
 
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/i18n"
+	"github.com/neocode24/engram/internal/pin"
 	"github.com/spf13/cobra"
 )
 
@@ -23,14 +24,21 @@ const flagPreset = "preset"
 const gitignoreEntry = ".engram/"
 
 // initResult는 init 결과 요약이다. --json 출력에 그대로 쓰인다.
+//
+// Fresh 가 거짓이면 이미 있던 위키에 다시 실행한 것이다. 그때 Created 는 이번에 채운 것이고 Existing 은
+// 이미 있어서 바꾸지 않은 것이다. PresetKept 는 다른 프리셋을 달라고 했으나 바꾸지 않았을 때의 현재 프리셋이다.
 type initResult struct {
-	Root   string   `json:"root"`
-	Preset string   `json:"preset"`
-	Dirs   []string `json:"dirs"`
-	Files  []string `json:"files"`
+	Root       string   `json:"root"`
+	Preset     string   `json:"preset"`
+	Dirs       []string `json:"dirs"`
+	Files      []string `json:"files"`
+	Fresh      bool     `json:"fresh"`
+	Created    []string `json:"created"`
+	Existing   []string `json:"existing"`
+	PresetKept string   `json:"preset_kept,omitempty"`
 }
 
-// newInitCmd는 새 위키를 만드는 init 커맨드를 반환한다.
+// newInitCmd는 위키를 만들거나 이미 있는 위키의 빠진 것을 채우는 init 커맨드를 반환한다.
 func newInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init " + i18n.T("usage.args.path_opt"),
@@ -50,7 +58,7 @@ func newInitCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			res, err := runInit(dir, preset, Now(cmd))
+			res, err := runInit(dir, preset, cmd.Flags().Changed(flagPreset), Now(cmd))
 			if err != nil {
 				return err
 			}
@@ -78,45 +86,91 @@ func parsePreset(raw string) (config.Preset, error) {
 	return "", fmt.Errorf("%s", i18n.T("cli.init.preset_invalid", raw))
 }
 
-// runInit는 위키 루트에 초기 파일을 만든다. 기존 파일은 덮어쓰지 않으므로
-// 일부만 있던 대상에서도 나머지를 채워 완성한다.
-func runInit(dir string, preset config.Preset, now time.Time) (initResult, error) {
+// runInit는 위키 루트에 초기 파일을 만든다. 이미 위키(engram.yaml 이 있음)이면 거절하지 않고 빠진 것만
+// 채운다. 대상은 pin/, 설정이 요구하는 디렉토리, .gitignore 의 .engram/ 항목이다. 있는 파일은
+// 바꾸지 않는다. 프리셋은 새로 만들 때만 뜻이 있고 presetGiven 이 참이어도 있는 위키의 프리셋은
+// 바꾸지 않는다(바꾸려면 migrate). ADR 0108.
+func runInit(dir string, preset config.Preset, presetGiven bool, now time.Time) (initResult, error) {
 	root := filepath.Clean(dir)
 	cfgPath := filepath.Join(root, config.ConfigFileName)
-	if _, err := os.Stat(cfgPath); err == nil {
-		return initResult{}, fmt.Errorf("%s", i18n.T("cli.init.already_wiki", cfgPath, config.ConfigFileName))
-	} else if !errors.Is(err, fs.ErrNotExist) {
+	fresh := false
+	if _, err := os.Stat(cfgPath); errors.Is(err, fs.ErrNotExist) {
+		fresh = true
+	} else if err != nil {
 		return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.path_check_fail"), err)
 	}
-	if err := os.MkdirAll(root, 0o755); err != nil {
-		return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.root_mkdir_fail"), err)
+	var res initResult
+	if fresh {
+		if err := os.MkdirAll(root, 0o755); err != nil {
+			return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.root_mkdir_fail"), err)
+		}
+		if err := writeFileIfAbsent(cfgPath, []byte(configYAML(preset))); err != nil {
+			return initResult{}, err
+		}
+		res.Created = append(res.Created, config.ConfigFileName)
+	} else {
+		res.Existing = append(res.Existing, config.ConfigFileName)
 	}
-	if err := writeFileIfAbsent(cfgPath, []byte(configYAML(preset))); err != nil {
-		return initResult{}, err
-	}
-	// 방금 쓴 설정을 다시 읽는다. init이 쓰는 파일이 곧 제품이 읽는 파일이므로
+	// 방금 쓴(또는 이미 있는) 설정을 읽는다. init이 쓰는 파일이 곧 제품이 읽는 파일이므로
 	// 생성물은 항상 이 로드 결과에서 파생한다.
 	cfg, err := config.Load(root)
 	if err != nil {
 		return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.config_load_fail"), err)
 	}
+	if !fresh && presetGiven && string(cfg.Preset) != string(preset) {
+		res.PresetKept = string(cfg.Preset)
+	}
 	for _, d := range cfg.PageDirs {
-		if err := os.MkdirAll(filepath.Join(root, d), 0o755); err != nil {
+		full := filepath.Join(root, d)
+		if _, err := os.Stat(full); err == nil {
+			res.Existing = append(res.Existing, d+"/")
+			continue
+		}
+		if err := os.MkdirAll(full, 0o755); err != nil {
 			return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.dir_mkdir_fail", d), err)
 		}
+		res.Created = append(res.Created, d+"/")
 	}
-	if err := writeFileIfAbsent(filepath.Join(root, "index.md"), []byte(indexMD(cfg, now))); err != nil {
+	// 있는 위키의 index.md 는 채우지 않는다. 없으면 doctor 가 알린다.
+	if fresh {
+		if err := writeFileIfAbsent(filepath.Join(root, "index.md"), []byte(indexMD(cfg, now))); err != nil {
+			return initResult{}, err
+		}
+		res.Created = append(res.Created, "index.md")
+	} else if _, err := os.Stat(filepath.Join(root, "index.md")); err == nil {
+		res.Existing = append(res.Existing, "index.md")
+	}
+	changed, err := ensureGitignore(root)
+	if err != nil {
 		return initResult{}, err
 	}
-	if err := ensureGitignore(root); err != nil {
-		return initResult{}, err
+	if changed {
+		res.Created = append(res.Created, ".gitignore ("+gitignoreEntry+")")
+	} else {
+		res.Existing = append(res.Existing, ".gitignore ("+gitignoreEntry+")")
 	}
-	return initResult{
-		Root:   root,
-		Preset: string(cfg.Preset),
-		Dirs:   cfg.PageDirs,
-		Files:  []string{config.ConfigFileName, "index.md", ".gitignore"},
-	}, nil
+	hadPin := pin.Present(root)
+	made, err := pin.Init(root)
+	if err != nil {
+		return initResult{}, fmt.Errorf("%s: %w", i18n.T("cli.init.pin_fail"), err)
+	}
+	switch {
+	case !hadPin:
+		res.Created = append(res.Created, "pin/")
+	case len(made) > 0:
+		res.Created = append(res.Created, "pin/ ("+strings.Join(made, ", ")+")")
+	default:
+		res.Existing = append(res.Existing, "pin/")
+	}
+	res.Root, res.Preset, res.Dirs, res.Fresh = root, string(cfg.Preset), cfg.PageDirs, fresh
+	res.Files = []string{config.ConfigFileName, "index.md", ".gitignore"}
+	if res.Created == nil {
+		res.Created = []string{}
+	}
+	if res.Existing == nil {
+		res.Existing = []string{}
+	}
+	return res, nil
 }
 
 // writeFileIfAbsent는 경로에 파일이 없을 때만 쓴다. 있으면 그대로 둔다.
@@ -135,18 +189,18 @@ func writeFileIfAbsent(path string, data []byte) error {
 	return f.Close()
 }
 
-// ensureGitignore는 .gitignore에 .engram/ 항목이 없을 때만 덧붙인다.
-func ensureGitignore(root string) error {
+// ensureGitignore는 .gitignore에 .engram/ 항목이 없을 때만 덧붙인다. 바꿨으면 참이다.
+func ensureGitignore(root string) (bool, error) {
 	path := filepath.Join(root, ".gitignore")
 	data, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
-		return writeFileIfAbsent(path, []byte(gitignoreEntry+"\n"))
+		return true, writeFileIfAbsent(path, []byte(gitignoreEntry+"\n"))
 	}
 	if err != nil {
-		return fmt.Errorf("%s: %w", i18n.T("cli.init.gitignore_read_fail"), err)
+		return false, fmt.Errorf("%s: %w", i18n.T("cli.init.gitignore_read_fail"), err)
 	}
 	if hasLine(data, gitignoreEntry) {
-		return nil
+		return false, nil
 	}
 	var b strings.Builder
 	b.Write(data)
@@ -156,9 +210,9 @@ func ensureGitignore(root string) error {
 	b.WriteString(gitignoreEntry)
 	b.WriteByte('\n')
 	if err := os.WriteFile(path, []byte(b.String()), 0o644); err != nil {
-		return fmt.Errorf("%s: %w", i18n.T("cli.init.gitignore_write_fail"), err)
+		return false, fmt.Errorf("%s: %w", i18n.T("cli.init.gitignore_write_fail"), err)
 	}
-	return nil
+	return true, nil
 }
 
 // hasLine은 데이터에 해당 줄이 이미 있는지 검사한다.
@@ -230,7 +284,12 @@ func indexMD(cfg config.Config, now time.Time) string {
 }
 
 // printOnboarding은 무엇이 만들어졌고 다음에 무엇을 하면 되는지를 인쇄한다.
+// 이미 있던 위키에는 채운 것과 이미 있던 것을 가려 적는다.
 func printOnboarding(w io.Writer, res initResult) {
+	if !res.Fresh {
+		printRefill(w, res)
+		return
+	}
 	dirGuide := map[string]string{
 		"inbox":   i18n.T("cli.init.dir_inbox"),
 		"sources": i18n.T("cli.init.dir_sources"),
@@ -251,6 +310,7 @@ func printOnboarding(w io.Writer, res initResult) {
 		}
 		fmt.Fprintf(w, "  %-12s %s\n", d+"/", guide)
 	}
+	fmt.Fprintf(w, "  %-12s %s\n", "pin/", i18n.T("cli.init.dir_pin"))
 	fmt.Fprintln(w, "\n"+i18n.T("cli.init.files_header"))
 	for _, f := range res.Files {
 		fmt.Fprintf(w, "  %-12s %s\n", f, fileGuide[f])
@@ -259,4 +319,26 @@ func printOnboarding(w io.Writer, res initResult) {
 	fmt.Fprintln(w, "  1. "+i18n.T("cli.init.step_inbox"))
 	fmt.Fprint(w, "  2. "+i18n.T("cli.init.step_config", config.ConfigFileName)+"\n")
 	fmt.Fprintln(w, "  3. "+i18n.T("cli.init.step_fill_index"))
+}
+
+// printRefill은 이미 있던 위키에 init 을 다시 실행한 결과를 인쇄한다.
+func printRefill(w io.Writer, res initResult) {
+	fmt.Fprintln(w, i18n.T("cli.init.refill_head", res.Root, res.Preset))
+	if len(res.Created) == 0 {
+		fmt.Fprintln(w, i18n.T("cli.init.refill_nothing"))
+	} else {
+		fmt.Fprintln(w, "\n"+i18n.T("cli.init.refill_created"))
+		for _, c := range res.Created {
+			fmt.Fprintln(w, "  "+c)
+		}
+	}
+	if len(res.Existing) > 0 {
+		fmt.Fprintln(w, "\n"+i18n.T("cli.init.refill_existing"))
+		for _, e := range res.Existing {
+			fmt.Fprintln(w, "  "+e)
+		}
+	}
+	if res.PresetKept != "" {
+		fmt.Fprintln(w, "\n"+i18n.T("cli.init.preset_kept", res.PresetKept))
+	}
 }

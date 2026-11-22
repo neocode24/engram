@@ -57,7 +57,7 @@
 | [0040](0040-gate-follows-the-directory-not-the-declaration.md) | 게이트는 선언이 아니라 디렉토리를 따르고 artifact_stage 누락은 오류다 | 2026-08-16 | accepted |
 | [0041](0041-skills-install-embeds-one-static-skill.md) | skills install은 정적 스킬 문서 하나를 심고 위키별 규칙은 rules show로 넘긴다 | 2026-08-17 | amended |
 | [0042](0042-release-artifacts-and-workflow.md) | 릴리스는 goreleaser로 만들고 태그 푸시가 유일한 계기다 | 2026-08-17 | accepted |
-| [0043](0043-mcp-exposes-one-write-tool-and-omits-promote.md) | MCP는 쓰기 도구를 하나만 노출하고 promote를 내보내지 않는다 | 2026-08-17 | accepted |
+| [0043](0043-mcp-exposes-one-write-tool-and-omits-promote.md) | MCP는 쓰기 도구를 하나만 노출하고 promote를 내보내지 않는다 | 2026-08-17 | amended |
 | [0044](0044-serve-is-read-only-and-shows-only-vetted-knowledge.md) | serve는 읽기 전용이고 검수된 지식만 보여준다 | 2026-08-17 | amended |
 | [0045](0045-explicit-slug-must-still-be-filesystem-safe.md) | 명시한 슬러그도 파일시스템 안전 검사를 받는다 | 2026-08-17 | amended |
 | [0046](0046-pack-exports-files-and-anonymizes-by-user-dictionary.md) | pack은 파일을 그대로 내보내고 익명화는 사용자 사전으로 한다 | 2026-08-17 | amended |
@@ -71,7 +71,7 @@
 | [0054](0054-gate-counts-only-links-that-resolve.md) | 승급 게이트는 실제로 이어지는 링크만 센다 | 2026-08-17 | accepted |
 | [0055](0055-agents-change-the-wiki-only-through-commands.md) | 에이전트는 커맨드로만 위키를 바꾼다 | 2026-08-17 | accepted |
 | [0056](0056-promote-has-a-dry-run.md) | promote에 --dry-run을 둔다 | 2026-08-17 | accepted |
-| [0057](0057-approval-attaches-to-content-not-to-the-command.md) | 승인은 커맨드가 아니라 문서 내용에 붙는다 | 2026-08-17 | accepted |
+| [0057](0057-approval-attaches-to-content-not-to-the-command.md) | 승인은 커맨드가 아니라 문서 내용에 붙는다 | 2026-08-17 | amended |
 | [0058](0058-promote-to-sources-moves-evidence.md) | promote --to sources가 inbox의 증거를 옮긴다 | 2026-08-17 | accepted |
 | [0059](0059-recall-candidate-pool-is-independent-of-limit.md) | recall의 문서 후보 수는 --limit과 무관하게 고정한다 | 2026-08-18 | accepted |
 | [0060](0060-search-line-shows-stage-not-path.md) | search 목록은 경로 대신 단계를 내고 제목은 --json에만 담는다 | 2026-08-18 | accepted |
@@ -116,10 +116,13 @@
 | [0099](0099-upstream-wiki-link-updated-exception-needs-no-engram-change.md) | upstream이 wiki-link 커밋에 updated 예외를 둬도 engram은 바꾸지 않는다 | 2026-09-05 | accepted |
 | [0100](0100-upstream-sources-entry-and-agent-session-channel-need-no-engram-change.md) | upstream이 sources 진입 기준과 agent-session 채널을 신설해도 engram은 바꾸지 않는다 | 2026-09-12 | accepted |
 | [0101](0101-upstream-inbox-exit-rule-is-recorded-as-unimplemented.md) | upstream이 inbox 퇴장 규칙을 신설해도 engram은 코드를 바꾸지 않고 미이행으로 기록한다 | 2026-10-04 | accepted |
-| [0102](0102-engram-stays-in-maintenance-and-adapts-to-the-learner-toolchain.md) | engram은 유지보수를 유지하고 수강생 도구 환경에만 맞춘다 | 2026-10-11 | accepted |
+| [0102](0102-engram-stays-in-maintenance-and-adapts-to-the-learner-toolchain.md) | engram은 유지보수를 유지하고 수강생 도구 환경에만 맞춘다 | 2026-10-11 | amended |
 | [0103](0103-upstream-design-state-fields-are-recorded-as-unimplemented.md) | upstream이 설계 상태 필드 여섯을 신설해도 engram은 코드를 바꾸지 않고 미이행으로 기록한다 | 2026-11-14 | accepted |
-| [0104](0104-upstream-pin-rules-are-held-out-of-the-harness.md) | upstream이 할 일 원장 규칙을 계약으로 선언해도 harness는 한동안 따라가지 않는다 | 2026-11-20 | accepted |
+| [0104](0104-upstream-pin-rules-are-held-out-of-the-harness.md) | upstream이 할 일 원장 규칙을 계약으로 선언해도 harness는 한동안 따라가지 않는다 | 2026-11-20 | amended |
 | [0105](0105-upstream-learning-record-fact-check-needs-no-engram-change.md) | upstream이 학습 기록의 사실 확인 행위를 신설해도 engram은 바꾸지 않는다 | 2026-11-21 | accepted |
+| [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) | 할 일 원장은 문서를 넣는 명령에서 선언받고 loopback 화면에서만 쓴다 | 2026-11-22 | amended |
+| [0107](0107-harness-judges-pin-surfaces-and-pulls-only-the-page.md) | harness가 Pin 표면을 견본에 돌려 판정하고 화면만 바뀐 회차에만 화면을 가져온다 | 2026-11-22 | accepted |
+| [0108](0108-pin-is-a-default-feature-created-by-init-and-refilled-by-rerunning-it.md) | Pin은 기본 기능이고 init이 만들며 기존 위키는 init 재실행으로 채운다 | 2026-11-22 | accepted |
 
 ## 공개 범위 밖
 
@@ -193,6 +196,14 @@
 | 0005 | upstream 과 같은 판정을 내는 것이 동등성이다 | [0082](0082-speaker-count-is-asked-not-guessed.md) 화자 분할은 규칙이 아니라 추정이라 동등성을 확인만 하고 따르지 않는다 |
 | 0079 | 기본 whisper 크기는 미결이고 용어 사전이 모델 차이를 메운다고 본다 | [0081](0081-default-whisper-model-is-large-v3.md) large-v3 로 정한다. 사전 가설은 신호 부족으로 검증도 반증도 못 했다 |
 | 0079 | 음성은 별도 저장소에 둔다 | [0080](0080-voice-is-a-nested-module-in-this-repository.md) 이 저장소의 중첩 모듈로 둔다. 별도 저장소에서는 internal/embed 재사용이 성립하지 않는다 |
+| 0044 | serve에는 쓰기 경로를 두지 않는다 | [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) `POST /pin/api/changes` 하나가 예외다. 쓰는 곳은 `pin/`뿐이고 리스너가 loopback일 때만 성립한다 |
+| 0044 | 기본 제외는 `inbox/`와 `sources/`다 | [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) Pin 화면이 근거로 인용된 inbox와 sources 문서의 제목, 경로, 절, 인용문을 보인다. 전문은 보이지 않는다 |
+| 0102 | 커맨드 범위는 1.0 그대로 닫아 둔다 | [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) 할 일 원장 `pin`이 예외다. 승인 버튼을 다는 컨셉 변경은 그대로 기각이다 |
+| 0057 | `source`는 사람이 직접 친다 | [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) 출처와 작성일을 보여 주고 승인받은 뒤 에이전트가 실행한다. `--pin` 선언을 에이전트가 판단해야 하기 때문이다 |
+| 0043 | MCP `capture`는 인자로 문서만 받는다 | [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) `pin` 인자를 받는다. 쓰기 도구는 여전히 하나이고 새 일은 제안으로만 들어간다 |
+| 0104 | `pin-rules.md`는 vendoring하지 않고 유지와 갱신도 판정하지 않는다 | [0107](0107-harness-judges-pin-surfaces-and-pulls-only-the-page.md) 보류를 푼다. engram이 기대는 절만 사본으로 두고 Pin의 화면, 상태, 게이트, 상수는 견본에 돌려 견준다 |
+| 0106 | 원장은 켜야 켜진다. `pin init`이 `pin/`을 만들고 켠 위키에서만 `--pin`이 필요하다 | [0108](0108-pin-is-a-default-feature-created-by-init-and-refilled-by-rerunning-it.md) 기본 기능이다. `init`이 `pin/`을 만들고 기존 위키는 `init` 재실행으로 채운다. `pin init`을 없애고 `--pin`은 모든 위키에서 필요하다 |
+| 0106 | 교재는 바꾸지 않는다(원장은 켜야 켜지므로 실습 위키에 나타나지 않는다) | [0108](0108-pin-is-a-default-feature-created-by-init-and-refilled-by-rerunning-it.md) 실습 위키의 `init` 출력에 `pin/`이 나온다. 교재가 Pin을 흐름 안에서 가르친다 |
 
 ## 근거만 갱신된 경우
 

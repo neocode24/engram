@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/neocode24/engram/internal/doctor"
+	"github.com/neocode24/engram/internal/pin"
 	"github.com/spf13/cobra"
 )
 
@@ -37,6 +38,9 @@ func makeDoctorWiki(t *testing.T, engramYAML string) string {
 			t.Fatal(err)
 		}
 	}
+	if _, err := pin.Init(root); err != nil {
+		t.Fatal(err)
+	}
 	for name, content := range map[string]string{
 		"engram.yaml": engramYAML,
 		"index.md":    "# 색인\n",
@@ -54,7 +58,7 @@ func TestDoctorCmd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("fail 이 없으면 에러가 아니어야 합니다: %v\n%s", err, out)
 		}
-		for _, want := range []string{"[ok] env.git", "항목 12개"} {
+		for _, want := range []string{"[ok] env.git", "항목 13개"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("출력에 %q 없음:\n%s", want, out)
 			}
@@ -103,13 +107,13 @@ func TestDoctorCmd(t *testing.T) {
 		if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &res); err != nil {
 			t.Fatalf("JSON 파싱 실패: %v\n출력: %s", err, out)
 		}
-		if len(res.Findings) != 12 {
-			t.Errorf("항목은 12개여야 합니다, got %d", len(res.Findings))
+		if len(res.Findings) != 13 {
+			t.Errorf("항목은 13개여야 합니다, got %d", len(res.Findings))
 		}
 		if res.Findings[0].ID != "env.git" || res.Findings[0].Status == "" {
 			t.Errorf("첫 항목이 env.git 이어야 합니다: %+v", res.Findings[0])
 		}
-		if res.Summary.Items != 12 || res.Summary.Warn < 1 {
+		if res.Summary.Items != 13 || res.Summary.Warn < 1 {
 			t.Errorf("요약이 틀렸습니다: %+v", res.Summary)
 		}
 		for _, f := range res.Findings {

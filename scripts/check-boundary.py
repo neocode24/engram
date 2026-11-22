@@ -24,6 +24,11 @@ import re
 import subprocess
 import sys
 
+# Windows 러너는 기본 인코딩이 cp1252라 한글 출력이 깨진다. 표준 출력을 UTF-8로 고정한다.
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8")
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATTERNS = os.path.join(ROOT, "private", "boundary-patterns.txt")
 SKIP_DIRS = {".git", "private", "node_modules"}
@@ -57,7 +62,8 @@ def scan_worktree(pats):
             for i, line in enumerate(text.splitlines(), 1):
                 for p in pats:
                     if p.search(line):
-                        rel = os.path.relpath(path, ROOT)
+                        # 운영체제와 무관하게 / 경로로 낸다. 읽는 쪽(upstream-sync.py)이 이 꼴로 비교한다
+                        rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
                         # 적중한 내용을 출력하지 않는다. 로그가 유출 경로가 된다
                         hits.append(f"{rel}:{i} 금지 패턴 적중")
                         break
@@ -68,7 +74,7 @@ def scan_history(pats):
     try:
         blob = subprocess.run(
             ["git", "-C", ROOT, "log", "--all", "-p", "--format=%H%n%s%n%b"],
-            capture_output=True, text=True, timeout=300,
+            capture_output=True, text=True, encoding="utf-8", timeout=300,
         ).stdout
     except (subprocess.SubprocessError, OSError) as e:
         return [f"이력 검사 실패: {e}"]

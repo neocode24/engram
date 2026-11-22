@@ -17,6 +17,7 @@ import (
 	"github.com/neocode24/engram/internal/index"
 	"github.com/neocode24/engram/internal/lint"
 	"github.com/neocode24/engram/internal/mcpserver"
+	"github.com/neocode24/engram/internal/pin"
 	"github.com/neocode24/engram/internal/resurface"
 	"github.com/neocode24/engram/internal/skills"
 	"github.com/neocode24/engram/internal/state"
@@ -57,6 +58,8 @@ type mcpCaptureArgs struct {
 	Body  string `json:"body" jsonschema:"문서 본문"`
 	Title string `json:"title,omitempty" jsonschema:"문서 제목. 생략하면 본문 첫 줄에서 만든다"`
 	Slug  string `json:"slug,omitempty" jsonschema:"파일명 슬러그. 생략하면 제목에서 만든다"`
+	// Pin은 할 일 선언이다. 항상 필수다.
+	Pin string `json:"pin" jsonschema:"할 일 선언. JSON 문자열이거나 none. 항상 필수다"`
 }
 
 // mcpQueryArgs는 질의를 받는 조회 도구의 입력이다.
@@ -118,11 +121,23 @@ func registerMCPTools(s *mcp.Server, root string) {
 		fm := wiki.Frontmatter(wiki.StageInbox, cfg)
 		date := time.Now().Format("2006-01-02")
 		fm["created"] = date
-		path, err := wiki.Create(root, cfg, wiki.StageInbox, date, slug, fm, content)
+		// 쓰기 도구는 여전히 하나다. CLI 의 --pin 과 같은 선언이 필수이고 같은 게이트를 지난다. 도구 호출 사이에 사람이 없으므로 선언으로 들어온 새 일은 제안 표시가
+		// 붙은 채 들어가고 확정은 사람이 화면에서 한다(ADR 0043, 0106).
+		if !pin.Present(root) {
+			return nil, nil, errors.New(i18n.T("cli.pin.not_updated"))
+		}
+		if in.Pin == "" {
+			return nil, nil, errors.New(i18n.T("cli.pin.required_mcp"))
+		}
+		decl, err := pin.ParseDeclaration(in.Pin)
+		if err != nil {
+			return nil, nil, fmt.Errorf("%s: %w", i18n.T("cli.pin.decl_invalid"), err)
+		}
+		res, _, err := writeIngested(nil, root, cfg, wiki.StageInbox, "inbox", date, slug, fm, content, &pinPlan{wiki: root, decl: decl})
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, ingestResult{Path: path, Slug: slug, Stage: string(wiki.StageInbox)}, nil
+		return nil, res, nil
 	})
 
 	mcp.AddTool[mcpSearchArgs, any](s, &mcp.Tool{

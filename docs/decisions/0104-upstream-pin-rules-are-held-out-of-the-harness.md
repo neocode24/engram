@@ -2,7 +2,7 @@
 number: 0104
 title: upstream이 할 일 원장 규칙을 계약으로 선언해도 harness는 한동안 따라가지 않는다
 date: 2026-11-20
-status: accepted
+status: amended
 ---
 
 # upstream이 할 일 원장 규칙을 계약으로 선언해도 harness는 한동안 따라가지 않는다
