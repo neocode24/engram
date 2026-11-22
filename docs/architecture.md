@@ -460,6 +460,54 @@ flowchart LR
 
 `export`는 여기에 익명화를 하나 더 얹는다. 사용자가 준 치환 사전을 본문과 프론트매터와 파일명 전부에 적용한다. **사전은 내장하지 않는다.** 조직 어휘 목록은 공개 경계 밖이므로 메커니즘만 주고 사전은 쓰는 사람이 채운다(ADR 0024, 0047).
 
+## 12. 할 일 원장(Pin)
+
+위키 문서에서 나온 할 일을 모으는 원장이다. **켜야 켜진다.** `engram pin init`이 위키 루트에 `pin/`을 만들기 전에는 아무 커맨드의 동작도 바뀌지 않는다. 결정은 [0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md)이고 upstream과 다른 점은 [spec-map 4.10](spec-map.md)에 있다.
+
+판단은 에이전트가 하고 바이너리는 형식과 게이트만 강제한다. 원장을 쓰는 곳은 `internal/pin`의 게이트 하나이며 세 입구가 같은 게이트를 부른다.
+
+```mermaid
+flowchart LR
+    AG["에이전트"]
+    HU["사람"]
+
+    subgraph CMD["문서를 넣는 명령"]
+        direction TB
+        C1["capture"]
+        C2["source"]
+        C3["promote --to sources"]
+    end
+
+    subgraph MV["문서를 옮기는 명령"]
+        direction TB
+        M1["promote, mv"]
+        M2["demote, archive"]
+    end
+
+    GATE["internal/pin 게이트<br/>요청 하나씩 적용하고 원장 전체를 검사한다<br/>어긋나면 그 요청만 되돌린다"]
+    LED[("pin/ 원장")]
+    SV["serve 의 /pin 화면<br/>loopback 일 때만"]
+
+    AG -->|"--pin 선언"| CMD
+    CMD -->|"문서와 원장을 한 덩어리로"| GATE
+    MV -->|"근거 경로만 따라 고친다"| GATE
+    AG -->|"pin apply 는 사람이 시킨 변경만"| GATE
+    HU -->|"맞음, 상태 변경, 삭제"| SV
+    SV -->|"POST /pin/api/changes"| GATE
+    GATE --> LED
+    LED -->|"읽을 때마다 상태를 만든다"| SV
+
+    style GATE fill:#ffe6e6
+```
+
+**선언이 거절되면 문서도 쓰지 않는다.** 선언의 요청이 하나라도 게이트에서 거절되면 문서도 원장도 쓰지 않는다. 원장 쓰기가 문서를 쓴 뒤에 실패하면 방금 쓴 문서를 지운다.
+
+**선언으로는 새 일과 맥락만 더한다.** 선언이 낼 수 있는 연산은 일곱이다. 수락, 상태 변경, 삭제는 낼 수 없다. 선언으로 들어온 새 일에는 제안 표시가 붙고 확정은 사람이 화면에서 한다.
+
+**문서를 옮기면 근거 경로가 따라간다.** `promote`, `mv`, `demote`, `archive`가 옮긴 문서를 근거로 둔 열린 일이 있으면 같은 명령 안에서 경로를 고치고 출력에 번호와 제목을 알린다. 인용문은 다시 대조하지 않는다. 원장이 참조하지 않는 문서의 이동은 아무것도 쓰지 않는다.
+
+**`serve`의 쓰기는 이 경로 하나다.** `/pin`은 리스너가 loopback 주소이고 위키가 원장을 켰을 때만 등록된다. 그 밖의 주소에 묶이면 경로가 없다. 쓰기 요청은 `Host`, `Origin`, `X-Pin: 1`, `Content-Type`, 본문 크기를 검사한 뒤에야 게이트에 닿고, 쓰는 곳은 `pin/`뿐이다. 이 경로에만 인라인 스크립트를 해시로 허용하는 보안 정책이 걸리며 다른 경로의 정책은 그대로다. 역방향 프록시나 터널이 `Host`를 고쳐 loopback으로 넘기면 이 검사를 통과한다. 원격 접속은 지원하지 않는다.
+
 ## 관련
 
 - [ADR 색인](decisions/README.md)

@@ -1,6 +1,6 @@
 # 규칙 명세 대응 표
 
-> upstream 위키의 규칙 명세가 engram의 무엇이 되었는지를 적은 문서다. 4.1부터 4.7까지가 upstream이 계약 파일로 선언한 일곱이고, 4.9가 그 선언 밖의 규범 문서다. 명세 사본은 [harness/upstream/](../harness/upstream/)에 고정되어 있다. 이 문서를 읽으면 각 규칙이 코드로 강제되는지, 설정으로 열려 있는지, 사람에게 남아 있는지를 한 번에 알 수 있다.
+> upstream 위키의 규칙 명세가 engram의 무엇이 되었는지를 적은 문서다. 4.1부터 4.7까지가 upstream이 계약 파일로 선언한 일곱이고, 4.9가 그 선언 밖의 규범 문서다. 4.10은 일곱에 들지 않는 할 일 원장 규칙이다. 명세 사본은 [harness/upstream/](../harness/upstream/)에 고정되어 있다. 이 문서를 읽으면 각 규칙이 코드로 강제되는지, 설정으로 열려 있는지, 사람에게 남아 있는지를 한 번에 알 수 있다.
 
 ## 1. 이 문서가 답하는 것
 
@@ -261,6 +261,31 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 | `inbox`에서 `sources`로 증거를 옮긴다 | `inbox/README.md` | **반영됨.** `promote --to sources` (ADR 0058) |
 | `context`는 source-backed여야 한다 | `context/README.md`, `promotion-rules.md` | `source_refs`의 값이 비어도 통과 |
 | 문서 형태 규약(한 줄 판단 + 네 절) | `context/README.md`, `promotion-rules.md` | 강제하지 않음. 의도된 선택 |
+
+### 4.10 할 일 원장(Pin)
+
+upstream은 지식 계층 옆에 할 일 원장 `pin/`을 운영한다. 이 규칙은 upstream이 계약 파일로 선언했으나 [0104](decisions/0104-upstream-pin-rules-are-held-out-of-the-harness.md)가 harness의 추적을 보류했다. engram은 위키 출처 하나만 옮기고 [0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md)이 그 결정을 적는다.
+
+**같은 것.** 원장의 파일 형식, 쓰기 게이트의 검사, 세 요청 경로(`web`, `command`, `extract`)의 허용 연산 표, 거절 코드와 사유 문장, 상태의 형태와 값이다. 같은 입력을 upstream 파이썬과 `internal/pin`에 넣어 원장 파일이 바이트 단위로 같은지, 거절 코드와 사유와 상태가 같은지를 [harness/pin](../harness/pin/)이 견준다. 이 시험은 `ENGRAM_UPSTREAM`이 없으면 건너뛴다([0029](decisions/0029-upstream-vendoring-and-parity-execution.md)와 같다).
+
+**일부러 달리하는 점.**
+
+| 달리하는 점 | 이유 |
+|---|---|
+| 판단 대상은 `inbox`, `sources`에 문서가 들어가는 세 명령(`capture`, `source`, `promote --to sources`)뿐이다. upstream은 `context/`, `exports/docs/`의 바뀐 문서도 읽는다 | context는 결정된 사항이라 새 일이 생기는 곳이 아니다 |
+| 근거는 지금 쓰는 문서 하나다. 경로, 단계, 날짜는 명령이 채운다 | 명령이 경로와 단계를 안다. 다른 문서를 잘못 가리킬 수 없다 |
+| 프로젝트가 0개인 원장을 받는다 | 새 위키에는 프로젝트가 없다. upstream은 거절한다 |
+| 화면에 쓰지 않기로 한 표현 아홉을 검사하지 않는다 | upstream 운영자의 화면 문체 규칙이다. "스팸 차단 목록 정리" 같은 정상 제목이 거절된다 |
+| 상태의 주소를 지우지 않는다(`scrub_urls`) | upstream은 상태를 바깥 서버에 올리기 때문에 지운다. engram의 상태는 이 기계를 떠나지 않는다 |
+| 문서가 옮겨지면 근거 경로는 따라가되 인용문을 다시 대조하지 않는다 | `update`가 inbox 본문을 바꾸는 것이 정상 절차다. upstream 규칙대로면 승급 준비를 거친 문서의 경로 이동이 전부 거절된다. 인용은 쓴 시점의 기록으로 둔다 |
+| 근거 문서 링크는 `serve`가 이미 보여 주는 문서(context)에만 단다. inbox, sources 근거는 제목, 경로, 절, 인용을 글자로 보인다 | upstream은 Obsidian 링크를 단다. engram에는 그 전제가 없다 |
+| context 승급을 완료 신호로 읽지 않는다 | 일이 끝났다는 말은 그 뒤의 문서에 적힌다. 그 문서는 inbox나 sources로 들어오며 선언의 `propose`가 읽는다 |
+| 미리알림, 캘린더, 질문 생성을 옮기지 않는다 | 운영 자동화는 옮기지 않는다([0102](decisions/0102-engram-stays-in-maintenance-and-adapts-to-the-learner-toolchain.md)) |
+| 상위를 해제하는 문장이 "상위 없음"이다 | upstream은 파이썬 `str(None)`이 새어 "상위 None"이라 쓴다 |
+| 상태를 파일로 두지 않는다. 읽을 때마다 원장에서 만든다 | 원장과 상태가 어긋나는 경우를 없앤다 |
+| 쓰기 잠금이 `pin/.lock`이다. 30초가 지난 잠금은 버린다 | 세 요청 경로가 한 프로세스(`serve`)와 CLI로 나뉘어 같은 원장을 쓴다 |
+
+**코드가 강제하는 것과 사람에게 남긴 것.** 선언이 없으면 쓰지 않고, 선언의 요청이 하나라도 거절되면 문서도 쓰지 않는다. 선언은 수락, 상태 변경, 삭제를 낼 수 없다. 할 일인지의 판단은 에이전트가 하고 확정은 사람이 화면에서 한다. 에이전트가 `pin apply`로 제 제안을 수락하는 것은 코드로 막지 못한다.
 
 ## 5. 승급 규칙이 이 프로젝트의 핵심인 이유
 

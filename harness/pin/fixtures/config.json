@@ -1,0 +1,16 @@
+{
+ "archive_after_days": 30,
+ "confirm_stale_days": 10,
+ "reminder_lists": [],
+ "signal": {
+  "due_risk_days": 3,
+  "due_within_days": 14,
+  "waiting_over_days": 14,
+  "work_stale_days": 10
+ },
+ "smart_lists": {},
+ "works": [
+  {"desc": "알파 프로젝트의 설치와 견적", "id": "alpha", "name": "알파", "words": ["알파"]},
+  {"id": "beta", "name": "베타", "words": ["베타"]}
+ ]
+}

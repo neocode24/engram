@@ -2,7 +2,7 @@
 number: 0057
 title: 승인은 커맨드가 아니라 문서 내용에 붙는다
 date: 2026-08-17
-status: accepted
+status: amended
 ---
 
 # 사람에게 타이핑을 시키는 것은 판단이 아니다

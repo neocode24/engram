@@ -1,0 +1,35 @@
+{
+ "now": "2026-11-25T09:00:00+09:00",
+ "requests": [
+  {
+   "id": "m-001",
+   "at": "2026-11-25T09:00:00+09:00",
+   "via": "extract",
+   "op": "move_path",
+   "args": {
+    "from": "inbox/2026-11-10-kickoff.md",
+    "to": "sources/2026-11-10-kickoff.md"
+   }
+  },
+  {
+   "id": "m-002",
+   "at": "2026-11-25T09:00:00+09:00",
+   "via": "extract",
+   "op": "move_path",
+   "args": {
+    "from": "inbox/없는.md",
+    "to": "sources/2026-11-10-kickoff.md"
+   }
+  },
+  {
+   "id": "m-003",
+   "at": "2026-11-25T09:00:00+09:00",
+   "via": "extract",
+   "op": "move_path",
+   "args": {
+    "from": "sources/2026-11-11-minutes.md",
+    "to": "inbox/없는-목적지.md"
+   }
+  }
+ ]
+}

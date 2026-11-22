@@ -1,0 +1,325 @@
+{
+ "now": "2026-11-22T10:00:00+09:00",
+ "requests": [
+  {
+   "id": "e-001",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "견적서 보내기",
+    "work": "alpha",
+    "owner": {
+     "who": "김대리",
+     "basis": "stated"
+    },
+    "due": {
+     "date": "2026-11-20",
+     "basis": "킥오프 메모 11월 20일까지"
+    },
+    "evidence": [
+     {
+      "path": "inbox/2026-11-10-kickoff.md",
+      "stage": "inbox",
+      "section": "",
+      "date": "2026-11-10",
+      "quote": "김대리가 11월 20일까지 견적서를 보내기로 했다."
+     }
+    ],
+    "mentions": [
+     {
+      "date": "2026-11-10",
+      "path": "inbox/2026-11-10-kickoff.md",
+      "quote": "김대리가 11월 20일까지 견적서를 보내기로 했다."
+     }
+    ],
+    "context": {
+     "why": "견적이 있어야 계약이 진행된다",
+     "now": "초안 전",
+     "next": "초안 작성",
+     "written_at": "2026-11-10"
+    }
+   }
+  },
+  {
+   "id": "e-002",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "설치 패키지 초안 만들기",
+    "evidence": [
+     {
+      "path": "inbox/2026-11-10-kickoff.md",
+      "stage": "inbox",
+      "section": "",
+      "date": "2026-11-10",
+      "quote": "우리는 설치 패키지 초안을 만든다."
+     }
+    ]
+   }
+  },
+  {
+   "id": "e-003",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "데모 일정 확정",
+    "work": "beta",
+    "owner": {
+     "who": "me"
+    },
+    "evidence": [
+     {
+      "path": "sources/2026-11-11-minutes.md",
+      "stage": "sources",
+      "section": "",
+      "date": "2026-11-11",
+      "quote": "다음 주 수요일에 데모 일정을 확정한다."
+     }
+    ]
+   }
+  },
+  {
+   "id": "e-004",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "환경 점검표 정리",
+    "owner": {
+     "who": "박과장",
+     "basis": "stated"
+    },
+    "evidence": [
+     {
+      "path": "sources/2026-11-11-minutes.md",
+      "stage": "sources",
+      "section": "",
+      "date": "2026-11-11",
+      "quote": "박과장이 환경 점검표를 정리한다."
+     }
+    ]
+   }
+  },
+  {
+   "id": "e-005",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "로그 보관 기간 확인",
+    "evidence": [
+     {
+      "path": "sources/2026-11-12-notes.md",
+      "stage": "sources",
+      "section": "",
+      "date": "2026-11-12",
+      "quote": "배포 전에 로그 보관 기간을 확인해야 한다."
+     }
+    ]
+   }
+  },
+  {
+   "id": "e-006",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "지어낸 인용",
+    "evidence": [
+     {
+      "path": "inbox/2026-11-10-kickoff.md",
+      "stage": "inbox",
+      "section": "",
+      "date": "2026-11-10",
+      "quote": "문서에 없는 문장이다"
+     }
+    ]
+   }
+  },
+  {
+   "id": "e-007",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "근거 없는 일",
+    "evidence": []
+   }
+  },
+  {
+   "id": "e-008",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "set_status",
+   "item": "P0001",
+   "args": {
+    "status": "done"
+   }
+  },
+  {
+   "id": "e-009",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "견적서 보내기",
+    "evidence": [
+     {
+      "path": "inbox/2026-11-10-kickoff.md",
+      "stage": "inbox",
+      "section": "",
+      "date": "2026-11-10",
+      "quote": "김대리가 11월 20일까지 견적서를 보내기로 했다."
+     }
+    ]
+   }
+  },
+  {
+   "id": "e-010",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "상태 지정한 일",
+    "status": "doing",
+    "evidence": [
+     {
+      "path": "inbox/2026-11-10-kickoff.md",
+      "stage": "inbox",
+      "section": "",
+      "date": "2026-11-10",
+      "quote": "우리는 설치 패키지 초안을 만든다."
+     }
+    ]
+   }
+  },
+  {
+   "id": "e-011",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add",
+   "args": {
+    "title": "경로가 틀린 일",
+    "evidence": [
+     {
+      "path": "inbox/없는-문서.md",
+      "stage": "inbox",
+      "section": "",
+      "date": "2026-11-10",
+      "quote": "없다"
+     }
+    ]
+   }
+  },
+  {
+   "id": "e-012",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "update_ai",
+   "item": "P0002",
+   "args": {
+    "context": {
+     "why": "배포 준비",
+     "now": "시작 전",
+     "next": "템플릿 확인"
+    },
+    "mentions": [
+     {
+      "date": "2026-11-11",
+      "path": "sources/2026-11-11-minutes.md",
+      "quote": "다음 주 수요일에 데모 일정을 확정한다."
+     }
+    ]
+   }
+  },
+  {
+   "id": "e-013",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "propose",
+   "item": "P0003",
+   "args": {
+    "kind": "status",
+    "question": "P0003이 끝났나요?",
+    "reason": "회의록에 완료로 적혀 있다",
+    "args": {
+     "status": "done"
+    }
+   }
+  },
+  {
+   "id": "e-014",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add_relation",
+   "args": {
+    "from": "P0001",
+    "to": "P0002",
+    "kind": "before",
+    "reason": "견적 뒤에 설치",
+    "basis": "inferred"
+   }
+  },
+  {
+   "id": "e-015",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "add_relation",
+   "args": {
+    "from": "P0003",
+    "to": "P0004",
+    "kind": "related",
+    "reason": "같은 데모 준비",
+    "basis": "stated"
+   }
+  },
+  {
+   "id": "e-016",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "set_owner",
+   "item": "P0005",
+   "args": {
+    "who": "박과장",
+    "basis": "stated"
+   }
+  },
+  {
+   "id": "e-017",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "set_due",
+   "item": "P0005",
+   "args": {
+    "due": {
+     "date": "2026-11-25",
+     "basis": "메모"
+    }
+   }
+  },
+  {
+   "id": "e-018",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "mark_seen",
+   "args": {
+    "items": [
+     "P0001"
+    ]
+   }
+  },
+  {
+   "id": "e-019",
+   "at": "2026-11-22T10:00:00+09:00",
+   "via": "extract",
+   "op": "move_path",
+   "args": {
+    "from": "inbox/없는.md",
+    "to": "sources/2026-11-10-kickoff.md"
+   }
+  }
+ ]
+}

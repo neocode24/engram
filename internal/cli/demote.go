@@ -11,6 +11,7 @@ import (
 	"github.com/neocode24/engram/internal/config"
 	"github.com/neocode24/engram/internal/doc"
 	"github.com/neocode24/engram/internal/i18n"
+	"github.com/neocode24/engram/internal/pin"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
 	"github.com/spf13/cobra"
@@ -110,6 +111,9 @@ func newDemoteCmd() *cobra.Command {
 			}
 			if err := os.Remove(srcPath); err != nil {
 				return fmt.Errorf("%s: %w", i18n.T("cli.demote.remove_fail", srcPath), err)
+			}
+			if err := pinFollow(cmd, root, []pin.Move{{From: rel, To: filepath.ToSlash(destRel)}}); err != nil {
+				return err
 			}
 
 			res := demoteOutcome{

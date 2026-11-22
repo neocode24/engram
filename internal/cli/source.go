@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -81,18 +80,20 @@ func newSourceCmd() *cobra.Command {
 				return err
 			}
 
-			path, err := wiki.Create(root, cfg, wiki.StageSource, created, slug, fm, content)
+			plan, err := planPin(cmd, root)
 			if err != nil {
 				return err
 			}
-			res := ingestResult{Path: path, Slug: slug, Stage: string(wiki.StageSource)}
+			res, rep, err := writeIngested(cmd, root, cfg, wiki.StageSource, "sources", created, slug, fm, content, plan)
+			if err != nil {
+				return err
+			}
 			if jsonOutput(cmd) {
-				enc := json.NewEncoder(cmd.OutOrStdout())
-				enc.SetIndent("", "  ")
-				return enc.Encode(res)
+				return writeIngestJSON(cmd, res, rep)
 			}
 			printIngested(cmd.OutOrStdout(), res,
 				i18n.T("cli.source.next_hint"))
+			printPinReport(cmd.OutOrStdout(), rep)
 			return nil
 		},
 	}
@@ -103,6 +104,7 @@ func newSourceCmd() *cobra.Command {
 	cmd.Flags().String(flagChannel, "", i18n.T("cli.source.flag_channel"))
 	cmd.Flags().StringArray(flagRef, nil, i18n.T("cli.source.flag_ref"))
 	cmd.Flags().String(flagType, defaultSourceType, i18n.T("cli.source.flag_type"))
+	addPinFlag(cmd)
 	return cmd
 }
 

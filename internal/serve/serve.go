@@ -7,7 +7,9 @@
 // indexable 이 거짓인 문서와 status 가 superseded 인 문서도 빠진다.
 // sensitivity 가 internal 인 문서는 로컬 조회이므로 보여 준다.
 //
-// 쓰기 경로가 없다. POST 계열은 라우팅에 닿기 전에 막힌다. 판정과 검색은
+// 쓰기 경로는 하나다. 리스너가 loopback 이고 위키가 Pin 을 켰을 때만 열리는
+// POST /pin/api/changes 이며 쓰는 곳은 pin/ 뿐이다(ADR 0106). 그 밖의 POST 계열은
+// 라우팅에 닿기 전에 막힌다. 판정과 검색은
 // internal 패키지를 그대로 부르므로 여기서 규칙을 다시 만들지 않는다.
 package serve
 
@@ -30,6 +32,9 @@ import (
 type Options struct {
 	// IncludeArchive는 archive 문서를 노출할지 정한다. 기본은 거짓이다.
 	IncludeArchive bool
+	// Loopback은 리스너가 이 컴퓨터 밖으로 나가지 않는 주소에 묶였는지다. 참이고 위키가 Pin을
+	// 켰을 때만 /pin 경로를 등록한다(ADR 0106). 호출자가 expose.LoopbackHost 로 판정해 준다.
+	Loopback bool
 	// ErrorLog는 요청 처리 중 난 오류를 적을 곳이다. 화면에는 사정을
 	// 싣지 않으므로 서버를 띄운 사람이 볼 자리가 필요하다. nil 이면 버린다.
 	ErrorLog io.Writer

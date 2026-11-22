@@ -12,6 +12,7 @@ import (
 	"github.com/neocode24/engram/internal/doc"
 	"github.com/neocode24/engram/internal/graph"
 	"github.com/neocode24/engram/internal/i18n"
+	"github.com/neocode24/engram/internal/pin"
 	"github.com/neocode24/engram/internal/state"
 	"github.com/neocode24/engram/internal/walk"
 	"github.com/neocode24/engram/internal/wiki"
@@ -100,6 +101,9 @@ func newMvCmd() *cobra.Command {
 				}
 				if err := os.Rename(srcPath, dstPath); err != nil {
 					return fmt.Errorf("%s: %w", i18n.T("cli.mv.rename_fail", dstPath), err)
+				}
+				if err := pinFollow(cmd, root, []pin.Move{{From: srcRel, To: dstRel}}); err != nil {
+					return err
 				}
 			}
 

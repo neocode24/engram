@@ -1,0 +1,370 @@
+{
+ "now": "2026-11-23T09:00:00+09:00",
+ "requests": [
+  {
+   "id": "w-001",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "accept",
+   "args": {
+    "proposal": "Q0001"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-002",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_status",
+   "item": "P0002",
+   "base_rev": 1,
+   "args": {
+    "status": "doing",
+    "note": "템플릿 작성 중"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-003",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_status",
+   "item": "P0002",
+   "base_rev": 1,
+   "args": {
+    "status": "waiting",
+    "wait": {
+     "reason": "reply",
+     "on": "박과장"
+    }
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-004",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_status",
+   "item": "P0002",
+   "base_rev": 9,
+   "args": {
+    "status": "done"
+   },
+   "client": "zzzz9999yyyy"
+  },
+  {
+   "id": "w-005",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_status",
+   "item": "P0004",
+   "args": {
+    "status": "hold"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-006",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_owner",
+   "item": "P0003",
+   "base_rev": 1,
+   "args": {
+    "who": "박과장"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-007",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_work",
+   "item": "P0004",
+   "base_rev": 1,
+   "args": {
+    "work": "alpha"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-008",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_work",
+   "item": "P0005",
+   "base_rev": 1,
+   "args": {
+    "new": {
+     "name": "운영",
+     "desc": "운영 점검"
+    }
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-009",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_due",
+   "item": "P0004",
+   "base_rev": 2,
+   "args": {
+    "date": "2026-12-01",
+    "basis": "사람이 정함"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-010",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "touch",
+   "item": "P0005",
+   "base_rev": 1,
+   "args": {
+    "note": "확인했음"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-011",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_title",
+   "item": "P0005",
+   "base_rev": 3,
+   "args": {
+    "title": "로그 보관 기간 확인하기"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-012",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "add",
+   "args": {
+    "title": "직접 입력한 일",
+    "work": "beta",
+    "due": {
+     "date": "2026-11-24",
+     "basis": "내가 정함"
+    }
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-013",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "add",
+   "args": {
+    "title": "로그 보관 기간 확인하기"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-014",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "reject",
+   "args": {
+    "proposal": "Q0002"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-015",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "accept",
+   "args": {
+    "proposal": "Q0099"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-016",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "add_relation",
+   "args": {
+    "from": "P0001",
+    "to": "P0004",
+    "kind": "before",
+    "reason": "",
+    "basis": "stated"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-017",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_work_order",
+   "args": {
+    "order": [
+     "beta",
+     "alpha",
+     "yeongyeong"
+    ]
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-018",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_work_order",
+   "args": {
+    "order": [
+     "beta",
+     "alpha",
+     "un-yeong"
+    ]
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-019",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "mark_seen",
+   "args": {
+    "items": [
+     "P0002",
+     "P0099"
+    ]
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-020",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_parent",
+   "item": "P0004",
+   "base_rev": 3,
+   "args": {
+    "parent": "P0001"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-021",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_status",
+   "item": "P0001",
+   "base_rev": 2,
+   "args": {
+    "status": "waiting",
+    "wait": {
+     "reason": "prior",
+     "on": "P0004"
+    }
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-022",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "add",
+   "args": {
+    "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-023",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_title",
+   "item": "P0006",
+   "base_rev": 1,
+   "args": {
+    "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-024",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "delete",
+   "item": "P0003",
+   "base_rev": 2,
+   "args": {},
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-025",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "cancel_delete",
+   "item": "P0001",
+   "args": {},
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-026",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "propose",
+   "item": "P0001",
+   "args": {
+    "kind": "status",
+    "question": "q",
+    "reason": "r"
+   }
+  },
+  {
+   "id": "w-027",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_status",
+   "item": "P0001",
+   "args": {
+    "status": "done"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-028",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "unknown_op",
+   "item": "P0001",
+   "args": {},
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-029",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_due",
+   "item": "P0003",
+   "base_rev": 2,
+   "args": {
+    "date": "2026-11-27",
+    "basis": "사람이 정함"
+   },
+   "client": "abcd1234efgh"
+  },
+  {
+   "id": "w-030",
+   "at": "2026-11-23T09:00:00+09:00",
+   "via": "web",
+   "op": "set_due",
+   "item": "P0001",
+   "base_rev": 1,
+   "args": {
+    "date": "2026-12-20",
+    "basis": "사람이 정함"
+   },
+   "client": "abcd1234efgh"
+  }
+ ]
+}

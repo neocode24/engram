@@ -10,7 +10,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/neocode24/engram/internal/expose"
 	"github.com/neocode24/engram/internal/i18n"
+	"github.com/neocode24/engram/internal/pin"
 	"github.com/neocode24/engram/internal/serve"
 	"github.com/spf13/cobra"
 )
@@ -66,6 +68,7 @@ func newServeCmd() *cobra.Command {
 
 			srv := serve.New(root, cfg, serve.Options{
 				IncludeArchive: includeArchive,
+				Loopback:       loopbackHost(host),
 				ErrorLog:       cmd.ErrOrStderr(),
 			})
 			// 노출 집계를 서버를 띄우기 전에 낸다. 무엇이 나가는지 모르고
@@ -80,6 +83,7 @@ func newServeCmd() *cobra.Command {
 				return fmt.Errorf("%s: %w", i18n.T("cli.serve.listen_fail", addr), err)
 			}
 			printServeNotice(cmd.OutOrStdout(), root, host, listenAddr(host, ln), exposure)
+			printPinNotice(cmd.OutOrStdout(), root, host, listenAddr(host, ln), srv.PinEnabled())
 			return runServer(cmd.Context(), ln, srv.Handler())
 		},
 	}
@@ -157,12 +161,18 @@ func printServeNotice(w io.Writer, root, host, addr string, e serve.Exposure) {
 }
 
 // loopbackHost는 바인딩 주소가 이 컴퓨터 밖으로 나가지 않는 주소인지 본다.
-// 이름으로 준 주소는 여기서 풀지 않고 외부 노출로 본다. 경고를 빠뜨리는
-// 쪽보다 더 내는 쪽이 안전하다.
-func loopbackHost(host string) bool {
-	if host == "localhost" {
-		return true
+// 판정은 internal/expose 한 곳에 있다(ADR 0046).
+func loopbackHost(host string) bool { return expose.LoopbackHost(host) }
+
+// printPinNotice는 Pin 화면의 안내를 낸다. Pin 을 켠 위키에서만 나간다. 바깥 주소에 묶였으면 경로를
+// 등록하지 않았다고 알린다. 켜지 않은 위키의 출력은 바뀌지 않는다.
+func printPinNotice(w io.Writer, root, host, addr string, enabled bool) {
+	if !pin.Enabled(root) {
+		return
 	}
-	ip := net.ParseIP(host)
-	return ip != nil && ip.IsLoopback()
+	if enabled {
+		fmt.Fprint(w, i18n.T("cli.serve.notice_pin", addr)+"\n")
+		return
+	}
+	fmt.Fprint(w, i18n.T("cli.serve.notice_pin_off", host)+"\n")
 }

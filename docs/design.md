@@ -101,7 +101,8 @@
 | `eject` | 내장 규칙을 파일로 풀어 사용자에게 넘긴다 | 단방향 ([0013](decisions/0013-eject-redefined-seal-removed.md)) |
 | `rules show` | eject 없이 내장 규칙을 읽기 전용 출력 | |
 | `skills install` | 에이전트 스킬 문서를 설치 | LLM 통합의 전부 ([0014](decisions/0014-llm-boundary-agent-drives-binary.md)) |
-| `serve` | 웹 UI | |
+| `serve` | 웹 UI | 읽기 전용. 예외는 `pin`을 켠 위키의 `/pin` 하나 ([0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md)) |
+| `pin` | 위키 문서에서 나온 할 일 원장. `init`, `list`, `apply` | 켜야 켜진다. 켜면 `capture`, `source`, `promote --to sources`가 `--pin`을 받는다 ([0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md)) |
 | `model pull` | 재발견용 임베딩 모델 내려받기 | 선택 층. bge-m3 fp32 2.3GB ([0007](decisions/0007-platform-and-distribution.md), [0074](decisions/0074-embedding-runs-in-pure-go-and-the-model-is-bge-m3-fp32.md)) |
 | `model status` | 모델 경로와 무결성 | `--verify`로 체크섬까지 본다 |
 | `self-update` | 릴리스 체크섬 검증 후 갱신 | |
