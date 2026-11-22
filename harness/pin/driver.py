@@ -20,6 +20,11 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
+# Windows 러너는 기본 인코딩이 cp1252라 한글 출력이 깨진다. 표준 출력을 UTF-8로 고정한다.
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8")
+
 CONST_NAMES = ("STATUSES", "WAIT_REASONS", "SOURCES", "STAGES", "BASES", "ITEM_KEYS", "EVIDENCE_KEYS")
 
 

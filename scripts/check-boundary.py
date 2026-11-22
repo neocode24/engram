@@ -24,6 +24,11 @@ import re
 import subprocess
 import sys
 
+# Windows 러너는 기본 인코딩이 cp1252라 한글 출력이 깨진다. 표준 출력을 UTF-8로 고정한다.
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8")
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATTERNS = os.path.join(ROOT, "private", "boundary-patterns.txt")
 SKIP_DIRS = {".git", "private", "node_modules"}
@@ -68,7 +73,7 @@ def scan_history(pats):
     try:
         blob = subprocess.run(
             ["git", "-C", ROOT, "log", "--all", "-p", "--format=%H%n%s%n%b"],
-            capture_output=True, text=True, timeout=300,
+            capture_output=True, text=True, encoding="utf-8", timeout=300,
         ).stdout
     except (subprocess.SubprocessError, OSError) as e:
         return [f"이력 검사 실패: {e}"]

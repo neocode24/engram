@@ -37,6 +37,11 @@ import tarfile
 import tempfile
 from datetime import datetime
 
+# Windows 러너는 기본 인코딩이 cp1252라 한글 출력이 깨진다. 표준 출력을 UTF-8로 고정한다.
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8")
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UPSTREAM_DIR = os.path.join(ROOT, "harness", "upstream")
 # delta 는 upstream CHANGELOG 원문을 인용하므로 공개하지 않는다. ADR 0030.
@@ -87,7 +92,7 @@ def git(upstream, *args, check=True):
     """upstream 저장소에서 git 명령을 돌리고 stdout 을 돌려준다."""
     r = subprocess.run(
         ["git", "-C", upstream, *args],
-        capture_output=True, text=True, check=False,
+        capture_output=True, text=True, encoding="utf-8", check=False,
     )
     if check and r.returncode != 0:
         die(f"git {' '.join(args)} 실패: {r.stderr.strip()}")
@@ -435,7 +440,7 @@ def pin_surface(code_dir):
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
     r = subprocess.run(
         [sys.executable, PIN_DRIVER, "surface", pin_dir, PIN_FIXTURES],
-        capture_output=True, text=True, env=env, check=False,
+        capture_output=True, text=True, encoding="utf-8", env=env, check=False,
     )
     if r.returncode != 0:
         tail = (r.stderr.strip().splitlines() or ["(출력 없음)"])[-1]
@@ -594,7 +599,7 @@ def judge_pin(upstream, base_commit, head, check, force_pull):
 def run_boundary():
     """경계 검사를 그대로 부른다. 출력은 경로와 줄번호만 있으므로 그대로 넘긴다."""
     r = subprocess.run(
-        [sys.executable, CHECK_BOUNDARY], capture_output=True, text=True, check=False,
+        [sys.executable, CHECK_BOUNDARY], capture_output=True, text=True, encoding="utf-8", check=False,
     )
     return r.returncode, r.stdout.strip()
 
