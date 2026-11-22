@@ -254,6 +254,12 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 **engram의 범위 밖이다.** `agents/`는 프롬프트와 워크플로 보관 규약이고 `mirror/`는 iCloud Obsidian 미러 운용 규약이다. engram은 둘 다 다루지 않는다. `mirror/README.md`에는 사용자 홈 경로가 들어 있어 공개 경계 대상이기도 하다.
 
+#### pin/prompts/items.md
+
+**이 문서가 선언하는 것.** 에이전트가 바뀐 위키 문서에서 할 일과 상대 약속을 찾는 지시다. 무엇이 일인지, 항목 하나의 크기(누가 무엇을 끝내면 닫히는가), 열린 항목 색인과 맞대는 방법, 변경 요청의 모양을 적는다. 맥락 세 칸은 `context.md`를 따른다.
+
+**반영 상태.** 계약 파일이 아니라 upstream의 `meta/CHANGELOG.md` 규율 대상이 아니므로 **바뀌어도 통보되지 않는다.** engram은 이 지시를 따르지 않고 `internal/skills/SKILL.md`의 할 일 판단 절에 같은 취지를 따로 적는다. 갱신은 사람이 확인할 때 한다. `pin-rules.md`의 "위키 문서에서 할 일을 찾을 때" 절은 harness가 따라간다([0107](decisions/0107-harness-judges-pin-surfaces-and-pulls-only-the-page.md)).
+
 #### 이 절에서 나온 미반영 규칙
 
 | 규칙 | 출처 | 상태 |
@@ -264,7 +270,7 @@ lint 규칙 20종은 이 절 전체에서 각각 정확히 한 번씩 등장한�
 
 ### 4.10 할 일 원장(Pin)
 
-upstream은 지식 계층 옆에 할 일 원장 `pin/`을 운영한다. 이 규칙은 upstream이 계약 파일로 선언했으나 [0104](decisions/0104-upstream-pin-rules-are-held-out-of-the-harness.md)가 harness의 추적을 보류했다. engram은 위키 출처 하나만 옮기고 [0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md)이 그 결정을 적는다.
+upstream은 지식 계층 옆에 할 일 원장 `pin/`을 운영한다. 이 규칙은 upstream이 계약 파일로 선언했으나 [0104](decisions/0104-upstream-pin-rules-are-held-out-of-the-harness.md)가 harness의 추적을 보류했고, [0107](decisions/0107-harness-judges-pin-surfaces-and-pulls-only-the-page.md)이 그 보류를 풀었다. engram은 위키 출처 하나만 옮기고 [0106](decisions/0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md)이 그 결정을 적는다. 사본은 engram이 기대는 절만 두며 `harness/upstream/pin-rules.md`다.
 
 **같은 것.** 원장의 파일 형식, 쓰기 게이트의 검사, 세 요청 경로(`web`, `command`, `extract`)의 허용 연산 표, 거절 코드와 사유 문장, 상태의 형태와 값이다. 같은 입력을 upstream 파이썬과 `internal/pin`에 넣어 원장 파일이 바이트 단위로 같은지, 거절 코드와 사유와 상태가 같은지를 [harness/pin](../harness/pin/)이 견준다. 이 시험은 `ENGRAM_UPSTREAM`이 없으면 건너뛴다([0029](decisions/0029-upstream-vendoring-and-parity-execution.md)와 같다).
 
@@ -423,7 +429,7 @@ upstream 감사 보고서 5개(A/B/C/D/E)를 바탕으로 규범 문서별 미�
 |---|---|---|
 | 명세 사본 고정 | 바뀌기 전에 규칙이 무엇이었나 | `harness/upstream/`, `harness/upstream.lock` |
 | 변경분 감지 | 무엇이 바뀌었나 | `scripts/upstream-sync.py`, `private/deltas/` |
-| 의존 표면 감시 | 우리가 기대는 것이 바뀌었나 | 파일별 `유지/갱신`, `harness/upstream/terminology-format.md` |
+| 의존 표면 감시 | 우리가 기대는 것이 바뀌었나 | 파일별 `유지/갱신`, `harness/upstream/terminology-format.md`, Pin 표면의 `pin 판정` |
 | 동등성 검증 | 반영이 맞았나 | `harness/parity`, `docs/parity.md` |
 
 실제 명령 순서는 다음과 같다. 두 문서의 사용법에서 가져왔다.
@@ -460,14 +466,38 @@ ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/parity/... -v
 | 8 | 결과를 옮겨 적는다 | `docs/parity.md` |
 | 9 | 결정을 남긴다 | 새 ADR + `docs/decisions/README.md` 색인 |
 | 10 | 커밋 | 훅이 경계 검사와 ADR 검사를 돈다 |
+| Pin | `--check` 마지막 줄 `pin 판정:`을 읽는다. `유지`는 할 일 없음, `화면만`은 스크립트가 가져온 화면을 시험 뒤 `main`에 직접 커밋, `PR`은 화면 외 표면이 바뀐 것이라 아래 Pin 절을 따른다 | `pin 판정:` 줄이 `유지`로 바뀐다 |
 
 **5번의 골든 재생성이 위험한 자리다.** `-update` 는 기대값을 현재 출력으로 덮으므로 어떤 변경이든 초록으로 만들 수 있다. **재생성한 diff 를 반드시 읽는다.** 판정이 바뀐 것이 거기에 드러난다.
 
 버전 태그는 이 절차에 포함하지 않는다. 규칙 변화가 곧 릴리스는 아니며, 태그는 [0042](decisions/0042-release-artifacts-and-workflow.md)대로 사람이 따로 붙인다.
 
+### Pin이 바뀌었을 때
+
+**Pin은 위 1번부터 10번과 따로 돈다.** `--check` 출력의 마지막 줄 `pin 판정:`이 갈래를 정한다([0107](decisions/0107-harness-judges-pin-surfaces-and-pulls-only-the-page.md)). 파일별 `갱신`과 `pin 판정`은 서로 독립이며, 둘 다 나온 회차는 각각의 갈래를 따른다.
+
+| `pin 판정` | 뜻 | 할 일 |
+|---|---|---|
+| `유지` | Pin의 화면과 나머지 표면이 모두 같다 | 없음. lock만 맞춘다 |
+| `화면만` | 화면 파일만 바뀌었다. 스크립트가 화면을 `internal/pin/web/template.html`로 이미 가져왔다 | `go test ./...`와 `go test ./harness/pin/`을 돌려 통과하면 `main`에 직접 커밋한다. 실패하면 PR로 돌린다 |
+| `PR` | 화면 외 표면(상태 형태, 상태 값, 게이트, 상수, 화면 요청, 규칙 문서)이 바뀌었거나 견본에 돌지 못했다. 화면은 가져오지 않았다 | 아래 Pin 행을 따라 브랜치를 파고 PR을 연다. 머지는 사람이 한다 |
+
+Pin 행. `pin 판정: PR` 회차에 함께 고치는 것이다.
+
+| 순서 | 무엇 | 확인 |
+|---|---|---|
+| P1 | 어느 표면이 바뀌었는지 `갱신 pin <표면>` 줄로 읽는다. 화면 외 표면이 상태 형태와 상태 값이면 `internal/pin/derive.go`, 게이트이면 `internal/pin/apply.go`와 `check.go`, 상수이면 `internal/pin/consts.go`, 규칙 문서이면 `harness/upstream/pin-rules.md`의 변경분을 읽는다 | `git -C ~/Git/llm-wiki diff <이전lock>..HEAD -- scripts/pin meta/pin-rules.md` |
+| P2 | upstream 동작이 바뀌어 견본이 지나지 않는 가지가 새로 생겼으면 `harness/pin/fixtures/batches`에 요청을 더한다 | 더한 요청이 upstream과 Go 양쪽에서 같은 결과를 낸다 |
+| P3 | Go 구현을 고친다. 4.10의 \"일부러 달리하는 점\"에 드는 것은 견본에서 빼거나 `normalizeState`에 적고, 새 차이는 4.10에 행을 더한다 | `ENGRAM_UPSTREAM=~/Git/llm-wiki go test ./harness/pin/ -v`가 통과한다 |
+| P4 | 화면을 가져온다. 스크립트가 PR 판정에서는 가져오지 않으므로 `--pull-page`를 쓴다 | `python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki --pull-page` 뒤 `go test ./harness/pin/ -run 'TestPinPageDumpDOM'` |
+| P5 | 가져온 화면의 CSP 해시는 임베드한 파일에서 계산하므로 손댈 것이 없다. 크롬이 있으면 화면 기동을 확인한다 | `ENGRAM_CHROME`과 `ENGRAM_PLAYWRIGHT_CORE`를 주고 `go test ./harness/pin/ -run TestPinPageInChrome -v` |
+| P6 | 전체 시험과 문서 | `go test ./...`, 새 ADR과 `docs/decisions/README.md` 색인, 4.10 갱신 |
+
+가져온 화면이 경계 검사에 걸리면 스크립트가 이전 화면으로 되돌리고 실패한다. 입력 예시 문구에 실명이 들어온 경우가 그렇다. 화면은 engram에서 고치지 않고 upstream에서 고친다. 화면 파일 표시(`pin:config`, `pin:site`)가 없거나 둘 이상이어도 실패하며 이 경우도 upstream의 화면 구조가 바뀐 것이므로 사람이 본다.
+
 ### 이 절차를 누가 도나
 
-[0095](decisions/0095-hermes-is-the-harness-agent-and-the-pr-is-the-approval-point.md)가 Hermes 주간 잡을 harness 에이전트로 정했다. 1번만 필요한 경우(파일이 전부 `유지`)는 잡이 직접 커밋하고 푸시한다. 판단이 없기 때문이다. 3번 이후가 필요한 경우는 잡이 브랜치를 파고 PR 을 연다. **PR 머지가 사람의 승인 지점이다.**
+[0095](decisions/0095-hermes-is-the-harness-agent-and-the-pr-is-the-approval-point.md)가 Hermes 주간 잡을 harness 에이전트로 정했다. 1번만 필요한 경우(파일이 전부 `유지`이고 `pin 판정`이 `유지`)와 `pin 판정`이 `화면만`인 경우는 잡이 직접 커밋하고 푸시한다. 판단이 없기 때문이다. 화면만 회차는 스크립트가 이미 화면을 가져왔고 시험이 통과한 뒤에만 커밋한다. 3번 이후가 필요한 경우와 `pin 판정`이 `PR`인 경우는 잡이 브랜치를 파고 PR 을 연다. **PR 머지가 사람의 승인 지점이다.**
 
 ```
 ```

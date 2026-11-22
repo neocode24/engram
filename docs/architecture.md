@@ -350,6 +350,8 @@ python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki --check   # 쓰지 �
 python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki
 ```
 
+Pin의 화면과 생성 코드는 계약 파일이 아니라서 같은 스크립트가 따로 견준다. lock 커밋과 HEAD의 upstream 코드를 견본에 돌려 마지막 줄에 `pin 판정: 유지|화면만|PR`을 낸다. 화면만 바뀐 회차에만 화면 파일을 가져온다([0107](decisions/0107-harness-judges-pin-surfaces-and-pulls-only-the-page.md)).
+
 **자동 반영이 없다는 점이 설계다**([0029](decisions/0029-upstream-vendoring-and-parity-execution.md)). 변경분은 사람이 읽고 반영 여부를 판단한다.
 
 **무엇이 engram 에 영향을 주는지는 engram 이 판정한다**([0094](decisions/0094-engram-watches-its-own-dependency-surface.md)). 파일별 `유지/갱신` 이 그 판정이며 `갱신` 은 규칙 명세가 실제로 바뀌었다는 뜻이다. upstream 의 `impact` 표시를 읽지 않는다. 용어 사전은 내용이 조직 어휘라 가져오지 않고 표 형식 지문만 뜬다. `internal/glossary` 가 그 형식에 기대기 때문이다.

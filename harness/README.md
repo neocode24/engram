@@ -91,8 +91,14 @@ python3 scripts/upstream-sync.py --upstream ~/Git/llm-wiki
 문서에서 이것을 "계약 파일" 이라 부르며 `upstream-sync.py` 가 그 문자열을 그대로
 파싱하므로 그쪽 표기는 바뀌지 않는다(ADR 0034). 이쪽에
 목록을 복제하지 않는다(ADR 0029). `terminology-normalization.md` 는 사전
-전체가 조직 어휘 목록이라 제외한다. `pin-rules.md` 는 따라갈지 아직 정하지
-않은 명세라 `upstream-sync.py` 의 `HELD` 로 뺀다(ADR 0104).
+전체가 조직 어휘 목록이라 제외한다. `pin-rules.md` 는 engram 이 기대는 절만 떼어
+사본으로 둔다(ADR 0107). `HELD` 는 지금 비어 있다.
+
+Pin 의 화면과 생성 코드(`scripts/pin`)는 계약 파일이 아니라서 목록과 별개로 견준다.
+lock 커밋과 HEAD 를 `harness/pin/fixtures` 견본에 돌려 표면별 `유지/갱신` 을 내고,
+마지막 줄 `pin 판정: 유지|화면만|PR` 이 잡이 읽는 신호다. 화면만 바뀐 회차에만 화면 파일을
+`internal/pin/web/template.html` 로 가져온다. 다른 표면이 하나라도 바뀌면 가져오지 않는다(ADR 0107).
+`--pull-page` 는 PR 브랜치에서 Go 구현을 고친 뒤 판정과 무관하게 화면을 가져오는 스위치다.
 
 복사한 파일은 `private/vendor-replacements.txt` 로 익명화한 뒤
 `scripts/check-boundary.py` 를 통과해야 한다. **걸리면 sync 가 실패하고
