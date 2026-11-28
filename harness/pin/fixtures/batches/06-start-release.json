@@ -1,0 +1,211 @@
+{
+ "now": "2026-12-31T09:00:00+09:00",
+ "requests": [
+  {
+   "id": "s-001",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_start",
+   "item": "P0005",
+   "args": {
+    "date": "2026-12-20"
+   }
+  },
+  {
+   "id": "s-002",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_start",
+   "item": "P0004",
+   "args": {
+    "date": "2027-01-05"
+   }
+  },
+  {
+   "id": "s-003",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_start",
+   "item": "P0004",
+   "args": {
+    "foo": 1
+   }
+  },
+  {
+   "id": "s-004",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_due",
+   "item": "P0004",
+   "args": {
+    "date": "2027-02-20",
+    "basis": "사람이 정함"
+   }
+  },
+  {
+   "id": "s-005",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_start",
+   "item": "P0004",
+   "args": {
+    "date": "2027-02-10"
+   }
+  },
+  {
+   "id": "s-006",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_start",
+   "item": "P0004",
+   "args": {
+    "date": "2027-02-10"
+   }
+  },
+  {
+   "id": "s-007",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_due",
+   "item": "P0004",
+   "args": {
+    "date": "2027-02-05",
+    "basis": "사람이 정함"
+   }
+  },
+  {
+   "id": "s-008",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_start",
+   "item": "P0004",
+   "args": {
+    "date": "2027-01-25"
+   }
+  },
+  {
+   "id": "s-009",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_start",
+   "item": "P0004",
+   "args": {
+    "clear": true
+   }
+  },
+  {
+   "id": "s-010",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_start",
+   "item": "P0004",
+   "args": {
+    "clear": true
+   }
+  },
+  {
+   "id": "s-011",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_start",
+   "item": "P0004",
+   "args": {
+    "date": "2027-01-25"
+   }
+  },
+  {
+   "id": "s-012",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_status",
+   "item": "P0008",
+   "args": {
+    "status": "waiting",
+    "wait": {
+     "reason": "prior",
+     "on": "P0005"
+    }
+   }
+  },
+  {
+   "id": "s-013",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_status",
+   "item": "P0005",
+   "args": {
+    "status": "done"
+   }
+  },
+  {
+   "id": "s-014",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_status",
+   "item": "P0005",
+   "args": {
+    "status": "todo"
+   }
+  },
+  {
+   "id": "s-015",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_status",
+   "item": "P0005",
+   "args": {
+    "status": "done"
+   }
+  },
+  {
+   "id": "s-016",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "set_status",
+   "item": "P0009",
+   "args": {
+    "status": "waiting",
+    "wait": {
+     "reason": "prior",
+     "on": "P0005"
+    }
+   }
+  },
+  {
+   "id": "s-017",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "command",
+   "op": "add_relation",
+   "args": {
+    "from": "P0007",
+    "to": "P0008",
+    "kind": "related",
+    "reason": "",
+    "basis": "stated"
+   }
+  },
+  {
+   "id": "s-018",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "extract",
+   "op": "add_relation",
+   "args": {
+    "from": "P0007",
+    "to": "P0009",
+    "kind": "related",
+    "reason": "",
+    "basis": "inferred"
+   }
+  },
+  {
+   "id": "s-019",
+   "at": "2026-12-31T09:00:00+09:00",
+   "via": "extract",
+   "op": "set_start",
+   "item": "P0004",
+   "args": {
+    "date": "2027-01-25"
+   }
+  }
+ ]
+}

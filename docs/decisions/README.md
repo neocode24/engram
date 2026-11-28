@@ -123,6 +123,7 @@
 | [0106](0106-pin-ledger-is-declared-by-ingest-commands-and-written-on-loopback.md) | 할 일 원장은 문서를 넣는 명령에서 선언받고 loopback 화면에서만 쓴다 | 2026-11-22 | amended |
 | [0107](0107-harness-judges-pin-surfaces-and-pulls-only-the-page.md) | harness가 Pin 표면을 견본에 돌려 판정하고 화면만 바뀐 회차에만 화면을 가져온다 | 2026-11-22 | accepted |
 | [0108](0108-pin-is-a-default-feature-created-by-init-and-refilled-by-rerunning-it.md) | Pin은 기본 기능이고 init이 만들며 기존 위키는 init 재실행으로 채운다 | 2026-11-22 | accepted |
+| [0109](0109-pin-follows-upstream-start-date-release-and-single-proposal-card.md) | Pin이 upstream의 시작일, 선행 완료 시 대기 해제, 제안 카드 하나 규칙을 따라간다 | 2026-11-28 | accepted |
 
 ## 공개 범위 밖
 

@@ -142,6 +142,7 @@ func (l *Ledger) run(raws []any, now time.Time) (*Summary, error) {
 			s.Skipped++
 		}
 	}
+	l.releaseDonePriors(nowISO)
 	s.Archived = append(s.Archived, l.archiveOld(now)...)
 	if errs := checkLedger(l); len(errs) > 0 {
 		if len(errs) > 10 {

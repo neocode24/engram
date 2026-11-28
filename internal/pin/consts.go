@@ -36,7 +36,7 @@ var (
 	waitLabels   = map[string]string{"prior": "선행", "reply": "회신", "decision": "결정"}
 	sourceLabels = map[string]string{"wiki": "위키", "reminder": "미리알림", "command": "직접 입력", "hermes": "Hermes"}
 	recordLabels = map[string]string{"wiki": "위키", "pin": "Pin", "reminder": "미리알림"}
-	signalLabels = map[string]string{"risk": "위험", "caution": "주의", "normal": "정상"}
+	signalLabels = map[string]string{"risk": "위험", "caution": "주의", "normal": "정상", "none": "없음"} // none: 열린 일이 없다
 )
 
 const (
@@ -54,6 +54,8 @@ const (
 	markSeenMax        = 50
 	relatedLimit       = 3
 	defaultDueRiskDays = 3
+	// defaultLaterDays는 config.signal.later_days 가 없을 때 예정이 되는 기한 전 날수다.
+	defaultLaterDays = 14
 	// StateSchema는 상태 JSON 의 schema 값이다. 형태가 바뀌어도 올리지 않는 것이
 	// upstream 의 관례라, 하네스는 이 값이 아니라 형태 자체를 견준다.
 	StateSchema     = 1
@@ -69,9 +71,9 @@ var (
 		"id", "rev", "source", "title", "work", "owner", "status", "wait", "since", "due", "parent",
 		"reminder", "evidence", "mentions", "context", "last_record", "locked", "created", "closed_at",
 	}
-	optionalItemKeys = []string{"rev_by", "changes", "origin", "guess", "unseen"}
+	optionalItemKeys = []string{"rev_by", "changes", "origin", "guess", "unseen", "start", "freed_by"}
 	changeKeys       = []string{"date", "field", "from", "to", "note", "via"}
-	changeFields     = []string{"status", "due", "owner", "work", "title"}
+	changeFields     = []string{"status", "due", "owner", "work", "title", "start"}
 	evidenceKeys     = []string{"path", "section", "date", "stage", "quote"}
 	mentionKeys      = []string{"date", "path", "quote"}
 	contextKeys      = []string{"why", "now", "next", "written_at", "from_commit"}
@@ -82,7 +84,7 @@ var (
 
 var (
 	humanOps = []string{
-		"add", "set_status", "touch", "set_owner", "set_work", "set_due", "set_parent", "set_title", "accept", "reject",
+		"add", "set_status", "touch", "set_owner", "set_work", "set_due", "set_start", "set_parent", "set_title", "accept", "reject",
 		"add_relation", "remove_relation", "confirm_relation", "delete", "cancel_delete", "set_work_order", "mark_seen",
 	}
 	// opsByVia는 요청 경로마다 허용된 연산이다. upstream 의 세 경로(web, command,
@@ -93,8 +95,8 @@ var (
 		"command": setOf(append(append([]string{}, humanOps...), "set_work_desc")...),
 		"extract": setOf("add", "update_ai", "set_owner", "set_work", "set_due", "add_relation", "propose", "move_path"),
 	}
-	itemRequiredOps = setOf("set_status", "touch", "set_owner", "set_work", "set_due", "set_parent", "update_ai", "set_title", "cancel_delete")
-	baseRevOps      = setOf("set_status", "touch", "set_owner", "set_work", "set_due", "set_parent", "set_title", "delete")
+	itemRequiredOps = setOf("set_status", "touch", "set_owner", "set_work", "set_due", "set_start", "set_parent", "update_ai", "set_title", "cancel_delete")
+	baseRevOps      = setOf("set_status", "touch", "set_owner", "set_work", "set_due", "set_start", "set_parent", "set_title", "delete")
 )
 
 var (
