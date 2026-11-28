@@ -2,7 +2,7 @@
 //
 // 확인하는 것은 probe6(archie 설계 2.3절)과 같다.
 //   탭이 넷이다(미리알림 탭이 없다)
-//   `맞음`을 누르면 반영되어 제안 카드가 줄어든다
+//   담당자를 고르고 `맞음`을 누르면 반영되어 제안 카드가 줄어든다
 //   콘솔의 오류와 경고가 0건이다
 //   127.0.0.1 밖으로 나가는 요청이 0건이다
 //   서버를 내린 뒤 일정 시간 동안 페이지 이동이 0번이다(연결 실패를 로그인 만료로 읽고 다시 불러오지 않는다)
@@ -30,7 +30,11 @@ await page.waitForSelector('#view .card');
 const tabs = await page.$$eval('nav [role=tab]', (e) => e.map((x) => x.textContent.trim()));
 const cardsBefore = await page.locator('#view .ask').count();
 const itemsInView = await page.locator('#view').innerText();
-await page.locator('#view .ask button', { hasText: '맞음' }).first().click();
+// 새 일 제안 카드는 담당자(추정일 때), 상태, 기한을 고른 뒤 맞음을 누른다. 담당자를 고르지 않고 맞음을 누르면
+// 제안이 닫힌 뒤 담당자 확인 카드가 따로 생겨 카드 수가 줄지 않는다(meta/pin-rules.md 의 담당자 확인 행).
+const firstAsk = page.locator('#view .ask').first();
+await firstAsk.locator('[data-prop=owner] button', { hasText: '나' }).click();
+await firstAsk.locator('button', { hasText: '맞음' }).click();
 await page.waitForFunction((n) => document.querySelectorAll('#view .ask').length < n, cardsBefore, { timeout: 30000 });
 const cardsAfter = await page.locator('#view .ask').count();
 for (const t of tabs) { await page.locator('nav [role=tab]', { hasText: t }).first().click(); await page.waitForTimeout(250); }

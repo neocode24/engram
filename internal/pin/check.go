@@ -61,9 +61,11 @@ func checkConfig(cfg obj) []string {
 			errs = append(errs, fmt.Sprintf("config.signal.%s가 정수가 아닙니다", key))
 		}
 	}
-	if v, ok := sig["due_risk_days"]; ok {
-		if n, isI := toInt(v); !isI || n < 0 {
-			errs = append(errs, "config.signal.due_risk_days가 0 이상의 정수가 아닙니다")
+	for _, key := range []string{"due_risk_days", "later_days"} {
+		if v, ok := sig[key]; ok {
+			if n, isI := toInt(v); !isI || n < 0 {
+				errs = append(errs, "config.signal."+key+"가 0 이상의 정수가 아닙니다")
+			}
 		}
 	}
 	for _, key := range []string{"confirm_stale_days", "archive_after_days"} {
@@ -128,6 +130,12 @@ func checkItem(item obj, allIDs, works map[string]bool, filenameID string) []str
 	if u, ok := item["unseen"]; ok && u != true {
 		errf("unseen은 true만 씁니다(확인되면 칸을 지웁니다)")
 	}
+	if fb, ok := item["freed_by"]; ok {
+		fo := asObj(fb)
+		if !(fo != nil && keysEqual(fo, []string{"by", "date"}) && isStr(fo["by"]) && itemIDRe.MatchString(str(fo["by"])) && isDate(fo["date"])) {
+			errf("freed_by 형식 오류")
+		}
+	}
 	if !isStr(item["id"]) || !itemIDRe.MatchString(iid) {
 		errf("id 형식이 P0000이 아닙니다")
 	}
@@ -181,6 +189,17 @@ func checkItem(item obj, allIDs, works map[string]bool, filenameID string) []str
 			errf("due 형식 오류")
 		}
 	}
+	if st, ok := item["start"]; ok {
+		do := asObj(item["due"])
+		switch {
+		case !isDate(st):
+			errf("start가 날짜가 아닙니다")
+		case do == nil || !isDate(do["date"]):
+			errf("start는 기한이 있을 때만 씁니다")
+		case str(st) > str(do["date"]):
+			errf("start가 기한보다 늦습니다")
+		}
+	}
 	var changes []any
 	if c, ok := item["changes"]; ok {
 		if l, isList := c.([]any); isList {
@@ -198,7 +217,7 @@ func checkItem(item obj, allIDs, works map[string]bool, filenameID string) []str
 					ok = false
 				}
 			}
-			if str(co["field"]) == "due" {
+			if f := str(co["field"]); f == "due" || f == "start" {
 				for _, k := range []string{"from", "to"} {
 					if v := co[k]; v != nil && !isDate(v) {
 						ok = false
@@ -381,7 +400,7 @@ func checkLedger(l *Ledger) []string {
 		if str(rel["from"]) == str(rel["to"]) {
 			errs = append(errs, tag+": 자기 자신과의 관계")
 		}
-		if kind == "related" && !(isStr(rel["reason"]) && strings.TrimSpace(str(rel["reason"])) != "") {
+		if kind == "related" && !humanVia(str(rel["by"])) && !(isStr(rel["reason"]) && strings.TrimSpace(str(rel["reason"])) != "") {
 			errs = append(errs, tag+": related에 이유가 없습니다")
 		}
 		if !contains(Bases, str(rel["basis"])) || !isBool(rel["confirmed"]) {

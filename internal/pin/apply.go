@@ -581,7 +581,8 @@ func (l *Ledger) addRelation(args obj, by string, confirmed bool) (obj, *Reject)
 		return nil, reject("bad_args", "관계 basis는 %s 중 하나입니다", pyTuple(Bases))
 	}
 	reason := args["reason"]
-	if kind == "related" && !(isStr(reason) && strings.TrimSpace(str(reason)) != "") {
+	// 자동화(추출, 판단)가 맺는 관련은 이유가 있어야 한다. 사람(web, command)이 맺는 관련은 이유가 선택이다.
+	if kind == "related" && !humanVia(by) && !(isStr(reason) && strings.TrimSpace(str(reason)) != "") {
 		return nil, reject("relation_reason", "관련에는 이유가 필요합니다(같은 산출물, 결정, 약속 중 하나)")
 	}
 	for _, rel := range l.relations {
@@ -800,6 +801,7 @@ func (l *Ledger) opSetStatus(req obj) (outcome, *Reject) {
 		return outcome{item: id, msg: "이미 같은 상태입니다. 메모만 남김"}, nil
 	}
 	day := dayOf(req)
+	wasDone := str(item["status"]) == "done"
 	beforeLabel := statusLabel(str(item["status"]), asObj(item["wait"]))
 	if status != str(item["status"]) {
 		item["since"] = day
@@ -819,6 +821,11 @@ func (l *Ledger) opSetStatus(req obj) (outcome, *Reject) {
 	msg := "상태 " + status
 	if str(req["via"]) != "extract" && l.acceptNewItemProposal(id) {
 		msg += ", 상태 변경으로 제안 수락"
+	}
+	if status == "done" && !wasDone {
+		if freed := l.releaseWaiters(item, req); len(freed) > 0 {
+			msg += ", 대기 해제 " + strings.Join(freed, ", ")
+		}
 	}
 	return outcome{item: id, msg: msg}, nil
 }
@@ -1170,8 +1177,15 @@ func (l *Ledger) opMarkSeen(req obj) (outcome, *Reject) {
 			continue
 		}
 		seen[id] = true
-		if it, found := l.items[id]; found && has(it, "unseen") {
-			delete(it, "unseen")
+		it, found := l.items[id]
+		hit := false
+		for _, key := range []string{"unseen", "freed_by"} { // 선행 완료로 풀린 일의 확인 카드도 같은 요청으로 닫는다
+			if found && has(it, key) {
+				delete(it, key)
+				hit = true
+			}
+		}
+		if hit {
 			l.mark(id)
 			cleared = append(cleared, id)
 		}
@@ -1192,11 +1206,60 @@ func (l *Ledger) clearUnseenByHuman(req obj, itemID string) {
 		touched = append(touched, str(args["from"]), str(args["to"]))
 	}
 	for _, id := range touched {
-		if it, ok := l.items[id]; ok && has(it, "unseen") {
-			delete(it, "unseen")
-			l.mark(id)
+		for _, key := range []string{"unseen", "freed_by"} { // 선행 완료로 풀린 표시도 같은 규칙으로 지운다
+			if it, ok := l.items[id]; ok && has(it, key) {
+				delete(it, key)
+				l.mark(id)
+			}
 		}
 	}
+}
+
+// releaseWaiters는 prior 를 선행으로 기다리던 일을 할 일로 바꾸고 freed_by 표시를 붙인다.
+// prior 를 다시 열어도(완료 취소) 풀린 일은 대기로 되돌리지 않는다.
+func (l *Ledger) releaseWaiters(prior, req obj) []string {
+	day := dayOf(req)
+	pid := str(prior["id"])
+	var out []string
+	for _, oid := range sortedKeys(l.items) {
+		other := l.items[oid]
+		wait := asObj(other["wait"])
+		if oid == pid || str(other["status"]) != "waiting" || wait == nil || str(wait["reason"]) != "prior" || str(wait["on"]) != pid {
+			continue
+		}
+		before := statusLabel(str(other["status"]), wait)
+		other["status"], other["wait"], other["since"] = "todo", nil, day
+		recordChange(other, req, "status", before, statusLabels["todo"], "선행 "+pid+" 완료로 대기 해제")
+		other["freed_by"] = obj{"by": pid, "date": day}
+		bumpRecord(other, day, "pin")
+		l.changed(other)
+		out = append(out, oid)
+	}
+	return out
+}
+
+// releaseDonePriors는 요청과 무관하게, 이미 완료된(또는 보관된) 일을 선행으로 기다리는
+// 일이 남아 있으면 푼다. 규칙이 생기기 전의 대기와 다른 경로의 완료를 맞춘다.
+func (l *Ledger) releaseDonePriors(nowISO string) []string {
+	req := obj{"via": "command", "at": nowISO, "client": nil}
+	l.actingVia, l.actingClient = "command", nil
+	priors := map[string]bool{}
+	for _, it := range l.items {
+		if w := asObj(it["wait"]); str(it["status"]) == "waiting" && w != nil && w["on"] != nil {
+			priors[str(w["on"])] = true
+		}
+	}
+	var out []string
+	for _, pid := range sortedKeys(priors) {
+		prior, ok := l.items[pid]
+		if !ok {
+			prior, ok = l.archived[pid]
+		}
+		if ok && str(prior["status"]) == "done" {
+			out = append(out, l.releaseWaiters(prior, req)...)
+		}
+	}
+	return out
 }
 
 func (l *Ledger) opSetWorkDesc(req obj) (outcome, *Reject) {
@@ -1261,6 +1324,10 @@ func (l *Ledger) opSetDue(req obj) (outcome, *Reject) {
 	}
 	recordChange(item, req, "due", before, after, nil)
 	item["due"] = due
+	if st := str(item["start"]); has(item, "start") && (due == nil || st > str(asObj(due)["date"])) { // 시작은 기한이 있을 때만, 기한보다 늦지 않게. 어긋나면 자동 시작으로 돌아간다
+		recordChange(item, req, "start", st, nil, nil)
+		delete(item, "start")
+	}
 	if human {
 		lock(item, "due")
 		bumpRecord(item, dayOf(req), "pin")
@@ -1270,6 +1337,57 @@ func (l *Ledger) opSetDue(req obj) (outcome, *Reject) {
 		return outcome{item: id, msg: "기한 " + str(after)}, nil
 	}
 	return outcome{item: id, msg: "기한 없음"}, nil
+}
+
+// opSetStart는 시작일이다. args {date: YYYY-MM-DD} 또는 {clear: true}(자동 시작으로).
+// 기한이 있어야 하고 기한보다 늦을 수 없다.
+func (l *Ledger) opSetStart(req obj) (outcome, *Reject) {
+	item, rj := l.requireItem(req)
+	if rj != nil {
+		return outcome{}, rj
+	}
+	if rj := checkRev(item, req); rj != nil {
+		return outcome{}, rj
+	}
+	args := asObj(req["args"])
+	var start any
+	switch {
+	case len(args) == 1 && args["clear"] == true:
+		start = nil
+	case len(args) == 1 && has(args, "date") && isDate(args["date"]):
+		start = args["date"]
+	default:
+		return outcome{}, reject("bad_args", "set_start에는 date(YYYY-MM-DD) 또는 clear: true 하나만 씁니다")
+	}
+	id := str(item["id"])
+	if start != nil {
+		due := asObj(item["due"])
+		if due == nil {
+			return outcome{}, reject("bad_args", "시작은 기한이 있을 때만 정합니다")
+		}
+		if str(start) > str(due["date"]) {
+			return outcome{}, reject("bad_args", "시작이 기한보다 늦습니다")
+		}
+	}
+	var cur any
+	if has(item, "start") {
+		cur = item["start"]
+	}
+	if cur == start {
+		return outcome{item: id, msg: "시작이 같습니다", noop: true}, nil
+	}
+	recordChange(item, req, "start", cur, start, nil)
+	if start == nil {
+		delete(item, "start")
+	} else {
+		item["start"] = start
+	}
+	bumpRecord(item, dayOf(req), "pin")
+	l.changed(item)
+	if start == nil {
+		return outcome{item: id, msg: "시작 자동"}, nil
+	}
+	return outcome{item: id, msg: "시작 " + str(start)}, nil
 }
 
 func (l *Ledger) setParent(item obj, parent any, req obj) *Reject {
@@ -2008,7 +2126,7 @@ func (l *Ledger) handler(op string) func(obj) (outcome, *Reject) {
 	return map[string]func(obj) (outcome, *Reject){
 		"add": l.opAdd, "set_status": l.opSetStatus, "touch": l.opTouch, "set_title": l.opSetTitle, "set_owner": l.opSetOwner,
 		"set_work": l.opSetWork, "set_work_order": l.opSetWorkOrder, "mark_seen": l.opMarkSeen, "set_work_desc": l.opSetWorkDesc,
-		"set_due": l.opSetDue, "set_parent": l.opSetParent, "update_ai": l.opUpdateAI,
+		"set_due": l.opSetDue, "set_start": l.opSetStart, "set_parent": l.opSetParent, "update_ai": l.opUpdateAI,
 		"add_relation": l.opAddRelation, "remove_relation": l.opRemoveRelation, "confirm_relation": l.opConfirmRelation, "propose": l.opPropose,
 		"accept": l.opAccept, "reject": l.opReject, "move_path": l.opMovePath,
 		"delete": l.opDelete, "cancel_delete": l.opCancelDelete,

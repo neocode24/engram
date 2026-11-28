@@ -170,6 +170,35 @@ func sigInt(sig obj, key string) int {
 	return n
 }
 
+// weekEnd는 이번 주의 끝(일요일)이다. 오늘 탭의 '이번 주 해야 할 일'과 같은 범위다.
+func weekEnd(today time.Time) time.Time {
+	return today.AddDate(0, 0, 6-(int(today.Weekday())+6)%7)
+}
+
+// laterFrom은 예정(upstream derive.later_from)이다. 할 일의 시작일이 오늘 뒤면 그
+// 날짜를 돌려주고, 아니면 nil 이다. 시작일은 사람이 정한 start, 없으면 기한의
+// later_days 일 전(자동)이다. 진행 중, 대기, 보류, 기한 없는 일은 예정이 아니다.
+func laterFrom(item obj, today time.Time, sig obj) any {
+	due := asObj(item["due"])
+	if str(item["status"]) != "todo" || due == nil {
+		return nil
+	}
+	var start time.Time
+	if s := str(item["start"]); s != "" {
+		start = parseDate(s)
+	} else {
+		days := defaultLaterDays
+		if v, ok := sig["later_days"]; ok {
+			days, _ = toInt(v)
+		}
+		start = parseDate(str(due["date"])).AddDate(0, 0, -days)
+	}
+	if start.After(today) {
+		return start.Format("2006-01-02")
+	}
+	return nil
+}
+
 func itemSignalReasons(item obj, today time.Time, sig obj) (risk, caution []string) {
 	riskDays := defaultDueRiskDays
 	if v, ok := sig["due_risk_days"]; ok {
@@ -177,14 +206,15 @@ func itemSignalReasons(item obj, today time.Time, sig obj) (risk, caution []stri
 	}
 	status := str(item["status"])
 	if due := asObj(item["due"]); (status == "todo" || status == "doing" || status == "waiting") && due != nil {
+		dueDate := parseDate(str(due["date"]))
 		left := -daysInt(today, str(due["date"]))
 		switch {
 		case left < 0:
 			risk = append(risk, str(item["id"])+" 기한이 "+itoa(-left)+"일 지났습니다")
-		case left <= riskDays:
+		case left <= riskDays && (status == "todo" || status == "waiting"):
 			risk = append(risk, str(item["id"])+" 기한이 "+itoa(left)+"일 남았습니다")
-		case left <= sigInt(sig, "due_within_days"):
-			caution = append(caution, str(item["id"])+" 기한이 "+itoa(left)+"일 남았습니다")
+		case !dueDate.After(weekEnd(today)):
+			caution = append(caution, str(item["id"])+" 기한이 "+itoa(left)+"일 남았습니다(이번 주)")
 		}
 	}
 	if status == "waiting" {
@@ -197,10 +227,13 @@ func itemSignalReasons(item obj, today time.Time, sig obj) (risk, caution []stri
 }
 
 func workSignal(items []obj, today time.Time, sig obj) obj {
-	var open []obj
+	var allOpen, open []obj
 	for _, i := range items {
 		if str(i["status"]) != "done" {
-			open = append(open, i)
+			allOpen = append(allOpen, i)
+			if laterFrom(i, today, sig) == nil { // 예정인 일은 신호에서 뺀다
+				open = append(open, i)
+			}
 		}
 	}
 	var risk, caution []string
@@ -212,6 +245,9 @@ func workSignal(items []obj, today time.Time, sig obj) obj {
 	var last any
 	lastStr := ""
 	for _, i := range items {
+		if laterFrom(i, today, sig) != nil {
+			continue
+		}
 		if d := str(asObj(i["last_record"])["date"]); d != "" && (lastStr == "" || d > lastStr) {
 			lastStr = d
 		}
@@ -226,6 +262,8 @@ func workSignal(items []obj, today time.Time, sig obj) obj {
 	}
 	level := "normal"
 	switch {
+	case len(allOpen) == 0:
+		level = "none"
 	case len(risk) > 0:
 		level = "risk"
 	case len(caution) > 0:
@@ -237,7 +275,7 @@ func workSignal(items []obj, today time.Time, sig obj) obj {
 	}
 	return obj{
 		"signal": level, "signal_label": signalLabels[level], "reasons": toAnyList(reasons),
-		"last_record": last, "days_since_record": since, "open_count": len(open),
+		"last_record": last, "days_since_record": since, "open_count": len(allOpen), "later_count": len(allOpen) - len(open),
 	}
 }
 
@@ -334,6 +372,13 @@ var classifyActions = []any{"attach", "new", "none"}
 func (l *Ledger) buildAsks(today time.Time, items []obj) []any {
 	staleDays, _ := toInt(l.config["confirm_stale_days"])
 	var asks []any
+	// 새 일 제안이 열려 있는 일은 담당자 확인을 따로 묻지 않는다. 제안 카드의 담당자 줄이 묻는다.
+	proposedNew := map[string]bool{}
+	for _, p := range l.proposals {
+		if str(p["kind"]) == "new_item" && p["item"] != nil {
+			proposedNew[str(p["item"])] = true
+		}
+	}
 	for _, p := range l.proposals {
 		args := asObj(p["args"])
 		if str(p["kind"]) == "work" {
@@ -385,7 +430,7 @@ func (l *Ledger) buildAsks(today time.Time, items []obj) []any {
 			continue
 		}
 		n, hasN := item["days_since_record"].(int)
-		if str(item["status"]) != "hold" && hasN && n > staleDays {
+		if str(item["status"]) != "hold" && item["later"] == nil && hasN && n > staleDays { // 예정인 일은 기록이 끊겨도 묻지 않는다
 			lr := asObj(item["last_record"])
 			asks = append(asks, obj{
 				"id": "stale:" + str(item["id"]), "kind": "stale", "items": []any{item["id"]},
@@ -394,7 +439,7 @@ func (l *Ledger) buildAsks(today time.Time, items []obj) []any {
 				"actions":  []any{"touch", "done", "hold"},
 			})
 		}
-		if str(asObj(item["owner"])["basis"]) == "inferred" {
+		if str(asObj(item["owner"])["basis"]) == "inferred" && !proposedNew[str(item["id"])] {
 			asks = append(asks, obj{
 				"id": "owner:" + str(item["id"]), "kind": "owner", "items": []any{item["id"]},
 				"question": str(item["title"]) + ": 담당자가 정해지지 않았습니다",
@@ -402,6 +447,21 @@ func (l *Ledger) buildAsks(today time.Time, items []obj) []any {
 				"actions":  []any{"owner_me", "owner_other", "owner_unknown"},
 			})
 		}
+	}
+	// 선행 완료로 대기에서 할 일로 바뀐 일마다 카드 하나. 확인(mark_seen)이나 그 일에 사람이 손대면 사라진다.
+	for _, iid := range sortedKeys(l.items) {
+		it := l.items[iid]
+		fb := asObj(it["freed_by"])
+		if fb == nil || str(it["status"]) == "done" {
+			continue
+		}
+		by := str(fb["by"])
+		asks = append(asks, obj{
+			"id": "freed:" + iid, "kind": "freed", "items": []any{iid}, "prior": by,
+			"question": str(it["title"]) + ": 선행 " + by + "이 완료되어 대기에서 할 일로 바뀌었습니다",
+			"reason":   "선행 " + by + "이 완료되어 대기에서 할 일로 바뀌었습니다",
+			"actions":  []any{"seen", "doing"},
+		})
 	}
 	return asks
 }
@@ -527,7 +587,8 @@ func (l *Ledger) buildState(today time.Time, nowISO string) obj {
 			r["notes"], r["notes_truncated"], r["due"], r["due_note"], r["subtasks"], r["tags"] = "", false, nil, nil, 0, []any{}
 			reminder = r
 		}
-		needs := status != "done" && status != "hold" && n != nil && n.(int) > staleDays
+		later := laterFrom(it, today, sig)
+		needs := status != "done" && status != "hold" && later == nil && n != nil && n.(int) > staleDays
 		lockedList := asList(it["locked"])
 		if lockedList == nil {
 			lockedList = []any{}
@@ -547,9 +608,12 @@ func (l *Ledger) buildState(today time.Time, nowISO string) obj {
 			"last_note":   lastNoteOf(it),
 			"last_record": lr, "last_record_label": recordLabels[str(lr["kind"])],
 			"days_since_record": n,
+			"later":             later,
+			"start":             it["start"],
 			"needs_check":       needs,
 			"proposed":          proposed[iid], "locked": lockedList, "created": it["created"], "closed_at": it["closed_at"],
 			"unseen":    it["unseen"] == true,
+			"freed_by":  it["freed_by"],
 			"relations": l.relationsOf(iid),
 		})
 	}
@@ -636,6 +700,10 @@ func (l *Ledger) buildState(today time.Time, nowISO string) obj {
 	signalRules := obj{}
 	for _, k := range []string{"due_risk_days", "due_within_days", "waiting_over_days", "work_stale_days"} {
 		signalRules[k] = sig[k]
+	}
+	signalRules["later_days"] = defaultLaterDays
+	if v, ok := sig["later_days"]; ok {
+		signalRules["later_days"] = v
 	}
 	reminderLists := []any{}
 	for _, n := range asList(cfg["reminder_lists"]) {
